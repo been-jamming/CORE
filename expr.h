@@ -35,6 +35,7 @@ struct proposition{
 	statement *statement_data;
 	unsigned int num_references;
 	unsigned int depth;
+	unsigned int num_args;
 };
 
 struct variable{
@@ -105,6 +106,8 @@ void skip_whitespace(char **c);
 void get_identifier(char **c, char *buffer, size_t buffer_length);
 statement *create_statement(statement_type type, int num_bound_vars, int num_bound_props);
 statement *parse_statement(char **c, int num_bound_vars, int num_bound_props);
+void decrement_references(statement *s);
+void free_statement_independent(statement *s);
 void free_statement(statement *s);
 void copy_statement(statement *dest, statement *s);
 unsigned char compare_statement(statement *a, statement *b);

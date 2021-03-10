@@ -20,24 +20,60 @@ unsigned int umax(unsigned int a, unsigned int b){
 
 void free_proposition(proposition *p){
 	free(p->name);
-	free_statement(p->statement_data);
+	if(p->statement_data){
+		free_statement(p->statement_data);
+	}
 	free(p);
 }
 
 void free_variable(variable *v){
 	free(v->name);
-	if(v->type == STATEMENT){
+	if(v->type == STATEMENT && v->statement_data){
 		free_statement(v->statement_data);
 	}
 	free(v);
 }
 
+void free_proposition_independent(proposition *p){
+	free(p->name);
+	if(p->statement_data){
+		free_statement_independent(p->statement_data);
+	}
+	free(p);
+}
+
+void free_variable_independent(variable *v){
+	free(v->name);
+	if(v->type == STATEMENT && v->statement_data){
+		free_statement_independent(v->statement_data);
+	}
+	free(v);
+}
+
 void free_proposition_void(void *p){
-	free_proposition(p);
+	free_proposition_independent(p);
 }
 
 void free_variable_void(void *v){
-	free_variable(v);
+	free_variable_independent(v);
+}
+
+void proposition_decrement_references_void(void *p){
+	proposition *prop;
+
+	prop = p;
+	if(prop->statement_data){
+		decrement_references(prop->statement_data);
+	}
+}
+
+void variable_decrement_references_void(void *p){
+	variable *v;
+
+	v = p;
+	if(v->type == STATEMENT && v->statement_data){
+		decrement_references(v->statement_data);
+	}
 }
 
 void init_verifier(){
@@ -64,6 +100,8 @@ void up_scope(){
 
 void drop_scope(){
 	if(current_depth){
+		iterate_dictionary(variables[current_depth], variable_decrement_references_void);
+		iterate_dictionary(definitions[current_depth], proposition_decrement_references_void);
 		free_dictionary(variables + current_depth, free_variable_void);
 		free_dictionary(definitions + current_depth, free_proposition_void);
 		current_depth--;
@@ -173,7 +211,7 @@ statement *parse_statement_identifier_proposition(char **c){
 		output->is_bound = 0;
 		output->prop = prop;
 		prop->num_references++;
-		output->num_args = prop->statement_data->num_bound_vars;
+		output->num_args = prop->num_args;
 		output->prop_args = malloc(sizeof(proposition_arg)*output->num_args);
 		for(i = 0; i < output->num_args; i++){
 			output->prop_args[i].is_bound = 1;
@@ -196,7 +234,10 @@ statement *statement_to_definition(char *name){
 
 	for(i = current_depth; i >= 0; i--){
 		prop = read_dictionary(definitions[i], name, 0);
-		if(prop && prop->statement_data){
+		if(prop && !prop->statement_data){
+			prop = NULL;
+		}
+		if(prop){
 			break;
 		}
 	}
@@ -207,7 +248,7 @@ statement *statement_to_definition(char *name){
 		output->child0->is_bound = 0;
 		output->child0->prop = prop;
 		prop->num_references++;
-		output->child0->num_args = prop->statement_data->num_bound_vars;
+		output->child0->num_args = prop->num_args;
 		output->child0->prop_args = malloc(sizeof(proposition_arg)*output->child0->num_args);
 		for(i = 0; i < output->child0->num_args; i++){
 			output->child0->prop_args[i].is_bound = 1;
@@ -235,7 +276,10 @@ statement *definition_to_statement(char *name){
 
 	for(i = current_depth; i >= 0; i--){
 		prop = read_dictionary(definitions[i], name, 0);
-		if(prop && prop->statement_data){
+		if(prop && !prop->statement_data){
+			prop = NULL;
+		}
+		if(prop){
 			break;
 		}
 	}
@@ -246,7 +290,7 @@ statement *definition_to_statement(char *name){
 		output->child1->is_bound = 0;
 		output->child1->prop = prop;
 		prop->num_references++;
-		output->child1->num_args = prop->statement_data->num_bound_vars;
+		output->child1->num_args = prop->num_args;
 		output->child1->prop_args = malloc(sizeof(proposition_arg)*output->child1->num_args);
 		for(i = 0; i < output->child1->num_args; i++){
 			output->child1->prop_args[i].is_bound = 1;
@@ -316,6 +360,9 @@ statement *parse_statement_identifier(char **c, unsigned char verified){
 	if(!var && !verified){
 		for(i = current_depth; i >= 0; i--){
 			prop = read_dictionary(definitions[i], name_buffer, 0);
+			if(prop && !prop->statement_data){
+				prop = NULL;
+			}
 			if(prop){
 				break;
 			}
@@ -1091,6 +1138,7 @@ proposition *definition_command(char **c){
 	output->statement_data = s;
 	output->num_references = 0;
 	output->depth = current_depth;
+	output->num_args = num_bound_vars;
 	printf("definition %s: ", def_name);
 	print_statement(s);
 	printf("\n");

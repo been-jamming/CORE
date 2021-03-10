@@ -214,7 +214,7 @@ statement *parse_proposition(char **c, int num_bound_vars, int num_bound_props){
 		num_args = bound_prop->num_args;
 	} else {
 		if(prop){
-			num_args = prop->statement_data->num_bound_vars;
+			num_args = prop->num_args;
 		} else {
 			*c = beginning;
 			return NULL;
@@ -278,6 +278,7 @@ statement *parse_proposition(char **c, int num_bound_vars, int num_bound_props){
 					fprintf(stderr, "Error: expected ',' or ')'\n");
 					*c = beginning;
 					free(args);
+					return NULL;
 				}
 			}
 			++*c;
@@ -513,6 +514,72 @@ statement *parse_statement(char **c, int num_bound_vars, int num_bound_props){
 	}
 
 	return output;
+}
+
+//Decrement all references inside of a statement in preparation for freeing the statement
+void decrement_references(statement *s){
+	int i;
+
+	switch(s->type){
+		case AND:
+		case OR:
+		case IMPLIES:
+			decrement_references(s->child0);
+			decrement_references(s->child1);
+			break;
+		case PROPOSITION:
+			for(i = 0; i < s->num_args; i++){
+				if(!s->prop_args[i].is_bound){
+					s->prop_args[i].var->num_references--;
+				}
+			}
+			if(!s->is_bound){
+				s->prop->num_references--;
+			}
+			break;
+		case FORALL:
+		case EXISTS:
+		case NOT:
+			decrement_references(s->child0);
+			break;
+		case MEMBERSHIP:
+			if(!s->is_bound0){
+				s->var0->num_references--;
+			}
+			if(!s->is_bound1){
+				s->var1->num_references--;
+			}
+			break;
+		default:
+			//pass
+			break;
+	}
+}
+
+//Free a statement without decrementing any references
+void free_statement_independent(statement *s){
+	switch(s->type){
+		case AND:
+		case OR:
+		case IMPLIES:
+			free_statement_independent(s->child0);
+			free_statement_independent(s->child1);
+			free(s);
+			break;
+		case PROPOSITION:
+			free(s->prop_args);
+			free(s);
+			break;
+		case FORALL:
+		case EXISTS:
+		case NOT:
+			free_statement_independent(s->child0);
+			free(s);
+			break;
+		default:
+			free(s);
+			break;
+	}
 }
 
 void free_statement(statement *s){
