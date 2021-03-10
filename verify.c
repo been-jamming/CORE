@@ -10,6 +10,14 @@ statement *parse_statement_value(char **c, unsigned char verified);
 
 statement *verify_block(char **c);
 
+unsigned int umax(unsigned int a, unsigned int b){
+	if(a > b){
+		return a;
+	}
+
+	return b;
+}
+
 void free_proposition(proposition *p){
 	free(p->name);
 	free_statement(p->statement_data);
@@ -24,6 +32,14 @@ void free_variable(variable *v){
 	free(v);
 }
 
+void free_proposition_void(void *p){
+	free_proposition(p);
+}
+
+void free_variable_void(void *v){
+	free_variable(v);
+}
+
 void init_verifier(){
 	int i;
 
@@ -34,6 +50,25 @@ void init_verifier(){
 	for(i = 0; i < MAX_DEPTH; i++){
 		variables[i] = create_dictionary(NULL);
 		definitions[i] = create_dictionary(NULL);
+	}
+}
+
+void up_scope(){
+	if(current_depth < MAX_DEPTH - 1){
+		current_depth++;
+	} else {
+		fprintf(stderr, "Error: maximum scope depth reached\n");
+		exit(1);
+	}
+}
+
+void drop_scope(){
+	if(current_depth){
+		free_dictionary(variables + current_depth, free_variable_void);
+		free_dictionary(definitions + current_depth, free_proposition_void);
+		current_depth--;
+	} else {
+		fprintf(stderr, "WARNING: drop scope called when scope was 0\n");
 	}
 }
 
@@ -55,25 +90,60 @@ char *load_file(char *file_name){
 		free(output);
 		return NULL;
 	}
+	fclose(fp);
 	output[size] = '\0';
 
 	return output;
-}
-
-void free_statement_void(void *v){
-	free_statement(v);
 }
 
 void clear_bound_variables(){
 	free_dictionary(&bound_variables, free);
 }
 
-void free_proposition_void(void *v){
-	free_proposition(v);
-}
-
 void clear_bound_propositions(){
 	free_dictionary(&bound_propositions, free);
+}
+
+unsigned int max_statement_depth(statement *s){
+	unsigned int a;
+	unsigned int b;
+	unsigned int output = 0;
+	int i;
+
+	switch(s->type){
+		case AND:
+		case OR:
+		case IMPLIES:
+			return umax(max_statement_depth(s->child0), max_statement_depth(s->child1));
+		case NOT:
+		case FORALL:
+		case EXISTS:
+			return max_statement_depth(s->child0);
+		case MEMBERSHIP:
+			if(s->is_bound0){
+				a = 0;
+			} else {
+				a = s->var0->depth;
+			}
+			if(s->is_bound1){
+				b = 0;
+			} else {
+				b = s->var1->depth;
+			}
+			return umax(a, b);
+		case PROPOSITION:
+			if(s->is_bound){
+				output = s->prop->depth;
+			}
+			for(i = 0; i < s->num_args; i++){
+				if(s->prop_args[i].is_bound){
+					output = umax(output, s->prop_args[i].var->depth);
+				}
+			}
+			return output;
+		default:
+			return 0;
+	}
 }
 
 statement *parse_statement_identifier_proposition(char **c){
@@ -104,7 +174,7 @@ statement *parse_statement_identifier_proposition(char **c){
 		output->prop = prop;
 		prop->num_references++;
 		output->num_args = prop->statement_data->num_bound_vars;
-		output->prop_args = malloc(sizeof(proposition_arg));
+		output->prop_args = malloc(sizeof(proposition_arg)*output->num_args);
 		for(i = 0; i < output->num_args; i++){
 			output->prop_args[i].is_bound = 1;
 			output->prop_args[i].var_id = i;
@@ -118,6 +188,84 @@ statement *parse_statement_identifier_proposition(char **c){
 	}
 }
 
+statement *statement_to_definition(char *name){
+	proposition *prop;
+	statement *output;
+	statement *new;
+	int i;
+
+	for(i = current_depth; i >= 0; i--){
+		prop = read_dictionary(definitions[i], name, 0);
+		if(prop && prop->statement_data){
+			break;
+		}
+	}
+
+	if(prop){
+		output = create_statement(IMPLIES, prop->statement_data->num_bound_vars, 0);
+		output->child0 = create_statement(PROPOSITION, prop->statement_data->num_bound_vars, 0);
+		output->child0->is_bound = 0;
+		output->child0->prop = prop;
+		prop->num_references++;
+		output->child0->num_args = prop->statement_data->num_bound_vars;
+		output->child0->prop_args = malloc(sizeof(proposition_arg)*output->child0->num_args);
+		for(i = 0; i < output->child0->num_args; i++){
+			output->child0->prop_args[i].is_bound = 1;
+			output->child0->prop_args[i].var_id = i;
+		}
+		output->child1 = malloc(sizeof(statement));
+		copy_statement(output->child1, prop->statement_data);
+		for(i = prop->statement_data->num_bound_vars - 1; i >= 0; i--){
+			new = create_statement(FORALL, i, 0);
+			new->child0 = output;
+			output = new;
+		}
+
+		return output;
+	}
+
+	return NULL;
+}
+
+statement *definition_to_statement(char *name){
+	proposition *prop;
+	statement *output;
+	statement *new;
+	int i;
+
+	for(i = current_depth; i >= 0; i--){
+		prop = read_dictionary(definitions[i], name, 0);
+		if(prop && prop->statement_data){
+			break;
+		}
+	}
+
+	if(prop){
+		output = create_statement(IMPLIES, prop->statement_data->num_bound_vars, 0);
+		output->child1 = create_statement(PROPOSITION, prop->statement_data->num_bound_vars, 0);
+		output->child1->is_bound = 0;
+		output->child1->prop = prop;
+		prop->num_references++;
+		output->child1->num_args = prop->statement_data->num_bound_vars;
+		output->child1->prop_args = malloc(sizeof(proposition_arg)*output->child1->num_args);
+		for(i = 0; i < output->child1->num_args; i++){
+			output->child1->prop_args[i].is_bound = 1;
+			output->child1->prop_args[i].var_id = i;
+		}
+		output->child0 = malloc(sizeof(statement));
+		copy_statement(output->child0, prop->statement_data);
+		for(i = prop->statement_data->num_bound_vars - 1; i >= 0; i--){
+			new = create_statement(FORALL, i, 0);
+			new->child0 = output;
+			output = new;
+		}
+
+		return output;
+	}
+
+	return NULL;
+}
+
 statement *parse_statement_identifier(char **c, unsigned char verified){
 	variable *var;
 	statement *output;
@@ -128,11 +276,33 @@ statement *parse_statement_identifier(char **c, unsigned char verified){
 
 	skip_whitespace(c);
 	beginning = *c;
+	if(**c == '#'){
+		++*c;
+		get_identifier(c, name_buffer, 256);
+		if(name_buffer[0]){
+			output = definition_to_statement(name_buffer);
+		}
+		if(!name_buffer[0] || !output){
+			*c = beginning;
+			return NULL;
+		}
+		return output;
+	}
 	get_identifier(c, name_buffer, 256);
 	if(name_buffer[0] == '\0'){
 		*c = beginning;
 		return NULL;
 	}
+	skip_whitespace(c);
+	if(**c == '#'){
+		++*c;
+		output = statement_to_definition(name_buffer);
+		if(!output){
+			*c = beginning;
+		}
+		return output;
+	}
+
 	for(i = current_depth; i >= 0; i--){
 		var = read_dictionary(variables[i], name_buffer, 0);
 		if(var && var->type != STATEMENT){
@@ -352,7 +522,6 @@ void substitute_proposition(statement *s, statement *child){
 		case PROPOSITION:
 			if(s->is_bound && !s->prop_id){
 				if(s->num_args != child->num_bound_vars){
-					printf("BLA: %d %d\n", s->num_args, child->num_bound_vars);
 					fprintf(stderr, "Error: argument count mismatch\n");
 					exit(1);
 				}
@@ -399,6 +568,7 @@ variable *create_object_var(char *var_name){
 	v->num_references = 0;
 	v->name = malloc(sizeof(char)*(strlen(var_name) + 1));
 	strcpy(v->name, var_name);
+	v->depth = current_depth;
 
 	write_dictionary(variables + current_depth, var_name, v, 0);
 
@@ -411,6 +581,26 @@ variable *get_object_var(char *var_name){
 
 	for(i = current_depth; i >= 0; i--){
 		v = read_dictionary(variables[i], var_name, 0);
+		if(v && v->type != OBJECT){
+			v = NULL;
+		}
+		if(v){
+			break;
+		}
+	}
+
+	return v;
+}
+
+variable *get_statement_var(char *var_name){
+	variable *v;
+	int i;
+
+	for(i = current_depth; i >= 0; i--){
+		v = read_dictionary(variables[i], var_name, 0);
+		if(v && v->type != STATEMENT){
+			v = NULL;
+		}
 		if(v){
 			break;
 		}
@@ -437,6 +627,7 @@ variable *create_statement_var(char *var_name, statement *s){
 	v->name = malloc(sizeof(char)*(strlen(var_name) + 1));
 	strcpy(v->name, var_name);
 	v->statement_data = s;
+	v->depth = current_depth;
 
 	write_dictionary(variables + current_depth, var_name, v, 0);
 
@@ -444,11 +635,15 @@ variable *create_statement_var(char *var_name, statement *s){
 }
 
 statement *parse_statement_value_builtin(char **c, unsigned char verified){
+	char var_name[256];
 	statement *s;
 	statement *output;
 	statement *child0;
 	statement *child1;
+	variable *new_statement_var;
 	statement *new;
+	statement *return_statement0;
+	statement *return_statement1;
 
 	if(!strncmp(*c, "left", 4) && !is_alphanumeric((*c)[4])){
 		*c += 4;
@@ -555,6 +750,108 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 
 			return s;
 		}
+	} else if(!strncmp(*c, "branch", 6) && !is_alphanumeric((*c)[6])){
+		*c += 6;
+		skip_whitespace(c);
+		if(**c != '('){
+			return NULL;
+		}
+		++*c;
+		skip_whitespace(c);
+		s = parse_statement_value(c, 1);
+		skip_whitespace(c);
+		if(!s){
+			fprintf(stderr, "Error: could not parse statement value\n");
+			exit(1);
+		}
+		if(**c != ','){
+			fprintf(stderr, "Error: expected ','\n");
+			exit(1);
+		}
+		++*c;
+		if(s->type != OR || s->num_bound_props || s->num_bound_vars){
+			fprintf(stderr, "Error: invalid operand for 'branch'\n");
+			exit(1);
+		}
+		++*c;
+		skip_whitespace(c);
+		get_identifier(c, var_name, 256);
+		if(var_name[0] == '\0'){
+			fprintf(stderr, "Error: expected identifier\n");
+			exit(1);
+		}
+		skip_whitespace(c);
+		if(**c != ')'){
+			fprintf(stderr, "Error: expected ')'\n");
+			exit(1);
+		}
+		++*c;
+		skip_whitespace(c);
+		if(**c != '{'){
+			fprintf(stderr, "Error: expected '{'\n");
+			exit(1);
+		}
+		++*c;
+		skip_whitespace(c);
+		up_scope();
+		new = malloc(sizeof(statement));
+		copy_statement(new, s->child0);
+		new_statement_var = create_statement_var(var_name, new);
+		new_statement_var->num_references++;
+		return_statement0 = verify_block(c);
+		if(!return_statement0){
+			fprintf(stderr, "Error: expected return statement\n");
+			exit(1);
+		}
+		if(max_statement_depth(return_statement0) >= current_depth){
+			free_statement(return_statement0);
+			fprintf(stderr, "Error: returned statement depends on variables in its scope\n");
+			exit(1);
+		}
+		drop_scope();
+		skip_whitespace(c);
+		if(strncmp(*c, "or", 2) || is_alphanumeric((*c)[2])){
+			free_statement(return_statement0);
+			fprintf(stderr, "Error: expected 'or'\n");
+			exit(1);
+		}
+		*c += 2;
+		skip_whitespace(c);
+		if(**c != '{'){
+			free_statement(return_statement0);
+			fprintf(stderr, "Error: expected '{'\n");
+			exit(1);
+		}
+		++*c;
+		skip_whitespace(c);
+		up_scope();
+		new = malloc(sizeof(statement));
+		copy_statement(new, s->child1);
+		new_statement_var = create_statement_var(var_name, new);
+		new_statement_var->num_references++;
+		return_statement1 = verify_block(c);
+		if(!return_statement1){
+			free_statement(return_statement0);
+			fprintf(stderr, "Error: expected return statement\n");
+			exit(1);
+		}
+		if(max_statement_depth(return_statement1) >= current_depth){
+			free_statement(return_statement0);
+			free_statement(return_statement1);
+			fprintf(stderr, "Error: returned statement depends on variables in its scope\n");
+			exit(1);
+		}
+		drop_scope();
+		if(!compare_statement(return_statement0, return_statement1)){
+			free_statement(return_statement0);
+			free_statement(return_statement1);
+			fprintf(stderr, "Error: mismatched returned statements\n");
+			exit(1);
+		}
+		free_statement(return_statement1);
+		free_statement(s);
+
+		return return_statement0;
 	}
 
 	return NULL;
@@ -575,7 +872,9 @@ statement *parse_statement_value(char **c, unsigned char verified){
 		++*c;
 		output = parse_statement_value(c, verified);
 		if(**c != ')'){
-			free_statement(output);
+			if(output){
+				free_statement(output);
+			}
 			return NULL;
 		}
 		++*c;
@@ -652,7 +951,7 @@ statement *parse_statement_value(char **c, unsigned char verified){
 				}
 				output = next_output;
 				add_bound_variables(output, -1);
-			} else if(output->type == IMPLIES){
+			} else if(output->type == IMPLIES || output->type == NOT){
 				arg = parse_statement_value(c, verified);
 				skip_whitespace(c);
 				if(**c != ')' || !arg || arg->num_bound_vars || arg->num_bound_props || !compare_statement(arg, output->child0)){
@@ -664,10 +963,16 @@ statement *parse_statement_value(char **c, unsigned char verified){
 				}
 				++*c;
 				free_statement(arg);
-				free_statement(output->child0);
-				next_output = output->child1;
-				free(output);
-				output = next_output;
+				if(output->type == IMPLIES){
+					free_statement(output->child0);
+					next_output = output->child1;
+					free(output);
+					output = next_output;
+				} else if(output->type == NOT){
+					free_statement(output);
+					output = create_statement(FALSE, 0, 0);
+				}
+					
 			} else {
 				free_statement(output);
 				return NULL;
@@ -785,6 +1090,7 @@ proposition *definition_command(char **c){
 	output->name = def_name;
 	output->statement_data = s;
 	output->num_references = 0;
+	output->depth = current_depth;
 	printf("definition %s: ", def_name);
 	print_statement(s);
 	printf("\n");
@@ -911,6 +1217,7 @@ variable *axiom_command(char **c){
 	output->type = STATEMENT;
 	output->statement_data = s;
 	output->num_references = 0;
+	output->depth = current_depth;
 
 	return output;
 }
@@ -1066,5 +1373,7 @@ int main(int argc, char **argv){
 	}
 
 	free(program_start);
+	free_dictionary(variables, free_variable_void);
+	free_dictionary(definitions, free_proposition_void);
 	return 0;
 }

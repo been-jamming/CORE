@@ -34,6 +34,7 @@ struct proposition{
 	char *name;
 	statement *statement_data;
 	unsigned int num_references;
+	unsigned int depth;
 };
 
 struct variable{
@@ -41,6 +42,7 @@ struct variable{
 	var_type type;
 	statement *statement_data;
 	unsigned int num_references;
+	unsigned int depth;
 };
 
 struct bound_proposition{

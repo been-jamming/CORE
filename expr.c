@@ -26,8 +26,14 @@ statement *create_statement(statement_type type, int num_bound_vars, int num_bou
 }
 
 void skip_whitespace(char **c){
-	while(**c == ' ' || **c == '\t' || **c == '\n'){
-		++*c;
+	while(**c == ' ' || **c == '\t' || **c == '\n' || (**c == '/' && (*c)[1] == '/')){
+		if(**c == '/' && (*c)[1] == '/'){
+			while(**c && **c != '\n'){
+				++*c;
+			}
+		} else {
+			++*c;
+		}
 	}
 }
 
