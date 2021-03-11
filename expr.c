@@ -482,10 +482,10 @@ static statement *parse_statement_recursive(int priority, statement *s0, char **
 	skip_whitespace(c);
 	temp_c = *c;
 	operation = get_operation(&temp_c);
-	if(operation == -1 && **c && **c != ')' && **c != ';' && **c != ']'){
+	if(operation == -1 && **c && **c != ')' && **c != ';' && **c != ']' && **c != '{'){
 		fprintf(stderr, "Unrecognized operation '%c'\n", **c);
 		exit(1);
-	} else if(!**c || **c == ')' || **c == ';' || **c == ']'){
+	} else if(!**c || **c == ')' || **c == ';' || **c == ']' || **c == '{'){
 		return s0;
 	}
 
@@ -508,7 +508,7 @@ statement *parse_statement(char **c, int num_bound_vars, int num_bound_props){
 
 	output = parse_value(c, num_bound_vars, num_bound_props);
 	skip_whitespace(c);
-	while(**c && **c != ')' && **c != ';'){
+	while(**c && **c != ')' && **c != ';' && **c != ']' && **c != '{'){
 		output = parse_statement_recursive(0, output, c, num_bound_vars, num_bound_props);
 		skip_whitespace(c);
 	}
