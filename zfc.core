@@ -1,0 +1,21 @@
+//First we define when two sets are equal and when a set is non-empty
+
+define equal_sets(A, B): *X((X in A -> X in B) & (X in B -> X in A));
+define non_empty(A): ^X(X in A);
+
+//The first axiom of zfc: the axiom of extensionality
+//If two sets have the same members, they are members of the same sets
+axiom extensionality: *A*B(equal_sets(A, B) -> *W((A in W -> B in W) & (B in W -> A in W)));
+
+//The second axiom of zfc: the axiom of regularity
+//Every nonempty set has an element which is disjoint to it
+axiom regularity: *A(non_empty(A) -> ^B(B in A & *C(~C in B | ~C in A)));
+
+//The third axiom of zfc: the axiom schema of specification
+//For every set and proposition, a subset of elements satisfying the proposition can be defined
+//This is the first of the axioms which has a bound proposition
+axiom specify[P(1)]: *A^B*X((X in B -> X in A & P(X)) & (X in A & P(X)) -> X in B);
+
+//The fourth axiom of zfc: the axiom of pairing
+//For any two sets, there is a set which contains both
+axiom pairing: *A*B^C(A in C & B in C);

@@ -11,6 +11,10 @@ dictionary definitions[MAX_DEPTH];
 dictionary proofs[MAX_DEPTH];
 dictionary bound_variables;
 dictionary bound_propositions;
+unsigned int line_number;
+char *global_file_name;
+char **global_program_pointer;
+char *global_program_start;
 
 int order_of_operations[3] = {3, 2, 1};
 
@@ -27,6 +31,9 @@ statement *create_statement(statement_type type, int num_bound_vars, int num_bou
 
 void skip_whitespace(char **c){
 	while(**c == ' ' || **c == '\t' || **c == '\n' || (**c == '/' && (*c)[1] == '/')){
+		if(**c == '\n'){
+			line_number++;
+		}
 		if(**c == '/' && (*c)[1] == '/'){
 			while(**c && **c != '\n'){
 				++*c;
@@ -35,6 +42,26 @@ void skip_whitespace(char **c){
 			++*c;
 		}
 	}
+}
+
+void error(int error_code){
+	char *error_place;
+	char *line_start;
+	char *place;
+
+	fprintf(stderr, "Line %d of '%s'\n", line_number, global_file_name);
+	error_place = *global_program_pointer;
+	line_start = error_place;
+	while(line_start != global_program_start && line_start[-1] != '\n'){
+		line_start--;
+	}
+	skip_whitespace(&line_start);
+	for(place = line_start; *place && *place != '\n'; place++){
+		fputc(*place, stderr);
+	}
+	fprintf(stderr, "\n%*c^\n", (int) (error_place - line_start), ' ');
+
+	exit(error_code);
 }
 
 int is_digit(char c){
@@ -427,7 +454,7 @@ statement *parse_parentheses(char **c, int num_bound_vars, int num_bound_props){
 
 	if(**c != ')'){
 		fprintf(stderr, "Error: expected ')'\n");
-		exit(1);
+		error(1);
 	}
 	++*c;
 
@@ -453,8 +480,10 @@ statement *parse_value(char **c, int num_bound_vars, int num_bound_props){
 		return output;
 	} else {
 		fprintf(stderr, "Error: could not parse statement value\n");
-		exit(1);
+		error(1);
 	}
+
+	return NULL;
 }
 
 int get_operation(char **c){
@@ -482,10 +511,10 @@ static statement *parse_statement_recursive(int priority, statement *s0, char **
 	skip_whitespace(c);
 	temp_c = *c;
 	operation = get_operation(&temp_c);
-	if(operation == -1 && **c && **c != ')' && **c != ';' && **c != ']'){
+	if(operation == -1 && **c && **c != ')' && **c != ';' && **c != ']' && **c != '{'){
 		fprintf(stderr, "Unrecognized operation '%c'\n", **c);
-		exit(1);
-	} else if(!**c || **c == ')' || **c == ';' || **c == ']'){
+		error(1);
+	} else if(!**c || **c == ')' || **c == ';' || **c == ']' || **c == '{'){
 		return s0;
 	}
 
@@ -508,7 +537,7 @@ statement *parse_statement(char **c, int num_bound_vars, int num_bound_props){
 
 	output = parse_value(c, num_bound_vars, num_bound_props);
 	skip_whitespace(c);
-	while(**c && **c != ')' && **c != ';'){
+	while(**c && **c != ')' && **c != ';' && **c != ']' && **c != '{'){
 		output = parse_statement_recursive(0, output, c, num_bound_vars, num_bound_props);
 		skip_whitespace(c);
 	}

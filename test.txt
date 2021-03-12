@@ -1,6 +1,0 @@
-axiom LEM[P]: P | ~P;
-
-define ohno: ^S(S in S);
-
-return LEM[ohno];
-

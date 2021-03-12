@@ -1,10 +1,14 @@
-#define MAX_DEPTH 32
+#define MAX_DEPTH 128
 
 extern unsigned int current_depth;
 extern dictionary variables[MAX_DEPTH];
 extern dictionary definitions[MAX_DEPTH];
 extern dictionary bound_variables;
 extern dictionary bound_propositions;
+extern unsigned int line_number;
+extern char *global_file_name;
+extern char **global_program_pointer;
+extern char *global_program_start;
 
 typedef enum{
 	AND = 0,
@@ -103,6 +107,7 @@ int is_digit(char c);
 int is_alpha(char c);
 int is_alphanumeric(char c);
 void skip_whitespace(char **c);
+void error(int error_code);
 void get_identifier(char **c, char *buffer, size_t buffer_length);
 statement *create_statement(statement_type type, int num_bound_vars, int num_bound_props);
 statement *parse_statement(char **c, int num_bound_vars, int num_bound_props);

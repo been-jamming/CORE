@@ -1,0 +1,240 @@
+//Logic axioms and proofs
+
+axiom axiom_absurdity[P]: false -> P;
+axiom axiom_true: true;
+axiom axiom_and_combine[P, Q]: P -> (Q -> P & Q);
+axiom axiom_or_combine[P, Q]: P -> P | Q;
+
+//Demorgans laws
+
+prove demorgan0[P, Q]: ~P & ~Q -> ~(P | Q){
+	implies p{
+		not q{
+			return branch(q, side){
+				return left(p)(side);
+			} or {
+				return right(p)(side);
+			};
+		}
+	}
+}
+
+prove demorgan1[P, Q]: ~(P | Q) -> ~P & ~Q{
+	implies p{
+		define P_true: P;
+		define Q_true: Q;
+		prove lemma0: ~P{
+			not g{
+				P_or_Q = axiom_or_combine[g][(Q_true)](g);
+				return p(P_or_Q);
+			}
+		}
+		prove lemma1: ~Q{
+			not g{
+				P_or_Q = swap(axiom_or_combine[g][(P_true)](g));
+				return p(P_or_Q);
+			}
+		}
+		return axiom_and_combine[lemma0][lemma1](lemma0)(lemma1);
+	}
+}
+
+prove demorgan2[P, Q]: ~P | ~Q -> ~(P & Q){
+	implies p{
+		not q{
+			return branch(p, n){
+				return n(left(q));
+			} or {
+				return n(right(q));
+			};
+		}
+	}
+}
+
+//I'm not a constructivist lmao
+axiom axiom_LEM[P]: P | ~P;
+
+prove demorgan3[P, Q]: ~(P & Q) -> ~P | ~Q{
+	implies p{
+		excluded_middle = axiom_LEM[P];
+		return branch(excluded_middle, P_value){
+			prove lemma: ~Q{
+				not Q_true{
+					return p(axiom_and_combine[P_value][Q_true](P_value)(Q_true));
+				}
+			}
+			define not_P: ~P;
+			return swap(axiom_or_combine[lemma][(not_P)](lemma));
+		} or {
+			define not_Q: ~Q;
+			return axiom_or_combine[P_value][(not_Q)](P_value);
+		};
+	}
+}
+
+//Proving that ~~P -> P (given LEM of course)
+
+prove double_negation[P]: ~~P -> P{
+	implies p{
+		excluded_middle = axiom_LEM[P];
+		return branch(excluded_middle, P_value){
+			return P_value;
+		} or {
+			return axiom_absurdity[P](p(P_value));
+		};
+	}
+}
+
+//Proving the negation of quantifiers
+
+prove negate_exists[P(1)]: ~^x(P(x)) -> *x(~P(x)){
+	implies p{
+		given x{
+			not q{
+				prove lemma: ^a(P(a)){
+					choose x{
+						return q;
+					}
+				}
+				return p(lemma);
+			}
+		}
+	}
+}
+
+prove negate_forall[P(1)]: ~*x(P(x)) -> ^x(~P(x)){
+	implies p{
+		define goal: ^x(~P(x));
+		excluded_middle = axiom_LEM[(goal)];
+		return branch(excluded_middle, goal_truth){
+			return goal_truth;
+		} or {
+			define Q(x): ~P(x);
+			all = negate_exists[(Q)](goal_truth);
+			prove simplified: *x(P(x)){
+				given x{
+					define Px: P(x);
+					return double_negation[(Px)](all(x));
+				}
+			}
+			absurd = p(simplified);
+			return axiom_absurdity[(goal)](absurd);
+		};
+	}
+}
+
+//Distribution of and, or
+
+prove and_distribute0[P, Q, R]: (P | Q) & R -> (P & R) | (Q & R){
+	implies p{
+		define p_and_r: P & R;
+		define q_and_r: Q & R;
+		return branch(left(p), pq){
+			and_statement = axiom_and_combine[pq][right(p)](pq)(right(p));
+			return axiom_or_combine[and_statement][(q_and_r)](and_statement);
+		} or {
+			and_statement = axiom_and_combine[pq][right(p)](pq)(right(p));
+			return swap(axiom_or_combine[and_statement][(p_and_r)](and_statement));
+		};
+	}
+}
+
+prove and_distribute1[P, Q, R]: (P & R) | (Q & R) -> (P | Q) & R{
+	implies p{
+		define p_or_q: P | Q;
+		return branch(p, pr_qr){
+			or_statement = axiom_or_combine[left(pr_qr)][Q](left(pr_qr));
+			return axiom_and_combine[or_statement][R](or_statement)(right(pr_qr));
+		} or {
+			or_statement = swap(axiom_or_combine[left(pr_qr)][P](left(pr_qr)));
+			return axiom_and_combine[or_statement][R](or_statement)(right(pr_qr));
+		};
+	}
+}
+
+prove or_distribute0[P, Q, R]: (P & Q) | R -> (P | R) & (Q | R){
+	implies p{
+		return branch(p, or_val){
+			or0 = axiom_or_combine[P][R](left(or_val));
+			or1 = axiom_or_combine[Q][R](right(or_val));
+			return axiom_and_combine[or0][or1](or0)(or1);
+		} or {
+			or0 = swap(axiom_or_combine[R][P](or_val));
+			or1 = swap(axiom_or_combine[R][Q](or_val));
+			return axiom_and_combine[or0][or1](or0)(or1);
+		};
+	}
+}
+
+prove or_distribute1[P, Q, R]: (P | R) & (Q | R) -> (P & Q) | R{
+	implies p{
+		return branch(left(p), pr){
+			return branch(right(p), qr){
+				and_statement = axiom_and_combine[pr][qr](pr)(qr);
+				return axiom_or_combine[and_statement][R](and_statement);
+			} or {
+				define and_statement: P & Q;
+				return swap(axiom_or_combine[R][(and_statement)](qr));
+			};
+		} or {
+			define and_statement: P & Q;
+			return swap(axiom_or_combine[R][(and_statement)](pr));
+		};
+	}
+}
+
+//Associativity of and, or
+prove and_associate0[P, Q, R]: (P & Q) & R -> P & (Q & R){
+	implies a{
+		p = left(left(a));
+		q = right(left(a));
+		r = right(a);
+		q_and_r = axiom_and_combine[q][r](q)(r);
+		return axiom_and_combine[p][q_and_r](p)(q_and_r);
+	}
+}
+
+prove and_associate1[P, Q, R]: P & (Q & R) -> (P & Q) & R{
+	implies a{
+		p = left(a);
+		q = left(right(a));
+		r = right(right(a));
+		p_and_q = axiom_and_combine[p][q](p)(q);
+		return axiom_and_combine[p_and_q][r](p_and_q)(r);
+	}
+}
+
+prove or_associate0[P, Q, R]: (P | Q) | R -> P | (Q | R){
+	implies a{
+		define q_or_r: Q | R;
+		return branch(a, pqr){
+			return branch(pqr, pq){
+				return axiom_or_combine[pq][(q_or_r)](pq);
+			} or {
+				qr = axiom_or_combine[pq][R](pq);
+				return swap(axiom_or_combine[qr][P](qr));
+			};
+		} or {
+			qr = swap(axiom_or_combine[pqr][Q](pqr));
+			return swap(axiom_or_combine[qr][P](qr));
+		};
+	}
+}
+
+prove or_associate1[P, Q, R]: P | (Q | R) -> (P | Q) | R{
+	implies a{
+		define p_or_q: P | Q;
+		return branch(a, pqr){
+			pq = axiom_or_combine[pqr][Q](pqr);
+			return axiom_or_combine[pq][R](pq);
+		} or {
+			return branch(pqr, qr){
+				pq = swap(axiom_or_combine[qr][P](qr));
+				return axiom_or_combine[pq][R](pq);
+			} or {
+				return swap(axiom_or_combine[qr][(p_or_q)](qr));
+			};
+		};
+	}
+}
+

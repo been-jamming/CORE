@@ -4,11 +4,16 @@
 #include "dictionary.h"
 #include "expr.h"
 
+//Use to turn on debug print statements
+//#define DEBUG
+
 char *program_text;
+statement *goals[MAX_DEPTH];
+unsigned int goal_depth;
 
 statement *parse_statement_value(char **c, unsigned char verified);
 
-statement *verify_block(char **c);
+statement *verify_block(char **c, unsigned char allow_proof_value, statement *goal);
 
 unsigned int umax(unsigned int a, unsigned int b){
 	if(a > b){
@@ -80,12 +85,14 @@ void init_verifier(){
 	int i;
 
 	current_depth = 0;
+	goal_depth = 0;
 	bound_variables = create_dictionary(NULL);
 	bound_propositions = create_dictionary(NULL);
 
 	for(i = 0; i < MAX_DEPTH; i++){
 		variables[i] = create_dictionary(NULL);
 		definitions[i] = create_dictionary(NULL);
+		goals[i] = NULL;
 	}
 }
 
@@ -94,7 +101,7 @@ void up_scope(){
 		current_depth++;
 	} else {
 		fprintf(stderr, "Error: maximum scope depth reached\n");
-		exit(1);
+		error(1);
 	}
 }
 
@@ -170,11 +177,11 @@ unsigned int max_statement_depth(statement *s){
 			}
 			return umax(a, b);
 		case PROPOSITION:
-			if(s->is_bound){
+			if(!s->is_bound){
 				output = s->prop->depth;
 			}
 			for(i = 0; i < s->num_args; i++){
-				if(s->prop_args[i].is_bound){
+				if(!s->prop_args[i].is_bound){
 					output = umax(output, s->prop_args[i].var->depth);
 				}
 			}
@@ -509,6 +516,26 @@ void reset_replaced(statement *s){
 	}
 }
 
+void set_num_bound_props(statement *s, int num_bound_props){
+	s->num_bound_props = num_bound_props;
+
+	switch(s->type){
+		case AND:
+		case OR:
+		case IMPLIES:
+			set_num_bound_props(s->child0, num_bound_props);
+			set_num_bound_props(s->child1, num_bound_props);
+			break;
+		case NOT:
+		case FORALL:
+		case EXISTS:
+			set_num_bound_props(s->child0, num_bound_props);
+			break;
+		default:
+			break;
+	}
+}
+
 void substitute_variable_bound(statement *s, int id, int new_id){
 	int i;
 
@@ -570,10 +597,11 @@ void substitute_proposition(statement *s, statement *child){
 			if(s->is_bound && !s->prop_id){
 				if(s->num_args != child->num_bound_vars){
 					fprintf(stderr, "Error: argument count mismatch\n");
-					exit(1);
+					error(1);
 				}
 				copy_statement(&new_child, child);
 				reset_replaced(&new_child);
+				set_num_bound_props(&new_child, s->num_bound_props);
 				for(i = 0; i < s->num_args; i++){
 					if(s->prop_args[i].is_bound){
 						substitute_variable_bound(&new_child, i, s->prop_args[i].var_id + s->num_args - s->num_bound_vars);
@@ -596,7 +624,6 @@ void substitute_proposition(statement *s, statement *child){
 			//pass
 			break;
 	}
-			
 }
 
 variable *create_object_var(char *var_name){
@@ -607,7 +634,7 @@ variable *create_object_var(char *var_name){
 		free_variable(v);
 	} else if(v){
 		fprintf(stderr, "Error: cannot overwrite bound variable\n");
-		exit(1);
+		error(1);
 	}
 
 	v = malloc(sizeof(variable));
@@ -665,7 +692,7 @@ variable *create_statement_var(char *var_name, statement *s){
 	} else if(v){
 		free_statement(s);
 		fprintf(stderr, "Error: cannot overwrite bound variable\n");
-		exit(1);
+		error(1);
 	}
 
 	v = malloc(sizeof(variable));
@@ -700,21 +727,25 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 		}
 		++*c;
 		s = parse_statement_value(c, verified);
+		if(!s){
+			fprintf(stderr, "Error: could not parse statement value\n");
+			error(1);
+		}
 		skip_whitespace(c);
 		if(**c != ')'){
 			free_statement(s);
 			fprintf(stderr, "Error: expected ')'\n");
-			exit(1);
+			error(1);
 		}
 		++*c;
 		if(verified && (s->type == OR || s->type == IMPLIES)){
 			free_statement(s);
 			fprintf(stderr, "Error: resulting statement must be verified\n");
-			exit(1);
+			error(1);
 		} else if(s->type != AND){
 			free_statement(s);
 			fprintf(stderr, "Error: invalid operand for 'left'\n");
-			exit(1);
+			error(1);
 		}
 
 		free_statement(s->child1);
@@ -732,23 +763,23 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 		s = parse_statement_value(c, verified);
 		if(!s){
 			fprintf(stderr, "Error: could not parse statement value\n");
-			exit(1);
+			error(1);
 		}
 		skip_whitespace(c);
 		if(**c != ')'){
 			free_statement(s);
 			fprintf(stderr, "Error: expected ')'\n");
-			exit(1);
+			error(1);
 		}
 		++*c;
 		if(verified && (s->type == OR || s->type == IMPLIES)){
 			free_statement(s);
 			fprintf(stderr, "Error: resulting statement must be verified\n");
-			exit(1);
+			error(1);
 		} else if(s->type != AND && s->type != OR && s->type != IMPLIES){
-			fprintf(stderr, "Error: invalid operand for 'right' %d\n", s->type);
+			fprintf(stderr, "Error: invalid operand for 'right'\n");
 			free_statement(s);
-			exit(1);
+			error(1);
 		}
 
 		free_statement(s->child0);
@@ -764,17 +795,21 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 		}
 		++*c;
 		s = parse_statement_value(c, verified);
+		if(!s){
+			fprintf(stderr, "Error: could not parse statement value\n");
+			error(1);
+		}
 		skip_whitespace(c);
 		if(**c != ')'){
 			free_statement(s);
 			fprintf(stderr, "Error: expected ')'\n");
-			exit(1);
+			error(1);
 		}
 		++*c;
 		if(s->type != AND && s->type != OR && s->type != IMPLIES){
 			free_statement(s);
 			fprintf(stderr, "Error: invalid operand for 'swap'\n");
-			exit(1);
+			error(1);
 		}
 		if(s->type == AND || s->type == OR){
 			output = s->child0;
@@ -809,34 +844,34 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 		skip_whitespace(c);
 		if(!s){
 			fprintf(stderr, "Error: could not parse statement value\n");
-			exit(1);
+			error(1);
 		}
 		if(**c != ','){
 			fprintf(stderr, "Error: expected ','\n");
-			exit(1);
+			error(1);
 		}
 		++*c;
 		if(s->type != OR || s->num_bound_props || s->num_bound_vars){
 			fprintf(stderr, "Error: invalid operand for 'branch'\n");
-			exit(1);
+			error(1);
 		}
 		++*c;
 		skip_whitespace(c);
 		get_identifier(c, var_name, 256);
 		if(var_name[0] == '\0'){
 			fprintf(stderr, "Error: expected identifier\n");
-			exit(1);
+			error(1);
 		}
 		skip_whitespace(c);
 		if(**c != ')'){
 			fprintf(stderr, "Error: expected ')'\n");
-			exit(1);
+			error(1);
 		}
 		++*c;
 		skip_whitespace(c);
 		if(**c != '{'){
 			fprintf(stderr, "Error: expected '{'\n");
-			exit(1);
+			error(1);
 		}
 		++*c;
 		skip_whitespace(c);
@@ -845,29 +880,29 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 		copy_statement(new, s->child0);
 		new_statement_var = create_statement_var(var_name, new);
 		new_statement_var->num_references++;
-		return_statement0 = verify_block(c);
+		return_statement0 = verify_block(c, 0, NULL);
 		if(!return_statement0){
 			fprintf(stderr, "Error: expected return statement\n");
-			exit(1);
+			error(1);
 		}
 		if(max_statement_depth(return_statement0) >= current_depth){
 			free_statement(return_statement0);
 			fprintf(stderr, "Error: returned statement depends on variables in its scope\n");
-			exit(1);
+			error(1);
 		}
 		drop_scope();
 		skip_whitespace(c);
 		if(strncmp(*c, "or", 2) || is_alphanumeric((*c)[2])){
 			free_statement(return_statement0);
 			fprintf(stderr, "Error: expected 'or'\n");
-			exit(1);
+			error(1);
 		}
 		*c += 2;
 		skip_whitespace(c);
 		if(**c != '{'){
 			free_statement(return_statement0);
 			fprintf(stderr, "Error: expected '{'\n");
-			exit(1);
+			error(1);
 		}
 		++*c;
 		skip_whitespace(c);
@@ -876,24 +911,24 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 		copy_statement(new, s->child1);
 		new_statement_var = create_statement_var(var_name, new);
 		new_statement_var->num_references++;
-		return_statement1 = verify_block(c);
+		return_statement1 = verify_block(c, 0, NULL);
 		if(!return_statement1){
 			free_statement(return_statement0);
 			fprintf(stderr, "Error: expected return statement\n");
-			exit(1);
+			error(1);
 		}
 		if(max_statement_depth(return_statement1) >= current_depth){
 			free_statement(return_statement0);
 			free_statement(return_statement1);
 			fprintf(stderr, "Error: returned statement depends on variables in its scope\n");
-			exit(1);
+			error(1);
 		}
 		drop_scope();
 		if(!compare_statement(return_statement0, return_statement1)){
 			free_statement(return_statement0);
 			free_statement(return_statement1);
 			fprintf(stderr, "Error: mismatched returned statements\n");
-			exit(1);
+			error(1);
 		}
 		free_statement(return_statement1);
 		free_statement(s);
@@ -1040,12 +1075,15 @@ int print_command(char **c){
 	if(strncmp(*c, "print", 5) || is_alphanumeric((*c)[5])){
 		return 0;
 	}
+	#ifdef DEBUG
+	printf("PRINT\n");
+	#endif
 	*c += 5;
 	skip_whitespace(c);
 	s = parse_statement_value(c, 1);
 	if(!s){
 		fprintf(stderr, "Error: could not parse statement value\n");
-		exit(1);
+		error(1);
 	}
 	print_statement(s);
 	printf("\n");
@@ -1053,7 +1091,7 @@ int print_command(char **c){
 	skip_whitespace(c);
 	if(**c != ';'){
 		fprintf(stderr, "Error: expected ';'\n");
-		exit(1);
+		error(1);
 	}
 	++*c;
 
@@ -1073,14 +1111,16 @@ proposition *definition_command(char **c){
 	if(strncmp(*c, "define", 6) || is_alphanumeric((*c)[6])){
 		return NULL;
 	}
-
+	#ifdef DEBUG
+	printf("DEFINE\n");
+	#endif
 	*c += 6;
 	skip_whitespace(c);
 	
 	get_identifier(c, name_buffer, 256);
 	if(name_buffer[0] == '\0'){
 		fprintf(stderr, "Error: expected identifier\n");
-		exit(1);
+		error(1);
 	}
 
 	def_name = malloc(sizeof(char)*(strlen(name_buffer) + 1));
@@ -1088,19 +1128,19 @@ proposition *definition_command(char **c){
 
 	skip_whitespace(c);
 
-	if(**c == '{'){
+	if(**c == '('){
 		++*c;
 		skip_whitespace(c);
-		while(**c != '}'){
+		while(**c != ')'){
 			get_identifier(c, name_buffer, 256);
 			if(name_buffer[0] == '\0'){
 				free(def_name);
 				fprintf(stderr, "Error: expected identifier\n");
-				exit(1);
+				error(1);
 			}
 			if(read_dictionary(bound_variables, name_buffer, 0)){
 				fprintf(stderr, "Error: duplicate identifier\n");
-				exit(1);
+				error(1);
 			}
 			new_int = malloc(sizeof(int));
 			*new_int = num_bound_vars;
@@ -1110,10 +1150,10 @@ proposition *definition_command(char **c){
 			if(**c == ','){
 				++*c;
 				skip_whitespace(c);
-			} else if(**c != '}'){
+			} else if(**c != ')'){
 				free(def_name);
-				fprintf(stderr, "Error: expected ',' or '}'\n");
-				exit(1);
+				fprintf(stderr, "Error: expected ',' or ')'\n");
+				error(1);
 			}
 		}
 		++*c;
@@ -1122,7 +1162,7 @@ proposition *definition_command(char **c){
 	if(**c != ':'){
 		free(def_name);
 		fprintf(stderr, "Error: expected ':'\n");
-		exit(1);
+		error(1);
 	}
 	++*c;
 	s = parse_statement(c, num_bound_vars, 0);
@@ -1130,7 +1170,7 @@ proposition *definition_command(char **c){
 		free(def_name);
 		free_statement(s);
 		fprintf(stderr, "Error: expected ';'\n");
-		exit(1);
+		error(1);
 	}
 	++*c;
 	output = malloc(sizeof(proposition));
@@ -1139,9 +1179,11 @@ proposition *definition_command(char **c){
 	output->num_references = 0;
 	output->depth = current_depth;
 	output->num_args = num_bound_vars;
+	#ifdef DEBUG
 	printf("definition %s: ", def_name);
 	print_statement(s);
 	printf("\n");
+	#endif
 
 	return output;
 }
@@ -1161,6 +1203,9 @@ variable *axiom_command(char **c){
 	if(strncmp(*c, "axiom", 5) || is_alphanumeric((*c)[5])){
 		return NULL;
 	}
+	#ifdef DEBUG
+	printf("AXIOM\n");
+	#endif
 
 	*c += 5;
 	skip_whitespace(c);
@@ -1168,7 +1213,7 @@ variable *axiom_command(char **c){
 	get_identifier(c, name_buffer, 256);
 	if(name_buffer[0] == '\0'){
 		fprintf(stderr, "Error: expected identifier\n");
-		exit(1);
+		error(1);
 	}
 
 	axiom_name = malloc(sizeof(char)*(strlen(name_buffer) + 1));
@@ -1184,12 +1229,12 @@ variable *axiom_command(char **c){
 			if(name_buffer[0] == '\0'){
 				free(axiom_name);
 				fprintf(stderr, "Error: expected identifier\n");
-				exit(1);
+				error(1);
 			}
 			if(read_dictionary(bound_propositions, name_buffer, 0)){
 				free(axiom_name);
 				fprintf(stderr, "Error: duplicate identifier\n");
-				exit(1);
+				error(1);
 			}
 			new_bound_prop = malloc(sizeof(bound_proposition));
 			skip_whitespace(c);
@@ -1200,7 +1245,7 @@ variable *axiom_command(char **c){
 					free(axiom_name);
 					free(new_bound_prop);
 					fprintf(stderr, "Error: expected number of arguments\n");
-					exit(1);
+					error(1);
 				} else if(is_digit(**c)){
 					num_args = strtol(*c, &int_end, 10);
 					*c = int_end;
@@ -1208,14 +1253,14 @@ variable *axiom_command(char **c){
 						free(axiom_name);
 						free(new_bound_prop);
 						fprintf(stderr, "Error: expected a positive number of arguments\n");
-						exit(1);
+						error(1);
 					}
 					skip_whitespace(c);
 					if(**c != ')'){
 						free(axiom_name);
 						free(new_bound_prop);
 						fprintf(stderr, "Error: expected ')'\n");
-						exit(1);
+						error(1);
 					}
 					++*c;
 				} else {
@@ -1236,7 +1281,7 @@ variable *axiom_command(char **c){
 			} else if(**c != ']'){
 				free(axiom_name);
 				fprintf(stderr, "Error: expected ',' or ']'\n");
-				exit(1);
+				error(1);
 			}
 		}
 		++*c;
@@ -1245,20 +1290,25 @@ variable *axiom_command(char **c){
 	if(**c != ':'){
 		free(axiom_name);
 		fprintf(stderr, "Error: expected ':'\n");
-		exit(1);
+		error(1);
 	}
 	++*c;
 	s = parse_statement(c, 0, num_bound_props);
+	skip_whitespace(c);
 	if(**c != ';'){
 		free(axiom_name);
 		free_statement(s);
 		fprintf(stderr, "Error: expected ';'\n");
-		exit(1);
+		error(1);
 	}
 	++*c;
+	#ifdef DEBUG
 	printf("axiom %s: ", axiom_name);
 	print_statement(s);
 	printf("\n");
+	#endif
+
+	clear_bound_propositions();
 
 	output = malloc(sizeof(variable));
 	output->name = axiom_name;
@@ -1289,20 +1339,22 @@ variable *assign_command(char **c){
 		*c = beginning;
 		return NULL;
 	}
-
+	#ifdef DEBUG
+	printf("ASSIGN\n");
+	#endif
 	++*c;
 	skip_whitespace(c);
 	
 	s = parse_statement_value(c, 1);
 	if(!s){
 		fprintf(stderr, "Error: could not parse statement value\n");
-		exit(1);
+		error(1);
 	}
 	skip_whitespace(c);
 	if(**c != ';'){
 		free_statement(s);
 		fprintf(stderr, "Error: expected ';'\n");
-		exit(1);
+		error(1);
 	}
 	++*c;
 
@@ -1318,50 +1370,585 @@ statement *return_command(char **c){
 	if(strncmp(*c, "return", 6) || is_alphanumeric((*c)[6])){
 		return NULL;
 	}
+	#ifdef DEBUG
+	printf("RETURN\n");
+	#endif
 
 	*c += 6;
 	skip_whitespace(c);
 	output = parse_statement_value(c, 1);
 	if(!output){
 		fprintf(stderr, "Error: could not parse statement value\n");
-		exit(1);
+		error(1);
 	}
 	skip_whitespace(c);
 	if(**c != ';'){
 		free_statement(output);
 		fprintf(stderr, "Error: expected ';'\n");
-		exit(1);
+		error(1);
 	}
 	++*c;
 
 	return output;
 }
 
-statement *verify_command(char **c){
+int evaluate_command(char **c){
+	statement *s;
+	char *beginning;
+
+	skip_whitespace(c);
+	beginning = *c;
+	s = parse_statement_value(c, 1);
+	if(!s){
+		*c = beginning;
+		return 0;
+	}
+	#ifdef DEBUG
+	printf("EVALUATE\n");
+	#endif
+
+	skip_whitespace(c);
+	if(**c != ';'){
+		free_statement(s);
+		fprintf(stderr, "Error: expected ';'\n");
+		error(1);
+	}
+	++*c;
+	free_statement(s);
+
+	return 1;
+}
+
+int debug_command(char **c){
+	statement *s;
+
+	skip_whitespace(c);
+	if(strncmp(*c, "debug", 5) || is_alphanumeric((*c)[5])){
+		return 0;
+	}
+
+	#ifdef DEBUG
+	printf("DEBUG\n");
+	#endif
+	*c += 5;
+	skip_whitespace(c);
+	s = parse_statement_value(c, 1);
+	if(!s){
+		fprintf(stderr, "Error: could not parse statement value\n");
+		error(1);
+	}
+
+	skip_whitespace(c);
+	if(**c != ';'){
+		free_statement(s);
+		fprintf(stderr, "Error: expected ';'\n");
+		error(1);
+	}
+	++*c;
+	//Do stuff here
+	free_statement(s);
+
+	return 1;
+}
+
+variable *prove_command(char **c){
+	int num_bound_props = 0;
+	int num_args;
+	int i;
+	int j;
+	bound_proposition *new_bound_prop;
+	proposition **prop_list = NULL;
+	unsigned int prop_list_size;
+	char name_buffer[256];
+	char *proof_name;
+	char *int_end;
+	variable *output;
+	statement *result;
+	statement *goal;
+	statement *returned;
+	statement prop_statement;
+
+	clear_bound_propositions();
+	skip_whitespace(c);
+	if(strncmp(*c, "prove", 5) || is_alphanumeric((*c)[5])){
+		return NULL;
+	}
+	#ifdef DEBUG
+	printf("PROVE\n");
+	#endif
+
+	*c += 5;
+	skip_whitespace(c);
+
+	get_identifier(c, name_buffer, 256);
+	if(name_buffer[0] == '\0'){
+		fprintf(stderr, "Error: expected identifier\n");
+		error(1);
+	}
+
+	proof_name = malloc(sizeof(char)*(strlen(name_buffer) + 1));
+	strcpy(proof_name, name_buffer);
+	up_scope();
+
+	skip_whitespace(c);
+
+	if(**c == '['){
+		prop_list = malloc(sizeof(proposition *)*8);
+		prop_list_size = 8;
+		++*c;
+		skip_whitespace(c);
+		while(**c != ']'){
+			get_identifier(c, name_buffer, 256);
+			if(name_buffer[0] == '\0'){
+				free(proof_name);
+				fprintf(stderr, "Error: expected identifier\n");
+				error(1);
+			}
+			if(read_dictionary(bound_propositions, name_buffer, 0)){
+				free(proof_name);
+				fprintf(stderr, "Error: duplicate identifier\n");
+				error(1);
+			}
+			if(num_bound_props >= prop_list_size){
+				prop_list_size += 8;
+				prop_list = realloc(prop_list, sizeof(proposition)*prop_list_size);
+				if(!prop_list){
+					free(proof_name);
+					fprintf(stderr, "Error: could not expand proposition list\n");
+					error(1);
+				}
+			}
+			prop_list[num_bound_props] = malloc(sizeof(proposition));
+			new_bound_prop = malloc(sizeof(bound_proposition));
+			skip_whitespace(c);
+			if(**c == '('){
+				++*c;
+				skip_whitespace(c);
+				if(**c != ')' && !is_digit(**c)){
+					free(proof_name);
+					free(new_bound_prop);
+					fprintf(stderr, "Error: expected number of arguments\n");
+					error(1);
+				} else if(is_digit(**c)){
+					num_args = strtol(*c, &int_end, 10);
+					*c = int_end;
+					if(num_args < 0){
+						free(proof_name);
+						free(new_bound_prop);
+						fprintf(stderr, "Error: expected a positive number of arguments\n");
+						error(1);
+					}
+					skip_whitespace(c);
+					if(**c != ')'){
+						free(proof_name);
+						free(new_bound_prop);
+						fprintf(stderr, "Error: expected ')'\n");
+						error(1);
+					}
+					++*c;
+				} else {
+					++*c;
+					num_args = 0;
+				}
+			} else {
+				num_args = 0;
+			}
+			prop_list[num_bound_props]->name = malloc(sizeof(char)*(strlen(name_buffer) + 1));
+			strcpy(prop_list[num_bound_props]->name, name_buffer);
+			prop_list[num_bound_props]->statement_data = NULL;
+			prop_list[num_bound_props]->num_references = 1;
+			prop_list[num_bound_props]->depth = current_depth;
+			prop_list[num_bound_props]->num_args = num_args;
+
+			new_bound_prop->num_args = num_args;
+			new_bound_prop->prop_id = num_bound_props;
+			write_dictionary(&bound_propositions, name_buffer, new_bound_prop, 0);
+
+			num_bound_props++;
+			skip_whitespace(c);
+			if(**c == ','){
+				++*c;
+				skip_whitespace(c);
+			} else if(**c != ']'){
+				free(proof_name);
+				fprintf(stderr, "Error: expected ',' or ']'\n");
+				error(1);
+			}
+		}
+		++*c;
+	} else {
+		prop_list_size = 0;
+	}
+
+	for(i = 0; i < num_bound_props; i++){
+		write_dictionary(definitions + current_depth, prop_list[i]->name, prop_list[i], 0);
+	}
+	skip_whitespace(c);
+	if(**c != ':'){
+		free(proof_name);
+		fprintf(stderr, "Error: expected ':'\n");
+		error(1);
+	}
+	++*c;
+	result = parse_statement(c, 0, num_bound_props);
+	skip_whitespace(c);
+	if(**c != '{'){
+		free(proof_name);
+		free_statement(result);
+		fprintf(stderr, "Error: expected '{'\n");
+		error(1);
+	}
+	++*c;
+	skip_whitespace(c);
+
+	goal = malloc(sizeof(statement));
+	copy_statement(goal, result);
+	for(i = 0; i < num_bound_props; i++){
+		prop_statement.type = PROPOSITION;
+		prop_statement.num_bound_vars = prop_list[i]->num_args;
+		prop_statement.num_bound_props = 0;
+		prop_statement.prop_args = malloc(sizeof(proposition_arg)*(prop_list[i]->num_args));
+		for(j = 0; j < prop_list[i]->num_args; j++){
+			prop_statement.prop_args[j].is_bound = 1;
+			prop_statement.prop_args[j].var_id = j;
+		}
+		prop_statement.is_bound = 0;
+		prop_statement.prop = prop_list[i];
+		prop_statement.num_args = prop_list[i]->num_args;
+		substitute_proposition(goal, &prop_statement);
+		free(prop_statement.prop_args);
+	}
+
+	clear_bound_propositions();
+	returned = verify_block(c, 1, goal);
+	
+	if(!returned){
+		free_statement(goal);
+		free_statement(result);
+		free(proof_name);
+		free(prop_list);
+		fprintf(stderr, "Error: expected returned statement\n");
+		error(1);
+	}
+
+	if(!compare_statement(goal, returned)){
+		free_statement(returned);
+		free_statement(goal);
+		free_statement(result);
+		free(proof_name);
+		free(prop_list);
+		fprintf(stderr, "Error: returned statement does not match goal\n");
+		error(1);
+	}
+	free_statement(returned);
+	if(goal != returned){
+		free_statement(goal);
+	}
+	drop_scope();
+	free(prop_list);
+
+	clear_bound_propositions();
+
+	output = malloc(sizeof(variable));
+	output->name = proof_name;
+	output->type = STATEMENT;
+	output->statement_data = result;
+	output->num_references = 0;
+	output->depth = current_depth;
+
+	return output;
+}
+
+statement *given_command(char **c, statement *goal){
+	char name_buffer[256];
+	statement *next_goal;
+	statement *return_statement;
+	variable *new_var;
+
+	skip_whitespace(c);
+	if(strncmp(*c, "given", 5) || is_alphanumeric((*c)[5])){
+		return NULL;
+	}
+	#ifdef DEBUG
+	printf("GIVEN\n");
+	#endif
+
+	*c += 5;
+	skip_whitespace(c);
+
+	if(goal->type != FORALL){
+		fprintf(stderr, "Error: incorrect goal type\n");
+		error(1);
+	}
+
+	get_identifier(c, name_buffer, 256);
+	if(name_buffer[0] == '\0'){
+		fprintf(stderr, "Error: expected identifier\n");
+		error(1);
+	}
+
+	skip_whitespace(c);
+	if(**c != '{'){
+		fprintf(stderr, "Error: expected '{'\n");
+		error(1);
+	}
+
+	++*c;
+	skip_whitespace(c);
+
+	up_scope();
+	next_goal = malloc(sizeof(statement));
+	copy_statement(next_goal, goal->child0);
+
+	new_var = create_object_var(name_buffer);
+	if(!substitute_variable(next_goal, 0, new_var)){
+		fprintf(stderr, "Error: cannot substitute variable\n");
+		error(1);
+	}
+	add_bound_variables(next_goal, -1);
+	return_statement = verify_block(c, 1, next_goal);
+
+	if(!return_statement){
+		fprintf(stderr, "Error: expected returned statement\n");
+		error(1);
+	}
+
+	if(!compare_statement(next_goal, return_statement)){
+		fprintf(stderr, "Error: returned statement does not match goal\n");
+		error(1);
+	}
+	free_statement(return_statement);
+	if(return_statement != next_goal){
+		free_statement(next_goal);
+	}
+	drop_scope();
+
+	return goal;
+}
+
+statement *choose_command(char **c, statement *goal){
+	char name_buffer[256];
+	statement *next_goal;
+	statement *return_statement;
+	variable *var;
+
+	skip_whitespace(c);
+	if(strncmp(*c, "choose", 6) || is_alphanumeric((*c)[6])){
+		return NULL;
+	}
+	#ifdef DEBUG
+	printf("CHOOSE\n");
+	#endif
+
+	*c += 6;
+	skip_whitespace(c);
+
+	if(goal->type != EXISTS){
+		fprintf(stderr, "Error: incorrect goal type\n");
+		error(1);
+	}
+
+	get_identifier(c, name_buffer, 256);
+	if(name_buffer[0] == '\0'){
+		fprintf(stderr, "Error: expected identifier\n");
+		error(1);
+	}
+
+	skip_whitespace(c);
+	if(**c != '{'){
+		fprintf(stderr, "Error: expected '{'\n");
+		error(1);
+	}
+	
+	++*c;
+	skip_whitespace(c);
+
+	var = get_object_var(name_buffer);
+	if(!var){
+		fprintf(stderr, "Error: unknown variable '%s'\n", name_buffer);
+		error(1);
+	}
+
+	up_scope();
+	next_goal = malloc(sizeof(statement));
+	copy_statement(next_goal, goal->child0);
+
+	if(!substitute_variable(next_goal, 0, var)){
+		fprintf(stderr, "Error: cannot substitute variable\n");
+		error(1);
+	}
+	add_bound_variables(next_goal, -1);
+	return_statement = verify_block(c, 1, next_goal);
+
+	if(!return_statement){
+		fprintf(stderr, "Error: expected returned statement\n");
+		error(1);
+	}
+
+	if(!compare_statement(next_goal, return_statement)){
+		fprintf(stderr, "Error: returned statement does not match goal\n");
+		error(1);
+	}
+	free_statement(return_statement);
+	if(return_statement != next_goal){
+		free_statement(next_goal);
+	}
+	drop_scope();
+
+	return goal;
+}
+
+statement *implies_command(char **c, statement *goal){
+	char name_buffer[256];
+	statement *next_goal;
+	statement *var_statement;
+	statement *return_statement;
+
+	skip_whitespace(c);
+	if(strncmp(*c, "implies", 7) || is_alphanumeric((*c)[7])){
+		return NULL;
+	}
+	#ifdef DEBUG
+	printf("IMPLIES\n");
+	#endif
+
+	*c += 7;
+	skip_whitespace(c);
+
+	if(goal->type != IMPLIES){
+		fprintf(stderr, "Error: incorrect goal type\n");
+		error(1);
+	}
+
+	get_identifier(c, name_buffer, 256);
+	if(name_buffer[0] == '\0'){
+		fprintf(stderr, "Error: expected identifier\n");
+		error(1);
+	}
+
+	skip_whitespace(c);
+	if(**c != '{'){
+		fprintf(stderr, "Error: expected '{'\n");
+		error(1);
+	}
+
+	++*c;
+	skip_whitespace(c);
+
+	up_scope();
+	var_statement = malloc(sizeof(statement));
+	copy_statement(var_statement, goal->child0);
+	create_statement_var(name_buffer, var_statement);
+	next_goal = malloc(sizeof(statement));
+	copy_statement(next_goal, goal->child1);
+	return_statement = verify_block(c, 1, next_goal);
+
+	if(!return_statement){
+		fprintf(stderr, "Error: expected returned statement\n");
+		error(1);
+	}
+
+	if(!compare_statement(next_goal, return_statement)){
+		fprintf(stderr, "Error: returned statement does not match goal\n");
+		error(1);
+	}
+	free_statement(return_statement);
+	if(return_statement != next_goal){
+		free_statement(next_goal);
+	}
+	drop_scope();
+
+	return goal;
+}
+
+statement *not_command(char **c, statement *goal){
+	char name_buffer[256];
+	statement *next_goal;
+	statement *var_statement;
+	statement *return_statement;
+
+	skip_whitespace(c);
+	if(strncmp(*c, "not", 3) || is_alphanumeric((*c)[3])){
+		return NULL;
+	}
+	#ifdef DEBUG
+	printf("NOT\n");
+	#endif
+
+	*c += 3;
+	skip_whitespace(c);
+
+	if(goal->type != NOT){
+		fprintf(stderr, "Error: incorrect goal type\n");
+		error(1);
+	}
+
+	get_identifier(c, name_buffer, 256);
+	if(name_buffer[0] == '\0'){
+		fprintf(stderr, "Error: expected identifier\n");
+		error(1);
+	}
+
+	skip_whitespace(c);
+	if(**c != '{'){
+		fprintf(stderr, "Error: expected '{'\n");
+		error(1);
+	}
+
+	++*c;
+	skip_whitespace(c);
+
+	up_scope();
+	var_statement = malloc(sizeof(statement));
+	copy_statement(var_statement, goal->child0);
+	create_statement_var(name_buffer, var_statement);
+	next_goal = create_statement(FALSE, 0, 0);
+	return_statement = verify_block(c, 1, next_goal);
+
+	if(!return_statement){
+		fprintf(stderr, "Error: expected returned statement\n");
+		error(1);
+	}
+
+	if(!compare_statement(next_goal, return_statement)){
+		fprintf(stderr, "Error: returned statement does not match goal\n");
+		error(1);
+	}
+	free_statement(return_statement);
+	if(return_statement != next_goal){
+		free_statement(next_goal);
+	}
+	drop_scope();
+
+	return goal;
+}
+
+statement *verify_command(char **c, unsigned char allow_proof_value, statement *goal){
 	proposition *def;
 	proposition *other_def;
 	variable *axiom;
-	variable *other_axiom;
+	variable *other_proof;
 	variable *var;
+	variable *proof;
 	statement *return_value;
 
 	if((def = definition_command(c))){
 		if((other_def = read_dictionary(definitions[current_depth], def->name, 0))){
 			if(other_def->num_references){
 				fprintf(stderr, "Error: cannot overwrite bound definition\n");
-				exit(1);
+				error(1);
 			} else {
 				free_proposition(other_def);
 			}
 		}
 		write_dictionary(definitions + current_depth, def->name, def, 0);
 	} else if((axiom = axiom_command(c))){
-		if((other_axiom = read_dictionary(variables[current_depth], axiom->name, 0))){
-			if(other_axiom->num_references){
-				fprintf(stderr, "Error: cannot overwrite bound axiom\n");
-				exit(1);
+		if((other_proof = read_dictionary(variables[current_depth], axiom->name, 0))){
+			if(other_proof->num_references){
+				fprintf(stderr, "Error: cannot overwrite bound proof\n");
+				error(1);
 			} else {
-				free_variable(other_axiom);
+				free_variable(other_proof);
 			}
 		}
 		write_dictionary(variables + current_depth, axiom->name, axiom, 0);
@@ -1371,27 +1958,49 @@ statement *verify_command(char **c){
 		//Pass
 	} else if((return_value = return_command(c))){
 		return return_value;
+	} else if((proof = prove_command(c))){
+		if((other_proof = read_dictionary(variables[current_depth], proof->name, 0))){
+			if(other_proof->num_references){
+				fprintf(stderr, "Error: cannot overwrite bound proof\n");
+				error(1);
+			} else {
+				free_variable(other_proof);
+			}
+		}
+		write_dictionary(variables + current_depth, proof->name, proof, 0);
+	} else if(allow_proof_value && (return_value = given_command(c, goal))){
+		return return_value;
+	} else if(allow_proof_value && (return_value = choose_command(c, goal))){
+		return return_value;
+	} else if(allow_proof_value && (return_value = implies_command(c, goal))){
+		return return_value;
+	} else if(allow_proof_value && (return_value = not_command(c, goal))){
+		return return_value;
+	} else if(debug_command(c)){
+		//pass
+	} else if(evaluate_command(c)){
+		//Pass
 	} else {
-		fprintf(stderr, "Error: unknown command '%s'\n", *c);
-		exit(1);
+		fprintf(stderr, "Error: unknown command\n");
+		error(1);
 	}
 
 	return NULL;
 }
 
-statement *verify_block(char **c){
+statement *verify_block(char **c, unsigned char allow_proof_value, statement *goal){
 	statement *return_value = NULL;
 
 	skip_whitespace(c);
 	while(**c && **c != '}' && !return_value){
-		return_value = verify_command(c);
+		return_value = verify_command(c, allow_proof_value, goal);
 		skip_whitespace(c);
 	}
 
 	if(return_value && **c && **c != '}'){
 		free_statement(return_value);
-		fprintf(stderr, "Error: expected '}' or EOF after 'return'\n");
-		exit(1);
+		fprintf(stderr, "Error: expected '}' or EOF\n");
+		error(1);
 	}
 
 	if(**c){
@@ -1404,23 +2013,32 @@ statement *verify_block(char **c){
 int main(int argc, char **argv){
 	char *program_start;
 	statement *return_value;
+	int i;
 
 	init_verifier();
-	program_text = load_file(argv[1]);
-	program_start = program_text;
-	if(!program_text){
-		fprintf(stderr, "Error: could not read file\n");
-		return 1;
-	}
+	
+	for(i = 1; i < argc; i++){
+		program_text = load_file(argv[i]);
+		program_start = program_text;
+		if(!program_text){
+			fprintf(stderr, "Error: could not read file\n");
+			return 1;
+		}
 
-	return_value = verify_block(&program_text);
-	if(return_value){
-		printf("\nProgram returned: ");
-		print_statement(return_value);
-		printf("\n");
-	}
+		line_number = 1;
+		global_file_name = argv[i];
+		global_program_pointer = &program_text;
+		global_program_start = program_text;
+		return_value = verify_block(&program_text, 0, NULL);
+		if(return_value){
+			printf("\nProgram returned: ");
+			print_statement(return_value);
+			printf("\n");
+			free_statement(return_value);
+		}
 
-	free(program_start);
+		free(program_start);
+	}
 	free_dictionary(variables, free_variable_void);
 	free_dictionary(definitions, free_proposition_void);
 	return 0;
