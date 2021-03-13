@@ -5,17 +5,106 @@ define non_empty(A): ^X(X in A);
 
 //The first axiom of zfc: the axiom of extensionality
 //If two sets have the same members, they are members of the same sets
-axiom extensionality: *A*B(equal_sets(A, B) -> *W((A in W -> B in W) & (B in W -> A in W)));
+axiom axiom_extensionality: *A*B(equal_sets(A, B) -> *W((A in W -> B in W) & (B in W -> A in W)));
 
 //The second axiom of zfc: the axiom of regularity
 //Every nonempty set has an element which is disjoint to it
-axiom regularity: *A(non_empty(A) -> ^B(B in A & *C(~C in B | ~C in A)));
+axiom axiom_regularity: *A(non_empty(A) -> ^B(B in A & *C(~C in B | ~C in A)));
 
 //The third axiom of zfc: the axiom schema of specification
 //For every set and proposition, a subset of elements satisfying the proposition can be defined
 //This is the first of the axioms which has a bound proposition
-axiom specify[P(1)]: *A^B*X((X in B -> X in A & P(X)) & (X in A & P(X)) -> X in B);
+axiom axiom_specify[P(1)]: *A^B*X((X in B -> X in A & P(X)) & (X in A & P(X) -> X in B));
 
 //The fourth axiom of zfc: the axiom of pairing
 //For any two sets, there is a set which contains both
-axiom pairing: *A*B^C(A in C & B in C);
+axiom axiom_pairing: *A*B^C(A in C & B in C);
+
+//The fifth axiom of zfc: the axiom of union
+//For any set there is another set contiaining the union over all elements of it
+axiom axiom_union: *F^A*Y*X((X in Y & Y in F) -> X in A);
+
+//The sixth axiom of zfc: the axiom of replacement
+//Basically, the "image" of a proposition with an independent variable coming from inside of a set lies inside of another set
+axiom axiom_replacement[P(3)]: *A(*X(X in A -> ^Y(P(X, Y, A) & *Z(P(X, Z, A) -> equal_sets(Y, Z)))) -> ^B*Y((Y in B -> ^X(X in A & P(X, Y, A))) & (^X(X in A & P(X, Y, A)) -> Y in B)));
+
+//For the axiom of infinity, we need to define the successor of a set S with finite cardinality as S union {S}. To do this we need to show that such a set exists and is unique.
+
+//First I will prove that the {S} part exists and is unique
+
+//A set is equal to itself
+prove equal_sets_reflexive: *A(equal_sets(A, A)){
+	given A{
+		prove def: *X((X in A -> X in A) & (X in A -> X in A)){
+			given X{
+				prove lemma: X in A -> X in A{
+					implies p{
+						return p;
+					}
+				}
+				return axiom_and_combine[lemma][lemma](lemma)(lemma);
+			}
+		}
+		return #equal_sets(A)(A)(def);
+	}
+}
+
+//For any S, the set {S} exists
+prove successor_lemma0: *S^T(S in T & *X(X in T -> equal_sets(X, S))){
+	given S{
+		S_in_T = left(axiom_pairing(S)(S)(T));
+		define X_equal_S(X): equal_sets(X, S);
+		specified = axiom_specify[(X_equal_S)](T)(NEW_T);
+		choose NEW_T{
+			prove lemma0: *X(X in NEW_T -> equal_sets(X, S)){
+				given X{
+					implies p{
+						return right(left(specified(X))(p));
+					}
+				}
+			}
+			prove lemma1: S in NEW_T{
+				S_equal_S = equal_sets_reflexive(S);
+				a = axiom_and_combine[S_in_T][S_equal_S](S_in_T)(S_equal_S);
+				return right(specified(S))(a);
+			}
+			return axiom_and_combine[lemma1][lemma0](lemma1)(lemma0);
+		}
+	}
+}
+
+//Now we define what {S} is
+//B is the expand of A (B = {A})
+define is_expand(A, B): A in B & *X(X in B -> equal_sets(X, A));
+
+prove expand_exists: *A^B(is_expand(A, B)){
+	given A{
+		def = successor_lemma0(A)(B);
+		choose B{
+			return #is_expand(A)(B)(def);
+		}
+	}
+}
+
+prove expand_unique: *A*B*C(is_expand(A, B) & is_expand(A, C) -> equal_sets(B, C)){
+	given A{
+		given B{
+			given C{
+				implies p{
+					expandAB = left(p);
+					expandAC = right(p);
+					prove def: *X((X in B -> X in C) & (X in C -> X in B)){
+						given X{
+							prove lemma0: X in B -> X in C{
+								implies q{
+									exp_def = is_expand#(A)(B)(expandAB);
+									equalBA = right(exp_def)(X)(q);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
