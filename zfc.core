@@ -30,7 +30,10 @@ axiom axiom_replacement[P(3)]: *A(*X(X in A -> ^Y(P(X, Y, A) & *Z(P(X, Z, A) -> 
 
 //For the axiom of infinity, we need to define the successor of a set S with finite cardinality as S union {S}. To do this we need to show that such a set exists and is unique.
 
-//First I will prove that the {S} part exists and is unique
+//First we define when A is a subset of B
+define is_subset(A, B): *X(X in A -> X in B);
+
+//Here I define the expand of a set
 
 //A set is equal to itself
 prove equal_sets_reflexive: *A(equal_sets(A, A)){
@@ -75,17 +78,37 @@ prove successor_lemma0: *S^T(S in T & *X(X in T -> equal_sets(X, S))){
 
 //Now we define what {S} is
 //B is the expand of A (B = {A})
-define is_expand(A, B): A in B & *X(X in B -> equal_sets(X, A));
+define is_expand(A, B): *X((X in B -> equal_sets(X, A)) & (equal_sets(X, A) -> X in B));
 
+//Prove that the expand of any set exists
 prove expand_exists: *A^B(is_expand(A, B)){
 	given A{
 		def = successor_lemma0(A)(B);
+		right_part = right(def);
+		A_in_B = left(def);
 		choose B{
-			return #is_expand(A)(B)(def);
+			prove lemma: *X(equal_sets(X, A) -> X in B){
+				given X{
+					implies p{
+						ext = axiom_extensionality(X)(A);
+						in_same_sets = ext(p);
+						return right(in_same_sets(B))(A_in_B);
+					}
+				}
+			}
+			prove combine: *X((X in B -> equal_sets(X, A)) & (equal_sets(X, A) -> X in B)){
+				given X{
+					side0 = right_part(X);
+					side1 = lemma(X);
+					return axiom_and_combine[side0][side1](side0)(side1);
+				}
+			}
+			return #is_expand(A)(B)(combine);
 		}
 	}
 }
 
+//Prove that the expand is unique
 prove expand_unique: *A*B*C(is_expand(A, B) & is_expand(A, C) -> equal_sets(B, C)){
 	given A{
 		given B{
@@ -97,14 +120,116 @@ prove expand_unique: *A*B*C(is_expand(A, B) & is_expand(A, C) -> equal_sets(B, C
 						given X{
 							prove lemma0: X in B -> X in C{
 								implies q{
-									exp_def = is_expand#(A)(B)(expandAB);
-									equalBA = right(exp_def)(X)(q);
+									X_equal_A = left(is_expand#(A)(B)(expandAB)(X))(q);
+									return right(is_expand#(A)(C)(expandAC)(X))(X_equal_A);
 								}
 							}
+							prove lemma1: X in C -> X in B{
+								implies q{
+									X_equal_A = left(is_expand#(A)(C)(expandAC)(X))(q);
+									return right(is_expand#(A)(B)(expandAB)(X))(X_equal_A);
+								}
+							}
+							return axiom_and_combine[lemma0][lemma1](lemma0)(lemma1);
 						}
+					}
+					return #equal_sets(B)(C)(def);
+				}
+			}
+		}
+	}
+}
+
+//Now for any sets A and B, we define when a set C is the set {A, B}
+define is_pair(A, B, C): *X((X in C -> equal_sets(X, A) | equal_sets(X, B)) & (equal_sets(X, A) | equal_sets(X, B) -> X in C));
+
+//For any sets A and B, the pair {A, B} exists
+prove pair_exists: *A*B^C(is_pair(A, B, C)){
+	given A{
+		given B{
+			pair_statement = axiom_pairing(A)(B)(BIG_C);
+			A_in_BIG_C = left(pair_statement);
+			B_in_BIG_C = right(pair_statement);
+			define restriction(X): equal_sets(X, A) | equal_sets(X, B);
+			specify_statement = axiom_specify[(restriction)](BIG_C)(C);
+			choose C{
+				prove def: *X((X in C -> equal_sets(X, A) | equal_sets(X, B)) & (equal_sets(X, A) | equal_sets(X, B) -> X in C)){
+					given X{
+						prove part0: X in C -> equal_sets(X, A) | equal_sets(X, B){
+							implies p{
+								return right(left(specify_statement(X))(p));
+							}
+						}
+						prove part1: equal_sets(X, A) | equal_sets(X, B) -> X in C{
+							implies p{
+								return branch(p, sets_equal){
+									ext = axiom_extensionality(X)(A);
+									membership = right(ext(sets_equal)(C));
+									A_equals_A = equal_sets_reflexive(A);
+									define A_equals_B: equal_sets(A, B);
+									or_statement = axiom_or_combine[A_equals_A][(A_equals_B)](A_equals_A);
+									and_statement = axiom_and_combine[A_in_BIG_C][or_statement](A_in_BIG_C)(or_statement);
+									A_in_C = right(specify_statement(A))(and_statement);
+									return membership(A_in_C);
+								} or {
+									ext = axiom_extensionality(X)(B);
+									membership = right(ext(sets_equal)(C));
+									B_equals_B = equal_sets_reflexive(B);
+									define B_equals_A: equal_sets(B, A);
+									or_statement = swap(axiom_or_combine[B_equals_B][(B_equals_A)](B_equals_B));
+									and_statement = axiom_and_combine[B_in_BIG_C][or_statement](B_in_BIG_C)(or_statement);
+									B_in_C = right(specify_statement(B))(and_statement);
+									return membership(B_in_C);
+								};
+							}
+						}
+						return axiom_and_combine[part0][part1](part0)(part1);
+					}
+				}
+				return #is_pair(A)(B)(C)(def);
+			}
+		}
+	}
+}
+
+//Pairs {A, B} are unique with respect to A and B
+prove pair_unique: *A*B*C*D(is_pair(A, B, C) & is_pair(A, B, D) -> equal_sets(C, D)){
+	given A{
+		given B{
+			given C{
+				given D{
+					implies p{
+						pairC = left(p);
+						pairD = right(p);
+						defC = is_pair#(A)(B)(C)(pairC);
+						defD = is_pair#(A)(B)(D)(pairD);
+						prove def: *X((X in C -> X in D) & (X in D -> X in C)){
+							given X{
+								prove lemma0: X in C -> X in D{
+									implies q{
+										equal_or = left(defC(X))(q);
+										return right(defD(X))(equal_or);
+									}
+								}
+								prove lemma1: X in D -> X in C{
+									implies q{
+										equal_or = left(defD(X))(q);
+										return right(defC(X))(equal_or);
+									}
+								}
+								return axiom_and_combine[lemma0][lemma1](lemma0)(lemma1);
+							}
+						}
+						return #equal_sets(C)(D)(def);
 					}
 				}
 			}
 		}
 	}
 }
+
+//We define the successor of A to be A union {A}
+//define is_successor(A, B): A in B & *X((X in B -> X in A | equal_sets(X, A)) & (X in A | equal_sets(X, A) -> X in B));
+
+//Now we need to know that for any set A, there exists a set B such that B is the successor of A
+//prove successor_exists: *A^B(is_successor(A, B)){
