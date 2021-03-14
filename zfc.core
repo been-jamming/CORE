@@ -228,8 +228,133 @@ prove pair_unique: *A*B*C*D(is_pair(A, B, C) & is_pair(A, B, D) -> equal_sets(C,
 	}
 }
 
-//We define the successor of A to be A union {A}
-//define is_successor(A, B): A in B & *X((X in B -> X in A | equal_sets(X, A)) & (X in A | equal_sets(X, A) -> X in B));
+//To simplify the proof of the existence of the successor, we need the existence and uniqueness of the union
+define is_union(A, B): *X((^Y(X in Y & Y in A) -> X in B) & (X in B -> ^Y(X in Y & Y in A)));
 
-//Now we need to know that for any set A, there exists a set B such that B is the successor of A
-//prove successor_exists: *A^B(is_successor(A, B)){
+//Prove that the union exists
+prove union_exists: *A^B(is_union(A, B)){
+	given A{
+		part0 = axiom_union(A)(BIG_B);
+		define restriction(X): ^Y(X in Y & Y in A);
+		restrict = axiom_specify[(restriction)](BIG_B)(B);
+		choose B{
+			prove def: *X((^Y(X in Y & Y in A) -> X in B) & (X in B -> ^Y(X in Y & Y in A))){
+				given X{
+					prove lemma0: ^Y(X in Y & Y in A) -> X in B{
+						implies p{
+							new_p = p(Y);
+							new_part0 = part0(Y)(X);
+							X_in_BIG_B = new_part0(new_p);
+							and_premise = axiom_and_combine[X_in_BIG_B][p](X_in_BIG_B)(p);
+							return right(restrict(X))(and_premise);
+						}
+					}
+					prove lemma1: X in B -> ^Y(X in Y & Y in A){
+						implies X_in_B{
+							return right(left(restrict(X))(X_in_B));
+						}
+					}
+					return axiom_and_combine[lemma0][lemma1](lemma0)(lemma1);
+				}
+			}
+			return #is_union(A)(B)(def);
+		}
+	}
+}
+
+prove union_unique: *A*B*C(is_union(A, B) & is_union(A, C) -> equal_sets(B, C)){
+	given A{
+		given B{
+			given C{
+				implies both{
+					AB = is_union#(A)(B)(left(both));
+					AC = is_union#(A)(C)(right(both));
+					prove def: *X((X in B -> X in C) & (X in C -> X in B)){
+						given X{
+							prove lemma0: X in B -> X in C{
+								implies X_in_B{
+									return left(AC(X))(right(AB(X))(X_in_B));
+								}
+							}
+							prove lemma1: X in C -> X in B{
+								implies X_in_C{
+									return left(AB(X))(right(AC(X))(X_in_C));
+								}
+							}
+							return axiom_and_combine[lemma0][lemma1](lemma0)(lemma1);
+						}
+					}
+					return #equal_sets(B)(C)(def);
+				}
+			}
+		}
+	}
+}
+
+//We define the successor of A to be A union {A}
+define is_successor(A, B): ^C^D(is_expand(A, C) & is_pair(A, C, D) & is_union(D, B));
+
+prove successor_exists: *A^B(is_successor(A, B)){
+	given A{
+		expand = expand_exists(A)(C);
+		pair = pair_exists(A)(C)(D);
+		union = union_exists(D)(B);
+		choose B{
+			part0 = axiom_and_combine[expand][pair](expand)(pair);
+			part1 = axiom_and_combine[part0][union](part0)(union);
+			prove def: ^C^D(is_expand(A, C) & is_pair(A, C, D) & is_union(D, B)){
+				choose C{
+					choose D{
+						return part1;
+					}
+				}
+			}
+			return #is_successor(A)(B)(def);
+		}
+	}
+}
+
+//In order to really use the results on the uniqueness of pairs and unions, we need the following AXIOM
+//What it says is that if two sets are equal under the given definition, then for any proposition depending on a set, that proposition is true for one if and only if it is true for the other
+//This axiom is valid because for any particular proposition, one can prove the fact using the definition of equal sets and the axiom of extensionality
+//In other words, it doesn't change the strength of the theory, it just makes proofs more convenient
+//In theories with an = sign, this says that 'equal_sets' behaves like =
+axiom equality_consistency[P(1)]: *X*Y(equal_sets(X, Y) -> ((P(X) -> P(Y)) & (P(Y) -> P(X))));
+
+prove successor_unique: *A*B*C(is_successor(A, B) & is_successor(A, C) -> equal_sets(B, C)){
+	given A{
+		given B{
+			given C{
+				implies both{
+					defAB = is_successor#(A)(B)(left(both))(C_AB)(D_AB);
+					defAC = is_successor#(A)(C)(right(both))(C_AC)(D_AC);
+					expand_AB = left(left(defAB));
+					expand_AC = left(left(defAC));
+					C_AB_equals_C_AC = expand_unique(A)(C_AB)(C_AC)(axiom_and_combine[expand_AB][expand_AC](expand_AB)(expand_AC));
+					pair_AB = right(left(defAB));
+					pair_AC = right(left(defAC));
+					define pair_same(X): is_pair(A, X, D_AB);
+					other_pair_AC = left(equality_consistency[(pair_same)](C_AB)(C_AC)(C_AB_equals_C_AC))(pair_AB);
+					D_AB_equals_D_AC = pair_unique(A)(C_AC)(D_AB)(D_AC)(axiom_and_combine[other_pair_AC][pair_AC](other_pair_AC)(pair_AC));
+					union_AB = right(defAB);
+					union_AC = right(defAC);
+					define union_same(X): is_union(X, B);
+					other_union_AC = left(equality_consistency[(union_same)](D_AB)(D_AC)(D_AB_equals_D_AC))(union_AB);
+					return union_unique(D_AC)(B)(C)(axiom_and_combine[other_union_AC][union_AC](other_union_AC)(union_AC));
+				}
+			}
+		}
+	}
+}
+
+//Define when a set is empty
+define is_empty(A): *X(~X in A);
+
+//The seventh axiom of zfc: the axiom of infinity
+//A set containing the natural numbers exists
+axiom axiom_infinity: ^X(^E(E in X & is_empty(E)) & *Y*Z(Y in X & is_successor(Y, Z) -> Z in X));
+
+//The eighth axiom of zfc: the axiom of the power set
+//For any set A there is a set of all subsets of A
+axiom axiom_power_set: *X^Y*Z(is_subset(Z, X) -> Z in Y);
+
