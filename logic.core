@@ -8,7 +8,7 @@ axiom axiom_true: true;
 prove demorgan0[P, Q]: ~P & ~Q -> ~(P | Q){
 	implies p{
 		not q{
-			return branch(q, side){
+			return branch(q, side, side){
 				return left(p)(side);
 			} or {
 				return right(p)(side);
@@ -40,7 +40,7 @@ prove demorgan1[P, Q]: ~(P | Q) -> ~P & ~Q{
 prove demorgan2[P, Q]: ~P | ~Q -> ~(P & Q){
 	implies p{
 		not q{
-			return branch(p, n){
+			return branch(p, n, n){
 				return n(left(q));
 			} or {
 				return n(right(q));
@@ -55,7 +55,7 @@ axiom axiom_LEM[P]: P | ~P;
 prove demorgan3[P, Q]: ~(P & Q) -> ~P | ~Q{
 	implies p{
 		excluded_middle = axiom_LEM[P];
-		return branch(excluded_middle, P_value){
+		return branch(excluded_middle, P_value, P_value){
 			prove lemma: ~Q{
 				not Q_true{
 					return p(and(P_value, Q_true));
@@ -75,7 +75,7 @@ prove demorgan3[P, Q]: ~(P & Q) -> ~P | ~Q{
 prove double_negation[P]: ~~P -> P{
 	implies p{
 		excluded_middle = axiom_LEM[P];
-		return branch(excluded_middle, P_value){
+		return branch(excluded_middle, P_value, P_value){
 			return P_value;
 		} or {
 			return axiom_absurdity[P](p(P_value));
@@ -104,7 +104,7 @@ prove negate_forall[P(1)]: ~*x(P(x)) -> ^x(~P(x)){
 	implies p{
 		define goal: ^x(~P(x));
 		excluded_middle = axiom_LEM[(goal)];
-		return branch(excluded_middle, goal_truth){
+		return branch(excluded_middle, goal_truth, goal_truth){
 			return goal_truth;
 		} or {
 			define Q(x): ~P(x);
@@ -127,7 +127,7 @@ prove and_distribute0[P, Q, R]: (P | Q) & R -> (P & R) | (Q & R){
 	implies p{
 		define p_and_r: P & R;
 		define q_and_r: Q & R;
-		return branch(left(p), pq){
+		return branch(left(p), pq, pq){
 			and_statement = and(pq, right(p));
 			return or(and_statement, (q_and_r));
 		} or {
@@ -140,7 +140,7 @@ prove and_distribute0[P, Q, R]: (P | Q) & R -> (P & R) | (Q & R){
 prove and_distribute1[P, Q, R]: (P & R) | (Q & R) -> (P | Q) & R{
 	implies p{
 		define p_or_q: P | Q;
-		return branch(p, pr_qr){
+		return branch(p, pr_qr, pr_qr){
 			or_statement = or(left(pr_qr), Q);
 			return and(or_statement, right(pr_qr));
 		} or {
@@ -152,7 +152,7 @@ prove and_distribute1[P, Q, R]: (P & R) | (Q & R) -> (P | Q) & R{
 
 prove or_distribute0[P, Q, R]: (P & Q) | R -> (P | R) & (Q | R){
 	implies p{
-		return branch(p, or_val){
+		return branch(p, or_val, or_val){
 			or0 = or(left(or_val), R);
 			or1 = or(right(or_val), R);
 			return and(or0, or1);
@@ -166,8 +166,8 @@ prove or_distribute0[P, Q, R]: (P & Q) | R -> (P | R) & (Q | R){
 
 prove or_distribute1[P, Q, R]: (P | R) & (Q | R) -> (P & Q) | R{
 	implies p{
-		return branch(left(p), pr){
-			return branch(right(p), qr){
+		return branch(left(p), pr, pr){
+			return branch(right(p), qr, qr){
 				and_statement = and(pr, qr);
 				return or(and_statement, R);
 			} or {
@@ -205,8 +205,8 @@ prove and_associate1[P, Q, R]: P & (Q & R) -> (P & Q) & R{
 prove or_associate0[P, Q, R]: (P | Q) | R -> P | (Q | R){
 	implies a{
 		define q_or_r: Q | R;
-		return branch(a, pqr){
-			return branch(pqr, pq){
+		return branch(a, pqr, pqr){
+			return branch(pqr, pq, pq){
 				return or(pq, (q_or_r));
 			} or {
 				qr = or(pq, R);
@@ -222,11 +222,11 @@ prove or_associate0[P, Q, R]: (P | Q) | R -> P | (Q | R){
 prove or_associate1[P, Q, R]: P | (Q | R) -> (P | Q) | R{
 	implies a{
 		define p_or_q: P | Q;
-		return branch(a, pqr){
+		return branch(a, pqr, pqr){
 			pq = or(pqr, Q);
 			return or(pq, R);
 		} or {
-			return branch(pqr, qr){
+			return branch(pqr, qr, qr){
 				pq = swap(or(qr, P));
 				return or(pq, R);
 			} or {

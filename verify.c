@@ -710,7 +710,8 @@ variable *create_statement_var(char *var_name, statement *s){
 }
 
 statement *parse_statement_value_builtin(char **c, unsigned char verified){
-	char var_name[256];
+	char var_name0[256];
+	char var_name1[256];
 	unsigned char is_and;
 	statement *s;
 	statement *t;
@@ -749,6 +750,10 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 			free_statement(s);
 			fprintf(stderr, "Error: invalid operand for 'left'\n");
 			error(1);
+		} else if(s->num_bound_vars || s->num_bound_props){
+			free_statement(s);
+			fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
+			error(1);
 		}
 
 		free_statement(s->child1);
@@ -782,6 +787,10 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 		} else if(s->type != AND && s->type != OR && s->type != IMPLIES){
 			fprintf(stderr, "Error: invalid operand for 'right'\n");
 			free_statement(s);
+			error(1);
+		} else if(s->num_bound_vars || s->num_bound_props){
+			free_statement(s);
+			fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
 			error(1);
 		}
 
@@ -873,6 +882,10 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 			free_statement(s);
 			fprintf(stderr, "Error: invalid operand for 'swap'\n");
 			error(1);
+		} else if(s->num_bound_vars || s->num_bound_props){
+			free_statement(s);
+			fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
+			error(1);
 		}
 		if(s->type == AND || s->type == OR){
 			output = s->child0;
@@ -919,8 +932,20 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 			error(1);
 		}
 		skip_whitespace(c);
-		get_identifier(c, var_name, 256);
-		if(var_name[0] == '\0'){
+		get_identifier(c, var_name0, 256);
+		if(var_name0[0] == '\0'){
+			fprintf(stderr, "Error: expected identifier\n");
+			error(1);
+		}
+		skip_whitespace(c);
+		if(**c != ','){
+			fprintf(stderr, "Error: expected ','\n");
+			error(1);
+		}
+		++*c;
+		skip_whitespace(c);
+		get_identifier(c, var_name1, 256);
+		if(var_name1[0] == '\0'){
 			fprintf(stderr, "Error: expected identifier\n");
 			error(1);
 		}
@@ -940,7 +965,7 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 		up_scope();
 		new = malloc(sizeof(statement));
 		copy_statement(new, s->child0);
-		new_statement_var = create_statement_var(var_name, new);
+		new_statement_var = create_statement_var(var_name0, new);
 		new_statement_var->num_references++;
 		return_statement0 = verify_block(c, 0, NULL);
 		if(!return_statement0){
@@ -971,7 +996,7 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 		up_scope();
 		new = malloc(sizeof(statement));
 		copy_statement(new, s->child1);
-		new_statement_var = create_statement_var(var_name, new);
+		new_statement_var = create_statement_var(var_name1, new);
 		new_statement_var->num_references++;
 		return_statement1 = verify_block(c, 0, NULL);
 		if(!return_statement1){
@@ -1050,6 +1075,12 @@ statement *parse_statement_value(char **c, unsigned char verified){
 	skip_whitespace(c);
 	while(**c && **c != ';' && **c != ')' && **c != ',' && **c != ']'){
 		if(**c == '['){
+			if(!output->num_bound_props){
+				free_statement(output);
+				fprintf(stderr, "Error: statement has no bound propositions\n");
+				error(1);
+			}
+
 			++*c;
 			skip_whitespace(c);
 			beginning = *c;
@@ -1526,6 +1557,7 @@ int debug_command(char **c){
 	}
 	++*c;
 	//Do stuff here
+	
 	free_statement(s);
 
 	return 1;

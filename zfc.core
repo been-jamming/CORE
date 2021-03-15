@@ -180,7 +180,7 @@ prove pair_exists: *A*B^C(is_pair(A, B, C)){
 						}
 						prove part1: equal_sets(X, A) | equal_sets(X, B) -> X in C{
 							implies p{
-								return branch(p, sets_equal){
+								return branch(p, sets_equal, sets_equal){
 									ext = axiom_extensionality(X)(A);
 									membership = right(ext(sets_equal)(C));
 									A_equals_A = equal_sets_reflexive(A);
