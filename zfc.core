@@ -3,9 +3,27 @@
 define equal_sets(A, B): *X((X in A -> X in B) & (X in B -> X in A));
 define non_empty(A): ^X(X in A);
 
+//In order to make proofs more convenient, we need the following axiom
+//What it says is that if two sets are equal under the given definition, then for any proposition depending on a set, that proposition is true for one if and only if it is true for the other
+//This axiom is valid because for any particular proposition, one can prove the fact using the definition of equal sets and the axiom of extensionality
+//In other words, it doesn't change the strength of the theory, it just makes proofs more convenient
+axiom equality_consistency[P(1)]: *X*Y(equal_sets(X, Y) -> ((P(X) -> P(Y)) & (P(Y) -> P(X))));
+
 //The first axiom of zfc: the axiom of extensionality
 //If two sets have the same members, they are members of the same sets
-axiom axiom_extensionality: *A*B(equal_sets(A, B) -> *W((A in W -> B in W) & (B in W -> A in W)));
+//It can be proven using equality_consistency
+prove axiom_extensionality: *A*B(equal_sets(A, B) -> *W((A in W -> B in W) & (B in W -> A in W))){
+	given A{
+		given B{
+			implies A_equal_B{
+				given W{
+					define in_W(X): X in W;
+					return equality_consistency[(in_W)](A)(B)(A_equal_B);
+				}
+			}
+		}
+	}
+}
 
 //The second axiom of zfc: the axiom of regularity
 //Every nonempty set has an element which is disjoint to it
@@ -45,7 +63,7 @@ prove equal_sets_reflexive: *A(equal_sets(A, A)){
 						return p;
 					}
 				}
-				return axiom_and_combine[lemma][lemma](lemma)(lemma);
+				return and(lemma, lemma);
 			}
 		}
 		return #equal_sets(A)(A)(def);
@@ -68,10 +86,10 @@ prove successor_lemma0: *S^T(S in T & *X(X in T -> equal_sets(X, S))){
 			}
 			prove lemma1: S in NEW_T{
 				S_equal_S = equal_sets_reflexive(S);
-				a = axiom_and_combine[S_in_T][S_equal_S](S_in_T)(S_equal_S);
+				a = and(S_in_T, S_equal_S);
 				return right(specified(S))(a);
 			}
-			return axiom_and_combine[lemma1][lemma0](lemma1)(lemma0);
+			return and(lemma1, lemma0);
 		}
 	}
 }
@@ -100,7 +118,7 @@ prove expand_exists: *A^B(is_expand(A, B)){
 				given X{
 					side0 = right_part(X);
 					side1 = lemma(X);
-					return axiom_and_combine[side0][side1](side0)(side1);
+					return and(side0, side1);
 				}
 			}
 			return #is_expand(A)(B)(combine);
@@ -130,7 +148,7 @@ prove expand_unique: *A*B*C(is_expand(A, B) & is_expand(A, C) -> equal_sets(B, C
 									return right(is_expand#(A)(B)(expandAB)(X))(X_equal_A);
 								}
 							}
-							return axiom_and_combine[lemma0][lemma1](lemma0)(lemma1);
+							return and(lemma0, lemma1);
 						}
 					}
 					return #equal_sets(B)(C)(def);
@@ -167,8 +185,8 @@ prove pair_exists: *A*B^C(is_pair(A, B, C)){
 									membership = right(ext(sets_equal)(C));
 									A_equals_A = equal_sets_reflexive(A);
 									define A_equals_B: equal_sets(A, B);
-									or_statement = axiom_or_combine[A_equals_A][(A_equals_B)](A_equals_A);
-									and_statement = axiom_and_combine[A_in_BIG_C][or_statement](A_in_BIG_C)(or_statement);
+									or_statement = or(A_equals_A, (A_equals_B));
+									and_statement = and(A_in_BIG_C, or_statement);
 									A_in_C = right(specify_statement(A))(and_statement);
 									return membership(A_in_C);
 								} or {
@@ -176,14 +194,14 @@ prove pair_exists: *A*B^C(is_pair(A, B, C)){
 									membership = right(ext(sets_equal)(C));
 									B_equals_B = equal_sets_reflexive(B);
 									define B_equals_A: equal_sets(B, A);
-									or_statement = swap(axiom_or_combine[B_equals_B][(B_equals_A)](B_equals_B));
-									and_statement = axiom_and_combine[B_in_BIG_C][or_statement](B_in_BIG_C)(or_statement);
+									or_statement = swap(or(B_equals_B, (B_equals_A)));
+									and_statement = and(B_in_BIG_C, or_statement);
 									B_in_C = right(specify_statement(B))(and_statement);
 									return membership(B_in_C);
 								};
 							}
 						}
-						return axiom_and_combine[part0][part1](part0)(part1);
+						return and(part0, part1);
 					}
 				}
 				return #is_pair(A)(B)(C)(def);
@@ -217,7 +235,7 @@ prove pair_unique: *A*B*C*D(is_pair(A, B, C) & is_pair(A, B, D) -> equal_sets(C,
 										return right(defC(X))(equal_or);
 									}
 								}
-								return axiom_and_combine[lemma0][lemma1](lemma0)(lemma1);
+								return and(lemma0, lemma1);
 							}
 						}
 						return #equal_sets(C)(D)(def);
@@ -245,7 +263,7 @@ prove union_exists: *A^B(is_union(A, B)){
 							new_p = p(Y);
 							new_part0 = part0(Y)(X);
 							X_in_BIG_B = new_part0(new_p);
-							and_premise = axiom_and_combine[X_in_BIG_B][p](X_in_BIG_B)(p);
+							and_premise = and(X_in_BIG_B, p);
 							return right(restrict(X))(and_premise);
 						}
 					}
@@ -254,7 +272,7 @@ prove union_exists: *A^B(is_union(A, B)){
 							return right(left(restrict(X))(X_in_B));
 						}
 					}
-					return axiom_and_combine[lemma0][lemma1](lemma0)(lemma1);
+					return and(lemma0, lemma1);
 				}
 			}
 			return #is_union(A)(B)(def);
@@ -281,7 +299,7 @@ prove union_unique: *A*B*C(is_union(A, B) & is_union(A, C) -> equal_sets(B, C)){
 									return left(AB(X))(right(AC(X))(X_in_C));
 								}
 							}
-							return axiom_and_combine[lemma0][lemma1](lemma0)(lemma1);
+							return and(lemma0, lemma1);
 						}
 					}
 					return #equal_sets(B)(C)(def);
@@ -300,8 +318,8 @@ prove successor_exists: *A^B(is_successor(A, B)){
 		pair = pair_exists(A)(C)(D);
 		union = union_exists(D)(B);
 		choose B{
-			part0 = axiom_and_combine[expand][pair](expand)(pair);
-			part1 = axiom_and_combine[part0][union](part0)(union);
+			part0 = and(expand, pair);
+			part1 = and(part0, union);
 			prove def: ^C^D(is_expand(A, C) & is_pair(A, C, D) & is_union(D, B)){
 				choose C{
 					choose D{
@@ -314,13 +332,6 @@ prove successor_exists: *A^B(is_successor(A, B)){
 	}
 }
 
-//In order to really use the results on the uniqueness of pairs and unions, we need the following AXIOM
-//What it says is that if two sets are equal under the given definition, then for any proposition depending on a set, that proposition is true for one if and only if it is true for the other
-//This axiom is valid because for any particular proposition, one can prove the fact using the definition of equal sets and the axiom of extensionality
-//In other words, it doesn't change the strength of the theory, it just makes proofs more convenient
-//In theories with an = sign, this says that 'equal_sets' behaves like =
-axiom equality_consistency[P(1)]: *X*Y(equal_sets(X, Y) -> ((P(X) -> P(Y)) & (P(Y) -> P(X))));
-
 prove successor_unique: *A*B*C(is_successor(A, B) & is_successor(A, C) -> equal_sets(B, C)){
 	given A{
 		given B{
@@ -330,17 +341,17 @@ prove successor_unique: *A*B*C(is_successor(A, B) & is_successor(A, C) -> equal_
 					defAC = is_successor#(A)(C)(right(both))(C_AC)(D_AC);
 					expand_AB = left(left(defAB));
 					expand_AC = left(left(defAC));
-					C_AB_equals_C_AC = expand_unique(A)(C_AB)(C_AC)(axiom_and_combine[expand_AB][expand_AC](expand_AB)(expand_AC));
+					C_AB_equals_C_AC = expand_unique(A)(C_AB)(C_AC)(and(expand_AB, expand_AC));
 					pair_AB = right(left(defAB));
 					pair_AC = right(left(defAC));
 					define pair_same(X): is_pair(A, X, D_AB);
 					other_pair_AC = left(equality_consistency[(pair_same)](C_AB)(C_AC)(C_AB_equals_C_AC))(pair_AB);
-					D_AB_equals_D_AC = pair_unique(A)(C_AC)(D_AB)(D_AC)(axiom_and_combine[other_pair_AC][pair_AC](other_pair_AC)(pair_AC));
+					D_AB_equals_D_AC = pair_unique(A)(C_AC)(D_AB)(D_AC)(and(other_pair_AC, pair_AC));
 					union_AB = right(defAB);
 					union_AC = right(defAC);
 					define union_same(X): is_union(X, B);
 					other_union_AC = left(equality_consistency[(union_same)](D_AB)(D_AC)(D_AB_equals_D_AC))(union_AB);
-					return union_unique(D_AC)(B)(C)(axiom_and_combine[other_union_AC][union_AC](other_union_AC)(union_AC));
+					return union_unique(D_AC)(B)(C)(and(other_union_AC, union_AC));
 				}
 			}
 		}
@@ -350,11 +361,167 @@ prove successor_unique: *A*B*C(is_successor(A, B) & is_successor(A, C) -> equal_
 //Define when a set is empty
 define is_empty(A): *X(~X in A);
 
+//Define what an inductive set is
+define is_inductive_set(X): ^E(E in X & is_empty(E)) & *Y*Z(Y in X & is_successor(Y, Z) -> Z in X);
+
 //The seventh axiom of zfc: the axiom of infinity
-//A set containing the natural numbers exists
-axiom axiom_infinity: ^X(^E(E in X & is_empty(E)) & *Y*Z(Y in X & is_successor(Y, Z) -> Z in X));
+//There is an inductive set
+axiom axiom_infinity: ^X(is_inductive_set(X));
 
 //The eighth axiom of zfc: the axiom of the power set
 //For any set A there is a set of all subsets of A
 axiom axiom_power_set: *X^Y*Z(is_subset(Z, X) -> Z in Y);
 
+//These are all of the ZF axioms!
+
+//The existence of the empty set
+prove empty_set_exists: ^E*X(~X in E){
+	inductive = axiom_infinity(X);
+	empty = right(left(is_inductive_set#(X)(inductive))(E));
+	choose E{
+		return is_empty#(E)(empty);
+	}
+}
+
+//The uniqueness of the empty set
+prove empty_set_unique: *E*F(is_empty(E) & is_empty(F) -> equal_sets(E, F)){
+	given E{
+		given F{
+			implies both{
+				empty_E = is_empty#(E)(left(both));
+				empty_F = is_empty#(F)(right(both));
+				prove def: *X((X in E -> X in F) & (X in F -> X in E)){
+					given X{
+						define X_in_E: X in E;
+						define X_in_F: X in F;
+						prove lemma0: X in E -> X in F{
+							implies p{
+								return axiom_absurdity[(X_in_F)](empty_E(X)(p));
+							}
+						}
+						prove lemma1: X in F -> X in E{
+							implies p{
+								return axiom_absurdity[(X_in_E)](empty_F(X)(p));
+							}
+						}
+						return and(lemma0, lemma1);
+					}
+				}
+				return #equal_sets(E)(F)(def);
+			}
+		}
+	}
+}
+
+empty_set_condition = empty_set_exists(EMPTY_SET);
+
+//Now we want to show that the natrual numbers exist
+//We do this by taking a restriction of the infinite set given by the axiom of infinity to elements contained in all inductive sets
+define is_natural_numbers(N): *X((X in N -> *I(is_inductive_set(I) -> X in I)) & (*I(is_inductive_set(I) -> X in I) -> X in N));
+
+//The natural numbers exist
+prove natural_numbers_exist: ^N(is_natural_numbers(N)){
+	is_inductive = axiom_infinity(INDUCTIVE_SET);
+	define restrict(X): *I(is_inductive_set(I) -> X in I);
+	specified = axiom_specify[(restrict)](INDUCTIVE_SET)(N);
+	prove def: *X((X in N -> *I(is_inductive_set(I) -> X in I)) & (*I(is_inductive_set(I) -> X in I) -> X in N)){
+		given X{
+			prove lemma0: X in N -> *I(is_inductive_set(I) -> X in I){
+				implies p{
+					return right(left(specified(X))(p));
+				}
+			}
+			prove lemma1: *I(is_inductive_set(I) -> X in I) -> X in N{
+				implies p{
+					define X_in_N: X in N;
+					X_in_INDUCTIVE_SET = p(INDUCTIVE_SET)(is_inductive);
+					return and_left_implies[X_in_INDUCTIVE_SET][p][(X_in_N)](and(X_in_INDUCTIVE_SET, right(specified(X))))(p);
+				}
+			}
+			return and(lemma0, lemma1);
+		}
+	}
+	choose N{
+		return #is_natural_numbers(N)(def);
+	}
+}
+
+//The natural numbers are an inductive set
+prove natural_numbers_inductive_set: *N(is_natural_numbers(N) -> is_inductive_set(N)){
+	given N{
+		implies p{
+			is_natural = is_natural_numbers#(N)(p);
+			prove lemma0: ^E(E in N & is_empty(E)){
+				choose EMPTY_SET{
+					empty_set_empty = #is_empty(EMPTY_SET)(empty_set_condition);
+					prove empty_set_in_inductive: *I(is_inductive_set(I) -> EMPTY_SET in I){
+						given I{
+							implies inductive{
+								empty_membership = left(is_inductive_set#(I)(inductive))(E);
+								E_equal_EMPTY_SET = empty_set_unique(E)(EMPTY_SET)(and(right(empty_membership), empty_set_empty));
+								define X_in_I(X): X in I;
+								return left(equality_consistency[(X_in_I)](E)(EMPTY_SET)(E_equal_EMPTY_SET))(left(empty_membership));
+							}
+						}
+					}
+					EMPTY_SET_in_N = right(is_natural(EMPTY_SET))(empty_set_in_inductive);
+					return and(EMPTY_SET_in_N, empty_set_empty);
+				}
+			}
+			prove lemma1: *Y*Z(Y in N & is_successor(Y, Z) -> Z in N){
+				given Y{
+					given Z{
+						implies both{
+							Y_in_N = left(both);
+							successor = right(both);
+							prove Z_in_inductive_sets: *I(is_inductive_set(I) -> Z in I){
+								given I{
+									implies inductive{
+										inductive_def = is_inductive_set#(I)(inductive);
+										Y_in_I = left(is_natural(Y))(Y_in_N)(I)(inductive);
+										return right(inductive_def)(Y)(Z)(and(Y_in_I, successor));
+									}
+								}
+							}
+							return right(is_natural(Z))(Z_in_inductive_sets);
+						}
+					}
+				}
+			}
+			return #is_inductive_set(N)(and(lemma0, lemma1));
+		}
+	}
+}
+
+//The natural numbers are unique
+prove natural_numbers_unique: *N*M(is_natural_numbers(N) & is_natural_numbers(M) -> equal_sets(N, M)){
+	given N{
+		given M{
+			implies p{
+				partN = is_natural_numbers#(N)(left(p));
+				partM = is_natural_numbers#(M)(right(p));
+				prove def: *X((X in N -> X in M) & (X in M -> X in N)){
+					given X{
+						prove lemma0: X in N -> X in M{
+							implies X_in_N{
+								return right(partM(X))(left(partN(X))(X_in_N));
+							}
+						}
+						prove lemma1: X in M -> X in N{
+							implies X_in_M{
+								return right(partN(X))(left(partM(X))(X_in_M));
+							}
+						}
+						return and(lemma0, lemma1);
+					}
+				}
+				return #equal_sets(N)(M)(def);
+			}
+		}
+	}
+}
+
+naturals_definition = natural_numbers_exist(NATURALS);
+naturals_definition = is_natural_numbers#(NATURALS)(naturals_definition);
+
+return naturals_definition;

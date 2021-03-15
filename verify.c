@@ -11,6 +11,7 @@ char *program_text;
 statement *goals[MAX_DEPTH];
 unsigned int goal_depth;
 
+statement *parse_statement_identifier_or_value(char **c, unsigned char verified, char end_char);
 statement *parse_statement_value(char **c, unsigned char verified);
 
 statement *verify_block(char **c, unsigned char allow_proof_value, statement *goal);
@@ -710,7 +711,9 @@ variable *create_statement_var(char *var_name, statement *s){
 
 statement *parse_statement_value_builtin(char **c, unsigned char verified){
 	char var_name[256];
+	unsigned char is_and;
 	statement *s;
+	statement *t;
 	statement *output;
 	statement *child0;
 	statement *child1;
@@ -787,6 +790,66 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 		free(s);
 
 		return output;
+	} else if((!strncmp(*c, "and", 3) && !is_alphanumeric((*c)[3])) || (!strncmp(*c, "or", 2) && !is_alphanumeric((*c)[2]))){
+		if(**c == 'a'){
+			*c += 3;
+			is_and = 1;
+		} else {
+			is_and = 0;
+			*c += 2;
+		}
+		skip_whitespace(c);
+		if(**c != '('){
+			return NULL;
+		}
+		++*c;
+		s = parse_statement_identifier_or_value(c, verified, ',');
+		if(!s){
+			fprintf(stderr, "Error: could not parse statement value\n");
+			error(1);
+		}
+		if(s->num_bound_props || s->num_bound_vars){
+			free_statement(s);
+			fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
+			error(1);
+		}
+		skip_whitespace(c);
+		if(**c != ','){
+			free_statement(s);
+			fprintf(stderr, "Error: expected ','\n");
+			error(1);
+		}
+		++*c;
+		skip_whitespace(c);
+		t = parse_statement_identifier_or_value(c, verified && is_and, ')');
+		if(!t){
+			free_statement(s);
+			fprintf(stderr, "Error: could not parse statement value\n");
+			error(1);
+		}
+		if(t->num_bound_props || t->num_bound_vars){
+			free_statement(s);
+			free_statement(t);
+			fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
+			error(1);
+		}
+		skip_whitespace(c);
+		if(**c != ')'){
+			free_statement(s);
+			free_statement(t);
+			fprintf(stderr, "Error: expected ')'\n");
+			error(1);
+		}
+		++*c;
+		if(is_and){
+			new = create_statement(AND, 0, 0);
+		} else {
+			new = create_statement(OR, 0, 0);
+		}
+		new->child0 = s;
+		new->child1 = t;
+
+		return new;
 	} else if(!strncmp(*c, "swap", 4) && !is_alphanumeric((*c)[4])){
 		*c += 4;
 		skip_whitespace(c);
@@ -806,7 +869,7 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 			error(1);
 		}
 		++*c;
-		if(s->type != AND && s->type != OR && s->type != IMPLIES){
+		if((s->type != AND && s->type != OR && s->type != IMPLIES)){
 			free_statement(s);
 			fprintf(stderr, "Error: invalid operand for 'swap'\n");
 			error(1);
@@ -855,7 +918,6 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 			fprintf(stderr, "Error: invalid operand for 'branch'\n");
 			error(1);
 		}
-		++*c;
 		skip_whitespace(c);
 		get_identifier(c, var_name, 256);
 		if(var_name[0] == '\0'){
@@ -939,6 +1001,25 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 	return NULL;
 }
 
+statement *parse_statement_identifier_or_value(char **c, unsigned char verified, char end_char){
+	statement *output;
+
+	if(verified){
+		return parse_statement_value(c, verified);
+	} else {
+		output = parse_statement_identifier_proposition(c);
+		skip_whitespace(c);
+		if(!output || **c != end_char){
+			if(output){
+				free_statement(output);
+			}
+			output = parse_statement_value(c, verified);
+		}
+
+		return output;
+	}
+}
+
 statement *parse_statement_value(char **c, unsigned char verified){
 	statement *output;
 	statement *next_output;
@@ -972,19 +1053,16 @@ statement *parse_statement_value(char **c, unsigned char verified){
 			++*c;
 			skip_whitespace(c);
 			beginning = *c;
-			arg = parse_statement_identifier_proposition(c);
-			skip_whitespace(c);
-			if(!arg || **c != ']'){
+
+			arg = parse_statement_identifier_or_value(c, 0, ']');
+			if(!arg || arg->num_bound_props){
 				if(arg){
 					free_statement(arg);
 				}
-				*c = beginning;
-				arg = parse_statement_value(c, 0);
-			}
-			if(!arg || arg->num_bound_props){
 				free_statement(output);
 				return NULL;
 			}
+
 			skip_whitespace(c);
 			if(**c != ']'){
 				free_statement(arg);
@@ -1184,6 +1262,8 @@ proposition *definition_command(char **c){
 	print_statement(s);
 	printf("\n");
 	#endif
+
+	clear_bound_variables();
 
 	return output;
 }
