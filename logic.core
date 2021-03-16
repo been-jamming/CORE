@@ -245,3 +245,13 @@ prove and_left_implies[P, Q, R]: P & (P & Q -> R) -> (Q -> R){
 	}
 }
 
+prove or_combine[P]: P | P -> P{
+	implies p{
+		return branch(p, P_true, P_true){
+			return P_true;
+		} or {
+			return P_true;
+		};
+	}
+}
+

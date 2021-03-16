@@ -70,6 +70,36 @@ prove equal_sets_reflexive: *A(equal_sets(A, A)){
 	}
 }
 
+//Equality is symmetric
+prove equal_sets_symmetric: *A*B(equal_sets(A, B) -> equal_sets(B, A)){
+	given A{
+		given B{
+			implies A_equal_B{
+				prove def: *X((X in B -> X in A) & (X in A -> X in B)){
+					given X{
+						return swap(equal_sets#(A)(B)(A_equal_B)(X));
+					}
+				}
+				return #equal_sets(B)(A)(def);
+			}
+		}
+	}
+}
+
+//Equality is transitive
+prove equal_sets_transitive: *A*B*C(equal_sets(A, B) & equal_sets(B, C) -> equal_sets(A, C)){
+	given A{
+		given B{
+			given C{
+				implies both{
+					define X_equal_C(X): equal_sets(X, C);
+					return right(equality_consistency[(X_equal_C)](A)(B)(left(both)))(right(both));
+				}
+			}
+		}
+	}
+}
+
 //For any S, the set {S} exists
 prove successor_lemma0: *S^T(S in T & *X(X in T -> equal_sets(X, S))){
 	given S{
@@ -524,4 +554,3 @@ prove natural_numbers_unique: *N*M(is_natural_numbers(N) & is_natural_numbers(M)
 naturals_definition = natural_numbers_exist(NATURALS);
 naturals_definition = is_natural_numbers#(NATURALS)(naturals_definition);
 
-return naturals_definition;
