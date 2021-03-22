@@ -404,6 +404,63 @@ axiom axiom_power_set: *X^Y*Z(is_subset(Z, X) -> Z in Y);
 
 //These are all of the ZF axioms!
 
+//Defining the power set: B is the power set of A
+define is_power_set(A, B): *X((X in B -> is_subset(X, A)) & (is_subset(X, A) -> X in B));
+
+prove power_set_exists: *A^B(is_power_set(A, B)){
+	given A{
+		contains_power_set = axiom_power_set(A)(BIG_B);
+		define restrict_power_set(X): is_subset(X, A);
+		restricted = axiom_specify[(restrict_power_set)](BIG_B)(B);
+		choose B{
+			prove def: *X((X in B -> is_subset(X, A)) & (is_subset(X, A) -> X in B)){
+				given X{
+					prove lemma0: X in B -> is_subset(X, A){
+						implies p{
+							return right(left(restricted(X))(p));
+						}
+					}
+					prove lemma1: is_subset(X, A) -> X in B{
+						implies p{
+							x_in_BIG_B = contains_power_set(X)(p);
+							return right(restricted(X))(and(x_in_BIG_B, p));
+						}
+					}
+					return and(lemma0, lemma1);
+				}
+			}
+			return #is_power_set(A)(B)(def);
+		}
+	}
+}
+
+prove power_set_unique: *A*B*C(is_power_set(A, B) & is_power_set(A, C) -> equal_sets(B, C)){
+	given A{
+		given B{
+			given C{
+				implies both{
+					prove def: *X((X in B -> X in C) & (X in C -> X in B)){
+						given X{
+							prove lemma0: X in B -> X in C{
+								implies p{
+									return right(is_power_set#(A)(C)(right(both))(X))(left(is_power_set#(A)(B)(left(both))(X))(p));
+								}
+							}
+							prove lemma1: X in C -> X in B{
+								implies p{
+									return right(is_power_set#(A)(B)(left(both))(X))(left(is_power_set#(A)(C)(right(both))(X))(p));
+								}
+							}
+							return and(lemma0, lemma1);
+						}
+					}
+					return #equal_sets(B)(C)(def);
+				}
+			}
+		}
+	}
+}
+
 //The existence of the empty set
 prove empty_set_exists: ^E*X(~X in E){
 	inductive = axiom_infinity(X);

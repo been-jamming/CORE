@@ -1178,6 +1178,24 @@ statement *parse_statement_value(char **c, unsigned char verified){
 	return output;
 }
 
+void write_goal(statement *goal){
+	statement *goal_copy;
+	proposition *goal_prop;
+	char *goal_name;
+
+	goal_copy = malloc(sizeof(statement));
+	copy_statement(goal_copy, goal);
+	goal_prop = malloc(sizeof(proposition));
+	goal_prop->name = malloc(sizeof(char)*(strlen("goal") + 1));
+	strcpy(goal_prop->name, "goal");
+	goal_prop->num_references = 1;
+	goal_prop->depth = current_depth;
+	goal_prop->num_args = 0;
+	goal_prop->statement_data = goal_copy;
+
+	write_dictionary(definitions + current_depth, "goal", goal_prop, 0);
+}
+
 int print_command(char **c){
 	statement *s;
 
@@ -1530,7 +1548,7 @@ int evaluate_command(char **c){
 	return 1;
 }
 
-int debug_command(char **c){
+int debug_command(char **c, statement *goal){
 	statement *s;
 
 	skip_whitespace(c);
@@ -1557,6 +1575,8 @@ int debug_command(char **c){
 	}
 	++*c;
 	//Do stuff here
+	print_statement(goal);
+	printf("\n");
 	
 	free_statement(s);
 
@@ -1732,6 +1752,7 @@ variable *prove_command(char **c){
 	}
 
 	clear_bound_propositions();
+	write_goal(goal);
 	returned = verify_block(c, 1, goal);
 	
 	if(!returned){
@@ -1818,6 +1839,7 @@ statement *given_command(char **c, statement *goal){
 		error(1);
 	}
 	add_bound_variables(next_goal, -1);
+	write_goal(next_goal);
 	return_statement = verify_block(c, 1, next_goal);
 
 	if(!return_statement){
@@ -1890,6 +1912,7 @@ statement *choose_command(char **c, statement *goal){
 		error(1);
 	}
 	add_bound_variables(next_goal, -1);
+	write_goal(next_goal);
 	return_statement = verify_block(c, 1, next_goal);
 
 	if(!return_statement){
@@ -1953,6 +1976,7 @@ statement *implies_command(char **c, statement *goal){
 	create_statement_var(name_buffer, var_statement);
 	next_goal = malloc(sizeof(statement));
 	copy_statement(next_goal, goal->child1);
+	write_goal(next_goal);
 	return_statement = verify_block(c, 1, next_goal);
 
 	if(!return_statement){
@@ -2015,6 +2039,7 @@ statement *not_command(char **c, statement *goal){
 	copy_statement(var_statement, goal->child0);
 	create_statement_var(name_buffer, var_statement);
 	next_goal = create_statement(FALSE, 0, 0);
+	write_goal(next_goal);
 	return_statement = verify_block(c, 1, next_goal);
 
 	if(!return_statement){
@@ -2088,7 +2113,7 @@ statement *verify_command(char **c, unsigned char allow_proof_value, statement *
 		return return_value;
 	} else if(allow_proof_value && (return_value = not_command(c, goal))){
 		return return_value;
-	} else if(debug_command(c)){
+	} else if(debug_command(c, goal)){
 		//pass
 	} else if(evaluate_command(c)){
 		//Pass

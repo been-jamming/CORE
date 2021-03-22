@@ -1,0 +1,97 @@
+//Now for fun stuff!
+
+//Originally I was going to define a relation as a subset of the cross product
+//But I think it's just easier to define a relation as a set of tuples
+define is_relation(R): *X(X in R -> ^Y^Z(is_tuple(Y, Z, X)));
+define are_related(A, B, R): ^X(is_tuple(A, B, X) & X in R);
+
+//Special properties of relations
+define is_symmetric(R): *X*Y(are_related(X, Y, R) -> are_related(Y, X, R));
+
+define is_transitive(R): *X*Y*Z(are_related(X, Y, R) & are_related(Y, Z, R) -> are_related(X, Z, R));
+
+//Since relations don't contain information about the sets containing the members
+//Relations are reflexive with respect to a set
+define is_reflexive(A, R): *X(X in A -> are_related(X, X, R));
+
+define is_antisymmetric(R): *X*Y(are_related(X, Y, R) & are_related(Y, X, R) -> equal_sets(X, Y));
+
+//The definition of a function doesn't rely on a domain or codomain either!
+//Instead, the domain and range are extracted from the function when needed.
+define is_function(F): is_relation(F) & *X*Y*Z(are_related(X, Y, F) & are_related(X, Z, F) -> equal_sets(Y, Z));
+
+define is_injective(F): *X*Y*Z(are_related(X, Z, F) & are_related(Y, Z, F) -> equal_sets(X, Y));
+
+//Like reflexivity, we define surjectivity with respect to a set
+define is_surjective(A, F): *Y(Y in A -> ^X(are_related(X, Y, F)));
+
+//H is the composition F*G
+define is_composition(F, G, H): *X*Z((are_related(X, Z, H) -> ^Y(are_related(X, Y, G) & are_related(Y, Z, F))) & (^Y(are_related(X, Y, G) & are_related(Y, Z, F)) -> are_related(X, Z, H)));
+
+//The images and inverse images of sets under functions are imporant
+//B is the image of A under F:
+define is_image(A, F, B): *Y((Y in B -> ^X(X in A & are_related(X, Y, F))) & (^X(X in A & are_related(X, Y, F)) -> Y in B));
+
+define is_preimage(A, F, B): *X((X in B -> ^Y(Y in B & are_related(X, Y, F))) & (^Y(Y in B & are_related(X, Y, F)) -> X in B));
+
+//The following define when can interpret a function F as having a domain or
+//Codomain of a specific set
+
+//F must be defined on every point of a domain
+define is_domain(A, F): *X(X in A -> ^Y(are_related(X, Y, F)));
+
+//The range of F must land in the codomain
+define is_codomain(A, F): *Y(^X(are_related(X, Y, F)) -> Y in A);
+
+//We define an equivalence relation on a set A
+define is_equivalence_relation(A, R): is_reflexive(A, R) & is_symmetric(R) & is_transitive(R);
+
+//And a partial order on A
+define is_partial_order(A, R): is_reflexive(A, R) & is_antisymmetric(R) & is_transitive(R);
+
+//Goals: equivalence classes of equivalence relation
+//       Cantor-Bernstein-Schroeder Theorem
+
+//C is the set of equivalence classes of A with respect to R (which in context should be an equivalence relation):
+define is_equivalence_classes(A, R, C): *X*Y((are_related(X, Y, R) -> ^D(X in D & Y in D & D in C)) & (^D(X in D & Y in D & D in C) -> are_related(X, Y, R)));
+
+//prove CBS_lemma0: *A*F(is_function(F) & ^P(is_power_set(A, P) & is_domain(P, F) & is_codomain(P, F)) & *S*T(are_related(S, T, F) -> is_subset(S, T)) -> ^R(are_related(R, R, F))){
+//	given A{
+//		given F{
+//			implies premises{
+//			}
+//		}
+//	}
+//}
+
+prove injective_composition: *F*G*H(is_composition(F, G, H) & is_injective(F) & is_injective(G) -> is_injective(H)){
+	given F{
+		given G{
+			given H{
+				implies premises{
+					composition_def = is_composition#(F)(G)(H)(left(left(premises)));
+					injective_F_def = is_injective#(F)(right(left(premises)));
+					injective_G_def = is_injective#(G)(right(premises));
+					prove def: *X*Y*Z(are_related(X, Z, H) & are_related(Y, Z, H) -> equal_sets(X, Y)){
+						given X{
+							given Y{
+								given Z{
+									implies related{
+										S_related = left(composition_def(X)(Z))(left(related))(S);
+										T_related = left(composition_def(Y)(Z))(right(related))(T);
+										S_equal_T = injective_F_def(S)(T)(Z)(and(right(S_related), right(T_related)));
+										define related_X_R(R): are_related(X, R, G);
+										related_X_T = left(equality_consistency[(related_X_R)](S)(T)(S_equal_T))(left(S_related));
+										return injective_G_def(X)(Y)(T)(and(related_X_T, left(T_related)));
+									}
+								}
+							}
+						}
+					}
+					return #is_injective(H)(def);
+				}
+			}
+		}
+	}
+}
+
