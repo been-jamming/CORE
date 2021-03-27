@@ -510,7 +510,7 @@ define is_intersection(A, B): *X((*Y(Y in A -> X in Y) -> X in B) & (X in B -> *
 //In order to construct the intersection, we need to know that it sits inside of some other set
 //That we can construct. Luckily, the intersection is always a subset of the union (when the union
 //Is not empty). For empty sets, it's impossible to define the intersection.
-prove intersection_exists: *A(non_empty(A) -> ^B(is_intersection(A, B))){
+prove intersection: *A(non_empty(A) -> ^B(is_intersection(A, B))){
 	given A{
 		implies non_empty_A{
 			non_empty_A = non_empty#(A)(non_empty_A);
@@ -581,7 +581,7 @@ prove intersection_unique: *A*B*C(is_intersection(A, B) & is_intersection(A, C) 
 //Define the set difference. C = A - B:
 define is_set_difference(A, B, C): *X((X in C -> X in A & ~X in B) & (X in A & ~X in B -> X in C));
 
-prove set_difference_exists: *A*B^C(is_set_difference(A, B, C)){
+prove set_difference: *A*B^C(is_set_difference(A, B, C)){
 	given A{
 		given B{
 			define restrict(X): ~X in B;
