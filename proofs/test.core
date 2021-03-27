@@ -1,6 +1,0 @@
-axiom bla: *A*B*D*E^C(A in C & B in C);
-axiom exist: ^S(true);
-
-exist(YO);
-exist(WHAT);
-print bla ( YO , WHAT , YO, YO)(YO);
