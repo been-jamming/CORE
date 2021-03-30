@@ -9,6 +9,8 @@ char *program_text;
 statement *goals[MAX_DEPTH];
 unsigned int goal_depth;
 
+static statement *parse_statement_value_recursive(char **c, unsigned char *is_verified);
+
 unsigned int umax(unsigned int a, unsigned int b){
 	if(a > b){
 		return a;
@@ -970,7 +972,7 @@ statement *parse_statement_identifier_or_value(char **c, unsigned char verified,
 	}
 }
 
-statement *parse_statement_value_parentheses(char **c, statement *output, unsigned char verified){
+statement *parse_statement_value_parentheses(char **c, statement *output, unsigned char *is_verified, unsigned char *did_bind){
 	statement_type compare_type;
 	statement *next_output;
 	statement *arg;
@@ -996,14 +998,11 @@ statement *parse_statement_value_parentheses(char **c, statement *output, unsign
 			}
 			skip_whitespace(c);
 			if(compare_type == EXISTS){
-				if(!verified){
-					fprintf(stderr, "Error: cannot bind variable using unverified statement\n");
-					error(1);
-				}
 				if(output->num_bound_props){
 					fprintf(stderr, "Error: expression has bound propositions\n");
 					error(1);
 				}
+				*did_bind = 1;
 				var = create_object_var(var_name);
 			} else if(compare_type == FORALL){
 				if(output->num_bound_props){
@@ -1025,7 +1024,7 @@ statement *parse_statement_value_parentheses(char **c, statement *output, unsign
 			output = next_output;
 			add_bound_variables(output, -1);
 		} else if(compare_type == IMPLIES || compare_type == NOT){
-			arg = parse_statement_value(c, verified);
+			arg = parse_statement_value_recursive(c, is_verified, did_bind);
 			skip_whitespace(c);
 			if(!arg){
 				fprintf(stderr, "Error: failed to parse argument\n");
@@ -1071,16 +1070,17 @@ statement *parse_statement_value_parentheses(char **c, statement *output, unsign
 	return output;
 }
 
-statement *parse_statement_value(char **c, unsigned char verified){
+static statement *parse_statement_value_recursive(char **c, unsigned char *is_verified, unsigned char *did_bind){
 	statement *output;
 	statement *arg;
+	unsigned char next_verified;
 
 	skip_whitespace(c);
-	if((output = parse_statement_value_builtin(c, verified))){
+	if((output = parse_statement_value_builtin(c, is_verified, did_bind))){
 		//pass
 	} else if(**c == '('){
 		++*c;
-		output = parse_statement_value(c, verified);
+		output = parse_statement_value_recursive(c, is_verified, did_bind);
 		if(**c != ')'){
 			if(output){
 				free_statement(output);
@@ -1089,7 +1089,7 @@ statement *parse_statement_value(char **c, unsigned char verified){
 		}
 		++*c;
 	} else {
-		output = parse_statement_identifier(c, verified);
+		output = parse_statement_identifier(c, is_verified);
 		if(!output){
 			return NULL;
 		}
@@ -1106,7 +1106,7 @@ statement *parse_statement_value(char **c, unsigned char verified){
 			++*c;
 			skip_whitespace(c);
 
-			arg = parse_statement_identifier_or_value(c, 0, ']');
+			arg = parse_statement_identifier_or_value(c, &next_verified, ']');
 			if(!arg || arg->num_bound_props){
 				if(arg){
 					free_statement(arg);
@@ -1126,7 +1126,7 @@ statement *parse_statement_value(char **c, unsigned char verified){
 			free_statement(arg);
 		} else if(**c == '('){
 			++*c;
-			output = parse_statement_value_parentheses(c, output, verified);
+			output = parse_statement_value_parentheses(c, output, is_verified, did_bind);
 		} else {
 			free_statement(output);
 			return NULL;
@@ -1137,3 +1137,17 @@ statement *parse_statement_value(char **c, unsigned char verified){
 	return output;
 }
 
+statement *parse_statement_value(char **c, unsigned char *is_verified){
+	unsigned char did_bind = 0;
+	statement *output;
+
+	*is_verified = 1;
+	output = parse_statement_value_recursive(c, is_verified, &did_bind);
+	if(output && !*is_verified && did_bind){
+		free_statement(output);
+		fprintf(stderr, "Error: cannot bind variable in unverified statement\n");
+		error(1);
+	}
+
+	return output;
+}
