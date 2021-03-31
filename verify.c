@@ -9,6 +9,8 @@ char *program_text;
 statement *goals[MAX_DEPTH];
 unsigned int goal_depth;
 
+static statement *parse_statement_value_recursive(char **c, unsigned char *is_verified, unsigned char *did_bind);
+
 unsigned int umax(unsigned int a, unsigned int b){
 	if(a > b){
 		return a;
@@ -243,7 +245,7 @@ statement *definition_to_statement(char *name){
 	return NULL;
 }
 
-statement *parse_statement_identifier(char **c, unsigned char verified){
+statement *parse_statement_identifier(char **c, unsigned char *is_verified){
 	variable *var;
 	statement *output;
 	proposition *prop;
@@ -290,7 +292,8 @@ statement *parse_statement_identifier(char **c, unsigned char verified){
 		}
 	}
 
-	if(!var && !verified){
+	if(!var){
+		*is_verified = 0;
 		for(i = current_depth; i >= 0; i--){
 			prop = read_dictionary(definitions[i], name_buffer, 0);
 			if(prop && !prop->statement_data){
@@ -634,19 +637,317 @@ variable *create_statement_var(char *var_name, statement *s){
 	return v;
 }
 
-statement *parse_statement_value_builtin(char **c, unsigned char verified){
-	char var_name0[256];
-	char var_name1[256];
-	unsigned char is_and;
+statement *parse_left(char **c, unsigned char *is_verified){
+	statement *s;
+	statement *output;
+	unsigned char arg_verified;
+
+	s = parse_statement_value(c, &arg_verified);
+	*is_verified = arg_verified && *is_verified;
+	if(!s){
+		fprintf(stderr, "Error: could not parse statement value\n");
+		error(1);
+	}
+	skip_whitespace(c);
+	if(**c != ')'){
+		free_statement(s);
+		fprintf(stderr, "Error: expected ')'\n");
+		error(1);
+	}
+	++*c;
+	if(s->type == OR || s->type == IMPLIES){
+		*is_verified = 0;
+	} else if(s->type != AND){
+		free_statement(s);
+		fprintf(stderr, "Error: invalid operand for 'left'\n");
+		error(1);
+	} else if(s->num_bound_vars || s->num_bound_props){
+		free_statement(s);
+		fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
+		error(1);
+	}
+
+	free_statement(s->child1);
+	output = s->child0;
+	free(s);
+
+	return output;
+}
+
+statement *parse_right(char **c, unsigned char *is_verified){
+	statement *s;
+	statement *output;
+	unsigned char arg_verified;
+
+	s = parse_statement_value(c, &arg_verified);
+	*is_verified = arg_verified && *is_verified;
+	if(!s){
+		fprintf(stderr, "Error: could not parse statement value\n");
+		error(1);
+	}
+	skip_whitespace(c);
+	if(**c != ')'){
+		free_statement(s);
+		fprintf(stderr, "Error: expected ')'\n");
+		error(1);
+	}
+	++*c;
+	if(s->type == OR || s->type == IMPLIES){
+		*is_verified = 0;
+	} else if(s->type != AND){
+		free_statement(s);
+		fprintf(stderr, "Error: invalid operand for 'right'\n");
+		error(1);
+	} else if(s->num_bound_vars || s->num_bound_props){
+		free_statement(s);
+		fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
+		error(1);
+	}
+
+	free_statement(s->child0);
+	output = s->child1;
+	free(s);
+
+	return output;
+}
+
+statement *parse_and_or(char **c, unsigned char is_and, unsigned char *is_verified){
 	statement *s;
 	statement *t;
+	statement *new;
+	unsigned char arg0_verified = 1;
+	unsigned char arg1_verified = 1;
+
+	s = parse_statement_identifier_or_value(c, &arg0_verified, ',');
+	if(!s){
+		fprintf(stderr, "Error: could not parse statement value\n");
+		error(1);
+	}
+	if(s->num_bound_props || s->num_bound_vars){
+		free_statement(s);
+		fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
+		error(1);
+	}
+	skip_whitespace(c);
+	if(**c != ','){
+		free_statement(s);
+		fprintf(stderr, "Error: expected ','\n");
+		error(1);
+	}
+	++*c;
+	skip_whitespace(c);
+	t = parse_statement_identifier_or_value(c, &arg1_verified, ')');
+	if(!t){
+		free_statement(s);
+		fprintf(stderr, "Error: could not parse statement value\n");
+		error(1);
+	}
+	if(t->num_bound_props || t->num_bound_vars){
+		free_statement(s);
+		free_statement(t);
+		fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
+		error(1);
+	}
+	skip_whitespace(c);
+	if(**c != ')'){
+		free_statement(s);
+		free_statement(t);
+		fprintf(stderr, "Error: expected ')'\n");
+		error(1);
+	}
+	++*c;
+	if(is_and){
+		new = create_statement(AND, 0, 0);
+		*is_verified = arg0_verified && arg1_verified && *is_verified;
+	} else {
+		new = create_statement(OR, 0, 0);
+		*is_verified = (arg0_verified || arg1_verified) && *is_verified;
+	}
+	new->child0 = s;
+	new->child1 = t;
+
+	return new;
+}
+
+statement *parse_swap(char **c, unsigned char *is_verified){
+	statement *s;
 	statement *output;
+	statement *new;
 	statement *child0;
 	statement *child1;
-	variable *new_statement_var;
+	unsigned char arg_verified;
+
+	s = parse_statement_value(c, &arg_verified);
+	*is_verified = arg_verified && *is_verified;
+	if(!s){
+		fprintf(stderr, "Error: could not parse statement value\n");
+		error(1);
+	}
+	skip_whitespace(c);
+	if(**c != ')'){
+		free_statement(s);
+		fprintf(stderr, "Error: expected ')'\n");
+		error(1);
+	}
+	++*c;
+
+	if(s->num_bound_vars || s->num_bound_props){
+		free_statement(s);
+		fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
+		error(1);
+	}
+
+	if(s->type == AND || s->type == OR){
+		output = s->child0;
+		s->child0 = s->child1;
+		s->child1 = output;
+		output = s;
+
+		return s;
+	} else if(s->type == IMPLIES){
+		child0 = s->child0;
+		child1 = s->child1;
+
+		new = create_statement(NOT, s->num_bound_vars, s->num_bound_props);
+		new->child0 = child0;
+		s->child1 = new;
+
+		new = create_statement(NOT, s->num_bound_vars, s->num_bound_props);
+		new->child0 = child1;
+		s->child0 = new;
+
+		return s;
+	} else {
+		free_statement(s);
+		fprintf(stderr, "Error: invalid operand for 'swap'\n");
+		error(1);
+		return NULL;
+	}
+}
+
+statement *parse_branch(char **c, unsigned char *is_verified){
+	statement *s;
 	statement *new;
 	statement *return_statement0;
 	statement *return_statement1;
+	variable *new_statement_var;
+	unsigned char arg_verified;
+	char var_name0[256];
+	char var_name1[256];
+
+	s = parse_statement_value(c, &arg_verified);
+	skip_whitespace(c);
+	if(!s){
+		fprintf(stderr, "Error: could not parse statement value\n");
+		error(1);
+	}
+	if(!arg_verified){
+		fprintf(stderr, "Error: first argument of 'branch' must be verified\n");
+		error(1);
+	}
+	if(**c != ','){
+		fprintf(stderr, "Error: expected ','\n");
+		error(1);
+	}
+	++*c;
+	if(s->type != OR || s->num_bound_props || s->num_bound_vars){
+		fprintf(stderr, "Error: invalid operand for 'branch'\n");
+		error(1);
+	}
+	skip_whitespace(c);
+	get_identifier(c, var_name0, 256);
+	if(var_name0[0] == '\0'){
+		fprintf(stderr, "Error: expected identifier\n");
+		error(1);
+	}
+	skip_whitespace(c);
+	if(**c != ','){
+		fprintf(stderr, "Error: expected ','\n");
+		error(1);
+	}
+	++*c;
+	skip_whitespace(c);
+	get_identifier(c, var_name1, 256);
+	if(var_name1[0] == '\0'){
+		fprintf(stderr, "Error: expected identifier\n");
+		error(1);
+	}
+	skip_whitespace(c);
+	if(**c != ')'){
+		fprintf(stderr, "Error: expected ')'\n");
+		error(1);
+	}
+	++*c;
+	skip_whitespace(c);
+	if(**c != '{'){
+		fprintf(stderr, "Error: expected '{'\n");
+		error(1);
+	}
+	++*c;
+	skip_whitespace(c);
+	up_scope();
+	new = malloc(sizeof(statement));
+	copy_statement(new, s->child0);
+	new_statement_var = create_statement_var(var_name0, new);
+	new_statement_var->num_references++;
+	return_statement0 = verify_block(c, 0, NULL);
+	if(!return_statement0){
+		fprintf(stderr, "Error: expected return statement\n");
+		error(1);
+	}
+	if(max_statement_depth(return_statement0) >= current_depth){
+		free_statement(return_statement0);
+		fprintf(stderr, "Error: returned statement depends on variables in its scope\n");
+		error(1);
+	}
+	drop_scope();
+	skip_whitespace(c);
+	if(strncmp(*c, "or", 2) || is_alphanumeric((*c)[2])){
+		free_statement(return_statement0);
+		fprintf(stderr, "Error: expected 'or'\n");
+		error(1);
+	}
+	*c += 2;
+	skip_whitespace(c);
+	if(**c != '{'){
+		free_statement(return_statement0);
+		fprintf(stderr, "Error: expected '{'\n");
+		error(1);
+	}
+	++*c;
+	skip_whitespace(c);
+	up_scope();
+	new = malloc(sizeof(statement));
+	copy_statement(new, s->child1);
+	new_statement_var = create_statement_var(var_name1, new);
+	new_statement_var->num_references++;
+	return_statement1 = verify_block(c, 0, NULL);
+	if(!return_statement1){
+		free_statement(return_statement0);
+		fprintf(stderr, "Error: expected return statement\n");
+		error(1);
+	}
+	if(max_statement_depth(return_statement1) >= current_depth){
+		free_statement(return_statement0);
+		free_statement(return_statement1);
+		fprintf(stderr, "Error: returned statement depends on variables in its scope\n");
+		error(1);
+	}
+	drop_scope();
+	if(!compare_statement(return_statement0, return_statement1)){
+		free_statement(return_statement0);
+		free_statement(return_statement1);
+		fprintf(stderr, "Error: mismatched returned statements\n");
+		error(1);
+	}
+	free_statement(return_statement1);
+	free_statement(s);
+
+	return return_statement0;
+}
+
+statement *parse_statement_value_builtin(char **c, unsigned char *is_verified){
+	unsigned char is_and;
 
 	if(!strncmp(*c, "left", 4) && !is_alphanumeric((*c)[4])){
 		*c += 4;
@@ -655,37 +956,7 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 			return NULL;
 		}
 		++*c;
-		s = parse_statement_value(c, verified);
-		if(!s){
-			fprintf(stderr, "Error: could not parse statement value\n");
-			error(1);
-		}
-		skip_whitespace(c);
-		if(**c != ')'){
-			free_statement(s);
-			fprintf(stderr, "Error: expected ')'\n");
-			error(1);
-		}
-		++*c;
-		if(verified && (s->type == OR || s->type == IMPLIES)){
-			free_statement(s);
-			fprintf(stderr, "Error: resulting statement must be verified\n");
-			error(1);
-		} else if(s->type != AND){
-			free_statement(s);
-			fprintf(stderr, "Error: invalid operand for 'left'\n");
-			error(1);
-		} else if(s->num_bound_vars || s->num_bound_props){
-			free_statement(s);
-			fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
-			error(1);
-		}
-
-		free_statement(s->child1);
-		output = s->child0;
-		free(s);
-
-		return output;
+		return parse_left(c, is_verified);
 	} else if(!strncmp(*c, "right", 5) && !is_alphanumeric((*c)[5])){
 		*c += 5;
 		skip_whitespace(c);
@@ -693,37 +964,7 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 			return NULL;
 		}
 		++*c;
-		s = parse_statement_value(c, verified);
-		if(!s){
-			fprintf(stderr, "Error: could not parse statement value\n");
-			error(1);
-		}
-		skip_whitespace(c);
-		if(**c != ')'){
-			free_statement(s);
-			fprintf(stderr, "Error: expected ')'\n");
-			error(1);
-		}
-		++*c;
-		if(verified && (s->type == OR || s->type == IMPLIES)){
-			free_statement(s);
-			fprintf(stderr, "Error: resulting statement must be verified\n");
-			error(1);
-		} else if(s->type != AND && s->type != OR && s->type != IMPLIES){
-			fprintf(stderr, "Error: invalid operand for 'right'\n");
-			free_statement(s);
-			error(1);
-		} else if(s->num_bound_vars || s->num_bound_props){
-			free_statement(s);
-			fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
-			error(1);
-		}
-
-		free_statement(s->child0);
-		output = s->child1;
-		free(s);
-
-		return output;
+		return parse_right(c, is_verified);
 	} else if((!strncmp(*c, "and", 3) && !is_alphanumeric((*c)[3])) || (!strncmp(*c, "or", 2) && !is_alphanumeric((*c)[2]))){
 		if(**c == 'a'){
 			*c += 3;
@@ -737,53 +978,7 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 			return NULL;
 		}
 		++*c;
-		s = parse_statement_identifier_or_value(c, verified, ',');
-		if(!s){
-			fprintf(stderr, "Error: could not parse statement value\n");
-			error(1);
-		}
-		if(s->num_bound_props || s->num_bound_vars){
-			free_statement(s);
-			fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
-			error(1);
-		}
-		skip_whitespace(c);
-		if(**c != ','){
-			free_statement(s);
-			fprintf(stderr, "Error: expected ','\n");
-			error(1);
-		}
-		++*c;
-		skip_whitespace(c);
-		t = parse_statement_identifier_or_value(c, verified && is_and, ')');
-		if(!t){
-			free_statement(s);
-			fprintf(stderr, "Error: could not parse statement value\n");
-			error(1);
-		}
-		if(t->num_bound_props || t->num_bound_vars){
-			free_statement(s);
-			free_statement(t);
-			fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
-			error(1);
-		}
-		skip_whitespace(c);
-		if(**c != ')'){
-			free_statement(s);
-			free_statement(t);
-			fprintf(stderr, "Error: expected ')'\n");
-			error(1);
-		}
-		++*c;
-		if(is_and){
-			new = create_statement(AND, 0, 0);
-		} else {
-			new = create_statement(OR, 0, 0);
-		}
-		new->child0 = s;
-		new->child1 = t;
-
-		return new;
+		return parse_and_or(c, is_and, is_verified);
 	} else if(!strncmp(*c, "swap", 4) && !is_alphanumeric((*c)[4])){
 		*c += 4;
 		skip_whitespace(c);
@@ -791,48 +986,7 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 			return NULL;
 		}
 		++*c;
-		s = parse_statement_value(c, verified);
-		if(!s){
-			fprintf(stderr, "Error: could not parse statement value\n");
-			error(1);
-		}
-		skip_whitespace(c);
-		if(**c != ')'){
-			free_statement(s);
-			fprintf(stderr, "Error: expected ')'\n");
-			error(1);
-		}
-		++*c;
-		if((s->type != AND && s->type != OR && s->type != IMPLIES)){
-			free_statement(s);
-			fprintf(stderr, "Error: invalid operand for 'swap'\n");
-			error(1);
-		} else if(s->num_bound_vars || s->num_bound_props){
-			free_statement(s);
-			fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
-			error(1);
-		}
-		if(s->type == AND || s->type == OR){
-			output = s->child0;
-			s->child0 = s->child1;
-			s->child1 = output;
-			output = s;
-
-			return s;
-		} else if(s->type == IMPLIES){
-			child0 = s->child0;
-			child1 = s->child1;
-
-			new = create_statement(NOT, s->num_bound_vars, s->num_bound_props);
-			new->child0 = child0;
-			s->child1 = new;
-
-			new = create_statement(NOT, s->num_bound_vars, s->num_bound_props);
-			new->child0 = child1;
-			s->child0 = new;
-
-			return s;
-		}
+		return parse_swap(c, is_verified);
 	} else if(!strncmp(*c, "branch", 6) && !is_alphanumeric((*c)[6])){
 		*c += 6;
 		skip_whitespace(c);
@@ -840,137 +994,32 @@ statement *parse_statement_value_builtin(char **c, unsigned char verified){
 			return NULL;
 		}
 		++*c;
-		skip_whitespace(c);
-		s = parse_statement_value(c, 1);
-		skip_whitespace(c);
-		if(!s){
-			fprintf(stderr, "Error: could not parse statement value\n");
-			error(1);
-		}
-		if(**c != ','){
-			fprintf(stderr, "Error: expected ','\n");
-			error(1);
-		}
-		++*c;
-		if(s->type != OR || s->num_bound_props || s->num_bound_vars){
-			fprintf(stderr, "Error: invalid operand for 'branch'\n");
-			error(1);
-		}
-		skip_whitespace(c);
-		get_identifier(c, var_name0, 256);
-		if(var_name0[0] == '\0'){
-			fprintf(stderr, "Error: expected identifier\n");
-			error(1);
-		}
-		skip_whitespace(c);
-		if(**c != ','){
-			fprintf(stderr, "Error: expected ','\n");
-			error(1);
-		}
-		++*c;
-		skip_whitespace(c);
-		get_identifier(c, var_name1, 256);
-		if(var_name1[0] == '\0'){
-			fprintf(stderr, "Error: expected identifier\n");
-			error(1);
-		}
-		skip_whitespace(c);
-		if(**c != ')'){
-			fprintf(stderr, "Error: expected ')'\n");
-			error(1);
-		}
-		++*c;
-		skip_whitespace(c);
-		if(**c != '{'){
-			fprintf(stderr, "Error: expected '{'\n");
-			error(1);
-		}
-		++*c;
-		skip_whitespace(c);
-		up_scope();
-		new = malloc(sizeof(statement));
-		copy_statement(new, s->child0);
-		new_statement_var = create_statement_var(var_name0, new);
-		new_statement_var->num_references++;
-		return_statement0 = verify_block(c, 0, NULL);
-		if(!return_statement0){
-			fprintf(stderr, "Error: expected return statement\n");
-			error(1);
-		}
-		if(max_statement_depth(return_statement0) >= current_depth){
-			free_statement(return_statement0);
-			fprintf(stderr, "Error: returned statement depends on variables in its scope\n");
-			error(1);
-		}
-		drop_scope();
-		skip_whitespace(c);
-		if(strncmp(*c, "or", 2) || is_alphanumeric((*c)[2])){
-			free_statement(return_statement0);
-			fprintf(stderr, "Error: expected 'or'\n");
-			error(1);
-		}
-		*c += 2;
-		skip_whitespace(c);
-		if(**c != '{'){
-			free_statement(return_statement0);
-			fprintf(stderr, "Error: expected '{'\n");
-			error(1);
-		}
-		++*c;
-		skip_whitespace(c);
-		up_scope();
-		new = malloc(sizeof(statement));
-		copy_statement(new, s->child1);
-		new_statement_var = create_statement_var(var_name1, new);
-		new_statement_var->num_references++;
-		return_statement1 = verify_block(c, 0, NULL);
-		if(!return_statement1){
-			free_statement(return_statement0);
-			fprintf(stderr, "Error: expected return statement\n");
-			error(1);
-		}
-		if(max_statement_depth(return_statement1) >= current_depth){
-			free_statement(return_statement0);
-			free_statement(return_statement1);
-			fprintf(stderr, "Error: returned statement depends on variables in its scope\n");
-			error(1);
-		}
-		drop_scope();
-		if(!compare_statement(return_statement0, return_statement1)){
-			free_statement(return_statement0);
-			free_statement(return_statement1);
-			fprintf(stderr, "Error: mismatched returned statements\n");
-			error(1);
-		}
-		free_statement(return_statement1);
-		free_statement(s);
-
-		return return_statement0;
+		return parse_branch(c, is_verified);
 	}
 
 	return NULL;
 }
 
-statement *parse_statement_identifier_or_value(char **c, unsigned char verified, char end_char){
+statement *parse_statement_identifier_or_value(char **c, unsigned char *is_verified, char end_char){
 	statement *output;
+	char *beginning;
 
-	if(verified){
-		return parse_statement_value(c, verified);
-	} else {
-		output = parse_statement_identifier_proposition(c);
-		skip_whitespace(c);
-		if(!output || **c != end_char){
-			if(output){
-				free_statement(output);
-			}
-			output = parse_statement_value(c, verified);
-		}
-
+	beginning = *c;
+	output = parse_statement_identifier_proposition(c);
+	skip_whitespace(c);
+	if(output && **c == end_char){
+		*is_verified = 0;
 		return output;
+	} else {
+		if(output){
+			free_statement(output);
+		}
+		*c = beginning;
+		return parse_statement_value(c, is_verified);
 	}
 }
 
-statement *parse_statement_value_parentheses(char **c, statement *output, unsigned char verified){
+statement *parse_statement_value_parentheses(char **c, statement *output, unsigned char *is_verified, unsigned char *did_bind){
 	statement_type compare_type;
 	statement *next_output;
 	statement *arg;
@@ -996,14 +1045,11 @@ statement *parse_statement_value_parentheses(char **c, statement *output, unsign
 			}
 			skip_whitespace(c);
 			if(compare_type == EXISTS){
-				if(!verified){
-					fprintf(stderr, "Error: cannot bind variable using unverified statement\n");
-					error(1);
-				}
 				if(output->num_bound_props){
 					fprintf(stderr, "Error: expression has bound propositions\n");
 					error(1);
 				}
+				*did_bind = 1;
 				var = create_object_var(var_name);
 			} else if(compare_type == FORALL){
 				if(output->num_bound_props){
@@ -1025,7 +1071,7 @@ statement *parse_statement_value_parentheses(char **c, statement *output, unsign
 			output = next_output;
 			add_bound_variables(output, -1);
 		} else if(compare_type == IMPLIES || compare_type == NOT){
-			arg = parse_statement_value(c, verified);
+			arg = parse_statement_value_recursive(c, is_verified, did_bind);
 			skip_whitespace(c);
 			if(!arg){
 				fprintf(stderr, "Error: failed to parse argument\n");
@@ -1071,16 +1117,17 @@ statement *parse_statement_value_parentheses(char **c, statement *output, unsign
 	return output;
 }
 
-statement *parse_statement_value(char **c, unsigned char verified){
+static statement *parse_statement_value_recursive(char **c, unsigned char *is_verified, unsigned char *did_bind){
 	statement *output;
 	statement *arg;
+	unsigned char next_verified;
 
 	skip_whitespace(c);
-	if((output = parse_statement_value_builtin(c, verified))){
+	if((output = parse_statement_value_builtin(c, is_verified))){
 		//pass
 	} else if(**c == '('){
 		++*c;
-		output = parse_statement_value(c, verified);
+		output = parse_statement_value_recursive(c, is_verified, did_bind);
 		if(**c != ')'){
 			if(output){
 				free_statement(output);
@@ -1089,7 +1136,7 @@ statement *parse_statement_value(char **c, unsigned char verified){
 		}
 		++*c;
 	} else {
-		output = parse_statement_identifier(c, verified);
+		output = parse_statement_identifier(c, is_verified);
 		if(!output){
 			return NULL;
 		}
@@ -1106,7 +1153,7 @@ statement *parse_statement_value(char **c, unsigned char verified){
 			++*c;
 			skip_whitespace(c);
 
-			arg = parse_statement_identifier_or_value(c, 0, ']');
+			arg = parse_statement_identifier_or_value(c, &next_verified, ']');
 			if(!arg || arg->num_bound_props){
 				if(arg){
 					free_statement(arg);
@@ -1126,7 +1173,7 @@ statement *parse_statement_value(char **c, unsigned char verified){
 			free_statement(arg);
 		} else if(**c == '('){
 			++*c;
-			output = parse_statement_value_parentheses(c, output, verified);
+			output = parse_statement_value_parentheses(c, output, is_verified, did_bind);
 		} else {
 			free_statement(output);
 			return NULL;
@@ -1137,3 +1184,17 @@ statement *parse_statement_value(char **c, unsigned char verified){
 	return output;
 }
 
+statement *parse_statement_value(char **c, unsigned char *is_verified){
+	unsigned char did_bind = 0;
+	statement *output;
+
+	*is_verified = 1;
+	output = parse_statement_value_recursive(c, is_verified, &did_bind);
+	if(output && !*is_verified && did_bind){
+		free_statement(output);
+		fprintf(stderr, "Error: cannot bind variable in unverified statement\n");
+		error(1);
+	}
+
+	return output;
+}
