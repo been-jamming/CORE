@@ -76,6 +76,8 @@ prove codomain_exists: *F(is_relation(F) -> ^C*A*B(are_related(A, B, F) -> B in 
 							print related_def;
 							print tuple_def;
 							print pair_def;
+							print goal;
+							return goal;
 						}
 					}
 				}

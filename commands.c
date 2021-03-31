@@ -92,6 +92,7 @@ void write_goal(statement *goal){
 
 int print_command(char **c){
 	statement *s;
+	unsigned char is_verified;
 
 	if(strncmp(*c, "print", 5) || is_alphanumeric((*c)[5])){
 		return 0;
@@ -101,10 +102,15 @@ int print_command(char **c){
 	#endif
 	*c += 5;
 	skip_whitespace(c);
-	s = parse_statement_value(c, 1);
+	s = parse_statement_value(c, &is_verified);
 	if(!s){
 		fprintf(stderr, "Error: could not parse statement value\n");
 		error(1);
+	}
+	if(is_verified){
+		printf("'%s' line %d   (verified): ", global_file_name, line_number);
+	} else {
+		printf("'%s' line %d (unverified): ", global_file_name, line_number);
 	}
 	print_statement(s);
 	printf("\n");
@@ -345,6 +351,7 @@ variable *axiom_command(char **c){
 
 variable *assign_command(char **c){
 	char name_buffer[256];
+	unsigned char is_verified;
 	char *beginning;
 	statement *s;
 	variable *output;
@@ -368,7 +375,7 @@ variable *assign_command(char **c){
 	++*c;
 	skip_whitespace(c);
 	
-	s = parse_statement_value(c, 1);
+	s = parse_statement_value(c, &is_verified);
 	if(!s){
 		fprintf(stderr, "Error: could not parse statement value\n");
 		error(1);
@@ -379,6 +386,11 @@ variable *assign_command(char **c){
 		fprintf(stderr, "Error: expected ';'\n");
 		error(1);
 	}
+	if(!is_verified){
+		free_statement(s);
+		fprintf(stderr, "Error: statement must be verified\n");
+		error(1);
+	}
 	++*c;
 
 	output = create_statement_var(name_buffer, s);
@@ -387,6 +399,7 @@ variable *assign_command(char **c){
 }
 
 statement *return_command(char **c){
+	unsigned char is_verified;
 	statement *output;
 
 	skip_whitespace(c);
@@ -399,7 +412,7 @@ statement *return_command(char **c){
 
 	*c += 6;
 	skip_whitespace(c);
-	output = parse_statement_value(c, 1);
+	output = parse_statement_value(c, &is_verified);
 	if(!output){
 		fprintf(stderr, "Error: could not parse statement value\n");
 		error(1);
@@ -410,18 +423,24 @@ statement *return_command(char **c){
 		fprintf(stderr, "Error: expected ';'\n");
 		error(1);
 	}
+	if(!is_verified){
+		free_statement(output);
+		fprintf(stderr, "Error: statement must be verified\n");
+		error(1);
+	}
 	++*c;
 
 	return output;
 }
 
 int evaluate_command(char **c){
+	unsigned char is_verified;
 	statement *s;
 	char *beginning;
 
 	skip_whitespace(c);
 	beginning = *c;
-	s = parse_statement_value(c, 1);
+	s = parse_statement_value(c, &is_verified);
 	if(!s){
 		*c = beginning;
 		return 0;
@@ -436,6 +455,11 @@ int evaluate_command(char **c){
 		fprintf(stderr, "Error: expected ';'\n");
 		error(1);
 	}
+	if(!is_verified){
+		free_statement(s);
+		fprintf(stderr, "Error: statement must be verified\n");
+		error(1);
+	}
 	++*c;
 	free_statement(s);
 
@@ -443,6 +467,7 @@ int evaluate_command(char **c){
 }
 
 int debug_command(char **c, statement *goal){
+	unsigned char is_verified;
 	statement *s;
 
 	skip_whitespace(c);
@@ -455,7 +480,7 @@ int debug_command(char **c, statement *goal){
 	#endif
 	*c += 5;
 	skip_whitespace(c);
-	s = parse_statement_value(c, 1);
+	s = parse_statement_value(c, &is_verified);
 	if(!s){
 		fprintf(stderr, "Error: could not parse statement value\n");
 		error(1);
@@ -469,8 +494,6 @@ int debug_command(char **c, statement *goal){
 	}
 	++*c;
 	//Do stuff here
-	print_statement(goal);
-	printf("\n");
 	
 	free_statement(s);
 

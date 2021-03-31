@@ -2,8 +2,8 @@ extern char *program_text;
 extern statement *goals[MAX_DEPTH];
 extern unsigned int goal_depth;
 
-statement *parse_statement_identifier_or_value(char **c, unsigned char verified, char end_char);
-statement *parse_statement_value(char **c, unsigned char verified);
+statement *parse_statement_identifier_or_value(char **c, unsigned char *is_verified, char end_char);
+statement *parse_statement_value(char **c, unsigned char *is_verified);
 
 statement *verify_block(char **c, unsigned char allow_proof_value, statement *goal);
 
@@ -23,7 +23,7 @@ unsigned int max_statement_depth(statement *s);
 statement *parse_statement_identifier_proposition(char **c);
 statement *statement_to_definition(char *name);
 statement *definition_to_statement(char *name);
-statement *parse_statement_identifier(char **c, unsigned char verified);
+statement *parse_statement_identifier(char **c, unsigned char *is_verified);
 void add_bound_variables(statement *s, int increment);
 void substitute_variable_recursive(statement *s, int id, variable *v);
 int substitute_variable(statement *s, int id, variable *v);
@@ -35,6 +35,4 @@ variable *create_object_var(char *var_name);
 variable *get_object_var(char *var_name);
 variable *get_statement_var(char *var_name);
 variable *create_statement_var(char *var_name, statement *s);
-statement *parse_statement_value_builtin(char **c, unsigned char verified);
-statement *parse_statement_identifier_or_value(char **c, unsigned char verified, char end_char);
-statement *parse_statement_value(char **c, unsigned char verified);
+statement *parse_statement_value_builtin(char **c, unsigned char *is_verified);
