@@ -3,11 +3,28 @@
 define equal_sets(A, B): *X((X in A -> X in B) & (X in B -> X in A));
 define non_empty(A): ^X(X in A);
 
+
+//Equality is symmetric
+prove equal_sets_symmetric: *A*B(equal_sets(A, B) -> equal_sets(B, A)){
+	given A{
+		given B{
+			implies A_equal_B{
+				prove def: *X((X in B -> X in A) & (X in A -> X in B)){
+					given X{
+						return swap(equal_sets#(A)(B)(A_equal_B)(X));
+					}
+				}
+				return #equal_sets(B)(A)(def);
+			}
+		}
+	}
+}
+
 //In order to make proofs more convenient, we need the following axiom
 //What it says is that if two sets are equal under the given definition, then for any proposition depending on a set, that proposition is true for one if and only if it is true for the other
 //This axiom is valid because for any particular proposition, one can prove the fact using the definition of equal sets and the axiom of extensionality
 //In other words, it doesn't change the strength of the theory, it just makes proofs more convenient
-axiom equality_consistency[P(1)]: *X*Y(equal_sets(X, Y) -> ((P(X) -> P(Y)) & (P(Y) -> P(X))));
+axiom equality_consistency[P(1)]: *X*Y(equal_sets(X, Y) & P(X) -> P(Y));
 
 //The first axiom of zfc: the axiom of extensionality
 //If two sets have the same members, they are members of the same sets
@@ -16,9 +33,20 @@ prove axiom_extensionality: *A*B(equal_sets(A, B) -> *W((A in W -> B in W) & (B 
 	given A{
 		given B{
 			implies A_equal_B{
+				B_equal_A = equal_sets_symmetric(A, B)(A_equal_B);
 				given W{
 					define in_W(X): X in W;
-					return equality_consistency[(in_W)](A)(B)(A_equal_B);
+					prove lemma0: A in W -> B in W{
+						implies A_in_W{
+							return equality_consistency[(in_W)](A, B)(and(A_equal_B, A_in_W));
+						}
+					}
+					prove lemma1: B in W -> A in W{
+						implies B_in_W{
+							return equality_consistency[(in_W)](B, A)(and(B_equal_A, B_in_W));
+						}
+					}
+					return and(lemma0, lemma1);
 				}
 			}
 		}
@@ -70,22 +98,6 @@ prove equal_sets_reflexive: *A(equal_sets(A, A)){
 	}
 }
 
-//Equality is symmetric
-prove equal_sets_symmetric: *A*B(equal_sets(A, B) -> equal_sets(B, A)){
-	given A{
-		given B{
-			implies A_equal_B{
-				prove def: *X((X in B -> X in A) & (X in A -> X in B)){
-					given X{
-						return swap(equal_sets#(A)(B)(A_equal_B)(X));
-					}
-				}
-				return #equal_sets(B)(A)(def);
-			}
-		}
-	}
-}
-
 //Equality is transitive
 prove equal_sets_transitive: *A*B*C(equal_sets(A, B) & equal_sets(B, C) -> equal_sets(A, C)){
 	given A{
@@ -93,7 +105,10 @@ prove equal_sets_transitive: *A*B*C(equal_sets(A, B) & equal_sets(B, C) -> equal
 			given C{
 				implies both{
 					define X_equal_C(X): equal_sets(X, C);
-					return right(equality_consistency[(X_equal_C)](A)(B)(left(both)))(right(both));
+					A_equal_B = left(both);
+					B_equal_A = equal_sets_symmetric(A, B)(A_equal_B);
+					B_equal_C = right(both);
+					return equality_consistency[(X_equal_C)](B, A)(and(B_equal_A, B_equal_C));
 				}
 			}
 		}
@@ -348,12 +363,11 @@ prove successor_exists: *A^B(is_successor(A, B)){
 		pair = pair_exists(A)(C)(D);
 		union = union_exists(D)(B);
 		choose B{
-			part0 = and(expand, pair);
-			part1 = and(part0, union);
+			part = and(expand, pair, union);
 			prove def: ^C^D(is_expand(A, C) & is_pair(A, C, D) & is_union(D, B)){
 				choose C{
 					choose D{
-						return part1;
+						return part;
 					}
 				}
 			}
@@ -369,19 +383,18 @@ prove successor_unique: *A*B*C(is_successor(A, B) & is_successor(A, C) -> equal_
 				implies both{
 					defAB = is_successor#(A)(B)(left(both))(C_AB)(D_AB);
 					defAC = is_successor#(A)(C)(right(both))(C_AC)(D_AC);
-					expand_AB = left(left(defAB));
-					expand_AC = left(left(defAC));
-					C_AB_equals_C_AC = expand_unique(A)(C_AB)(C_AC)(and(expand_AB, expand_AC));
-					pair_AB = right(left(defAB));
-					pair_AC = right(left(defAC));
-					define pair_same(X): is_pair(A, X, D_AB);
-					other_pair_AC = left(equality_consistency[(pair_same)](C_AB)(C_AC)(C_AB_equals_C_AC))(pair_AB);
-					D_AB_equals_D_AC = pair_unique(A)(C_AC)(D_AB)(D_AC)(and(other_pair_AC, pair_AC));
-					union_AB = right(defAB);
-					union_AC = right(defAC);
-					define union_same(X): is_union(X, B);
-					other_union_AC = left(equality_consistency[(union_same)](D_AB)(D_AC)(D_AB_equals_D_AC))(union_AB);
-					return union_unique(D_AC)(B)(C)(and(other_union_AC, union_AC));
+					expand_AB = left(defAB);
+					expand_AC = left(defAC);
+					C_AB_equal_C_AC = expand_unique(A, C_AB, C_AC)(and(expand_AB, expand_AC));
+					define pair_D(X): is_pair(A, X, D_AB);
+					pair_D_AC = left(right(defAC));
+					pair_D_AB = equality_consistency[(pair_D)](C_AB, C_AC)(and(C_AB_equal_C_AC, left(right(defAB))));
+					D_AB_equal_D_AC = pair_unique(A, C_AC, D_AB, D_AC)(and(pair_D_AB, pair_D_AC));
+					define union_B(X): is_union(X, B);
+					union_D_AC = right(right(defAC));
+					union_D_AB = equality_consistency[(union_B)](D_AB, D_AC)(and(D_AB_equal_D_AC, right(right(defAB))));
+					B_equal_C = union_unique(D_AC, B, C)(and(union_D_AB, union_D_AC));
+					return B_equal_C;
 				}
 			}
 		}
@@ -544,10 +557,10 @@ prove natural_numbers_inductive_set: *N(is_natural_numbers(N) -> is_inductive_se
 					prove empty_set_in_inductive: *I(is_inductive_set(I) -> EMPTY_SET in I){
 						given I{
 							implies inductive{
-								empty_membership = left(is_inductive_set#(I)(inductive))(E);
-								E_equal_EMPTY_SET = empty_set_unique(E)(EMPTY_SET)(and(right(empty_membership), empty_set_empty));
-								define X_in_I(X): X in I;
-								return left(equality_consistency[(X_in_I)](E)(EMPTY_SET)(E_equal_EMPTY_SET))(left(empty_membership));
+								both = left(is_inductive_set#(I)(inductive))(E);
+								E_equal_EMPTY_SET = empty_set_unique(E, EMPTY_SET)(and(right(both), empty_set_empty));
+								define in_I(X): X in I;
+								return equality_consistency[(in_I)](E, EMPTY_SET)(and(E_equal_EMPTY_SET, left(both)));
 							}
 						}
 					}

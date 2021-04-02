@@ -118,9 +118,9 @@ prove injective_composition: *F*G*H(is_composition(F, G, H) & is_injective(F) & 
 		given G{
 			given H{
 				implies premises{
-					composition_def = is_composition#(F)(G)(H)(left(left(premises)));
-					injective_F_def = is_injective#(F)(right(left(premises)));
-					injective_G_def = is_injective#(G)(right(premises));
+					composition_def = is_composition#(F)(G)(H)(left(premises));
+					injective_F_def = is_injective#(F)(left(right(premises)));
+					injective_G_def = is_injective#(G)(right(right(premises)));
 					prove def: *X*Y*Z(are_related(X, Z, H) & are_related(Y, Z, H) -> equal_sets(X, Y)){
 						given X{
 							given Y{
@@ -130,7 +130,7 @@ prove injective_composition: *F*G*H(is_composition(F, G, H) & is_injective(F) & 
 										T_related = left(composition_def(Y)(Z))(right(related))(T);
 										S_equal_T = injective_F_def(S)(T)(Z)(and(right(S_related), right(T_related)));
 										define related_X_R(R): are_related(X, R, G);
-										related_X_T = left(equality_consistency[(related_X_R)](S)(T)(S_equal_T))(left(S_related));
+										related_X_T = equality_consistency[(related_X_R)](S)(T)(and(S_equal_T, left(S_related)));
 										return injective_G_def(X)(Y)(T)(and(related_X_T, left(T_related)));
 									}
 								}

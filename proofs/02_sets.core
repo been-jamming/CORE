@@ -57,9 +57,9 @@ prove pair_equal_condition: *A*B*C*D*E*F(is_pair(A, B, E) & is_pair(C, D, F) & e
 					given E{
 						given F{
 							implies p{
-								pair_AB = is_pair#(A)(B)(E)(left(left(p)));
-								pair_CD = is_pair#(C)(D)(F)(right(left(p)));
-								equal_EF = equal_sets#(E)(F)(right(p));
+								pair_AB = is_pair#(A, B, E)(left(p));
+								pair_CD = is_pair#(C, D, F)(left(right(p)));
+								equal_EF = equal_sets#(E, F)(right(right(p)));
 								A_equal_A = equal_sets_reflexive(A);
 								define A_equal_B: equal_sets(A, B);
 								A_in_E = right(pair_AB(A))(or(A_equal_A, (A_equal_B)));
@@ -110,16 +110,16 @@ prove pair_subset: *A*B*C*D(B in A & C in A & is_pair(B, C, D) -> is_subset(D, A
 			given C{
 				given D{
 					implies p{
-						pair_def = is_pair#(B)(C)(D)(right(p));
+						pair_def = is_pair#(B)(C)(D)(right(right(p)));
 						prove def: *X(X in D -> X in A){
 							given X{
 								implies X_in_D{
 									equal_B_or_C = left(pair_def(X))(X_in_D);
 									define in_A(Y): Y in A;
 									return branch(equal_B_or_C, equal_B, equal_C){
-										return left(equality_consistency[(in_A)](B)(X)(equal_sets_symmetric(X)(B)(equal_B)))(left(left(p)));
+										return right(axiom_extensionality(X, B)(equal_B)(A))(left(p));
 									} or {
-										return left(equality_consistency[(in_A)](C)(X)(equal_sets_symmetric(X)(C)(equal_C)))(right(left(p)));
+										return right(axiom_extensionality(X, C)(equal_C)(A))(left(right(p)));
 									};
 								}
 							}
@@ -147,7 +147,7 @@ prove tuple_exists: *A*B^C(is_tuple(A, B, C)){
 				prove def: ^D^E(is_pair(A, A, D) & is_pair(A, B, E) & is_pair(D, E, C)){
 					choose D{
 						choose E{
-							return and(and(pair_AA, pair_AB), pair_DE);
+							return and(pair_AA, pair_AB, pair_DE);
 						}
 					}
 				}
@@ -166,13 +166,13 @@ prove tuple_unique: *A*B*C*D(is_tuple(A, B, C) & is_tuple(A, B, D) -> equal_sets
 					implies both{
 						C_tuple = is_tuple#(A)(B)(C)(left(both))(AA_pairC)(AB_pairC);
 						D_tuple = is_tuple#(A)(B)(D)(right(both))(AA_pairD)(AB_pairD);
-						AA_pairC_equal_AA_pairD = pair_unique(A)(A)(AA_pairC)(AA_pairD)(and(left(left(C_tuple)), left(left(D_tuple))));
-						AB_pairC_equal_AB_pairD = pair_unique(A)(B)(AB_pairC)(AB_pairD)(and(right(left(C_tuple)), right(left(D_tuple))));
+						AA_pairC_equal_AA_pairD = pair_unique(A)(A)(AA_pairC)(AA_pairD)(and(left(C_tuple), left(D_tuple)));
+						AB_pairC_equal_AB_pairD = pair_unique(A)(B)(AB_pairC)(AB_pairD)(and(left(right(C_tuple)), left(right(D_tuple))));
 						define pair(X): is_pair(X, AB_pairC, C);
-						intermediate_pair = left(equality_consistency[(pair)](AA_pairC)(AA_pairD)(AA_pairC_equal_AA_pairD))(right(C_tuple));
+						intermediate_pair = equality_consistency[(pair)](AA_pairC)(AA_pairD)(and(AA_pairC_equal_AA_pairD, right(right(C_tuple))));
 						define pair(X): is_pair(AA_pairD, X, C);
-						intermediate_pair = left(equality_consistency[(pair)](AB_pairC)(AB_pairD)(AB_pairC_equal_AB_pairD))(intermediate_pair);
-						return pair_unique(AA_pairD)(AB_pairD)(C)(D)(and(intermediate_pair, right(D_tuple)));
+						intermediate_pair = equality_consistency[(pair)](AB_pairC)(AB_pairD)(and(AB_pairC_equal_AB_pairD, intermediate_pair));
+						return pair_unique(AA_pairD)(AB_pairD)(C)(D)(and(intermediate_pair, right(right(D_tuple))));
 					}
 				}
 			}
@@ -191,50 +191,50 @@ prove tuple_equal_condition: *A*B*C*D*E*F(is_tuple(A, B, E) & is_tuple(C, D, F) 
 					given E{
 						given F{
 							implies p{
-								AB_tuple_condition = is_tuple#(A)(B)(E)(left(left(p)))(AA_pair)(AB_pair);
-								CD_tuple_condition = is_tuple#(C)(D)(F)(right(left(p)))(CC_pair)(CD_pair);
-								AA_CC_or_AA_CD = pair_equal_condition(AA_pair)(AB_pair)(CC_pair)(CD_pair)(E)(F)(and(and(right(AB_tuple_condition), right(CD_tuple_condition)), right(p)));
+								AB_tuple_condition = is_tuple#(A)(B)(E)(left(p))(AA_pair)(AB_pair);
+								CD_tuple_condition = is_tuple#(C)(D)(F)(left(right(p)))(CC_pair)(CD_pair);
+								AA_CC_or_AA_CD = pair_equal_condition(AA_pair)(AB_pair)(CC_pair)(CD_pair)(E)(F)(and(right(right(AB_tuple_condition)), right(right(CD_tuple_condition)), right(right(p))));
 								AC_or_AD = branch(AA_CC_or_AA_CD, AA_CC, AA_CD){
-									AC_or_AC = pair_equal_condition(A)(A)(C)(C)(AA_pair)(CC_pair)(and(and(left(left(AB_tuple_condition)), left(left(CD_tuple_condition))), AA_CC));
+									AC_or_AC = pair_equal_condition(A)(A)(C)(C)(AA_pair)(CC_pair)(and(left(AB_tuple_condition), left(CD_tuple_condition), AA_CC));
 									define AC: equal_sets(A, C);
 									define AD: equal_sets(A, D);
 									return or(or_combine[(AC)](AC_or_AC), (AD));
 								} or {
-									return pair_equal_condition(A)(A)(C)(D)(AA_pair)(CD_pair)(and(and(left(left(AB_tuple_condition)), right(left(CD_tuple_condition))), AA_CD));
+									return pair_equal_condition(A)(A)(C)(D)(AA_pair)(CD_pair)(and(left(AB_tuple_condition), left(right(CD_tuple_condition)), AA_CD));
 								};
-								is_swap_tuple = pair_swap_equal(AA_pair)(AB_pair)(E)(right(AB_tuple_condition));
-								AB_CC_or_AB_CD = pair_equal_condition(AB_pair)(AA_pair)(CC_pair)(CD_pair)(E)(F)(and(and(is_swap_tuple, right(CD_tuple_condition)), right(p)));
-								BA_condition = pair_swap_equal(A)(B)(AB_pair)(right(left(AB_tuple_condition)));
+								is_swap_tuple = pair_swap_equal(AA_pair)(AB_pair)(E)(right(right(AB_tuple_condition)));
+								AB_CC_or_AB_CD = pair_equal_condition(AB_pair)(AA_pair)(CC_pair)(CD_pair)(E)(F)(and(is_swap_tuple, right(right(CD_tuple_condition)), right(right(p))));
+								BA_condition = pair_swap_equal(A)(B)(AB_pair)(left(right(AB_tuple_condition)));
 								BC_or_BD = branch(AB_CC_or_AB_CD, AB_CC, AB_CD){
-									BC_or_BC = pair_equal_condition(B)(A)(C)(C)(AB_pair)(CC_pair)(and(and(BA_condition, left(left(CD_tuple_condition))), AB_CC));
+									BC_or_BC = pair_equal_condition(B)(A)(C)(C)(AB_pair)(CC_pair)(and(BA_condition, left(CD_tuple_condition), AB_CC));
 									define BC: equal_sets(B, C);
 									define BD: equal_sets(B, D);
 									return or(or_combine[(BC)](BC_or_BC), (BD));
 								} or {
-									return pair_equal_condition(B)(A)(C)(D)(AB_pair)(CD_pair)(and(and(BA_condition, right(left(CD_tuple_condition))), AB_CD));
+									return pair_equal_condition(B)(A)(C)(D)(AB_pair)(CD_pair)(and(BA_condition, left(right(CD_tuple_condition)), AB_CD));
 								};
 
-								FE = equal_sets_symmetric(E)(F)(right(p));
-								CC_AA_or_CC_AB = pair_equal_condition(CC_pair)(CD_pair)(AA_pair)(AB_pair)(F)(E)(and(and(right(CD_tuple_condition), right(AB_tuple_condition)), FE));
+								FE = equal_sets_symmetric(E)(F)(right(right(p)));
+								CC_AA_or_CC_AB = pair_equal_condition(CC_pair)(CD_pair)(AA_pair)(AB_pair)(F)(E)(and(right(right(CD_tuple_condition)), right(right(AB_tuple_condition)), FE));
 								CA_or_CB = branch(CC_AA_or_CC_AB, CC_AA, CC_AB){
-									CA_or_CA = pair_equal_condition(C)(C)(A)(A)(CC_pair)(AA_pair)(and(and(left(left(CD_tuple_condition)), left(left(AB_tuple_condition))), CC_AA));
+									CA_or_CA = pair_equal_condition(C)(C)(A)(A)(CC_pair)(AA_pair)(and(left(CD_tuple_condition), left(AB_tuple_condition), CC_AA));
 									define CA: equal_sets(C, A);
 									define CB: equal_sets(C, B);
 									return or(or_combine[(CA)](CA_or_CA), (CB));
 								} or {
-									return pair_equal_condition(C)(C)(A)(B)(CC_pair)(AB_pair)(and(and(left(left(CD_tuple_condition)), right(left(AB_tuple_condition))), CC_AB));
+									return pair_equal_condition(C)(C)(A)(B)(CC_pair)(AB_pair)(and(left(CD_tuple_condition), left(right(AB_tuple_condition)), CC_AB));
 								};
 								
-								is_swap_tuple = pair_swap_equal(CC_pair)(CD_pair)(F)(right(CD_tuple_condition));
-								CD_AA_or_CD_AB = pair_equal_condition(CD_pair)(CC_pair)(AA_pair)(AB_pair)(F)(E)(and(and(is_swap_tuple, right(AB_tuple_condition)), FE));
-								DC_condition = pair_swap_equal(C)(D)(CD_pair)(right(left(CD_tuple_condition)));
+								is_swap_tuple = pair_swap_equal(CC_pair)(CD_pair)(F)(right(right(CD_tuple_condition)));
+								CD_AA_or_CD_AB = pair_equal_condition(CD_pair)(CC_pair)(AA_pair)(AB_pair)(F)(E)(and(is_swap_tuple, right(right(AB_tuple_condition)), FE));
+								DC_condition = pair_swap_equal(C)(D)(CD_pair)(left(right(CD_tuple_condition)));
 								DA_or_DB = branch(CD_AA_or_CD_AB, CD_AA, CD_AB){
-									DA_or_DA = pair_equal_condition(D)(C)(A)(A)(CD_pair)(AA_pair)(and(and(DC_condition, left(left(AB_tuple_condition))), CD_AA));
+									DA_or_DA = pair_equal_condition(D)(C)(A)(A)(CD_pair)(AA_pair)(and(DC_condition, left(AB_tuple_condition), CD_AA));
 									define DA: equal_sets(D, A);
 									define DB: equal_sets(D, B);
 									return or(or_combine[(DA)](DA_or_DA), (DB));
 								} or {
-									return pair_equal_condition(D)(C)(A)(B)(CD_pair)(AB_pair)(and(and(DC_condition, right(left(AB_tuple_condition))), CD_AB));
+									return pair_equal_condition(D)(C)(A)(B)(CD_pair)(AB_pair)(and(DC_condition, left(right(AB_tuple_condition)), CD_AB));
 								};
 
 								//Now we split into 4 cases
@@ -254,13 +254,13 @@ prove tuple_equal_condition: *A*B*C*D*E*F(is_tuple(A, B, E) & is_tuple(C, D, F) 
 									return branch(BC_or_BD, BC, BD){
 										//The critical case
 										define XX_pair_condition(X): is_pair(X, X, AA_pair);
-										DD_pair_condition = left(equality_consistency[(XX_pair_condition)](A)(D)(AD))(left(left(AB_tuple_condition)));
+										DD_pair_condition = equality_consistency[(XX_pair_condition)](A)(D)(and(AD, left(AB_tuple_condition)));
 										CD = branch(AA_CC_or_AA_CD, AA_CC, AA_CD){
-											CD_or_CD = pair_equal_condition(C)(C)(D)(D)(CC_pair)(AA_pair)(and(and(left(left(CD_tuple_condition)), DD_pair_condition), equal_sets_symmetric(AA_pair)(CC_pair)(AA_CC)));
+											CD_or_CD = pair_equal_condition(C)(C)(D)(D)(CC_pair)(AA_pair)(and(left(CD_tuple_condition), DD_pair_condition, equal_sets_symmetric(AA_pair)(CC_pair)(AA_CC)));
 											define CD: equal_sets(C, D);
 											return or_combine[(CD)](CD_or_CD);
 										} or {
-											CD_or_CD = pair_equal_condition(C)(D)(D)(D)(CD_pair)(AA_pair)(and(and(right(left(CD_tuple_condition)), DD_pair_condition), equal_sets_symmetric(AA_pair)(CD_pair)(AA_CD)));
+											CD_or_CD = pair_equal_condition(C)(D)(D)(D)(CD_pair)(AA_pair)(and(left(right(CD_tuple_condition)), DD_pair_condition, equal_sets_symmetric(AA_pair)(CD_pair)(AA_CD)));
 											define CD: equal_sets(C, D);
 											return or_combine[(CD)](CD_or_CD);
 										};
@@ -429,23 +429,23 @@ prove cross_product: *A*B^C(is_cross_product(A, B, C)){
 						prove lemma1: ^Y^Z(Y in A & Z in B & is_tuple(Y, Z, X)) -> X in C{
 							implies Y_Z_exist{
 								all = Y_Z_exist(Y)(Z);
-								tuple_YZ = is_tuple#(Y)(Z)(X)(right(all));
+								tuple_YZ = is_tuple#(Y)(Z)(X)(right(right(all)));
 								pairs = tuple_YZ(YY)(YZ);
 								define Y_in_B: Y in B;
 								define Z_in_A: Z in A;
-								Y_in_AB = right(AB_union(Y))(or(left(left(all)), (Y_in_B)));
-								Z_in_AB = right(AB_union(Z))(swap(or(right(left(all)), (Z_in_A))));
+								Y_in_AB = right(AB_union(Y))(or(left(all), (Y_in_B)));
+								Z_in_AB = right(AB_union(Z))(swap(or(left(right(all)), (Z_in_A))));
 								prove pairs_AB_lemma0: ^Y^Z(Y in AB & Z in AB & is_pair(Y, Z, YY)){
 									choose Y{
 										choose Y{
-											return and(and(Y_in_AB, Y_in_AB), left(left(pairs)));
+											return and(Y_in_AB, Y_in_AB, left(pairs));
 										}
 									}
 								}
 								prove pairs_AB_lemma1: ^Y^Z(Y in AB & Z in AB & is_pair(Y, Z, YZ)){
 									choose Y{
 										choose Z{
-											return and(and(Y_in_AB, Z_in_AB), right(left(pairs)));
+											return and(Y_in_AB, Z_in_AB, left(right(pairs)));
 										}
 									}
 								}
@@ -454,7 +454,7 @@ prove cross_product: *A*B^C(is_cross_product(A, B, C)){
 								prove pairs_pairs_lemma: ^YY^YZ(YY in pairs_AB & YZ in pairs_AB & is_pair(YY, YZ, X)){
 									choose YY{
 										choose YZ{
-											return and(and(YY_in_pairs_AB, YZ_in_pairs_AB), right(pairs));
+											return and(YY_in_pairs_AB, YZ_in_pairs_AB, right(right(pairs)));
 										}
 									}
 								}

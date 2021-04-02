@@ -469,6 +469,7 @@ int evaluate_command(char **c){
 int debug_command(char **c, statement *goal){
 	unsigned char is_verified;
 	statement *s;
+	statement *t;
 
 	skip_whitespace(c);
 	if(strncmp(*c, "debug", 5) || is_alphanumeric((*c)[5])){
@@ -494,8 +495,14 @@ int debug_command(char **c, statement *goal){
 	}
 	++*c;
 	//Do stuff here
+	t = peel_and_left(&s);
+	print_statement(t);
+	printf(" -- ");
+	print_statement(s);
+	printf("\n");
 	
 	free_statement(s);
+	free_statement(t);
 
 	return 1;
 }

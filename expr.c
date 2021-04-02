@@ -518,7 +518,7 @@ static statement *parse_statement_recursive(int priority, statement *s0, char **
 		return s0;
 	}
 
-	if(order_of_operations[operation] <= priority){
+	if(order_of_operations[operation] < priority){
 		return s0;
 	}
 
@@ -852,5 +852,49 @@ unsigned char compare_statement(statement *a, statement *b){
 		default:
 			return 1;
 	}
+}
+
+statement *peel_and_left(statement **s){
+	statement *output = NULL;
+	statement *child;
+
+	if((*s)->type != AND){
+		output = *s;
+		*s = NULL;
+		return output;
+	}
+
+	while((*s)->child0->type == AND){
+		s = &((*s)->child0);
+	}
+
+	output = (*s)->child0;
+	child = (*s)->child1;
+	free(*s);
+	*s = child;
+
+	return output;
+}
+
+statement *peel_or_left(statement **s){
+	statement *output = NULL;
+	statement *child;
+
+	if((*s)->type != OR){
+		output = *s;
+		*s = NULL;
+		return output;
+	}
+
+	while((*s)->child0->type == OR){
+		s = &((*s)->child0);
+	}
+
+	output = (*s)->child0;
+	child = (*s)->child1;
+	free(*s);
+	*s = child;
+
+	return output;
 }
 

@@ -713,6 +713,76 @@ statement *parse_right(char **c, unsigned char *is_verified){
 
 statement *parse_and_or(char **c, unsigned char is_and, unsigned char *is_verified){
 	statement *output;
+	statement *last_parent = NULL;
+	statement *s;
+	statement *new;
+	unsigned char args_verified;
+	unsigned char arg_verified = 1;
+
+	output = parse_statement_identifier_or_value(c, &arg_verified, ',', ')');
+	if(!output){
+		fprintf(stderr, "Error: could not parse statement value\n");
+		error(1);
+	}
+	if(output->num_bound_props || output->num_bound_vars){
+		free_statement(output);
+		fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
+		error(1);
+	}
+	args_verified = arg_verified;
+
+	while(**c != ')'){
+		++*c;
+		skip_whitespace(c);
+		arg_verified = 1;
+		s = parse_statement_identifier_or_value(c, &arg_verified, ',', ')');
+		if(!s){
+			free_statement(output);
+			fprintf(stderr, "Error: could not parse statement value\n");
+			error(1);
+		}
+		if(s->num_bound_props || s->num_bound_vars){
+			free_statement(s);
+			free_statement(output);
+			fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
+			error(1);
+		}
+
+		if(is_and){
+			args_verified = arg_verified && args_verified;
+			new = create_statement(AND, 0, 0);
+		} else {
+			args_verified = arg_verified || args_verified;
+			new = create_statement(OR, 0, 0);
+		}
+		if(!last_parent){
+			last_parent = new;
+			last_parent->child0 = output;
+			last_parent->child1 = s;
+			output = last_parent;
+		} else {
+			new->child0 = last_parent->child1;
+			new->child1 = s;
+			last_parent->child1 = new;
+			last_parent = new;
+		}
+
+		skip_whitespace(c);
+		if(**c != ')' && **c != ','){
+			free_statement(output);
+			fprintf(stderr, "Error: expected ',' or ')'\n");
+			error(1);
+		}
+	}
+
+	++*c;
+	*is_verified = args_verified && *is_verified;
+	return output;
+}
+
+/*
+statement *parse_and_or(char **c, unsigned char is_and, unsigned char *is_verified){
+	statement *output;
 	statement *new;
 	statement *s;
 	unsigned char args_verified = 1;
@@ -779,6 +849,7 @@ statement *parse_and_or(char **c, unsigned char is_and, unsigned char *is_verifi
 	*is_verified = args_verified && *is_verified;
 	return output;
 }
+*/
 
 statement *parse_swap(char **c, unsigned char *is_verified){
 	statement *s;
