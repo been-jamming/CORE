@@ -780,77 +780,6 @@ statement *parse_and_or(char **c, unsigned char is_and, unsigned char *is_verifi
 	return output;
 }
 
-/*
-statement *parse_and_or(char **c, unsigned char is_and, unsigned char *is_verified){
-	statement *output;
-	statement *new;
-	statement *s;
-	unsigned char args_verified = 1;
-	unsigned char arg_verified = 1;
-
-	//... I guess I have to add a second argument to this function
-	output = parse_statement_identifier_or_value(c, &arg_verified, ',', ')');
-	if(!output){
-		fprintf(stderr, "Error: could not parse statement value\n");
-		error(1);
-	}
-	if(output->num_bound_props || output->num_bound_vars){
-		free_statement(output);
-		fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
-		error(1);
-	}
-	if(is_and){
-		args_verified = arg_verified && args_verified;
-	} else {
-		args_verified = arg_verified || args_verified;
-	}
-	arg_verified = 1;
-	while(**c != ')'){
-		++*c;
-		skip_whitespace(c);
-		s = parse_statement_identifier_or_value(c, &arg_verified, ',', ')');
-		if(!s){
-			free_statement(output);
-			fprintf(stderr, "Error: could not parse statement value\n");
-			error(1);
-		}
-		if(s->num_bound_props || s->num_bound_vars){
-			free_statement(s);
-			free_statement(output);
-			fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
-			error(1);
-		}
-
-		if(is_and){
-			new = create_statement(AND, 0, 0);
-		} else {
-			new = create_statement(OR, 0, 0);
-		}
-		new->child0 = output;
-		new->child1 = s;
-		output = new;
-
-		if(is_and){
-			args_verified = arg_verified && args_verified;
-		} else {
-			args_verified = arg_verified || args_verified;
-		}
-		arg_verified = 1;
-
-		skip_whitespace(c);
-		if(**c != ')' && **c != ','){
-			free_statement(output);
-			fprintf(stderr, "Error: expected ',' or ')'\n");
-			error(1);
-		}
-	}
-
-	++*c;
-	*is_verified = args_verified && *is_verified;
-	return output;
-}
-*/
-
 statement *parse_swap(char **c, unsigned char *is_verified){
 	statement *s;
 	statement *output;
@@ -907,19 +836,27 @@ statement *parse_swap(char **c, unsigned char *is_verified){
 	}
 }
 
-statement *parse_branch(char **c, unsigned char *is_verified){
-	statement *s;
-	statement *new;
-	statement *return_statement0;
-	statement *return_statement1;
-	variable *new_statement_var;
-	unsigned char arg_verified;
-	char var_name0[256];
-	char var_name1[256];
-
-	s = parse_statement_value(c, &arg_verified);
+static void skip_branch_args(char **c){
 	skip_whitespace(c);
-	if(!s){
+	while(is_alphanumeric(**c) || **c == ','){
+		++*c;
+		skip_whitespace(c);
+	}
+}
+
+statement *parse_branch(char **c){
+	statement *or_statement;
+	statement *new;
+	statement *return_statement;
+	statement *old_return_statement = NULL;
+	variable *new_statement_var;
+	unsigned char arg_verified = 1;
+	char *arg_pointer;
+	char var_name[256];
+
+	or_statement = parse_statement_value(c, &arg_verified);
+	skip_whitespace(c);
+	if(!or_statement){
 		fprintf(stderr, "Error: could not parse statement value\n");
 		error(1);
 	}
@@ -931,30 +868,14 @@ statement *parse_branch(char **c, unsigned char *is_verified){
 		fprintf(stderr, "Error: expected ','\n");
 		error(1);
 	}
+	if(or_statement->num_bound_props || or_statement->num_bound_vars){
+		fprintf(stderr, "Error: expected argument to have no bound variables or propositions\n");
+		error(1);
+	}
+	arg_pointer = *c;
 	++*c;
-	if(s->type != OR || s->num_bound_props || s->num_bound_vars){
-		fprintf(stderr, "Error: invalid operand for 'branch'\n");
-		error(1);
-	}
-	skip_whitespace(c);
-	get_identifier(c, var_name0, 256);
-	if(var_name0[0] == '\0'){
-		fprintf(stderr, "Error: expected identifier\n");
-		error(1);
-	}
-	skip_whitespace(c);
-	if(**c != ','){
-		fprintf(stderr, "Error: expected ','\n");
-		error(1);
-	}
-	++*c;
-	skip_whitespace(c);
-	get_identifier(c, var_name1, 256);
-	if(var_name1[0] == '\0'){
-		fprintf(stderr, "Error: expected identifier\n");
-		error(1);
-	}
-	skip_whitespace(c);
+
+	skip_branch_args(c);
 	if(**c != ')'){
 		fprintf(stderr, "Error: expected ')'\n");
 		error(1);
@@ -967,65 +888,74 @@ statement *parse_branch(char **c, unsigned char *is_verified){
 	}
 	++*c;
 	skip_whitespace(c);
-	up_scope();
-	new = malloc(sizeof(statement));
-	copy_statement(new, s->child0);
-	new_statement_var = create_statement_var(var_name0, new);
-	new_statement_var->num_references++;
-	return_statement0 = verify_block(c, 0, NULL);
-	if(!return_statement0){
-		fprintf(stderr, "Error: expected return statement\n");
-		error(1);
-	}
-	if(max_statement_depth(return_statement0) >= current_depth){
-		free_statement(return_statement0);
-		fprintf(stderr, "Error: returned statement depends on variables in its scope\n");
-		error(1);
-	}
-	drop_scope();
-	skip_whitespace(c);
-	if(strncmp(*c, "or", 2) || is_alphanumeric((*c)[2])){
-		free_statement(return_statement0);
-		fprintf(stderr, "Error: expected 'or'\n");
-		error(1);
-	}
-	*c += 2;
-	skip_whitespace(c);
-	if(**c != '{'){
-		free_statement(return_statement0);
-		fprintf(stderr, "Error: expected '{'\n");
-		error(1);
-	}
-	++*c;
-	skip_whitespace(c);
-	up_scope();
-	new = malloc(sizeof(statement));
-	copy_statement(new, s->child1);
-	new_statement_var = create_statement_var(var_name1, new);
-	new_statement_var->num_references++;
-	return_statement1 = verify_block(c, 0, NULL);
-	if(!return_statement1){
-		free_statement(return_statement0);
-		fprintf(stderr, "Error: expected return statement\n");
-		error(1);
-	}
-	if(max_statement_depth(return_statement1) >= current_depth){
-		free_statement(return_statement0);
-		free_statement(return_statement1);
-		fprintf(stderr, "Error: returned statement depends on variables in its scope\n");
-		error(1);
-	}
-	drop_scope();
-	if(!compare_statement(return_statement0, return_statement1)){
-		free_statement(return_statement0);
-		free_statement(return_statement1);
-		fprintf(stderr, "Error: mismatched returned statements\n");
-		error(1);
-	}
-	free_statement(return_statement1);
-	free_statement(s);
 
-	return return_statement0;
+	while(*arg_pointer != ')'){
+		arg_pointer++;
+		skip_whitespace(&arg_pointer);
+		get_identifier(&arg_pointer, var_name, 256);
+		if(var_name[0] == '\0'){
+			fprintf(stderr, "Error: expected identifier\n");
+			error(1);
+		}
+		skip_whitespace(&arg_pointer);
+		if(*arg_pointer != ',' && *arg_pointer != ')'){
+			*c = arg_pointer;
+			fprintf(stderr, "Error: expected ',' or ')'\n");
+			error(1);
+		}
+		up_scope();
+		if(!or_statement){
+			*c = arg_pointer;
+			fprintf(stderr, "Error: too many arguments to unpack\n");
+			error(1);
+		}
+		if(*arg_pointer == ','){
+			new = peel_or_left(&or_statement);
+		} else {
+			new = or_statement;
+		}
+		new_statement_var = create_statement_var(var_name, new);
+		new_statement_var->num_references++;
+		return_statement = verify_block(c, 0, NULL);
+		if(!return_statement){
+			fprintf(stderr, "Error: expected return statement\n");
+			error(1);
+		}
+		if(max_statement_depth(return_statement) >= current_depth){
+			free_statement(return_statement);
+			fprintf(stderr, "Error: returned statement depends on variables in its scope\n");
+			error(1);
+		}
+
+		if(old_return_statement && !compare_statement(return_statement, old_return_statement)){
+			fprintf(stderr, "Error: mismatched returned statements\n");
+			error(1);
+		} else if(!old_return_statement){
+			old_return_statement = return_statement;
+		} else {
+			free_statement(return_statement);
+		}
+
+		drop_scope();
+		skip_whitespace(c);
+
+		if(*arg_pointer == ','){
+			if(strncmp(*c, "or", 2) || is_alphanumeric((*c)[2])){
+				fprintf(stderr, "Error: expected 'or'\n");
+				error(1);
+			}
+			*c += 2;
+			skip_whitespace(c);
+			if(**c != '{'){
+				fprintf(stderr, "Error: expected '{'\n");
+				error(1);
+			}
+			++*c;
+			skip_whitespace(c);
+		}
+	}
+
+	return old_return_statement;
 }
 
 statement *parse_statement_value_builtin(char **c, unsigned char *is_verified){
@@ -1076,7 +1006,7 @@ statement *parse_statement_value_builtin(char **c, unsigned char *is_verified){
 			return NULL;
 		}
 		++*c;
-		return parse_branch(c, is_verified);
+		return parse_branch(c);
 	}
 
 	return NULL;

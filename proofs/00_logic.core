@@ -180,61 +180,6 @@ prove or_distribute1[P, Q, R]: (P | R) & (Q | R) -> (P & Q) | R{
 	}
 }
 
-//Associativity of and, or
-prove and_associate0[P, Q, R]: (P & Q) & R -> P & (Q & R){
-	implies a{
-		p = left(left(a));
-		q = right(left(a));
-		r = right(a);
-		q_and_r = and(q, r);
-		return and(p, q_and_r);
-	}
-}
-
-prove and_associate1[P, Q, R]: P & (Q & R) -> (P & Q) & R{
-	implies a{
-		p = left(a);
-		q = left(right(a));
-		r = right(right(a));
-		p_and_q = and(p, q);
-		return and(p_and_q, r);
-	}
-}
-
-prove or_associate0[P, Q, R]: (P | Q) | R -> P | (Q | R){
-	implies a{
-		define q_or_r: Q | R;
-		return branch(a, pqr, pqr){
-			return branch(pqr, pq, pq){
-				return or(pq, (q_or_r));
-			} or {
-				qr = or(pq, R);
-				return swap(or(qr, P));
-			};
-		} or {
-			qr = swap(or(pqr, Q));
-			return swap(or(qr, P));
-		};
-	}
-}
-
-prove or_associate1[P, Q, R]: P | (Q | R) -> (P | Q) | R{
-	implies a{
-		define p_or_q: P | Q;
-		return branch(a, pqr, pqr){
-			pq = or(pqr, Q);
-			return or(pq, R);
-		} or {
-			return branch(pqr, qr, qr){
-				pq = swap(or(qr, P));
-				return or(pq, R);
-			} or {
-				return swap(or(qr, (p_or_q)));
-			};
-		};
-	}
-}
-
 prove and_left_implies[P, Q, R]: P & (P & Q -> R) -> (Q -> R){
 	implies a{
 		implies Q_true{
