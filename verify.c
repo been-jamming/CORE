@@ -712,61 +712,72 @@ statement *parse_right(char **c, unsigned char *is_verified){
 }
 
 statement *parse_and_or(char **c, unsigned char is_and, unsigned char *is_verified){
-	statement *s;
-	statement *t;
+	statement *output;
 	statement *new;
-	unsigned char arg0_verified = 1;
-	unsigned char arg1_verified = 1;
+	statement *s;
+	unsigned char args_verified = 1;
+	unsigned char arg_verified = 1;
 
-	s = parse_statement_identifier_or_value(c, &arg0_verified, ',');
-	if(!s){
+	//... I guess I have to add a second argument to this function
+	output = parse_statement_identifier_or_value(c, &arg_verified, ',', ')');
+	if(!output){
 		fprintf(stderr, "Error: could not parse statement value\n");
 		error(1);
 	}
-	if(s->num_bound_props || s->num_bound_vars){
-		free_statement(s);
+	if(output->num_bound_props || output->num_bound_vars){
+		free_statement(output);
 		fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
 		error(1);
 	}
-	skip_whitespace(c);
-	if(**c != ','){
-		free_statement(s);
-		fprintf(stderr, "Error: expected ','\n");
-		error(1);
-	}
-	++*c;
-	skip_whitespace(c);
-	t = parse_statement_identifier_or_value(c, &arg1_verified, ')');
-	if(!t){
-		free_statement(s);
-		fprintf(stderr, "Error: could not parse statement value\n");
-		error(1);
-	}
-	if(t->num_bound_props || t->num_bound_vars){
-		free_statement(s);
-		free_statement(t);
-		fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
-		error(1);
-	}
-	skip_whitespace(c);
-	if(**c != ')'){
-		free_statement(s);
-		free_statement(t);
-		fprintf(stderr, "Error: expected ')'\n");
-		error(1);
-	}
-	++*c;
 	if(is_and){
-		new = create_statement(AND, 0, 0);
-		*is_verified = arg0_verified && arg1_verified && *is_verified;
+		args_verified = arg_verified && args_verified;
 	} else {
-		new = create_statement(OR, 0, 0);
-		*is_verified = (arg0_verified || arg1_verified) && *is_verified;
+		args_verified = arg_verified || args_verified;
 	}
-	new->child0 = s;
-	new->child1 = t;
+	arg_verified = 1;
+	while(**c != ')'){
+		++*c;
+		skip_whitespace(c);
+		s = parse_statement_identifier_or_value(c, &arg_verified, ',', ')');
+		if(!s){
+			free_statement(output);
+			fprintf(stderr, "Error: could not parse statement value\n");
+			error(1);
+		}
+		if(s->num_bound_props || s->num_bound_vars){
+			free_statement(s);
+			free_statement(output);
+			fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
+			error(1);
+		}
 
-	return new;
+		if(is_and){
+			new = create_statement(AND, 0, 0);
+		} else {
+			new = create_statement(OR, 0, 0);
+		}
+		new->child0 = output;
+		new->child1 = s;
+		output = new;
+
+		if(is_and){
+			args_verified = arg_verified && args_verified;
+		} else {
+			args_verified = arg_verified || args_verified;
+		}
+		arg_verified = 1;
+
+		skip_whitespace(c);
+		if(**c != ')' && **c != ','){
+			free_statement(output);
+			fprintf(stderr, "Error: expected ',' or ')'\n");
+			error(1);
+		}
+	}
+
+	++*c;
+	*is_verified = args_verified && *is_verified;
+	return output;
 }
 
 statement *parse_swap(char **c, unsigned char *is_verified){
@@ -1000,14 +1011,18 @@ statement *parse_statement_value_builtin(char **c, unsigned char *is_verified){
 	return NULL;
 }
 
-statement *parse_statement_identifier_or_value(char **c, unsigned char *is_verified, char end_char){
+statement *parse_statement_identifier_or_value(char **c, unsigned char *is_verified, char end_char0, char end_char1){
 	statement *output;
 	char *beginning;
 
 	beginning = *c;
 	output = parse_statement_identifier_proposition(c);
 	skip_whitespace(c);
-	if(output && **c == end_char){
+	//The end characters 'end_char0' and 'end_char1' can't be operations
+	//on statements. They are used to determine when the user has
+	//specified a definition or is using a definition in an unverified
+	//expression.
+	if(output && (**c == end_char0 || **c == end_char1)){
 		*is_verified = 0;
 		return output;
 	} else {
@@ -1153,7 +1168,7 @@ static statement *parse_statement_value_recursive(char **c, unsigned char *is_ve
 			++*c;
 			skip_whitespace(c);
 
-			arg = parse_statement_identifier_or_value(c, &next_verified, ']');
+			arg = parse_statement_identifier_or_value(c, &next_verified, ']', ']');
 			if(!arg || arg->num_bound_props){
 				if(arg){
 					free_statement(arg);

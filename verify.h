@@ -2,7 +2,7 @@ extern char *program_text;
 extern statement *goals[MAX_DEPTH];
 extern unsigned int goal_depth;
 
-statement *parse_statement_identifier_or_value(char **c, unsigned char *is_verified, char end_char);
+statement *parse_statement_identifier_or_value(char **c, unsigned char *is_verified, char end_char0, char end_char1);
 statement *parse_statement_value(char **c, unsigned char *is_verified);
 
 statement *verify_block(char **c, unsigned char allow_proof_value, statement *goal);
