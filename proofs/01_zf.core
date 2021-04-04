@@ -3,7 +3,6 @@
 define equal_sets(A, B): *X((X in A -> X in B) & (X in B -> X in A));
 define non_empty(A): ^X(X in A);
 
-
 //Equality is symmetric
 prove equal_sets_symmetric: *A*B(equal_sets(A, B) -> equal_sets(B, A)){
 	given A{

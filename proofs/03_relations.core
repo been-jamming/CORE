@@ -55,64 +55,6 @@ define is_partial_order(A, R): is_reflexive(A, R) & is_antisymmetric(R) & is_tra
 //C is the set of equivalence classes of A with respect to R (which in context should be an equivalence relation):
 define is_equivalence_classes(A, R, C): *X*Y((are_related(X, Y, R) -> ^D(X in D & Y in D & D in C)) & (^D(X in D & Y in D & D in C) -> are_related(X, Y, R)));
 
-//Codomains exist for any relation
-//We just need a set containing the second coordinates of the pairs
-//So we can just use the axiom of union twice
-//prove codomain_exists: *F(is_relation(F) -> ^C*A*B(are_related(A, B, F) -> B in C)){
-//	given F{
-//		implies premise{
-//			F_relation = is_relation#(F)(premise);
-//			union0_condition = axiom_union(F)(UNION0);
-//			union1_condition = axiom_union(UNION0)(UNION1);
-//			print union0_condition;
-//			print union1_condition;
-//			choose UNION1{
-//				given A{
-//					given B{
-//						implies related{
-//							related_def = are_related#(A)(B)(F)(related)(TUPLE);
-//							tuple_def = is_tuple#(A)(B)(TUPLE)(left(related_def))(PAIR_AA)(PAIR_AB);
-//							pair_def = is_pair#(PAIR_AA)(PAIR_AB)(TUPLE)(right(tuple_def));
-//							print related_def;
-//							print tuple_def;
-//							print pair_def;
-//							print goal;
-//							return goal;
-//						}
-//					}
-//				}
-//			}
-//		}
-//	}
-//}
-
-//prove image_exists: *A*F(is_function(F) -> ^B(is_image(A, F, B))){
-//	given A{
-//		given F{
-//			
-//}
-
-//prove CBS_lemma0: *A*F(is_function(F) & ^P(is_power_set(A, P) & is_domain(P, F) & is_codomain(P, F)) & *S*T*U*V(is_subset(S, T) & are_related(S, U, F) & are_related(T, V, F) -> is_subset(U, V)) -> ^R(are_related(R, R, F))){
-//	given A{
-//		given F{
-//			implies premises{
-//				function_premise = is_function#(F)(left(left(premises));
-//				power_set_premise = right(left(premises))(P_A);
-//				subset_premise = right(premises);
-//			}
-//		}
-//	}
-//}
-
-//prove CBS_lemma0: *A*F(is_function(F) & ^P(is_power_set(A, P) & is_domain(P, F) & is_codomain(P, F)) & *S*T(are_related(S, T, F) -> is_subset(S, T)) -> ^R(are_related(R, R, F))){
-//	given A{
-//		given F{
-//			implies premises{
-//			}
-//		}
-//	}
-//}
-
 prove injective_composition: *F*G*H(is_composition(F, G, H) & is_injective(F) & is_injective(G) -> is_injective(H)){
 	given F{
 		given G{

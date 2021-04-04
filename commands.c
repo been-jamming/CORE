@@ -97,9 +97,6 @@ int print_command(char **c){
 	if(strncmp(*c, "print", 5) || is_alphanumeric((*c)[5])){
 		return 0;
 	}
-	#ifdef DEBUG
-	printf("PRINT\n");
-	#endif
 	*c += 5;
 	skip_whitespace(c);
 	s = parse_statement_value(c, &is_verified);
@@ -138,9 +135,6 @@ proposition *definition_command(char **c){
 	if(strncmp(*c, "define", 6) || is_alphanumeric((*c)[6])){
 		return NULL;
 	}
-	#ifdef DEBUG
-	printf("DEFINE\n");
-	#endif
 	*c += 6;
 	skip_whitespace(c);
 	
@@ -206,11 +200,6 @@ proposition *definition_command(char **c){
 	output->num_references = 0;
 	output->depth = current_depth;
 	output->num_args = num_bound_vars;
-	#ifdef DEBUG
-	printf("definition %s: ", def_name);
-	print_statement(s);
-	printf("\n");
-	#endif
 
 	clear_bound_variables();
 
@@ -232,9 +221,6 @@ variable *axiom_command(char **c){
 	if(strncmp(*c, "axiom", 5) || is_alphanumeric((*c)[5])){
 		return NULL;
 	}
-	#ifdef DEBUG
-	printf("AXIOM\n");
-	#endif
 
 	*c += 5;
 	skip_whitespace(c);
@@ -331,11 +317,6 @@ variable *axiom_command(char **c){
 		error(1);
 	}
 	++*c;
-	#ifdef DEBUG
-	printf("axiom %s: ", axiom_name);
-	print_statement(s);
-	printf("\n");
-	#endif
 
 	clear_bound_propositions();
 
@@ -369,9 +350,6 @@ variable *assign_command(char **c){
 		*c = beginning;
 		return NULL;
 	}
-	#ifdef DEBUG
-	printf("ASSIGN\n");
-	#endif
 	++*c;
 	skip_whitespace(c);
 	
@@ -406,9 +384,6 @@ statement *return_command(char **c){
 	if(strncmp(*c, "return", 6) || is_alphanumeric((*c)[6])){
 		return NULL;
 	}
-	#ifdef DEBUG
-	printf("RETURN\n");
-	#endif
 
 	*c += 6;
 	skip_whitespace(c);
@@ -445,9 +420,6 @@ int evaluate_command(char **c){
 		*c = beginning;
 		return 0;
 	}
-	#ifdef DEBUG
-	printf("EVALUATE\n");
-	#endif
 
 	skip_whitespace(c);
 	if(**c != ';'){
@@ -476,9 +448,6 @@ int debug_command(char **c, statement *goal){
 		return 0;
 	}
 
-	#ifdef DEBUG
-	printf("DEBUG\n");
-	#endif
 	*c += 5;
 	skip_whitespace(c);
 	s = parse_statement_value(c, &is_verified);
@@ -507,6 +476,65 @@ int debug_command(char **c, statement *goal){
 	return 1;
 }
 
+int extract_command(char **c){
+	unsigned char is_verified;
+	char var_name[256];
+	statement *all;
+	statement *extracted;
+
+	skip_whitespace(c);
+	if(strncmp(*c, "extract", 7) || is_alphanumeric((*c)[7])){
+		return 0;
+	}
+
+	*c += 7;
+	skip_whitespace(c);
+	all = parse_statement_value(c, &is_verified);
+	if(!all){
+		fprintf(stderr, "Error: could not parse statement value\n");
+		error(1);
+	}
+	if(!is_verified){
+		fprintf(stderr, "Error: statement must be verified\n");
+		error(1);
+	}
+
+	skip_whitespace(c);
+	if(**c != ','){
+		fprintf(stderr, "Error: expected ','\n");
+		error(1);
+	}
+
+	while(**c == ','){
+		++*c;
+		skip_whitespace(c);
+		get_identifier(c, var_name, 256);
+		skip_whitespace(c);
+
+		if(var_name[0] == '\0'){
+			fprintf(stderr, "Error: expected identifier\n");
+			error(1);
+		}
+		if(!all){
+			fprintf(stderr, "Error: not enough values to unpack\n");
+			error(1);
+		}
+
+		if(**c != ',' && **c != ';'){
+			fprintf(stderr, "Error: expected ',' or ';'\n");
+			error(1);
+		} else if(**c == ';'){
+			create_statement_var(var_name, all);
+		} else {
+			extracted = peel_and_left(&all);
+			create_statement_var(var_name, extracted);
+		}
+	}
+
+	++*c;
+	return 1;
+}
+
 variable *prove_command(char **c){
 	int num_bound_props = 0;
 	int num_args;
@@ -529,9 +557,6 @@ variable *prove_command(char **c){
 	if(strncmp(*c, "prove", 5) || is_alphanumeric((*c)[5])){
 		return NULL;
 	}
-	#ifdef DEBUG
-	printf("PROVE\n");
-	#endif
 
 	*c += 5;
 	skip_whitespace(c);
@@ -726,9 +751,6 @@ statement *given_command(char **c, statement *goal){
 	if(strncmp(*c, "given", 5) || is_alphanumeric((*c)[5])){
 		return NULL;
 	}
-	#ifdef DEBUG
-	printf("GIVEN\n");
-	#endif
 
 	*c += 5;
 	skip_whitespace(c);
@@ -794,9 +816,6 @@ statement *choose_command(char **c, statement *goal){
 	if(strncmp(*c, "choose", 6) || is_alphanumeric((*c)[6])){
 		return NULL;
 	}
-	#ifdef DEBUG
-	printf("CHOOSE\n");
-	#endif
 
 	*c += 6;
 	skip_whitespace(c);
@@ -867,9 +886,6 @@ statement *implies_command(char **c, statement *goal){
 	if(strncmp(*c, "implies", 7) || is_alphanumeric((*c)[7])){
 		return NULL;
 	}
-	#ifdef DEBUG
-	printf("IMPLIES\n");
-	#endif
 
 	*c += 7;
 	skip_whitespace(c);
@@ -931,9 +947,6 @@ statement *not_command(char **c, statement *goal){
 	if(strncmp(*c, "not", 3) || is_alphanumeric((*c)[3])){
 		return NULL;
 	}
-	#ifdef DEBUG
-	printf("NOT\n");
-	#endif
 
 	*c += 3;
 	skip_whitespace(c);
@@ -1039,6 +1052,8 @@ statement *verify_command(char **c, unsigned char allow_proof_value, statement *
 		return return_value;
 	} else if(debug_command(c, goal)){
 		//pass
+	} else if(extract_command(c)){
+		//pass
 	} else if(evaluate_command(c)){
 		//Pass
 	} else {
@@ -1104,3 +1119,4 @@ int main(int argc, char **argv){
 	free_dictionary(definitions, free_proposition_void);
 	return 0;
 }
+
