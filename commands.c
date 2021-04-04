@@ -500,12 +500,12 @@ int extract_command(char **c){
 	}
 
 	skip_whitespace(c);
-	if(**c != ','){
-		fprintf(stderr, "Error: expected ','\n");
+	if(**c != ':'){
+		fprintf(stderr, "Error: expected ':'\n");
 		error(1);
 	}
 
-	while(**c == ','){
+	do{
 		++*c;
 		skip_whitespace(c);
 		get_identifier(c, var_name, 256);
@@ -529,7 +529,7 @@ int extract_command(char **c){
 			extracted = peel_and_left(&all);
 			create_statement_var(var_name, extracted);
 		}
-	}
+	} while(**c == ',');
 
 	++*c;
 	return 1;

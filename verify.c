@@ -1158,7 +1158,7 @@ static statement *parse_statement_value_recursive(char **c, unsigned char *is_ve
 		}
 	}
 	skip_whitespace(c);
-	while(**c && **c != ';' && **c != ')' && **c != ',' && **c != ']'){
+	while(**c && **c != ';' && **c != ')' && **c != ',' && **c != ']' && **c != ':'){
 		if(**c == '['){
 			if(!output->num_bound_props){
 				free_statement(output);
