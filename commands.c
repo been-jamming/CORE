@@ -743,7 +743,8 @@ variable *prove_command(char **c){
 
 statement *given_command(char **c, statement *goal){
 	char name_buffer[256];
-	statement *next_goal;
+	statement *next_goal = NULL;
+	statement *temp_goal;
 	statement *return_statement;
 	variable *new_var;
 
@@ -755,36 +756,52 @@ statement *given_command(char **c, statement *goal){
 	*c += 5;
 	skip_whitespace(c);
 
-	if(goal->type != FORALL){
-		fprintf(stderr, "Error: incorrect goal type\n");
-		error(1);
-	}
-
-	get_identifier(c, name_buffer, 256);
-	if(name_buffer[0] == '\0'){
+	if(!is_alpha(**c)){
 		fprintf(stderr, "Error: expected identifier\n");
 		error(1);
 	}
+	
+	up_scope();
+	do{
+		if(**c == ','){
+			++*c;
+			skip_whitespace(c);
+		}
+		if((next_goal && next_goal->type != FORALL) || goal->type != FORALL){
+			fprintf(stderr, "Error: incorrect goal type\n");
+			error(1);
+		}
 
-	skip_whitespace(c);
-	if(**c != '{'){
-		fprintf(stderr, "Error: expected '{'\n");
-		error(1);
-	}
+		get_identifier(c, name_buffer, 256);
+		if(name_buffer[0] == '\0'){
+			fprintf(stderr, "Error: expected identifier\n");
+			error(1);
+		}
+
+		skip_whitespace(c);
+		if(**c != '{' && **c != ','){
+			fprintf(stderr, "Error: expected '{'\n");
+			error(1);
+		}
+		if(next_goal){
+			temp_goal = next_goal->child0;
+			free(next_goal);
+			next_goal = temp_goal;
+		} else {
+			next_goal = malloc(sizeof(statement));
+			copy_statement(next_goal, goal->child0);
+		}
+		new_var = create_object_var(name_buffer);
+		if(!substitute_variable(next_goal, 0, new_var)){
+			fprintf(stderr, "Error: cannot substitute variable\n");
+			error(1);
+		}
+		add_bound_variables(next_goal, -1);
+	} while(**c == ',');
 
 	++*c;
 	skip_whitespace(c);
 
-	up_scope();
-	next_goal = malloc(sizeof(statement));
-	copy_statement(next_goal, goal->child0);
-
-	new_var = create_object_var(name_buffer);
-	if(!substitute_variable(next_goal, 0, new_var)){
-		fprintf(stderr, "Error: cannot substitute variable\n");
-		error(1);
-	}
-	add_bound_variables(next_goal, -1);
 	write_goal(next_goal);
 	return_statement = verify_block(c, 1, next_goal);
 
@@ -808,7 +825,8 @@ statement *given_command(char **c, statement *goal){
 
 statement *choose_command(char **c, statement *goal){
 	char name_buffer[256];
-	statement *next_goal;
+	statement *next_goal = NULL;
+	statement *temp_goal;
 	statement *return_statement;
 	variable *var;
 
@@ -820,41 +838,57 @@ statement *choose_command(char **c, statement *goal){
 	*c += 6;
 	skip_whitespace(c);
 
-	if(goal->type != EXISTS){
-		fprintf(stderr, "Error: incorrect goal type\n");
-		error(1);
-	}
-
-	get_identifier(c, name_buffer, 256);
-	if(name_buffer[0] == '\0'){
+	if(!is_alpha(**c)){
 		fprintf(stderr, "Error: expected identifier\n");
 		error(1);
 	}
 
-	skip_whitespace(c);
-	if(**c != '{'){
-		fprintf(stderr, "Error: expected '{'\n");
-		error(1);
-	}
+	up_scope();
+	next_goal = NULL;
+	do{
+		if(**c == ','){
+			++*c;
+			skip_whitespace(c);
+		}
+		if((next_goal && next_goal->type != EXISTS) || goal->type != EXISTS){
+			fprintf(stderr, "Error: incorrect goal type\n");
+			error(1);
+		}
+
+		get_identifier(c, name_buffer, 256);
+		if(name_buffer[0] == '\0'){
+			fprintf(stderr, "Error: expected identifier\n");
+			error(1);
+		}
+
+		skip_whitespace(c);
+		if(**c != '{' && **c != ','){
+			fprintf(stderr, "Error: expected '{'\n");
+			error(1);
+		}
+		if(next_goal){
+			temp_goal = next_goal->child0;
+			free(next_goal);
+			next_goal = temp_goal;
+		} else {
+			next_goal = malloc(sizeof(statement));
+			copy_statement(next_goal, goal->child0);
+		}
+		var = get_object_var(name_buffer);
+		if(!var){
+			fprintf(stderr, "Error: unknown variable '%s'\n", name_buffer);
+			error(1);
+		}
+		if(!substitute_variable(next_goal, 0, var)){
+			fprintf(stderr, "Error: cannot substitute variable\n");
+			error(1);
+		}
+		add_bound_variables(next_goal, -1);
+	} while(**c == ',');
 	
 	++*c;
 	skip_whitespace(c);
 
-	var = get_object_var(name_buffer);
-	if(!var){
-		fprintf(stderr, "Error: unknown variable '%s'\n", name_buffer);
-		error(1);
-	}
-
-	up_scope();
-	next_goal = malloc(sizeof(statement));
-	copy_statement(next_goal, goal->child0);
-
-	if(!substitute_variable(next_goal, 0, var)){
-		fprintf(stderr, "Error: cannot substitute variable\n");
-		error(1);
-	}
-	add_bound_variables(next_goal, -1);
 	write_goal(next_goal);
 	return_statement = verify_block(c, 1, next_goal);
 
