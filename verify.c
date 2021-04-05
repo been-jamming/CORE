@@ -1042,6 +1042,10 @@ statement *parse_statement_value_parentheses(char **c, statement *output, unsign
 	variable *var;
 	char var_name[256];
 
+	if(output->num_bound_props || output->num_bound_vars){
+		fprintf(stderr, "Error: expression has bound propositions or variables\n");
+		error(1);
+	}
 	compare_type = output->type;
 	skip_whitespace(c);
 	if(**c == ')'){
@@ -1061,17 +1065,9 @@ statement *parse_statement_value_parentheses(char **c, statement *output, unsign
 			}
 			skip_whitespace(c);
 			if(compare_type == EXISTS){
-				if(output->num_bound_props){
-					fprintf(stderr, "Error: expression has bound propositions\n");
-					error(1);
-				}
 				*did_bind = 1;
 				var = create_object_var(var_name);
 			} else if(compare_type == FORALL){
-				if(output->num_bound_props){
-					fprintf(stderr, "Error: expression has bound propositions\n");
-					error(1);
-				}
 				var = get_object_var(var_name);
 			}
 			if(!var){
@@ -1133,10 +1129,40 @@ statement *parse_statement_value_parentheses(char **c, statement *output, unsign
 	return output;
 }
 
+static statement *parse_statement_brackets(char **c, statement *output){
+	statement *arg;
+	unsigned char foo_verified;
+
+	do{
+		if(!output->num_bound_props){
+			fprintf(stderr, "Error: statement has no bound propositions\n");
+			error(1);
+		}
+		++*c;
+		skip_whitespace(c);
+
+		arg = parse_statement_identifier_or_value(c, &foo_verified, ',', ']');
+
+		if(!arg || arg->num_bound_props){
+			return NULL;
+		}
+
+		skip_whitespace(c);
+		if(**c != ',' && **c != ']'){
+			fprintf(stderr, "Error: expected ',' or ']'\n");
+			error(1);
+		}
+		substitute_proposition(output, arg);
+		free_statement(arg);
+	} while(**c == ',');
+
+	++*c;
+
+	return output;
+}
+
 static statement *parse_statement_value_recursive(char **c, unsigned char *is_verified, unsigned char *did_bind){
 	statement *output;
-	statement *arg;
-	unsigned char next_verified;
 
 	skip_whitespace(c);
 	if((output = parse_statement_value_builtin(c, is_verified))){
@@ -1160,33 +1186,10 @@ static statement *parse_statement_value_recursive(char **c, unsigned char *is_ve
 	skip_whitespace(c);
 	while(**c && **c != ';' && **c != ')' && **c != ',' && **c != ']' && **c != ':'){
 		if(**c == '['){
-			if(!output->num_bound_props){
-				free_statement(output);
-				fprintf(stderr, "Error: statement has no bound propositions\n");
-				error(1);
-			}
-
-			++*c;
-			skip_whitespace(c);
-
-			arg = parse_statement_identifier_or_value(c, &next_verified, ']', ']');
-			if(!arg || arg->num_bound_props){
-				if(arg){
-					free_statement(arg);
-				}
-				free_statement(output);
+			output = parse_statement_brackets(c, output);
+			if(!output){
 				return NULL;
 			}
-
-			skip_whitespace(c);
-			if(**c != ']'){
-				free_statement(arg);
-				free_statement(output);
-				return NULL;
-			}
-			++*c;
-			substitute_proposition(output, arg);
-			free_statement(arg);
 		} else if(**c == '('){
 			++*c;
 			output = parse_statement_value_parentheses(c, output, is_verified, did_bind);
