@@ -1161,6 +1161,50 @@ static statement *parse_statement_brackets(char **c, statement *output){
 	return output;
 }
 
+statement *parse_anonymous_definition(char **c){
+	statement *output;
+	int *new_int;
+	int num_bound_vars = 0;
+	char name_buffer[256];
+
+	clear_bound_variables();
+	skip_whitespace(c);
+	while(**c != ':'){
+		get_identifier(c, name_buffer, 256);
+		if(name_buffer[0] == '\0'){
+			fprintf(stderr, "Error: expected identifier\n");
+			error(1);
+		}
+		if(read_dictionary(bound_variables, name_buffer, 0)){
+			fprintf(stderr, "Error: duplicate identifier\n");
+			error(1);
+		}
+		new_int = malloc(sizeof(int));
+		*new_int = num_bound_vars;
+		write_dictionary(&bound_variables, name_buffer, new_int, 0);
+		num_bound_vars++;
+		skip_whitespace(c);
+		if(**c == ','){
+			++*c;
+			skip_whitespace(c);
+		} else if(**c != ':'){
+			fprintf(stderr, "Error: expected ',' or ':'\n");
+			error(1);
+		}
+	}
+	++*c;
+	skip_whitespace(c);
+	output = parse_statement(c, num_bound_vars, 0);
+	if(**c != '>'){
+		fprintf(stderr, "Error: expected '>'\n");
+		error(1);
+	}
+	++*c;
+	clear_bound_variables();
+
+	return output;
+}
+
 static statement *parse_statement_value_recursive(char **c, unsigned char *is_verified, unsigned char *did_bind){
 	statement *output;
 
@@ -1177,6 +1221,10 @@ static statement *parse_statement_value_recursive(char **c, unsigned char *is_ve
 			return NULL;
 		}
 		++*c;
+	} else if(**c == '<'){
+		++*c;
+		output = parse_anonymous_definition(c);
+		*is_verified = 0;
 	} else {
 		output = parse_statement_identifier(c, is_verified);
 		if(!output){

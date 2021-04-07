@@ -119,4 +119,5 @@ unsigned char compare_statement(statement *a, statement *b);
 void print_statement(statement *s);
 statement *peel_and_left(statement **s);
 statement *peel_or_left(statement **s);
+void clear_bound_variables();
 
