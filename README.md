@@ -27,7 +27,7 @@ To install, simply copy the executable created after building to `/usr/bin` on U
 CORE comes with a model of the Zermelo Fraenkel set theory axioms and appropriate proofs to show that definitions are well defined. To verify these files, simply
 run `core proofs/*`. These example programs are an excellent way to get to know the language.
 
-The CORE verifier takes as arguments files to verify. The files are verified in-order, and subsequent files can be dependent on axioms, definitions, and theorems
+The CORE verifier takes as arguments files to verify. The files are verified in order, and subsequent files can be dependent on axioms, definitions, and theorems
 from previous files. If there is an error, the CORE will give an error message and the location of the error. Otherwise, CORE will give a message that the proofs
 have been successfully verified.
 
