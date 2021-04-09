@@ -1,0 +1,54 @@
+prove pair_equal_condition: *A*B*C*D*E*F(is_pair(A, B, E) & is_pair(C, D, F) & equal_sets(E, F) -> equal_sets(A, C) | equal_sets(A, D)){
+	given A, B, C, D, E, F{
+		implies premises{
+			extract premises: pair_E, pair_F, equal_E_F;
+			pair_E_def = is_pair#(A, B, E)(pair_E);
+			pair_F_def = is_pair#(C, D, F)(pair_F);
+			equal_F_E = equal_sets_symmetric(E, F)(equal_E_F);
+			equals_or = or(equal_sets_reflexive(A), <:equal_sets(A, B)>);
+			extract pair_E_def(A): pair_E_left_A, pair_E_right_A;
+			A_in_E = pair_E_right_A(equals_or);
+
+			pair_CD_E = equality_consistency[<X: is_pair(C, D, X)>](F, E)(and(equal_F_E, pair_F));
+			pair_CD_E = is_pair#(C, D, E)(pair_CD_E);
+			extract pair_CD_E(A): result, pair_left;
+			return result(A_in_E);
+		}
+	}
+}
+
+define is_tuple(A, B, C): ^E^F(is_pair(A, A, E) & is_pair(A, B, F) & is_pair(E, F, C));
+
+prove tuple_exists: *A*B^C(is_tuple(A, B, C)){
+	given A, B{
+		E_pair = pair_exists(A, A)(E);
+		F_pair = pair_exists(A, B)(F);
+		C_pair = pair_exists(E, F)(C);
+		choose C{
+			prove tuple_def: ^E^F(is_pair(A, A, E) & is_pair(A, B, F) & is_pair(E, F, C)){
+				choose E, F{
+					return and(E_pair, F_pair, C_pair);
+				}
+			}
+			return #is_tuple(A, B, C)(tuple_def);
+		}
+	}
+}
+
+prove tuple_unique: *A*B*C*D(is_tuple(A, B, C) & is_tuple(A, B, D) -> equal_sets(C, D)){
+	given A, B, C, D{
+		implies both_tuples{
+			extract both_tuples: tuple_C, tuple_D;
+			tuple_C_def = is_tuple#(A, B, C)(tuple_C);
+			tuple_D_def = is_tuple#(A, B, D)(tuple_D);
+			extract tuple_C_def(E_C, F_C): pair_E_C, pair_F_C, pair_C;
+			extract tuple_D_def(E_D, F_D): pair_E_D, pair_F_D, pair_D;
+			E_C_equal_E_D = pair_unique(A, A, E_C, E_D)(and(pair_E_C, pair_E_D));
+			F_C_equal_F_D = pair_unique(A, B, F_C, F_D)(and(pair_F_C, pair_F_D));
+			pair_C_next = equality_consistency[<X: is_pair(X, F_C, C)>](E_C, E_D)(and(E_C_equal_E_D, pair_C));
+			pair_C_final = equality_consistency[<X: is_pair(E_D, X, C)>](F_C, F_D)(and(F_C_equal_F_D, pair_C_next));
+			return pair_unique(E_D, F_D, C, D)(and(pair_C_final, pair_D));
+		}
+	}
+}
+
