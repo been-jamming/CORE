@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "dictionary.h"
-#include "expr.h"
-#include "verify.h"
+#include "proposition.h"
+#include "expression.h"
 
 char *program_text;
 statement *goals[MAX_DEPTH];

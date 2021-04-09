@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "dictionary.h"
-#include "expr.h"
-#include "verify.h"
+#include "proposition.h"
+#include "expression.h"
 
 void init_verifier(){
 	int i;
@@ -1125,6 +1125,11 @@ int main(int argc, char **argv){
 	statement *return_value;
 	int i;
 
+	if(argc < 2){
+		fprintf(stderr, "Error: no input files\n");
+		return 1;
+	}
+
 	init_verifier();
 	
 	for(i = 1; i < argc; i++){
@@ -1141,7 +1146,7 @@ int main(int argc, char **argv){
 		global_program_start = program_text;
 		return_value = verify_block(&program_text, 0, NULL);
 		if(return_value){
-			printf("\nProgram returned: ");
+			printf("\nFile returned: ");
 			print_statement(return_value);
 			printf("\n");
 			free_statement(return_value);
@@ -1151,6 +1156,8 @@ int main(int argc, char **argv){
 	}
 	free_dictionary(variables, free_variable_void);
 	free_dictionary(definitions, free_proposition_void);
+
+	printf("Proof validation successful.\n");
 	return 0;
 }
 

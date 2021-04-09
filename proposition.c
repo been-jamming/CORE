@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "dictionary.h"
-#include "expr.h"
+#include "proposition.h"
 
 unsigned int current_depth;
 dictionary variables[MAX_DEPTH];
