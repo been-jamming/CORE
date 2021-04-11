@@ -703,6 +703,12 @@ variable *prove_command(char **c){
 	clear_bound_propositions();
 	write_goal(goal);
 	returned = verify_block(c, 1, goal);
+
+	if(**c != '}'){
+		fprintf(stderr, "Error: expected '}'\n");
+		error(1);
+	}
+	++*c;
 	
 	if(!returned){
 		free_statement(goal);
@@ -742,6 +748,7 @@ variable *prove_command(char **c){
 }
 
 statement *given_command(char **c, statement *goal){
+	unsigned char explicit_scope;
 	char name_buffer[256];
 	statement *next_goal = NULL;
 	statement *temp_goal;
@@ -754,6 +761,13 @@ statement *given_command(char **c, statement *goal){
 	}
 
 	*c += 5;
+	skip_whitespace(c);
+
+	if(**c != '|'){
+		fprintf(stderr, "Error: expected '|'\n");
+		error(1);
+	}
+	++*c;
 	skip_whitespace(c);
 
 	if(!is_alpha(**c)){
@@ -779,8 +793,8 @@ statement *given_command(char **c, statement *goal){
 		}
 
 		skip_whitespace(c);
-		if(**c != '{' && **c != ','){
-			fprintf(stderr, "Error: expected '{'\n");
+		if(**c != '|' && **c != ','){
+			fprintf(stderr, "Error: expected '|'\n");
 			error(1);
 		}
 		if(next_goal){
@@ -801,9 +815,25 @@ statement *given_command(char **c, statement *goal){
 
 	++*c;
 	skip_whitespace(c);
+	if(**c != '{' && **c != ';'){
+		fprintf(stderr, "Error: expected '{' or ';'\n");
+		error(1);
+	}
+
+	explicit_scope = (**c == '{');
+	++*c;
+	skip_whitespace(c);
 
 	write_goal(next_goal);
 	return_statement = verify_block(c, 1, next_goal);
+
+	if(explicit_scope){
+		if(**c != '}'){
+			fprintf(stderr, "Error: expected '}'\n");
+			error(1);
+		}
+		++*c;
+	}
 
 	if(!return_statement){
 		fprintf(stderr, "Error: expected returned statement\n");
@@ -824,6 +854,7 @@ statement *given_command(char **c, statement *goal){
 }
 
 statement *choose_command(char **c, statement *goal){
+	unsigned char explicit_scope;
 	char name_buffer[256];
 	statement *next_goal = NULL;
 	statement *temp_goal;
@@ -862,8 +893,8 @@ statement *choose_command(char **c, statement *goal){
 		}
 
 		skip_whitespace(c);
-		if(**c != '{' && **c != ','){
-			fprintf(stderr, "Error: expected '{'\n");
+		if(**c != '{' && **c != ';' && **c != ','){
+			fprintf(stderr, "Error: expected '{' or ';'\n");
 			error(1);
 		}
 		if(next_goal){
@@ -885,12 +916,22 @@ statement *choose_command(char **c, statement *goal){
 		}
 		add_bound_variables(next_goal, -1);
 	} while(**c == ',');
+
+	explicit_scope = (**c == '{');
 	
 	++*c;
 	skip_whitespace(c);
 
 	write_goal(next_goal);
 	return_statement = verify_block(c, 1, next_goal);
+
+	if(explicit_scope){
+		if(**c != '}'){
+			fprintf(stderr, "Error: expected '}'\n");
+			error(1);
+		}
+		++*c;
+	}
 
 	if(!return_statement){
 		fprintf(stderr, "Error: expected returned statement\n");
@@ -911,6 +952,7 @@ statement *choose_command(char **c, statement *goal){
 }
 
 statement *implies_command(char **c, statement *goal){
+	unsigned char explicit_scope;
 	char name_buffer[256];
 	statement *next_goal;
 	statement *var_statement;
@@ -936,11 +978,12 @@ statement *implies_command(char **c, statement *goal){
 	}
 
 	skip_whitespace(c);
-	if(**c != '{'){
-		fprintf(stderr, "Error: expected '{'\n");
+	if(**c != '{' && **c != ';'){
+		fprintf(stderr, "Error: expected '{' or ';'\n");
 		error(1);
 	}
 
+	explicit_scope = (**c == '{');
 	++*c;
 	skip_whitespace(c);
 
@@ -952,6 +995,14 @@ statement *implies_command(char **c, statement *goal){
 	copy_statement(next_goal, goal->child1);
 	write_goal(next_goal);
 	return_statement = verify_block(c, 1, next_goal);
+
+	if(explicit_scope){
+		if(**c != '}'){
+			fprintf(stderr, "Error: expected '}'\n");
+			error(1);
+		}
+		++*c;
+	}
 
 	if(!return_statement){
 		fprintf(stderr, "Error: expected returned statement\n");
@@ -972,6 +1023,7 @@ statement *implies_command(char **c, statement *goal){
 }
 
 statement *not_command(char **c, statement *goal){
+	unsigned char explicit_scope;
 	char name_buffer[256];
 	statement *next_goal;
 	statement *var_statement;
@@ -997,11 +1049,12 @@ statement *not_command(char **c, statement *goal){
 	}
 
 	skip_whitespace(c);
-	if(**c != '{'){
-		fprintf(stderr, "Error: expected '{'\n");
+	if(**c != '{' && **c != ';'){
+		fprintf(stderr, "Error: expected '{' or ';'\n");
 		error(1);
 	}
 
+	explicit_scope = (**c == '{');
 	++*c;
 	skip_whitespace(c);
 
@@ -1012,6 +1065,14 @@ statement *not_command(char **c, statement *goal){
 	next_goal = create_statement(FALSE, 0, 0);
 	write_goal(next_goal);
 	return_statement = verify_block(c, 1, next_goal);
+
+	if(explicit_scope){
+		if(**c != '}'){
+			fprintf(stderr, "Error: expected '}'\n");
+			error(1);
+		}
+		++*c;
+	}
 
 	if(!return_statement){
 		fprintf(stderr, "Error: expected returned statement\n");
@@ -1113,10 +1174,6 @@ statement *verify_block(char **c, unsigned char allow_proof_value, statement *go
 		error(1);
 	}
 
-	if(**c){
-		++*c;
-	}
-
 	return return_value;
 }
 
@@ -1136,7 +1193,7 @@ int main(int argc, char **argv){
 		program_text = load_file(argv[i]);
 		program_start = program_text;
 		if(!program_text){
-			fprintf(stderr, "Error: could not read file\n");
+			fprintf(stderr, "Error: could not read file '%s'\n", argv[i]);
 			return 1;
 		}
 
@@ -1145,6 +1202,10 @@ int main(int argc, char **argv){
 		global_program_pointer = &program_text;
 		global_program_start = program_text;
 		return_value = verify_block(&program_text, 0, NULL);
+		if(*program_text == '}'){
+			fprintf(stderr, "Error: expected EOF\n");
+			error(1);
+		}
 		if(return_value){
 			printf("\nFile returned: ");
 			print_statement(return_value);

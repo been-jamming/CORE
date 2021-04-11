@@ -119,48 +119,6 @@ unsigned int max_statement_depth(statement *s){
 	}
 }
 
-statement *parse_statement_identifier_proposition(char **c){
-	proposition *prop;
-	statement *output;
-	char name_buffer[256];
-	char *beginning;
-	int i;
-
-	skip_whitespace(c);
-	beginning = *c;
-	get_identifier(c, name_buffer, 256);
-	if(name_buffer[0] == '\0'){
-		*c = beginning;
-		return NULL;
-	}
-	for(i = current_depth; i >= 0; i--){
-		prop = read_dictionary(definitions[i], name_buffer, 0);
-		if(prop){
-			break;
-		}
-	}
-
-	if(prop){
-		output = malloc(sizeof(statement));
-		output->type = PROPOSITION;
-		output->is_bound = 0;
-		output->prop = prop;
-		prop->num_references++;
-		output->num_args = prop->num_args;
-		output->prop_args = malloc(sizeof(proposition_arg)*output->num_args);
-		for(i = 0; i < output->num_args; i++){
-			output->prop_args[i].is_bound = 1;
-			output->prop_args[i].var_id = i;
-		}
-		output->num_bound_vars = output->num_args;
-		output->num_bound_props = 0;
-		return output;
-	} else {
-		*c = beginning;
-		return NULL;
-	}
-}
-
 statement *statement_to_definition(char *name){
 	proposition *prop;
 	statement *output;
@@ -719,7 +677,7 @@ statement *parse_and_or(char **c, unsigned char is_and, unsigned char *is_verifi
 	unsigned char args_verified;
 	unsigned char arg_verified = 1;
 
-	output = parse_statement_identifier_or_value(c, &arg_verified, ',', ')');
+	output = parse_statement_value(c, &arg_verified);
 	if(!output){
 		fprintf(stderr, "Error: could not parse statement value\n");
 		error(1);
@@ -731,11 +689,16 @@ statement *parse_and_or(char **c, unsigned char is_and, unsigned char *is_verifi
 	}
 	args_verified = arg_verified;
 
+	if(**c != ')' && **c != ','){
+		fprintf(stderr, "Error: expected ',' or ')'\n");
+		error(1);
+	}
+
 	while(**c != ')'){
 		++*c;
 		skip_whitespace(c);
 		arg_verified = 1;
-		s = parse_statement_identifier_or_value(c, &arg_verified, ',', ')');
+		s = parse_statement_value(c, &arg_verified);
 		if(!s){
 			free_statement(output);
 			fprintf(stderr, "Error: could not parse statement value\n");
@@ -917,6 +880,13 @@ statement *parse_branch(char **c){
 		new_statement_var = create_statement_var(var_name, new);
 		new_statement_var->num_references++;
 		return_statement = verify_block(c, 0, NULL);
+
+		if(**c != '}'){
+			fprintf(stderr, "Error: expected '}'\n");
+			error(1);
+		}
+		++*c;
+
 		if(!return_statement){
 			fprintf(stderr, "Error: expected return statement\n");
 			error(1);
@@ -1012,27 +982,58 @@ statement *parse_statement_value_builtin(char **c, unsigned char *is_verified){
 	return NULL;
 }
 
-statement *parse_statement_identifier_or_value(char **c, unsigned char *is_verified, char end_char0, char end_char1){
-	statement *output;
-	char *beginning;
+statement *parse_statement_value_pipe(char **c, statement *output, unsigned char *is_verified, unsigned char *did_bind){
+	statement *next_output;
+	variable *var;
+	char var_name[256];
 
-	beginning = *c;
-	output = parse_statement_identifier_proposition(c);
-	skip_whitespace(c);
-	//The end characters 'end_char0' and 'end_char1' can't be operations
-	//on statements. They are used to determine when the user has
-	//specified a definition or is using a definition in an unverified
-	//expression.
-	if(output && (**c == end_char0 || **c == end_char1)){
-		*is_verified = 0;
-		return output;
-	} else {
-		if(output){
-			free_statement(output);
-		}
-		*c = beginning;
-		return parse_statement_value(c, is_verified);
+	if(output->num_bound_props || output->num_bound_vars){
+		fprintf(stderr, "Error: expression has bound propositions or variables\n");
+		error(1);
 	}
+	skip_whitespace(c);
+	if(**c == '|'){
+		fprintf(stderr, "Error: expected variable\n");
+		error(1);
+	}
+	while(**c != '|'){
+		if(output->type != EXISTS){
+			fprintf(stderr, "Error: expected '|'\n");
+			error(1);
+		}
+		get_identifier(c, var_name, 256);
+		if(var_name[0] == '\0'){
+			fprintf(stderr, "Error: expected identifier name\n");
+			error(1);
+		}
+		skip_whitespace(c);
+		var = create_object_var(var_name);
+		if(!var){
+			fprintf(stderr, "Error: failed to create variable '%s'\n", var_name);
+			error(1);
+		}
+		next_output = output->child0;
+		free(output);
+		if(!substitute_variable(next_output, 0, var)){
+			fprintf(stderr, "Error: failed to substitute variable\n");
+			error(1);
+		}
+		output = next_output;
+		add_bound_variables(output, -1);
+		*did_bind = 1;
+
+		if(**c != ',' && **c != '|'){
+			fprintf(stderr, "Error: expected ',' or '|'\n");
+			error(1);
+		}
+		if(**c == ','){
+			++*c;
+			skip_whitespace(c);
+		}
+	}
+	++*c;
+
+	return output;
 }
 
 statement *parse_statement_value_parentheses(char **c, statement *output, unsigned char *is_verified, unsigned char *did_bind){
@@ -1057,21 +1058,16 @@ statement *parse_statement_value_parentheses(char **c, statement *output, unsign
 			fprintf(stderr, "Error: expected ')' before next arguments\n");
 			error(1);
 		}
-		if(compare_type == EXISTS || compare_type == FORALL){
+		if(compare_type == FORALL){
 			get_identifier(c, var_name, 256);
 			if(var_name[0] == '\0'){
 				fprintf(stderr, "Error: expected identifier name\n");
 				error(1);
 			}
 			skip_whitespace(c);
-			if(compare_type == EXISTS){
-				*did_bind = 1;
-				var = create_object_var(var_name);
-			} else if(compare_type == FORALL){
-				var = get_object_var(var_name);
-			}
+			var = get_object_var(var_name);
 			if(!var){
-				fprintf(stderr, "Error: failed to find or create variable '%s'\n", var_name);
+				fprintf(stderr, "Error: failed to find variable '%s'\n", var_name);
 				error(1);
 			}
 			next_output = output->child0;
@@ -1141,7 +1137,7 @@ static statement *parse_statement_brackets(char **c, statement *output){
 		++*c;
 		skip_whitespace(c);
 
-		arg = parse_statement_identifier_or_value(c, &foo_verified, ',', ']');
+		arg = parse_statement_value(c, &foo_verified);
 
 		if(!arg || arg->num_bound_props){
 			return NULL;
@@ -1241,6 +1237,9 @@ static statement *parse_statement_value_recursive(char **c, unsigned char *is_ve
 		} else if(**c == '('){
 			++*c;
 			output = parse_statement_value_parentheses(c, output, is_verified, did_bind);
+		} else if(**c == '|'){
+			++*c;
+			output = parse_statement_value_pipe(c, output, is_verified, did_bind);
 		} else {
 			free_statement(output);
 			return NULL;

@@ -35,18 +35,14 @@ Since the language currently lacks documentation, let's go over an example progr
 
 ```
 prove negate_exists[P(1)]: ~^X(P(X)) -> *X(~P(X)){
-  implies not_exists{
-    given X{
-      not P_X{
-        prove exists: ^X(P(X)){
-          choose X{
-            return P_X;
-          }
-        }
-        return not_exists(exists);
-      }
-    }
-  }
+	implies not_exists;
+	given |X|;
+	not P_X;
+	prove exists: ^X(P(X)){
+		choose X;
+		return P_X;
+	}
+	return not_exists(exists);
 }
 ```
 
@@ -66,26 +62,26 @@ of them; instead, statements can refer to objects by name. The types of variable
 instantiates a variable, the type of data the variable is storing is already defined by the operation.
 
 ```
-implies not_exists{
+implies not_exists;
 ```
 
 When we begin our proof, our goal is to prove `~^X(P(X)) -> *X(~P(X))`. The language interprets this quite literally: proving no other statement will suffice.
 However, it is often possible to transform the goal into something which is easier to prove. This is precisely what the `implies` command does. In order
 to prove a statement which looks like `A -> B`, one can assume that `A` is true and prove `B`. In this case, `A` is `~^X(P(X))` and `B` is `*X(~P(X))`. `implies`
-assigns to `not_exists` inside of the new scope the statement `~^X(P(X))`, and our new goal in the following scope becomes to prove that `*X(~P(X))`. 
-By assigning `A` to `not_exists`, the language is allowing us to assume that `A` is true in order to prove inside of the new scope that `B` is true.
+assigns to `not_exists` the statement `~^X(P(X))`, and our new goal becomes to prove that `*X(~P(X))`. 
+By assigning `A` to `not_exists`, the language is allowing us to assume that `A` is true in order to prove that `B` is true.
 
 ```
-given X{
+given |X|;
 ```
 
 Now our goal looks like proving "for all X", something is true. The typical strategy for doing this is to assume you are given an arbitrary object, and to prove
 that the statement is true for that object. This is what `given` does: we are given an object `X` and we now must prove that `~P(X)`. Unlike with `implies`, 
 `X` is a variable that is created as an *object*, not a *statement*. Notice that in order for this object to have any meaning, there must be some other statements
-which refer to the object `X`. In fact, our new goal in the next scope, to prove that `~P(X)`, gives this object meaning.
+which refer to the object `X`. In fact, our new goal, to prove that `~P(X)`, gives this object meaning.
 
 ```
-not P_X{
+not P_X;
 ```
 
 When proving a statement that looks like `~A`, a common strategy is to suppose `A` was true and to prove a contradiction. This is how the next keyword, `not`,
@@ -106,11 +102,11 @@ variable `X` inside of this statement is re-bound, so temporarily the `P(X)` in 
 already have.
 
 ```
-choose X{
+choose X;
 ```
 
 Anyways, we use `choose`, which is for when we are proving a statement of the form `^S(...)`. We give the language an object we already have, `X`, and in the
-process we are "claiming" that the desired object (whose existence we are claiming) is in fact `X`. Inside of the new scope, our goal becomes to prove 
+process we are "claiming" that such an object is in fact `X`. Inside of the new scope, our goal becomes to prove 
 `P(X)`, where `X` now refers to the object we just passed to `choose`.
 
 ```
@@ -128,7 +124,7 @@ return not_exists(exists);
 Now that the proof of `exists` is complete, the language takes the statement we just proved (that `^X(P(X))`), and stores it's value into `exists` *as a variable*.
 In other words, by completing the proof, we've just created a new variable `exists` which stores the opposite of what `not_exists` stores. Remember, we were doing
 originally a proof by contradiction, so our goal right now is to prove `false`. In CORE, a statement which has been proven of the form `~A` is treated sort of as
-a "function," which, when given the statement `A`, returns the statement `false`. So when we write `return not_exists(exists);`, we are "passing" the statement
+a function which, when given the statement `A`, returns the statement `false`. So when we write `return not_exists(exists);`, we are passing the statement
 `^X(P(X))` through `~^X(P(X))`. The expression `not_exists(exists)` then evaluates to `false`. When we return this value, the language checks that this indeed
 matches the current goal of the proof, and when it sees that it does, it completes the proof. Now that the proof is complete, the variable `negate_exists`
-(globally) stores the statement that for any proposition `P` depending on 1 variable, `~^X(P(X)) -> *X(~P(X))`!
+globally stores the statement that for any proposition `P` depending on 1 variable, `~^X(P(X)) -> *X(~P(X))`!
