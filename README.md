@@ -1,9 +1,9 @@
 # CORE
-A constructive proof assistant for propositional set theory.
+A first order proof assistant for propositional set theory with axiom and proof schema.
 
 ## Introduction
 
-CORE is a constructive proof assistant; more specifically, a language for writing computer verifiable proofs. A programmer for CORE writes axioms, definitions, 
+CORE is a proof assistant; more specifically, a language for writing computer verifiable proofs. A programmer for CORE writes axioms, definitions, 
 and the logical steps for a proof in a constructive style of deduction, and the language checks syntax and verifies that *all* steps are logically sound. If
 CORE successfully verifies a program, the programmer can rest soundly knowing that their proofs are air-tight, at least until they start questioning the axioms
 that they are based on.
