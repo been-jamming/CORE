@@ -1,3 +1,23 @@
+prove pair_swap: *A*B*C(is_pair(A, B, C) -> is_pair(B, A, C)){
+	given |A, B, C|;
+	implies pair_C;
+	pair_C = is_pair#(A, B, C)(pair_C);
+	prove pair_def: *X((X in C -> equal_sets(X, B) | equal_sets(X, A)) & (equal_sets(X, B) | equal_sets(X, A) -> X in C)){
+		given |X|;
+		extract pair_C(X): pair_left, pair_right;
+		prove lemma0: X in C -> equal_sets(X, B) | equal_sets(X, A){
+			implies X_in_C;
+			return swap(pair_left(X_in_C));
+		}
+		prove lemma1: equal_sets(X, B) | equal_sets(X, A) -> X in C{
+			implies equal_or;
+			return pair_right(swap(equal_or));
+		}
+		return and(lemma0, lemma1);
+	}
+	return #is_pair(B, A, C)(pair_def);
+}
+
 prove pair_equal_condition: *A*B*C*D*E*F(is_pair(A, B, E) & is_pair(C, D, F) & equal_sets(E, F) -> equal_sets(A, C) | equal_sets(A, D)){
 	given |A, B, C, D, E, F|;
 	implies premises;
@@ -43,5 +63,95 @@ prove tuple_unique: *A*B*C*D(is_tuple(A, B, C) & is_tuple(A, B, D) -> equal_sets
 	pair_C_next = equality_consistency[<X: is_pair(X, F_C, C)>](E_C, E_D)(and(E_C_equal_E_D, pair_C));
 	pair_C_final = equality_consistency[<X: is_pair(E_D, X, C)>](F_C, F_D)(and(F_C_equal_F_D, pair_C_next));
 	return pair_unique(E_D, F_D, C, D)(and(pair_C_final, pair_D));
+}
+
+prove tuple_equal_condition: *A*B*C*D*E*F(is_tuple(A, B, E) & is_tuple(C, D, F) & equal_sets(E, F) -> equal_sets(A, C) & equal_sets(B, D)){
+	given |A, B, C, D, E, F|;
+	implies premises;
+	extract premises: tuple_E, tuple_F, equal_EF;
+	equal_FE = equal_sets_symmetric(E, F)(equal_EF);
+	tuple_E = is_tuple#(A, B, E)(tuple_E);
+	tuple_F = is_tuple#(C, D, F)(tuple_F);
+	extract tuple_E|PAIR_AA, PAIR_AB|: pair_AA, pair_AB, pair_E;
+	extract tuple_F|PAIR_CC, PAIR_CD|: pair_CC, pair_CD, pair_F;
+	other_pair_E = pair_swap(PAIR_AA, PAIR_AB, E)(pair_E);
+	other_pair_F = pair_swap(PAIR_CC, PAIR_CD, F)(pair_F);
+	other_pair_AB = pair_swap(A, B, PAIR_AB)(pair_AB);
+	other_pair_CD = pair_swap(C, D, PAIR_CD)(pair_CD);
+
+	AA_CC_or_AA_CD = pair_equal_condition(PAIR_AA, PAIR_AB, PAIR_CC, PAIR_CD, E, F)(and(pair_E, pair_F, equal_EF));
+	AC_or_AD = branch(AA_CC_or_AA_CD, AA_CC, AA_CD){
+		AC_or_AC = pair_equal_condition(A, A, C, C, PAIR_AA, PAIR_CC)(and(pair_AA, pair_CC, AA_CC));
+		AC = branch(AC_or_AC, AC, AC){return AC;} or {return AC;};
+		return or(AC, <:equal_sets(A, D)>);
+	} or {
+		return pair_equal_condition(A, A, C, D, PAIR_AA, PAIR_CD)(and(pair_AA, pair_CD, AA_CD));
+	};
+
+	AB_CC_or_AB_CD = pair_equal_condition(PAIR_AB, PAIR_AA, PAIR_CC, PAIR_CD, E, F)(and(other_pair_E, pair_F, equal_EF));
+	BC_or_BD = branch(AB_CC_or_AB_CD, AB_CC, AB_CD){
+		BC_or_BC = pair_equal_condition(B, A, C, C, PAIR_AB, PAIR_CC)(and(other_pair_AB, pair_CC, AB_CC));
+		BC = branch(BC_or_BC, BC, BC){return BC;} or {return BC;};
+		return or(BC, <:equal_sets(B, D)>);
+	} or {
+		return pair_equal_condition(B, A, C, D, PAIR_AB, PAIR_CD)(and(other_pair_AB, pair_CD, AB_CD));
+	};
+
+	CC_AA_or_CC_AB = pair_equal_condition(PAIR_CC, PAIR_CD, PAIR_AA, PAIR_AB, F, E)(and(pair_F, pair_E, equal_FE));
+	CA_or_CB = branch(CC_AA_or_CC_AB, CC_AA, CC_AB){
+		CA_or_CA = pair_equal_condition(C, C, A, A, PAIR_CC, PAIR_AA)(and(pair_CC, pair_AA, CC_AA));
+		CA = branch(CA_or_CA, CA, CA){return CA;} or {return CA;};
+		return or(CA, <:equal_sets(C, B)>);
+	} or {
+		return pair_equal_condition(C, C, A, B, PAIR_CC, PAIR_AB)(and(pair_CC, pair_AB, CC_AB));
+	};
+
+	CD_AA_or_CD_AB = pair_equal_condition(PAIR_CD, PAIR_CC, PAIR_AA, PAIR_AB, F, E)(and(other_pair_F, pair_E, equal_FE));
+	DA_or_DB = branch(CD_AA_or_CD_AB, CD_AA, CD_AB){
+		DA_or_DA = pair_equal_condition(D, C, A, A, PAIR_CD, PAIR_AA)(and(other_pair_CD, pair_AA, CD_AA));
+		DA = branch(DA_or_DA, DA, DA){return DA;} or {return DA;};
+		return or(DA, <:equal_sets(D, B)>);
+	} or {
+		return pair_equal_condition(D, C, A, B, PAIR_CD, PAIR_AB)(and(other_pair_CD, pair_AB, CD_AB));
+	};
+
+	return branch(AC_or_AD, AC, AD){
+		return branch(BC_or_BD, BC, BD){
+			AB = equal_sets_transitive(A, C, B)(and(AC, equal_sets_symmetric(B, C)(BC)));
+			BD = branch(DA_or_DB, DA, DB){
+				DB = equality_consistency[<X: equal_sets(D, X)>](A, B)(and(AB, DA));
+				return equal_sets_symmetric(D, B)(DB);
+			} or {
+				return equal_sets_symmetric(D, B)(DB);
+			};
+			return and(AC, BD);
+		} or {
+			return and(AC, BD);
+		};
+	} or {
+		return branch(BC_or_BD, BC, BD){
+			pair_DD = equality_consistency[<X: is_pair(X, X, PAIR_AA)>](A, D)(and(AD, pair_AA));
+			CD = branch(AA_CC_or_AA_CD, AA_CC, AA_CD){
+				DC_or_DC = pair_equal_condition(D, D, C, C, PAIR_AA, PAIR_CC)(and(pair_DD, pair_CC, AA_CC));
+				DC = branch(DC_or_DC, DC, DC){return DC;} or {return DC;};
+				return equal_sets_symmetric(D, C)(DC);
+			} or {
+				CD_or_CD = pair_equal_condition(C, D, D, D, PAIR_CD, PAIR_AA)(and(pair_CD, pair_DD, equal_sets_symmetric(PAIR_AA, PAIR_CD)(AA_CD)));
+				return branch(CD_or_CD, CD, CD){return CD;} or {return CD;};
+			};
+			AC = equality_consistency[<X: equal_sets(A, X)>](D, C)(and(equal_sets_symmetric(C, D)(CD), AD));
+			BD = equality_consistency[<X: equal_sets(B, X)>](C, D)(and(CD, BC));
+			return and(AC, BD);
+		} or {
+			BA = equal_sets_transitive(B, D, A)(and(BD, equal_sets_symmetric(A, D)(AD)));
+			AC = branch(CA_or_CB, CA, CB){
+				return equal_sets_symmetric(C, A)(CA);
+			} or {
+				CA = equality_consistency[<X: equal_sets(C, X)>](B, A)(and(BA, CB));
+				return equal_sets_symmetric(C, A)(CA);
+			};
+			return and(AC, BD);
+		};
+	};
 }
 
