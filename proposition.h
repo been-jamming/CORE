@@ -14,6 +14,7 @@ typedef enum{
 	AND = 0,
 	OR,
 	IMPLIES,
+	BICOND,
 	EXISTS,
 	FORALL,
 	NOT,

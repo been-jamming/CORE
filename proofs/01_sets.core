@@ -37,7 +37,7 @@ prove pair_equal_condition: *A*B*C*D*E*F(is_pair(A, B, E) & is_pair(C, D, F) & e
 
 define is_tuple(A, B, C): ^E^F(is_pair(A, A, E) & is_pair(A, B, F) & is_pair(E, F, C));
 
-prove tuple_exists: *A*B^C(is_tuple(A, B, C)){
+prove tuple: *A*B^C(is_tuple(A, B, C)){
 	given |A, B|;
 	E_pair = pair_exists(A, A)|E|;
 	F_pair = pair_exists(A, B)|F|;
@@ -153,5 +153,119 @@ prove tuple_equal_condition: *A*B*C*D*E*F(is_tuple(A, B, E) & is_tuple(C, D, F) 
 			return and(AC, BD);
 		};
 	};
+}
+
+prove subset_transitive: *A*B*C(is_subset(A, B) & is_subset(B, C) -> is_subset(A, C)){
+	given |A, B, C|;
+	implies subset_both;
+	extract subset_both: subset_B, subset_C;
+	subset_B = is_subset#(A, B)(subset_B);
+	subset_C = is_subset#(B, C)(subset_C);
+	prove subset_def: *X(X in A -> X in C){
+		given |X|;
+		implies X_in_A;
+		return subset_C(X)(subset_B(X)(X_in_A));
+	}
+	return #is_subset(A, C)(subset_def);
+}
+
+prove pair_subset: *A*X(^Y^Z(Y in A & Z in A & is_pair(Y, Z, X)) -> is_subset(X, A)){
+	given |A, X|;
+	implies YZ_exist;
+	extract YZ_exist|Y, Z|: Y_in_A, Z_in_A, pair_X;
+	pair_X = is_pair#(Y, Z, X)(pair_X);
+	prove subset_def: *W(W in X -> W in A){
+		given |W|;
+		implies W_in_X;
+		extract pair_X(W): pair_X_W_left, pair_X_W_right;
+		return branch(pair_X_W_left(W_in_X), equal_WY, equal_WZ){
+			return equality_consistency[<X: X in A>](Y, W)(and(equal_sets_symmetric(W, Y)(equal_WY), Y_in_A));
+		} or {
+			return equality_consistency[<X: X in A>](Z, W)(and(equal_sets_symmetric(W, Z)(equal_WZ), Z_in_A));
+		};
+	}
+	return #is_subset(X, A)(subset_def);
+}
+
+prove pairs: *A*B^C*X((X in C -> ^Y^Z(Y in A & Z in B & is_pair(Y, Z, X))) & (^Y^Z(Y in A & Z in B & is_pair(Y, Z, X)) -> X in C)){
+	given |A, B|;
+	Q_contains_both = axiom_pairing(A, B)|Q|;
+	extract Q_contains_both: Q_contains_A, Q_contains_B;
+	U_union = axiom_union(Q)|U|;
+	P_power_set = axiom_power_set(U)|P|;
+	C_def = axiom_specify[<X: ^Y^Z(Y in A & Z in B & is_pair(Y, Z, X))>](P)|C|;
+	choose C;
+	given |X|;
+	extract C_def(X): C_def_left, C_def_right;
+	prove lemma0: X in C -> ^Y^Z(Y in A & Z in B & is_pair(Y, Z, X)){
+		implies X_in_C;
+		extract C_def_left(X_in_C): X_in_P, result;
+		return result;
+	}
+	prove lemma1: ^Y^Z(Y in A & Z in B & is_pair(Y, Z, X)) -> X in C{
+		implies premise;
+		extract premise|Y, Z|: Y_in_A, Z_in_B, pair_X;
+		pair_X = is_pair#(Y, Z, X)(pair_X);
+		prove subset_U: *W(W in X -> W in U){
+			given |W|;
+			implies W_in_X;
+			extract pair_X(W): pair_X_left, pair_X_right;
+			equal_WY_or_equal_WZ = pair_X_left(W_in_X);
+			return branch(equal_WY_or_equal_WZ, equal_WY, equal_WZ){
+				W_in_A = equality_consistency[<X: X in A>](Y, W)(and(equal_sets_symmetric(W, Y)(equal_WY), Y_in_A));
+				return U_union(A, W)(and(Q_contains_A, W_in_A));
+			} or {
+				W_in_B = equality_consistency[<X: X in B>](Z, W)(and(equal_sets_symmetric(W, Z)(equal_WZ), Z_in_B));
+				return U_union(B, W)(and(Q_contains_B, W_in_B));
+			};
+		}
+		subset_U = #is_subset(X, U)(subset_U);
+		X_in_P = P_power_set(X)(subset_U);
+		return C_def_right(and(X_in_P, premise));
+	}
+	return and(lemma0, lemma1);
+}
+
+prove cross_product: *A*B^C*X((X in C -> ^Y^Z(Y in A & Z in B & is_tuple(Y, Z, X))) & (^Y^Z(Y in A & Z in B & is_tuple(Y, Z, X)) -> X in C)){
+	given |A, B|;
+	pairs_AA = pairs(A, A)|PAIRS_AA|;
+	pairs_AB = pairs(A, B)|PAIRS_AB|;
+	CBIG_def = pairs(PAIRS_AA, PAIRS_AB)|CBIG|;
+	C_def = axiom_specify[<X: ^Y^Z(Y in A & Z in B & is_tuple(Y, Z, X))>](CBIG)|C|;
+	choose C;
+	given |X|;
+	extract C_def(X): C_def_left, C_def_right;
+	prove lemma0: X in C -> ^Y^Z(Y in A & Z in B & is_tuple(Y, Z, X)){
+		implies X_in_C;
+		extract C_def_left(X_in_C): X_in_CBIG, result;
+		return result;
+	}
+	prove lemma1: ^Y^Z(Y in A & Z in B & is_tuple(Y, Z, X)) -> X in C{
+		implies premise;
+		extract premise|Y, Z|: Y_in_A, Z_in_B, tuple_X;
+		tuple_X = is_tuple#(Y, Z, X)(tuple_X);
+		extract tuple_X|PAIR_YY, PAIR_YZ|: pair_YY, pair_YZ, pair_X;
+		extract pairs_AA(PAIR_YY): pairs_AA_YY_left, pairs_AA_YY_right;
+		prove lemma: ^J^K(J in A & K in A & is_pair(J, K, PAIR_YY)){
+			choose Y, Y;
+			return and(Y_in_A, Y_in_A, pair_YY);
+		}
+		PAIR_YY_in_PAIRS_AA = pairs_AA_YY_right(lemma);
+		extract pairs_AB(PAIR_YZ): pairs_AB_YZ_left, pairs_AB_YZ_right;
+		prove lemma: ^J^K(J in A & K in B & is_pair(J, K, PAIR_YZ)){
+			choose Y, Z;
+			return and(Y_in_A, Z_in_B, pair_YZ);
+		}
+		PAIR_YZ_in_PAIRS_AB = pairs_AB_YZ_right(lemma);
+		extract CBIG_def(X): CBIG_left, CBIG_right;
+		prove lemma: ^J^K(J in PAIRS_AA & K in PAIRS_AB & is_pair(J, K, X)){
+			choose PAIR_YY, PAIR_YZ;
+			return and(PAIR_YY_in_PAIRS_AA, PAIR_YZ_in_PAIRS_AB, pair_X);
+		}
+		X_in_CBIG = CBIG_right(lemma);
+		extract C_def(X): C_def_left, C_def_right;
+		return C_def_right(and(X_in_CBIG, premise));
+	}
+	return and(lemma0, lemma1);
 }
 

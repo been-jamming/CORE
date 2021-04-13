@@ -87,6 +87,7 @@ unsigned int max_statement_depth(statement *s){
 		case AND:
 		case OR:
 		case IMPLIES:
+		case BICOND:
 			return umax(max_statement_depth(s->child0), max_statement_depth(s->child1));
 		case NOT:
 		case FORALL:
@@ -290,6 +291,7 @@ void add_bound_variables(statement *s, int increment){
 		case AND:
 		case OR:
 		case IMPLIES:
+		case BICOND:
 			add_bound_variables(s->child0, increment);
 			add_bound_variables(s->child1, increment);
 			break;
@@ -327,6 +329,7 @@ void substitute_variable_recursive(statement *s, int id, variable *v){
 		case AND:
 		case OR:
 		case IMPLIES:
+		case BICOND:
 			substitute_variable_recursive(s->child0, id, v);
 			substitute_variable_recursive(s->child1, id, v);
 			break;
@@ -379,6 +382,7 @@ void reset_replaced(statement *s){
 		case AND:
 		case OR:
 		case IMPLIES:
+		case BICOND:
 			reset_replaced(s->child0);
 			reset_replaced(s->child1);
 			break;
@@ -410,6 +414,7 @@ void set_num_bound_props(statement *s, int num_bound_props){
 		case AND:
 		case OR:
 		case IMPLIES:
+		case BICOND:
 			set_num_bound_props(s->child0, num_bound_props);
 			set_num_bound_props(s->child1, num_bound_props);
 			break;
@@ -430,6 +435,7 @@ void substitute_variable_bound(statement *s, int id, int new_id){
 		case AND:
 		case OR:
 		case IMPLIES:
+		case BICOND:
 			substitute_variable_bound(s->child0, id, new_id);
 			substitute_variable_bound(s->child1, id, new_id);
 			break;
@@ -472,6 +478,7 @@ void substitute_proposition(statement *s, statement *child){
 		case AND:
 		case OR:
 		case IMPLIES:
+		case BICOND:
 			substitute_proposition(s->child0, child);
 			substitute_proposition(s->child1, child);
 			break;
@@ -613,7 +620,7 @@ statement *parse_left(char **c, unsigned char *is_verified){
 		error(1);
 	}
 	++*c;
-	if(s->type == OR || s->type == IMPLIES){
+	if(s->type == OR || s->type == IMPLIES || s->type == BICOND){
 		*is_verified = 0;
 	} else if(s->type != AND){
 		free_statement(s);
@@ -650,7 +657,7 @@ statement *parse_right(char **c, unsigned char *is_verified){
 		error(1);
 	}
 	++*c;
-	if(s->type == OR || s->type == IMPLIES){
+	if(s->type == OR || s->type == IMPLIES || s->type == BICOND){
 		*is_verified = 0;
 	} else if(s->type != AND){
 		free_statement(s);
@@ -778,7 +785,7 @@ statement *parse_swap(char **c, unsigned char *is_verified){
 		output = s;
 
 		return s;
-	} else if(s->type == IMPLIES){
+	} else if(s->type == IMPLIES || s->type == BICOND){
 		child0 = s->child0;
 		child1 = s->child1;
 
@@ -797,6 +804,55 @@ statement *parse_swap(char **c, unsigned char *is_verified){
 		error(1);
 		return NULL;
 	}
+}
+
+statement *parse_iff(char **c, unsigned char *is_verified){
+	statement *arg0;
+	statement *arg1;
+	unsigned char arg_verified;
+
+	arg0 = parse_statement_value(c, &arg_verified);
+	*is_verified = arg_verified && *is_verified;
+	if(!arg0){
+		fprintf(stderr, "Error: could not parse statement value\n");
+		error(1);
+	}
+	skip_whitespace(c);
+	if(**c != ','){
+		fprintf(stderr, "Error: expected ','\n");
+		error(1);
+	}
+
+	++*c;
+	skip_whitespace(c);
+
+	arg1 = parse_statement_value(c, &arg_verified);
+	*is_verified = arg_verified && *is_verified;
+	if(!arg1){
+		fprintf(stderr, "Error: could not parse statemnet value\n");
+		error(1);
+	}
+	skip_whitespace(c);
+	if(**c != ')'){
+		fprintf(stderr, "Error: expected ')'\n");
+		error(1);
+	}
+	++*c;
+
+	if(arg0->type != IMPLIES || arg1->type != IMPLIES){
+		fprintf(stderr, "Error: arguments must be implications\n");
+		error(1);
+	}
+
+	if(!compare_statement(arg0->child0, arg1->child1) || !compare_statement(arg0->child1, arg1->child0)){
+		fprintf(stderr, "Error: mismatched implications\n");
+		error(1);
+	}
+
+	free_statement(arg1);
+	arg0->type = BICOND;
+
+	return arg0;
 }
 
 static void skip_branch_args(char **c){
@@ -969,6 +1025,14 @@ statement *parse_statement_value_builtin(char **c, unsigned char *is_verified){
 		}
 		++*c;
 		return parse_swap(c, is_verified);
+	} else if(!strncmp(*c, "iff", 3) && !is_alphanumeric((*c)[3])){
+		*c += 3;
+		skip_whitespace(c);
+		if(**c != '('){
+			return NULL;
+		}
+		++*c;
+		return parse_iff(c, is_verified);
 	} else if(!strncmp(*c, "branch", 6) && !is_alphanumeric((*c)[6])){
 		*c += 6;
 		skip_whitespace(c);
@@ -1042,6 +1106,7 @@ statement *parse_statement_value_parentheses(char **c, statement *output, unsign
 	statement *arg;
 	variable *var;
 	char var_name[256];
+	unsigned char is_child0;
 
 	if(output->num_bound_props || output->num_bound_vars){
 		fprintf(stderr, "Error: expression has bound propositions or variables\n");
@@ -1078,7 +1143,7 @@ statement *parse_statement_value_parentheses(char **c, statement *output, unsign
 			}
 			output = next_output;
 			add_bound_variables(output, -1);
-		} else if(compare_type == IMPLIES || compare_type == NOT){
+		} else if(compare_type == IMPLIES || compare_type == BICOND || compare_type == NOT){
 			arg = parse_statement_value_recursive(c, is_verified, did_bind);
 			skip_whitespace(c);
 			if(!arg){
@@ -1093,14 +1158,27 @@ statement *parse_statement_value_parentheses(char **c, statement *output, unsign
 				fprintf(stderr, "Error: argument has bound propositions\n");
 				error(1);
 			}
-			if(!compare_statement(arg, output->child0)){
-				fprintf(stderr, "Error: invalid statement type for operation\n");
-				error(1);
+			if(compare_type == BICOND){
+				is_child0 = compare_statement(arg, output->child0);
+				if(!is_child0 && !compare_statement(arg, output->child1)){
+					fprintf(stderr, "Error: invalid statement type for operation\n");
+					error(1);
+				}
+			} else {
+				if(!compare_statement(arg, output->child0)){
+					fprintf(stderr, "Error: invalid statement type for operation\n");
+					error(1);
+				}
 			}
 			free_statement(arg);
-			if(compare_type == IMPLIES){
+			if(compare_type == IMPLIES || (compare_type == BICOND && is_child0)){
 				free_statement(output->child0);
 				next_output = output->child1;
+				free(output);
+				output = next_output;
+			} else if(compare_type == BICOND && !is_child0){
+				free_statement(output->child1);
+				next_output = output->child0;
 				free(output);
 				output = next_output;
 			} else if(compare_type == NOT){
@@ -1264,3 +1342,4 @@ statement *parse_statement_value(char **c, unsigned char *is_verified){
 
 	return output;
 }
+

@@ -16,7 +16,7 @@ char *global_file_name;
 char **global_program_pointer;
 char *global_program_start;
 
-int order_of_operations[3] = {3, 2, 1};
+int order_of_operations[4] = {3, 2, 1, 0};
 
 statement *create_statement(statement_type type, int num_bound_vars, int num_bound_props){
 	statement *output;
@@ -497,6 +497,9 @@ int get_operation(char **c){
 	} else if((*c)[0] == '-' && (*c)[1] == '>'){
 		*c += 2;
 		return IMPLIES;
+	} else if((*c)[0] == '<' && (*c)[1] == '-' && (*c)[2] == '>'){
+		*c += 3;
+		return BICOND;
 	} else {
 		return -1;
 	}
@@ -553,6 +556,7 @@ void decrement_references(statement *s){
 		case AND:
 		case OR:
 		case IMPLIES:
+		case BICOND:
 			decrement_references(s->child0);
 			decrement_references(s->child1);
 			break;
@@ -591,6 +595,7 @@ void free_statement_independent(statement *s){
 		case AND:
 		case OR:
 		case IMPLIES:
+		case BICOND:
 			free_statement_independent(s->child0);
 			free_statement_independent(s->child1);
 			free(s);
@@ -618,6 +623,7 @@ void free_statement(statement *s){
 		case AND:
 		case OR:
 		case IMPLIES:
+		case BICOND:
 			free_statement(s->child0);
 			free_statement(s->child1);
 			free(s);
@@ -664,6 +670,7 @@ void copy_statement(statement *dest, statement *s){
 		case AND:
 		case OR:
 		case IMPLIES:
+		case BICOND:
 			dest->child0 = malloc(sizeof(statement));
 			dest->child1 = malloc(sizeof(statement));
 			copy_statement(dest->child0, s->child0);
@@ -721,7 +728,9 @@ void copy_statement(statement *dest, statement *s){
 void print_statement(statement *s){
 	int i;
 
-	printf("(");
+	if(s->type != FORALL && s->type != EXISTS){
+		printf("(");
+	}
 	switch(s->type){
 		case AND:
 			print_statement(s->child0);
@@ -764,6 +773,11 @@ void print_statement(statement *s){
 			printf("->");
 			print_statement(s->child1);
 			break;
+		case BICOND:
+			print_statement(s->child0);
+			printf("<->");
+			print_statement(s->child1);
+			break;
 		case NOT:
 			printf("~");
 			print_statement(s->child0);
@@ -788,7 +802,9 @@ void print_statement(statement *s){
 			}
 			break;
 	}
-	printf(")");
+	if(s->type != FORALL && s->type != EXISTS){
+		printf(")");
+	}
 }
 
 unsigned char compare_statement(statement *a, statement *b){
@@ -803,6 +819,8 @@ unsigned char compare_statement(statement *a, statement *b){
 		case OR:
 		case IMPLIES:
 			return compare_statement(a->child0, b->child0) && compare_statement(a->child1, b->child1);
+		case BICOND:
+			return (compare_statement(a->child0, b->child0) && compare_statement(a->child1, b->child1)) || (compare_statement(a->child0, b->child1) && compare_statement(a->child1, b->child0));
 		case NOT:
 		case FORALL:
 		case EXISTS:
