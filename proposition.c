@@ -25,6 +25,7 @@ statement *create_statement(statement_type type, int num_bound_vars, int num_bou
 	output->type = type;
 	output->num_bound_vars = num_bound_vars;
 	output->num_bound_props = num_bound_props;
+	output->parent = NULL;
 
 	return output;
 }
@@ -348,10 +349,8 @@ statement *parse_statement(char **c, int num_bound_vars, int num_bound_props);
 
 statement *parse_not(char **c, int num_bound_vars, int num_bound_props){
 	statement *output;
-	char *beginning;
 
 	skip_whitespace(c);
-	beginning = *c;
 	if(**c != '~'){
 		return NULL;
 	}
@@ -359,11 +358,7 @@ statement *parse_not(char **c, int num_bound_vars, int num_bound_props){
 	++*c;
 	output = create_statement(NOT, num_bound_vars, num_bound_props);
 	output->child0 = parse_value(c, num_bound_vars, num_bound_props);
-	if(!output->child0){
-		*c = beginning;
-		free(output);
-		return NULL;
-	}
+	output->child0->parent = output;
 
 	return output;
 }
@@ -398,6 +393,7 @@ statement *parse_all(char **c, int num_bound_vars, int num_bound_props){
 
 	output = create_statement(FORALL, num_bound_vars, num_bound_props);
 	output->child0 = parse_value(c, num_bound_vars + 1, num_bound_props);
+	output->child0->parent = output;
 
 	write_dictionary(&bound_variables, var_name, old_int, 0);
 	free(new_int);
@@ -435,6 +431,7 @@ statement *parse_exists(char **c, int num_bound_vars, int num_bound_props){
 
 	output = create_statement(EXISTS, num_bound_vars, num_bound_props);
 	output->child0 = parse_value(c, num_bound_vars + 1, num_bound_props);
+	output->child0->parent = output;
 
 	write_dictionary(&bound_variables, var_name, old_int, 0);
 	free(new_int);
@@ -531,6 +528,8 @@ static statement *parse_statement_recursive(int priority, statement *s0, char **
 	output = create_statement(operation, num_bound_vars, num_bound_props);
 	output->child0 = s0;
 	output->child1 = s1;
+	output->child0->parent = output;
+	output->child1->parent = output;
 
 	return output;
 }
@@ -675,12 +674,15 @@ void copy_statement(statement *dest, statement *s){
 			dest->child1 = malloc(sizeof(statement));
 			copy_statement(dest->child0, s->child0);
 			copy_statement(dest->child1, s->child1);
+			dest->child0->parent = dest;
+			dest->child1->parent = dest;
 			break;
 		case NOT:
 		case FORALL:
 		case EXISTS:
 			dest->child0 = malloc(sizeof(statement));
 			copy_statement(dest->child0, s->child0);
+			dest->child0->parent = dest;
 			break;
 		case MEMBERSHIP:
 			if(s->is_bound0){
@@ -728,7 +730,7 @@ void copy_statement(statement *dest, statement *s){
 void print_statement(statement *s){
 	int i;
 
-	if(s->type != FORALL && s->type != EXISTS){
+	if(s->type != FORALL && s->type != EXISTS && s->type != MEMBERSHIP){
 		printf("(");
 	}
 	switch(s->type){
@@ -802,8 +804,67 @@ void print_statement(statement *s){
 			}
 			break;
 	}
-	if(s->type != FORALL && s->type != EXISTS){
+	if(s->type != FORALL && s->type != EXISTS && s->type != MEMBERSHIP){
 		printf(")");
+	}
+}
+
+static statement *no_assoc_first_child(statement *s, statement_type compare_type){
+	while(s->type == compare_type){
+		s = s->child0;
+	}
+
+	return s;
+}
+
+static statement *no_assoc_next_child(statement *s, statement_type compare_type){
+	while(s->parent && s->parent->child1 == s){
+		s = s->parent;
+	}
+
+	if(!s->parent){
+		return NULL;
+	}
+	
+	s = s->parent->child1;
+
+	while(s->type == compare_type){
+		s = s->child0;
+	}
+
+	return s;
+}
+
+static unsigned char compare_statement_no_assoc(statement *a, statement *b, statement_type compare_type){
+	statement *a_child;
+	statement *b_child;
+	statement *a_parent_temp;
+	statement *b_parent_temp;
+
+	a_parent_temp = a->parent;
+	b_parent_temp = b->parent;
+	a->parent = NULL;
+	b->parent = NULL;
+	a_child = no_assoc_first_child(a, compare_type);
+	b_child = no_assoc_first_child(b, compare_type);
+
+	while(a_child && b_child){
+		if(!compare_statement(a_child, b_child)){
+			a->parent = a_parent_temp;
+			b->parent = b_parent_temp;
+			return 0;
+		}
+		a_child = no_assoc_next_child(a_child, compare_type);
+		b_child = no_assoc_next_child(b_child, compare_type);
+	}
+
+	a->parent = a_parent_temp;
+	b->parent = b_parent_temp;
+
+	if(a_child || b_child){
+		return 0;
+	} else {
+		return 1;
 	}
 }
 
@@ -816,7 +877,9 @@ unsigned char compare_statement(statement *a, statement *b){
 
 	switch(a->type){
 		case AND:
+			return compare_statement_no_assoc(a, b, AND);
 		case OR:
+			return compare_statement_no_assoc(a, b, OR);
 		case IMPLIES:
 			return compare_statement(a->child0, b->child0) && compare_statement(a->child1, b->child1);
 		case BICOND:

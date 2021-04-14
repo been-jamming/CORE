@@ -62,10 +62,4 @@ prove relation_existence_lemma[P(2)]: *A*B^C*X*Y((are_related(X, Y, C) -> X in A
 }
 
 //Useful lemma for constructing functions using propositions
-prove function_existence_lemma[P(2)]: *A*B(*X*Y*Z(X in A & Y in B & Z in B & P(X, Y) & P(X, Z) -> equal_sets(X, Z)) -> ^F*X*Y(is_function(F) & (are_related(X, Y, F) -> X in A & Y in B & P(X, Y)) & (X in A & Y in B & P(X, Y) -> are_related(X, Y, F)))){
-	given |A, B|;
-	implies premise;
-	F_def = relation_existence_lemma[<X, Y: P(X, Y)>](A, B)|F|;
-	print F_def;
-}
-
+//prove function_existence_lemma[P(2)]: *A*B(*X*Y*Z(X in A & Y in B & Z in B & P(X, Y) & P(X, Z) -> equal_sets(X, Z)) -> ^F*X*Y(is_function(F) & (are_related(X, Y, F) -> X in A & Y in B & P(X, Y)) & (X in A & Y in B & P(X, Y) -> are_related(X, Y, F)))){

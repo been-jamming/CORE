@@ -144,15 +144,18 @@ statement *statement_to_definition(char *name){
 		prop->num_references++;
 		output->child0->num_args = prop->num_args;
 		output->child0->prop_args = malloc(sizeof(proposition_arg)*output->child0->num_args);
+		output->child0->parent = output;
 		for(i = 0; i < output->child0->num_args; i++){
 			output->child0->prop_args[i].is_bound = 1;
 			output->child0->prop_args[i].var_id = i;
 		}
 		output->child1 = malloc(sizeof(statement));
 		copy_statement(output->child1, prop->statement_data);
+		output->child1->parent = output;
 		for(i = prop->statement_data->num_bound_vars - 1; i >= 0; i--){
 			new = create_statement(FORALL, i, 0);
 			new->child0 = output;
+			new->child0->parent = new;
 			output = new;
 		}
 
@@ -186,15 +189,18 @@ statement *definition_to_statement(char *name){
 		prop->num_references++;
 		output->child1->num_args = prop->num_args;
 		output->child1->prop_args = malloc(sizeof(proposition_arg)*output->child1->num_args);
+		output->child1->parent = output;
 		for(i = 0; i < output->child1->num_args; i++){
 			output->child1->prop_args[i].is_bound = 1;
 			output->child1->prop_args[i].var_id = i;
 		}
 		output->child0 = malloc(sizeof(statement));
 		copy_statement(output->child0, prop->statement_data);
+		output->child0->parent = output;
 		for(i = prop->statement_data->num_bound_vars - 1; i >= 0; i--){
 			new = create_statement(FORALL, i, 0);
 			new->child0 = output;
+			new->child0->parent = new;
 			output = new;
 		}
 
@@ -471,7 +477,10 @@ void substitute_variable_bound(statement *s, int id, int new_id){
 
 void substitute_proposition(statement *s, statement *child){
 	int i;
-	statement new_child;
+	int num_bound_vars;
+	int num_bound_props;
+	int num_args;
+	proposition_arg *prop_args;
 
 	s->num_bound_props--;
 	switch(s->type){
@@ -493,21 +502,24 @@ void substitute_proposition(statement *s, statement *child){
 					fprintf(stderr, "Error: argument count mismatch\n");
 					error(1);
 				}
-				copy_statement(&new_child, child);
-				reset_replaced(&new_child);
-				set_num_bound_props(&new_child, s->num_bound_props);
-				for(i = 0; i < s->num_args; i++){
-					if(s->prop_args[i].is_bound){
-						substitute_variable_bound(&new_child, i, s->prop_args[i].var_id + s->num_args - s->num_bound_vars);
+				num_bound_vars = s->num_bound_vars;
+				num_bound_props = s->num_bound_props;
+				num_args = s->num_args;
+				prop_args = s->prop_args;
+				copy_statement(s, child);
+				reset_replaced(s);
+				set_num_bound_props(s, num_bound_props);
+				for(i = 0; i < num_args; i++){
+					if(prop_args[i].is_bound){
+						substitute_variable_bound(s, i, prop_args[i].var_id + num_args - num_bound_vars);
 					} else {
-						substitute_variable_recursive(&new_child, i, s->prop_args[i].var);
-						s->prop_args[i].var->num_references--;
+						substitute_variable_recursive(s, i, prop_args[i].var);
+						prop_args[i].var->num_references--;
 					}
 				}
-				add_bound_variables(&new_child, s->num_bound_vars - s->num_args);
-				new_child.num_bound_props = s->num_bound_props;
-				free(s->prop_args);
-				*s = new_child;
+				add_bound_variables(s, num_bound_vars - num_args);
+				s->num_bound_props = num_bound_props;
+				free(prop_args);
 			} else if(s->is_bound){
 				s->prop_id--;
 			}
@@ -729,11 +741,16 @@ statement *parse_and_or(char **c, unsigned char is_and, unsigned char *is_verifi
 			last_parent = new;
 			last_parent->child0 = output;
 			last_parent->child1 = s;
+			last_parent->child0->parent = last_parent;
+			last_parent->child1->parent = last_parent;
 			output = last_parent;
 		} else {
 			new->child0 = last_parent->child1;
 			new->child1 = s;
+			new->child0->parent = new;
+			new->child1->parent = new;
 			last_parent->child1 = new;
+			last_parent->child1->parent = last_parent;
 			last_parent = new;
 		}
 
@@ -782,6 +799,8 @@ statement *parse_swap(char **c, unsigned char *is_verified){
 		output = s->child0;
 		s->child0 = s->child1;
 		s->child1 = output;
+		s->child0->parent = s;
+		s->child1->parent = s;
 		output = s;
 
 		return s;
@@ -791,11 +810,15 @@ statement *parse_swap(char **c, unsigned char *is_verified){
 
 		new = create_statement(NOT, s->num_bound_vars, s->num_bound_props);
 		new->child0 = child0;
+		new->child0->parent = new;
 		s->child1 = new;
+		s->child1->parent = s;
 
 		new = create_statement(NOT, s->num_bound_vars, s->num_bound_props);
 		new->child0 = child1;
+		new->child0->parent = new;
 		s->child0 = new;
+		s->child0->parent = s;
 
 		return s;
 	} else {

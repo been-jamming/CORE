@@ -100,6 +100,7 @@ struct statement{
 		};
 	};
 	
+	statement *parent;
 	int num_bound_vars;
 	int num_bound_props;
 };

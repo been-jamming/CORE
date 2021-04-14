@@ -457,6 +457,19 @@ int debug_command(char **c, statement *goal){
 	}
 
 	skip_whitespace(c);
+	
+	if(**c != ','){
+		fprintf(stderr, "Error: expected ','\n");
+		error(1);
+	}
+	++*c;
+	skip_whitespace(c);
+	t = parse_statement_value(c, &is_verified);
+	if(!t){
+		fprintf(stderr, "Error: could not parse statement value\n");
+		error(1);
+	}
+	skip_whitespace(c);
 	if(**c != ';'){
 		free_statement(s);
 		fprintf(stderr, "Error: expected ';'\n");
@@ -464,12 +477,7 @@ int debug_command(char **c, statement *goal){
 	}
 	++*c;
 	//Do stuff here
-	t = peel_and_left(&s);
-	print_statement(t);
-	printf(" -- ");
-	print_statement(s);
-	printf("\n");
-	
+	printf("DEBUG: %d\n", compare_statement(s, t));
 	free_statement(s);
 	free_statement(t);
 
