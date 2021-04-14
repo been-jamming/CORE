@@ -730,7 +730,7 @@ void copy_statement(statement *dest, statement *s){
 void print_statement(statement *s){
 	int i;
 
-	if(s->type != FORALL && s->type != EXISTS && s->type != MEMBERSHIP){
+	if(s->type != FORALL && s->type != EXISTS){
 		printf("(");
 	}
 	switch(s->type){
@@ -804,7 +804,7 @@ void print_statement(statement *s){
 			}
 			break;
 	}
-	if(s->type != FORALL && s->type != EXISTS && s->type != MEMBERSHIP){
+	if(s->type != FORALL && s->type != EXISTS){
 		printf(")");
 	}
 }
