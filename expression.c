@@ -617,6 +617,7 @@ variable *create_statement_var(char *var_name, statement *s){
 statement *parse_left(char **c, unsigned char *is_verified){
 	statement *s;
 	statement *output;
+	statement *temp;
 	unsigned char arg_verified;
 
 	s = parse_statement_value(c, &arg_verified);
@@ -632,23 +633,32 @@ statement *parse_left(char **c, unsigned char *is_verified){
 		error(1);
 	}
 	++*c;
-	if(s->type == OR || s->type == IMPLIES || s->type == BICOND){
-		*is_verified = 0;
-	} else if(s->type != AND){
-		free_statement(s);
-		fprintf(stderr, "Error: invalid operand for 'left'\n");
-		error(1);
-	} else if(s->num_bound_vars || s->num_bound_props){
+
+	if(s->num_bound_vars || s->num_bound_props){
 		free_statement(s);
 		fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
 		error(1);
 	}
 
-	free_statement(s->child1);
-	output = s->child0;
-	free(s);
+	if(s->type == OR || s->type == IMPLIES || s->type == AND){
+		*is_verified = *is_verified && (s->type == AND);
+		free_statement(s->child1);
+		output = s->child0;
+		free(s);
+		return output;
+	} else if(s->type == BICOND){
+		temp = s->child0;
+		s->child0 = s->child1;
+		s->child1 = temp;
+		s->type = IMPLIES;
+		return s;
+	} else {
+		fprintf(stderr, "Error: invalid operand for 'left'\n");
+		error(1);
+	}
 
-	return output;
+	//This prevents GCC from giving a warning. NULL is never returned.
+	return NULL;
 }
 
 statement *parse_right(char **c, unsigned char *is_verified){
@@ -669,23 +679,27 @@ statement *parse_right(char **c, unsigned char *is_verified){
 		error(1);
 	}
 	++*c;
-	if(s->type == OR || s->type == IMPLIES || s->type == BICOND){
-		*is_verified = 0;
-	} else if(s->type != AND){
-		free_statement(s);
-		fprintf(stderr, "Error: invalid operand for 'right'\n");
-		error(1);
-	} else if(s->num_bound_vars || s->num_bound_props){
+
+	if(s->num_bound_vars || s->num_bound_props){
 		free_statement(s);
 		fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
 		error(1);
 	}
 
-	free_statement(s->child0);
-	output = s->child1;
-	free(s);
-
-	return output;
+	if(s->type == OR || s->type == IMPLIES || s->type == AND){
+		*is_verified = *is_verified && (s->type == AND);
+		free_statement(s->child0);
+		output = s->child1;
+		free(s);
+		return output;
+	} else if(s->type == BICOND){
+		s->type = IMPLIES;
+		return s;
+	} else {
+		fprintf(stderr, "Error: invalid operand for 'right'\n");
+		error(1);
+	}
+	return NULL;
 }
 
 statement *parse_and_or(char **c, unsigned char is_and, unsigned char *is_verified){
