@@ -843,6 +843,52 @@ statement *parse_swap(char **c, unsigned char *is_verified){
 	}
 }
 
+statement *parse_expand(char **c, unsigned char *is_verified){
+	statement *output;
+	statement *arg;
+	proposition *prop;
+	unsigned char arg_verified;
+	int i;
+
+	arg = parse_statement_value(c, &arg_verified);
+	*is_verified = arg_verified && *is_verified;
+	if(!arg){
+		fprintf(stderr, "Error: could not parse statement value\n");
+		error(1);
+	}
+	skip_whitespace(c);
+	if(**c != ')'){
+		fprintf(stderr, "Error: expected ')'\n");
+		error(1);
+	}
+	++*c;
+
+	if(arg->num_bound_vars || arg->num_bound_props){
+		fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
+		error(1);
+	}
+
+	if(arg->type != PROPOSITION){
+		fprintf(stderr, "Error: invalid operand for 'expand'\n");
+		error(1);
+	}
+
+	prop = arg->prop;
+	output = malloc(sizeof(statement));
+	copy_statement(output, prop->statement_data);
+
+	for(i = 0; i < arg->num_args; i++){
+		if(!substitute_variable(output, 0, arg->prop_args[i].var)){
+			fprintf(stderr, "Error: failed to substitute variable\n");
+			error(1);
+		}
+		add_bound_variables(output, -1);
+	}
+
+	free_statement(arg);
+	return output;
+}
+
 statement *parse_iff(char **c, unsigned char *is_verified){
 	statement *arg0;
 	statement *arg1;
@@ -1062,6 +1108,14 @@ statement *parse_statement_value_builtin(char **c, unsigned char *is_verified){
 		}
 		++*c;
 		return parse_swap(c, is_verified);
+	} else if(!strncmp(*c, "expand", 6) && !is_alphanumeric((*c)[6])){
+		*c += 6;
+		skip_whitespace(c);
+		if(**c != '('){
+			return NULL;
+		}
+		++*c;
+		return parse_expand(c, is_verified);
 	} else if(!strncmp(*c, "iff", 3) && !is_alphanumeric((*c)[3])){
 		*c += 3;
 		skip_whitespace(c);
