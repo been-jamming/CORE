@@ -874,6 +874,12 @@ statement *parse_expand(char **c, unsigned char *is_verified){
 	}
 
 	prop = arg->prop;
+
+	if(!prop->statement_data){
+		fprintf(stderr, "Error: proposition '%s' has no definition\n", prop->name);
+		error(1);
+	}
+
 	output = malloc(sizeof(statement));
 	copy_statement(output, prop->statement_data);
 
