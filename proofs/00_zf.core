@@ -9,6 +9,7 @@ define equal_sets(A, B): *X(X in A <-> X in B);
 define is_subset(A, B): *X(X in A -> X in B);
 define non_empty(A): ^X(X in A);
 define is_empty(A): *X(~X in A);
+define disjoint_sets(A, B): *X(X in A -> ~X in B);
 
 axiom equality_consistency[P(1)]: *X*Y(equal_sets(X, Y) -> (P(X) <-> P(Y)));
 
