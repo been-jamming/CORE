@@ -11,10 +11,16 @@ define is_symmetric(R): *X*Y(are_related(X, Y, R) -> are_related(Y, X, R));
 define is_transitive(R): *X*Y*Z(are_related(X, Y, R) & are_related(Y, Z, R) -> are_related(X, Z, R));
 
 //Define an equivalence relation with respect to A (for reflexivity)
-define is_equivalence_relation(R, A): *X*Y(are_related(X, Y, R) -> X in A & Y in A) & is_reflexive(R, A) & is_symmetric(R) & is_transitive(R);
+define is_equivalence_relation(R, A): is_reflexive(R, A) & is_symmetric(R) & is_transitive(R);
 
 //Define a function!
 define is_function(F): *X*Y*Z(are_related(X, Y, F) & are_related(X, Z, F) -> equal_sets(Y, Z));
+
+//Define when a function is injective with respect to a domain A
+define is_injective(F, A): *X*Y(X in A & Y in A & ^Z(are_related(X, Z, F) & are_related(Y, Z, F)) -> equal_sets(X, Y));
+
+//Define when a function is surjective with respect to a codomain A
+define is_surjective(F, A): *Y(Y in A -> ^X(are_related(X, Y, F)));
 
 //Useful lemma for constructing relations using propositions
 prove relation_existence_lemma[P(2)]: *A*B^C*X*Y(are_related(X, Y, C) <-> X in A & Y in B & P(X, Y)){
@@ -59,7 +65,7 @@ prove relation_existence_lemma[P(2)]: *A*B^C*X*Y(are_related(X, Y, C) <-> X in A
 }
 
 //Define when C is the equivalence class with respect to an equivalence relation R on A
-define is_equivalence_class(R, A, C): ^X(X in A & *Y(Y in C <-> are_related(X, Y, R)));
+define is_equivalence_class(R, A, C): ^X(X in A & *Y(Y in C <-> Y in A & are_related(X, Y, R)));
 
 //Define when C is the equivalence classes for R
 define is_equivalence_classes(R, A, C): *Y(Y in C <-> is_equivalence_class(R, A, Y));
@@ -68,7 +74,7 @@ define is_equivalence_classes(R, A, C): *Y(Y in C <-> is_equivalence_class(R, A,
 prove equivalence_classes: *A*R(is_equivalence_relation(R, A) -> ^C(is_equivalence_classes(R, A, C))){
 	given |A, R|;
 	implies equiv_relation;
-	extract expand(equiv_relation): member_A, reflexive, symmetric, transitive;
+	extract expand(equiv_relation): reflexive, symmetric, transitive;
 	power_set_P = expand(power_set(A)|P|);
 	C_def = axiom_specify[<S: is_equivalence_class(R, A, S)>](P)|C|;
 	choose C;
@@ -85,8 +91,7 @@ prove equivalence_classes: *A*R(is_equivalence_relation(R, A) -> ^C(is_equivalen
 			prove subset_def: *J(J in Y -> J in A){
 				given |J|;
 				implies J_in_Y;
-				related_Y_REP_J = closure(J)(J_in_Y);
-				extract member_A(Y_REP, J)(related_Y_REP_J): Y_REP_in_A, J_in_A;
+				extract closure(J)(J_in_Y): J_in_A, related_Y_REP_J;
 				return J_in_A;
 			}
 			Y_subset_A = #is_subset(Y, A)(subset_def);
@@ -103,7 +108,7 @@ prove equivalence_classes_disjoint: *A*R*C(is_equivalence_relation(R, A) & is_eq
 	given |A, R, C|;
 	implies premises;
 	extract premises: equiv_relation, equiv_classes;
-	extract expand(equiv_relation): member_A, reflexive, symmetric, transitive;
+	extract expand(equiv_relation): reflexive, symmetric, transitive;
 	given |X, Y|;
 	implies premises;
 	extract premises: X_in_C, Y_in_C, not_disjoint;
@@ -112,8 +117,8 @@ prove equivalence_classes_disjoint: *A*R*C(is_equivalence_relation(R, A) & is_eq
 	extract expand(X_equiv_class)|X_REP|: X_REP_in_A, X_closure;
 	extract expand(Y_equiv_class)|Y_REP|: Y_REP_in_A, Y_closure;
 	extract not_disjoint|Z|: Z_in_X, Z_in_Y;
-	related_X_REP_Z = X_closure(Z)(Z_in_X);
-	related_Y_REP_Z = Y_closure(Z)(Z_in_Y);
+	extract X_closure(Z)(Z_in_X): Z_in_A, related_X_REP_Z;
+	extract Y_closure(Z)(Z_in_Y): Z_in_A, related_Y_REP_Z;
 	related_Z_Y_REP = expand(symmetric)(Y_REP, Z)(related_Y_REP_Z);
 	related_reps = expand(transitive)(X_REP, Z, Y_REP)(and(related_X_REP_Z, related_Z_Y_REP));
 	related_reps_other = expand(symmetric)(X_REP, Y_REP)(related_reps);
@@ -121,15 +126,15 @@ prove equivalence_classes_disjoint: *A*R*C(is_equivalence_relation(R, A) & is_eq
 		given |J|;
 		prove lemma0: J in X -> J in Y{
 			implies J_in_X;
-			related_X_REP_J = X_closure(J)(J_in_X);
+			extract X_closure(J)(J_in_X): J_in_A, related_X_REP_J;
 			related_Y_REP_J = expand(transitive)(Y_REP, X_REP, J)(and(related_reps_other, related_X_REP_J));
-			return Y_closure(J)(related_Y_REP_J);
+			return Y_closure(J)(and(J_in_A, related_Y_REP_J));
 		}
 		prove lemma1: J in Y -> J in X{
 			implies J_in_Y;
-			related_Y_REP_J = Y_closure(J)(J_in_Y);
+			extract Y_closure(J)(J_in_Y): J_in_A, related_Y_REP_J;
 			related_X_REP_J = expand(transitive)(X_REP, Y_REP, J)(and(related_reps, related_Y_REP_J));
-			return X_closure(J)(related_X_REP_J);
+			return X_closure(J)(and(J_in_A, related_X_REP_J));
 		}
 		return iff(lemma0, lemma1);
 	}
@@ -141,25 +146,24 @@ prove equivalence_classes_class: *A*R*C(is_equivalence_relation(R, A) & is_equiv
 	given |A, R, C|;
 	implies premises;
 	extract premises: equiv_relation, equiv_classes;
-	extract expand(equiv_relation): member_A, reflexive, symmetric, transitive;
+	extract expand(equiv_relation): reflexive, symmetric, transitive;
 	given |X|;
 	implies X_in_A;
 	D_def = axiom_specify[<S: are_related(X, S, R)>](A)|D|;
 	choose D;
 	X_in_D = D_def(X)(and(X_in_A, expand(reflexive)(X)(X_in_A)));
-	prove equiv_class_def: ^X(X in A & *Y(Y in D <-> are_related(X, Y, R))){
+	prove equiv_class_def: ^X(X in A & *Y(Y in D <-> Y in A & are_related(X, Y, R))){
 		choose X;
-		prove right_def: *Y(Y in D <-> are_related(X, Y, R)){
+		prove right_def: *Y(Y in D <-> Y in A & are_related(X, Y, R)){
 			given |Y|;
-			prove lemma0: Y in D -> are_related(X, Y, R){
+			prove lemma0: Y in D -> Y in A & are_related(X, Y, R){
 				implies Y_in_D;
 				extract D_def(Y)(Y_in_D): Y_in_A, related;
-				return related;
+				return and(Y_in_A, related);
 			}
-			prove lemma1: are_related(X, Y, R) -> Y in D{
-				implies related;
-				extract member_A(X, Y)(related): X_in_A, Y_in_A;
-				return D_def(Y)(and(Y_in_A, related));
+			prove lemma1: Y in A & are_related(X, Y, R) -> Y in D{
+				implies premises;
+				return D_def(Y)(premises);
 			}
 			return iff(lemma0, lemma1);
 		}
