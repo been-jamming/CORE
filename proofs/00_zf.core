@@ -7,7 +7,7 @@ axiom axiom_excluded_middle[P]: P | ~P;
 
 define equal_sets(A, B): *X(X in A <-> X in B);
 define is_subset(A, B): *X(X in A -> X in B);
-define non_empty(A): ^X(X in A);
+define not_empty(A): ^X(X in A);
 define is_empty(A): *X(~X in A);
 define disjoint_sets(A, B): *X(X in A -> ~X in B);
 
@@ -50,7 +50,7 @@ prove axiom_extensionality: *A*B(equal_sets(A, B) -> *W(A in W <-> B in W)){
 	return equality_consistency[<X: X in W>](A, B)(equal_AB);
 }
 
-axiom axiom_regularity: *A(non_empty(A) -> ^B(B in A & *C(~C in B | ~C in A)));
+axiom axiom_regularity: *A(not_empty(A) -> ^B(B in A & *C(~C in B | ~C in A)));
 
 axiom axiom_specify[P(1)]: *A^B*X(X in B <-> X in A & P(X));
 
@@ -321,5 +321,37 @@ prove NATURALS_induction: *S(EMPTY_SET in S & *Y*Z(Y in S & is_successor(Y, Z) -
 		return naturals_definition(X)(X_in_NATURALS)(S)(inductive_S);
 	}
 	return #is_subset(NATURALS, S)(subset_def);
+}
+
+prove NATURALS_contain_EMTPY_SET: EMPTY_SET in NATURALS{
+	extract expand(NATURALS_inductive): empty_in_NATURALS, NATURALS_closure;
+	extract empty_in_NATURALS|EMPTY_OTHER|: EMPTY_OTHER_in_NATURALS, EMPTY_OTHER_def;
+	empty_EMPTY = #is_empty(EMPTY_SET)(empty_set_condition);
+	EMPTY_equal = empty_set_unique(EMPTY_OTHER, EMPTY_SET)(and(EMPTY_OTHER_def, empty_EMPTY));
+	return equality_consistency[<S: S in NATURALS>](EMPTY_OTHER, EMPTY_SET)(EMPTY_equal)(EMPTY_OTHER_in_NATURALS);
+}
+
+prove NATURALS_nonzero_successor: *N(N in NATURALS -> equal_sets(N, EMPTY_SET) | ^M(M in NATURALS & is_successor(M, N))){
+	S_def = axiom_specify[<N: equal_sets(N, EMPTY_SET) | ^M(M in NATURALS & is_successor(M, N))>](NATURALS)|S|;
+	EMPTY_SET_in_S = S_def(EMPTY_SET)(and(NATURALS_contain_EMTPY_SET, or(equal_sets_reflexive(EMPTY_SET), <:^M(M in NATURALS & is_successor(M, EMPTY_SET))>)));
+	extract expand(NATURALS_inductive): contains_empty, NATURALS_closure;
+	prove closure: *Y*Z(Y in S & is_successor(Y, Z) -> Z in S){
+		given |Y, Z|;
+		implies premises;
+		extract premises: Y_in_S, successor_Y;
+		extract S_def(Y)(Y_in_S): Y_in_NATURALS, condition;
+		Z_in_NATURALS = NATURALS_closure(Y, Z)(and(Y_in_NATURALS, successor_Y));
+		prove lemma: ^M(M in NATURALS & is_successor(M, Z)){
+			choose Y;
+			return and(Y_in_NATURALS, successor_Y);
+		}
+		return S_def(Z)(and(Z_in_NATURALS, or(<:equal_sets(Z, EMPTY_SET)>, lemma)));
+	}
+	NATURALS_subset_S = NATURALS_induction(S)(and(EMPTY_SET_in_S, closure));
+	given |N|;
+	implies N_in_NATURALS;
+	N_in_S = expand(NATURALS_subset_S)(N)(N_in_NATURALS);
+	extract S_def(N)(N_in_S): N_in_NATURALS, result;
+	return result;
 }
 

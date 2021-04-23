@@ -266,7 +266,7 @@ prove cross_product: *A*B^C(is_cross_product(A, B, C)){
 define is_intersection(A, B): *X(X in B <-> *Y(Y in A -> X in Y));
 
 //The intersection only exists when the set isn't empty!
-prove intersection: *A(non_empty(A) -> ^B(is_intersection(A, B))){
+prove intersection: *A(not_empty(A) -> ^B(is_intersection(A, B))){
 	given |A|;
 	implies contains;
 	S_in_A = expand(contains)|S|;
