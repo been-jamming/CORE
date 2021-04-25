@@ -1,3 +1,72 @@
+//If we want to copy one set to another object, we use this (fairly tautological) result
+prove copy_set: *A^B(equal_sets(A, B)){
+	given |A|;
+	choose A;
+	return equal_sets_reflexive(A);
+}
+
+define is_power_set(A, B): *X(X in B <-> is_subset(X, A));
+
+prove power_set: *A^B(is_power_set(A, B)){
+	given |A|;
+	contains_subsets = axiom_power_set(A)|B_BIG|;
+	restricted = axiom_specify[<X: is_subset(X, A)>](B_BIG)|B|;
+	choose B;
+	prove power_set_def: *X(X in B <-> is_subset(X, A)){
+		given |X|;
+		prove lemma0: X in B -> is_subset(X, A){
+			implies X_in_B;
+			extract restricted(X)(X_in_B): X_in_B_BIG, result;
+			return result;
+		}
+		prove lemma1: is_subset(X, A) -> X in B{
+			implies X_subset_A;
+			X_in_B_BIG = contains_subsets(X)(X_subset_A);
+			return restricted(X)(and(X_in_B_BIG, X_subset_A));
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #is_power_set(A, B)(power_set_def);
+}
+
+prove power_set_unique: *A*B*C(is_power_set(A, B) & is_power_set(A, C) -> equal_sets(B, C)){
+	given |A, B, C|;
+	implies both_power_set;
+	extract both_power_set: power_set_B, power_set_C;
+	return definition_uniqueness_lemma[<X: is_subset(X, A)>](B, C)(and(expand(power_set_B), expand(power_set_C)));
+}
+
+prove empty_set_exists: ^E*X(~X in E){
+	inductive = expand(axiom_infinity|INDUCTIVE_SET|);
+	extract inductive: exists, closure;
+	extract exists|EMPTY|: member, empty;
+	choose EMPTY;
+	return expand(empty);
+}
+
+prove empty_set_unique: *E*F(is_empty(E) & is_empty(F) -> equal_sets(E, F)){
+	given |E, F|;
+	implies both_empty;
+	extract both_empty: empty_E, empty_F;
+	empty_E = expand(empty_E);
+	empty_F = expand(empty_F);
+	prove equal_def: *X(X in E <-> X in F){
+		given |X|;
+		prove lemma0: X in E -> X in F{
+			implies X_in_E;
+			return axiom_absurdity[<:X in F>](empty_E(X)(X_in_E));
+		}
+		prove lemma1: X in F -> X in E{
+			implies X_in_F;
+			return axiom_absurdity[<:X in E>](empty_F(X)(X_in_F));
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #equal_sets(E, F)(equal_def);
+}
+
+empty_set_condition = empty_set_exists|EMPTY_SET|;
+
 prove pair_swap: *A*B*C(is_pair(A, B, C) -> is_pair(B, A, C)){
 	given |A, B, C|;
 	implies pair_C;

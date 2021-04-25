@@ -1,0 +1,178 @@
+define is_natural_numbers(N): *X(X in N <-> *I(is_inductive_set(I) -> X in I));
+
+prove natural_numbers_exist: ^N(is_natural_numbers(N)){
+	is_inductive = axiom_infinity|INDUCTIVE_SET|;
+	specified = axiom_specify[<X: *I(is_inductive_set(I) -> X in I)>](INDUCTIVE_SET)|N|;
+	choose N;
+	prove natural_numbers_def: *X(X in N <-> *I(is_inductive_set(I) -> X in I)){
+		given |X|;
+		prove lemma0: X in N -> *I(is_inductive_set(I) -> X in I){
+			implies X_in_N;
+			extract specified(X)(X_in_N): X_in_INDUCTIVE_SET, result;
+			return result;
+		}
+		prove lemma1: *I(is_inductive_set(I) -> X in I) -> X in N{
+			implies in_all_inductive;
+			X_in_INDUCTIVE_SET = in_all_inductive(INDUCTIVE_SET)(is_inductive);
+			return specified(X)(and(X_in_INDUCTIVE_SET, in_all_inductive));
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #is_natural_numbers(N)(natural_numbers_def);
+}
+
+prove natural_numbers_unique: *N*M(is_natural_numbers(N) & is_natural_numbers(M) -> equal_sets(N, M)){
+	given |N, M|;
+	implies both_natural_numbers;
+	extract both_natural_numbers: natural_numbers_N, natural_numbers_M;
+	return definition_uniqueness_lemma[<X: *I(is_inductive_set(I) -> X in I)>](N, M)(and(expand(natural_numbers_N), expand(natural_numbers_M)));
+}
+
+naturals_definition = expand(natural_numbers_exist|NATURALS|);
+
+prove NATURALS_inductive: is_inductive_set(NATURALS){
+	prove lemma0: ^E(E in NATURALS & is_empty(E)){
+		choose EMPTY_SET;
+		empty = #is_empty(EMPTY_SET)(empty_set_condition);
+		prove lemma: *I(is_inductive_set(I) -> EMPTY_SET in I){
+			given |I|;
+			implies is_inductive;
+			extract expand(is_inductive): empty_condition, closure;
+			extract empty_condition|EMPTY_OTHER|: empty_in, is_empty_other;
+			empty_equal = empty_set_unique(EMPTY_OTHER, EMPTY_SET)(and(is_empty_other, empty));
+			return equality_consistency[<X: X in I>](EMPTY_OTHER, EMPTY_SET)(empty_equal)(empty_in);
+		}
+		return and(naturals_definition(EMPTY_SET)(lemma), empty);
+	}
+	prove lemma1: *Y*Z(Y in NATURALS & is_successor(Y, Z) -> Z in NATURALS){
+		given |Y, Z|;
+		implies both;
+		extract both: Y_in_NATURALS, Z_successor;
+		prove lemma: *I(is_inductive_set(I) -> Z in I){
+			given |I|;
+			implies is_inductive;
+			extract expand(is_inductive): empty_condition, closure;
+			Y_in_I = naturals_definition(Y)(Y_in_NATURALS)(I)(is_inductive);
+			return closure(Y, Z)(and(Y_in_I, Z_successor));
+		}
+		return naturals_definition(Z)(lemma);
+	}
+	return #is_inductive_set(NATURALS)(and(lemma0, lemma1));
+}
+
+prove NATURALS_contain_EMPTY_SET: EMPTY_SET in NATURALS{
+	extract expand(NATURALS_inductive): empty_in_NATURALS, NATURALS_closure;
+	extract empty_in_NATURALS|EMPTY_OTHER|: EMPTY_OTHER_in_NATURALS, EMPTY_OTHER_def;
+	empty_EMPTY = #is_empty(EMPTY_SET)(empty_set_condition);
+	EMPTY_equal = empty_set_unique(EMPTY_OTHER, EMPTY_SET)(and(EMPTY_OTHER_def, empty_EMPTY));
+	return equality_consistency[<S: S in NATURALS>](EMPTY_OTHER, EMPTY_SET)(EMPTY_equal)(EMPTY_OTHER_in_NATURALS);
+}
+
+zero_definition = copy_set(EMPTY_SET)|ZERO|;
+zero_is_natural = equality_consistency[<S: S in NATURALS>](EMPTY_SET, ZERO)(zero_definition)(NATURALS_contain_EMPTY_SET);
+
+prove NATURALS_induction: *S(ZERO in S & *Y*Z(Y in S & is_successor(Y, Z) -> Z in S) -> is_subset(NATURALS, S)){
+	given |S|;
+	implies premise;
+	extract premise: ZERO_in_S, closure;
+	prove lemma: ^E(E in S & is_empty(E)){
+		choose EMPTY_SET;
+		EMPTY_SET_in_S = equality_consistency[<X: X in S>](EMPTY_SET, ZERO)(zero_definition)(ZERO_in_S);
+		return and(EMPTY_SET_in_S, #is_empty(EMPTY_SET)(empty_set_condition));
+	}
+	inductive_S = #is_inductive_set(S)(and(lemma, closure));
+	prove subset_def: *X(X in NATURALS -> X in S){
+		given |X|;
+		implies X_in_NATURALS;
+		return naturals_definition(X)(X_in_NATURALS)(S)(inductive_S);
+	}
+	return #is_subset(NATURALS, S)(subset_def);
+}
+
+prove NATURALS_nonzero_successor: *N(N in NATURALS -> equal_sets(N, ZERO) | ^M(M in NATURALS & is_successor(M, N))){
+	S_def = axiom_specify[<N: equal_sets(N, ZERO) | ^M(M in NATURALS & is_successor(M, N))>](NATURALS)|S|;
+	ZERO_in_S = S_def(ZERO)(and(zero_is_natural, or(equal_sets_reflexive(ZERO), <:^M(M in NATURALS & is_successor(M, ZERO))>)));
+	extract expand(NATURALS_inductive): contains_empty, NATURALS_closure;
+	prove closure: *Y*Z(Y in S & is_successor(Y, Z) -> Z in S){
+		given |Y, Z|;
+		implies premises;
+		extract premises: Y_in_S, successor_Y;
+		extract S_def(Y)(Y_in_S): Y_in_NATURALS, condition;
+		Z_in_NATURALS = NATURALS_closure(Y, Z)(and(Y_in_NATURALS, successor_Y));
+		prove lemma: ^M(M in NATURALS & is_successor(M, Z)){
+			choose Y;
+			return and(Y_in_NATURALS, successor_Y);
+		}
+		return S_def(Z)(and(Z_in_NATURALS, or(<:equal_sets(Z, ZERO)>, lemma)));
+	}
+	NATURALS_subset_S = NATURALS_induction(S)(and(ZERO_in_S, closure));
+	given |N|;
+	implies N_in_NATURALS;
+	N_in_S = expand(NATURALS_subset_S)(N)(N_in_NATURALS);
+	extract S_def(N)(N_in_S): N_in_NATURALS, result;
+	return result;
+}
+
+//Define what it means for one natural number to be less than (or equal to) another
+//Note that the definition is the same as the definition of a subset
+define NATURAL_less_than(A, B): *X(X in A -> X in B);
+
+define NATURAL_less_than_strict(A, B): ^S(is_successor(A, S) & NATURAL_less_than(S, B));
+
+//The natural numbers here have been defnied such that N is the set {0, 1..., N - 1}
+//Here we formally prove this
+prove NATURALS_interpretation: *N(N in NATURALS -> *X(X in N <-> X in NATURALS & NATURAL_less_than_strict(X, N))){
+	//First we take the set of all natural numbers for which the statement is true
+	//Then we will apply induction
+	R_def = axiom_specify[<N: *X(X in N <-> X in NATURALS & NATURAL_less_than_strict(X, N))>](NATURALS)|R|;
+	prove ZERO_criteria: *X(X in ZERO <-> X in NATURALS & NATURAL_less_than_strict(X, ZERO)){
+		given |X|;
+		prove lemma0: X in ZERO -> X in NATURALS & NATURAL_less_than_strict(X, ZERO){
+			implies X_in_ZERO;
+			X_in_EMPTY_SET = equality_consistency[<S: X in S>](EMPTY_SET, ZERO)(zero_definition)(X_in_ZERO);
+			return axiom_absurdity[<:X in NATURALS & NATURAL_less_than_strict(X, ZERO)>](empty_set_condition(X)(X_in_EMPTY_SET));
+		}
+		prove lemma1: X in NATURALS & NATURAL_less_than_strict(X, ZERO) -> X in ZERO{
+			implies premises;
+			extract premises: X_in_NATURALS, less_than;
+			extract expand(less_than)|S|: successor_X, subset_S_ZERO;
+			extract expand(successor_X)|PAIR0, PAIR1|: pair0, pair1, union_S;
+			X_in_PAIR0 = expand(pair0)(X)(or(equal_sets_reflexive(X), equal_sets_reflexive(X)));
+			PAIR0_in_PAIR1 = expand(pair1)(PAIR0)(or(<:equal_sets(PAIR0, X)>, equal_sets_reflexive(PAIR0)));
+			prove union_lemma: ^Y(Y in PAIR1 & X in Y){
+				choose PAIR0;
+				return and(PAIR0_in_PAIR1, X_in_PAIR0);
+			}
+			X_in_S = expand(union_S)(X)(union_lemma);
+			return expand(subset_S_ZERO)(X)(X_in_S);
+		}
+		return iff(lemma0, lemma1);
+	}
+	ZERO_in_R = R_def(ZERO)(and(zero_is_natural, ZERO_criteria));
+	prove closure: *Y*Z(Y in R & is_successor(Y, Z) -> Z in R){
+		given |Y, Z|;
+		implies premises;
+		extract premises: Y_in_R, successor_Z;
+		extract R_def(Y)(Y_in_R): Y_in_NATURALS, Y_condition;
+		extract expand(NATURALS_inductive): empty_set_condition, NATURALS_closure;
+		Z_in_NATURALS = NATURALS_closure(Y, Z)(and(Y_in_NATURALS, successor_Z));
+		prove Z_condition: *X(X in Z <-> X in NATURALS & NATURAL_less_than_strict(X, Z)){
+			given |X|;
+			prove lemma0: X in Z -> X in NATURALS & NATURAL_less_than_strict(X, Z){
+				implies X_in_Z;
+				//CONTINUE HERE
+			}
+		}
+	}
+}
+
+//Define an "addition function"
+//It's quite a hefty definition, but it's just a stepping stone towards a better definition of addition
+define is_addition_function(F): is_function(F) & ^T(is_cross_product(NATURALS, NATURALS, T) & is_domain(F, T)) & is_codomain(F, NATURALS) & *X*Z(is_tuple(X, ZERO, Z) -> are_related(Z, X, F)) & *X*Y*SY*SXY*T0*T1*Z0*Z1(is_successor(Y, SY) & is_tuple(X, SY, T0) & are_related(T0, Z0, F) & is_tuple(X, Y, T1) & are_related(T1, Z1, F) & is_successor(Z1, SXY) -> equal_sets(Z0, SXY));
+
+//prove addition_function_exists: ^F(is_addition_function(F)){
+//	THIS IS A BIG THEOREM
+//	T_def = expand(cross_product(NATURALS, NATURALS)|T|);
+//
+//}
+

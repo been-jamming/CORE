@@ -274,6 +274,7 @@ statement *parse_statement_identifier(char **c, unsigned char *is_verified){
 			return NULL;
 		} else {
 			output = malloc(sizeof(statement));
+			output->parent = NULL;
 			copy_statement(output, prop->statement_data);
 			return output;
 		}
@@ -284,6 +285,7 @@ statement *parse_statement_identifier(char **c, unsigned char *is_verified){
 		return NULL;
 	} else {
 		output = malloc(sizeof(statement));
+		output->parent = NULL;
 		copy_statement(output, var->statement_data);
 		return output;
 	}
@@ -881,6 +883,7 @@ statement *parse_expand(char **c, unsigned char *is_verified){
 	}
 
 	output = malloc(sizeof(statement));
+	output->parent = NULL;
 	copy_statement(output, prop->statement_data);
 
 	for(i = 0; i < arg->num_args; i++){
