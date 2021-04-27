@@ -117,15 +117,61 @@ prove NATURALS_nonzero_successor: *N(N in NATURALS -> equal_sets(N, ZERO) | ^M(M
 //Note that the definition is the same as the definition of a subset
 define NATURAL_less_than(A, B): *X(X in A -> X in B);
 
+prove NATURAL_less_than_reflexive: *A(NATURAL_less_than(A, A)){
+	given |A|;
+	prove less_than_def: *X(X in A -> X in A){
+		given |X|;
+		implies X_in_A;
+		return X_in_A;
+	}
+	return #NATURAL_less_than(A, A)(less_than_def);
+}
+
+prove NATURAL_less_than_transitive: *X*Y*Z(NATURAL_less_than(X, Y) & NATURAL_less_than(Y, Z) -> NATURAL_less_than(X, Z)){
+	given |X, Y, Z|;
+	implies premises;
+	extract premises: less_than_XY, less_than_YZ;
+	prove less_than_def: *S(S in X -> S in Z){
+		given |S|;
+		implies S_in_X;
+		S_in_Y = expand(less_than_XY)(S)(S_in_X);
+		return expand(less_than_YZ)(S)(S_in_Y);
+	}
+	return #NATURAL_less_than(X, Z)(less_than_def);
+}
+
 define NATURAL_less_than_strict(A, B): ^S(is_successor(A, S) & NATURAL_less_than(S, B));
 
-//The natural numbers here have been defnied such that N is the set {0, 1..., N - 1}
+prove NATURAL_less_than_strict_successor: *A*B(is_successor(A, B) -> NATURAL_less_than_strict(A, B)){
+	given |A, B|;
+	implies successor_B;
+	prove less_than_strict_def: ^S(is_successor(A, S) & NATURAL_less_than(S, B)){
+		choose B;
+		return and(successor_B, NATURAL_less_than_reflexive(B));
+	}
+	return #NATURAL_less_than_strict(A, B)(less_than_strict_def);
+}
+
+prove NATURAL_less_than_weaken: *A*B(NATURAL_less_than_strict(A, B) -> NATURAL_less_than(A, B)){
+	given |A, B|;
+	implies less_than_strict;
+	extract expand(less_than_strict)|S|: successor_S, less_than;
+	prove less_than_def: *X(X in A -> X in B){
+		given |X|;
+		implies X_in_A;
+		X_in_S = expand(successor_S)(X)(or(X_in_A, <:equal_sets(X, A)>));
+		return expand(less_than)(X)(X_in_S);
+	}
+	return #NATURAL_less_than(A, B)(less_than_def);
+}
+
+//The natural numbers here have been defined such that N is the set {0, 1..., N - 1}
 //Here we formally prove this
 prove NATURALS_interpretation: *N(N in NATURALS -> *X(X in N <-> X in NATURALS & NATURAL_less_than_strict(X, N))){
 	//First we take the set of all natural numbers for which the statement is true
 	//Then we will apply induction
 	R_def = axiom_specify[<N: *X(X in N <-> X in NATURALS & NATURAL_less_than_strict(X, N))>](NATURALS)|R|;
-	prove ZERO_criteria: *X(X in ZERO <-> X in NATURALS & NATURAL_less_than_strict(X, ZERO)){
+	prove ZERO_in_R: *X(X in ZERO <-> X in NATURALS & NATURAL_less_than_strict(X, ZERO)){
 		given |X|;
 		prove lemma0: X in ZERO -> X in NATURALS & NATURAL_less_than_strict(X, ZERO){
 			implies X_in_ZERO;
@@ -134,45 +180,123 @@ prove NATURALS_interpretation: *N(N in NATURALS -> *X(X in N <-> X in NATURALS &
 		}
 		prove lemma1: X in NATURALS & NATURAL_less_than_strict(X, ZERO) -> X in ZERO{
 			implies premises;
-			extract premises: X_in_NATURALS, less_than;
-			extract expand(less_than)|S|: successor_X, subset_S_ZERO;
-			extract expand(successor_X)|PAIR0, PAIR1|: pair0, pair1, union_S;
-			X_in_PAIR0 = expand(pair0)(X)(or(equal_sets_reflexive(X), equal_sets_reflexive(X)));
-			PAIR0_in_PAIR1 = expand(pair1)(PAIR0)(or(<:equal_sets(PAIR0, X)>, equal_sets_reflexive(PAIR0)));
-			prove union_lemma: ^Y(Y in PAIR1 & X in Y){
-				choose PAIR0;
-				return and(PAIR0_in_PAIR1, X_in_PAIR0);
-			}
-			X_in_S = expand(union_S)(X)(union_lemma);
-			return expand(subset_S_ZERO)(X)(X_in_S);
+			extract premises: X_in_NATURALS, less_than_strict;
+			extract expand(less_than_strict)|S|: successor, less_than;
+			X_in_S = expand(successor)(X)(or(<:X in X>, equal_sets_reflexive(X)));
+			return expand(less_than)(X)(X_in_S);
 		}
 		return iff(lemma0, lemma1);
 	}
-	ZERO_in_R = R_def(ZERO)(and(zero_is_natural, ZERO_criteria));
+	ZERO_in_R = R_def(ZERO)(and(zero_is_natural, ZERO_in_R));
 	prove closure: *Y*Z(Y in R & is_successor(Y, Z) -> Z in R){
 		given |Y, Z|;
 		implies premises;
 		extract premises: Y_in_R, successor_Z;
-		extract R_def(Y)(Y_in_R): Y_in_NATURALS, Y_condition;
-		extract expand(NATURALS_inductive): empty_set_condition, NATURALS_closure;
-		Z_in_NATURALS = NATURALS_closure(Y, Z)(and(Y_in_NATURALS, successor_Z));
-		prove Z_condition: *X(X in Z <-> X in NATURALS & NATURAL_less_than_strict(X, Z)){
+		extract R_def(Y)(Y_in_R): Y_in_NATURALS, Y_cond;
+		extract expand(NATURALS_inductive): empty_exists, successor_closure;
+		Z_in_NATURALS = successor_closure(Y, Z)(and(Y_in_NATURALS, successor_Z));
+		prove Z_in_R: *X(X in Z <-> X in NATURALS & NATURAL_less_than_strict(X, Z)){
 			given |X|;
 			prove lemma0: X in Z -> X in NATURALS & NATURAL_less_than_strict(X, Z){
 				implies X_in_Z;
-				//CONTINUE HERE
+				X_in_Y_or_equal_Z = expand(successor_Z)(X)(X_in_Z);
+				return branch(X_in_Y_or_equal_Z, X_in_Y, equal_Y){
+					extract Y_cond(X)(X_in_Y): X_in_NATURALS , X_less_than_strict;
+					extract expand(X_less_than_strict)|T|: successor_T, T_less_than_Y;
+					Y_less_than_Z = NATURAL_less_than_weaken(Y, Z)(NATURAL_less_than_strict_successor(Y, Z)(successor_Z));
+					prove less_than_strict_def: ^S(is_successor(X, S) & NATURAL_less_than(S, Z)){
+						choose T;
+						return and(successor_T, NATURAL_less_than_transitive(T, Y, Z)(and(T_less_than_Y, Y_less_than_Z)));
+					}
+					return and(X_in_NATURALS, #NATURAL_less_than_strict(X, Z)(less_than_strict_def));
+				} or {
+					X_in_NATURALS = equality_consistency[<S: S in NATURALS>](X, Y)(equal_Y)(Y_in_NATURALS);
+					Y_less_than_strict_Z = NATURAL_less_than_strict_successor(Y, Z)(successor_Z);
+					return and(X_in_NATURALS, equality_consistency[<S: NATURAL_less_than_strict(S, Z)>](X, Y)(equal_Y)(Y_less_than_strict_Z));
+				};
 			}
+			prove lemma1: X in NATURALS & NATURAL_less_than_strict(X, Z) -> X in Z{
+				implies premises;
+				extract premises: X_in_NATURALS, X_less_than_strict_Z;
+				extract expand(X_less_than_strict_Z)|T|: successor_T, T_less_than_Z;
+				X_in_T = expand(successor_T)(X)(or(<:X in X>, equal_sets_reflexive(X)));
+				return expand(T_less_than_Z)(X)(X_in_T);
+			}
+			return iff(lemma0, lemma1);
 		}
+		return R_def(Z)(and(Z_in_NATURALS, Z_in_R));
 	}
+	NATURALS_subset_R = NATURALS_induction(R)(and(ZERO_in_R, closure));
+	given |N|;
+	implies N_in_NATURALS;
+	N_in_R = expand(NATURALS_subset_R)(N)(N_in_NATURALS);
+	extract R_def(N)(N_in_R): N_in_NATURALS, result;
+	return result;
 }
+//Because of the proof above, I am now sure that I have defined the natural numbers correctly
 
 //Define an "addition function"
 //It's quite a hefty definition, but it's just a stepping stone towards a better definition of addition
 define is_addition_function(F): is_function(F) & ^T(is_cross_product(NATURALS, NATURALS, T) & is_domain(F, T)) & is_codomain(F, NATURALS) & *X*Z(is_tuple(X, ZERO, Z) -> are_related(Z, X, F)) & *X*Y*SY*SXY*T0*T1*Z0*Z1(is_successor(Y, SY) & is_tuple(X, SY, T0) & are_related(T0, Z0, F) & is_tuple(X, Y, T1) & are_related(T1, Z1, F) & is_successor(Z1, SXY) -> equal_sets(Z0, SXY));
 
 //prove addition_function_exists: ^F(is_addition_function(F)){
-//	THIS IS A BIG THEOREM
-//	T_def = expand(cross_product(NATURALS, NATURALS)|T|);
+//	C_def = expand(cross_product(NATURALS, NATURALS)|C|);
+//	
+//	//We define an "addition class" to be the inverse image of the addition function for some N.
+//	//However, we construct it in an alternative way, which allows us to define addition
+//	//Despite the recursive definition of an addition function.
 //
+//	//When A is the addition class for a natural number N
+//	define is_addition_class(N, A): *B(B in A <-> ^C^D(is_tuple(C, D, B) & ((equal_sets(C, ZERO) & equal_sets(D, N)) | ^P^S^T(is_successor(P, C) & is_successor(D, S) & is_tuple(P, S, T) & T in A))));
+//
+//	//The first lemma for this theorem is that the addition classes exist for all natural numbers
+//	prove addition_classes_exist: *N(N in NATURALS -> ^A(is_addition_class(N, A))){
+//		//We proceed by induction
+//		R_def = axiom_specify[<N: ^A(is_addition_class(N, A))>](NATURALS)|R|;
+//		//Base case
+//		prove ZERO_in_R: ^A(is_addition_class(ZERO, A)){
+//			A_def = axiom_specify[<S: is_tuple(ZERO, ZERO, S)>](C)|A|;
+//			choose A;
+//			prove addition_class_def: *B(B in A <-> ^C^D(is_tuple(C, D, B) & ((equal_sets(C, ZERO) & equal_sets(D, ZERO)) | ^P^S^T(is_successor(P, C) & is_successor(D, S) & is_tuple(P, S, T) & T in A)))){
+//				given |B|;
+//				prove lemma0: B in A -> ^C^D(is_tuple(C, D, B) & ((equal_sets(C, ZERO) & equal_sets(D, ZERO)) | ^P^S^T(is_successor(P, C) & is_successor(D, S) & is_tuple(P, S, T) & T in A))){
+//					implies B_in_A;
+//					extract A_def(B)(B_in_A): B_in_C, B_tuple_ZERO_ZERO;
+//					choose ZERO, ZERO;
+//					condition = or(and(equal_sets_reflexive(ZERO), equal_sets_reflexive(ZERO)), <:^P^S^T(is_successor(P, ZERO) & is_successor(ZERO, S) & is_tuple(P, S, T) & T in A)>);
+//					return and(B_tuple_ZERO_ZERO, condition);
+//				}
+//				prove lemma1: ^C^D(is_tuple(C, D, B) & ((equal_sets(C, ZERO) & equal_sets(D, ZERO)) | ^P^S^T(is_successor(P, C) & is_successor(D, S) & is_tuple(P, S, T) & T in A))) -> B in A{
+//					implies premise;
+//					extract premise|C, D|: tuple_B, either_condition;
+//					return branch(either_condition, equal_ZERO, predecessor){
+//						extract equal_ZERO: C_equal_ZERO, D_equal_ZERO;
+//						B_tuple_ZERO_D = equality_consistency[<S: is_tuple(S, D, B)>](C, ZERO)(C_equal_ZERO)(tuple_B);
+//						B_tuple_ZERO_ZERO = equality_consistency[<S: is_tuple(ZERO, S, B)>](D, ZERO)(D_equal_ZERO)(B_tuple_ZERO_D);
+//						prove cross_product_condition: ^E^F(E in NATURALS & F in NATURALS & is_tuple(E, F, B)){
+//							choose ZERO, ZERO;
+//							return and(zero_is_natural, zero_is_natural, B_tuple_ZERO_ZERO);
+//						}
+//						B_in_C = C_def(B)(cross_product_condition);
+//						return A_def(B)(and(B_in_C, B_tuple_ZERO_ZERO));
+//					} or {
+//						extract predecessor|P, S, T|: predecessor_P, successor_S, tuple_T, T_in_A;
+//						D_in_S = expand(successor_S)(D)(or(<:D in D>, equal_sets_reflexive(D)));
+//						extract A_def(T)(T_in_A): T_in_C, tuple_ZERO_ZERO;
+//						T_equal_T = equal_sets_reflexive(T);
+//						extract tuple_equal_condition(P, S, ZERO, ZERO, T, T)(and(tuple_T, tuple_ZERO_ZERO, T_equal_T)): equal_P_ZERO, equal_S_ZERO;
+//						equal_S_EMPTY_SET = equal_sets_transitive(S, ZERO, EMPTY_SET)(and(equal_S_ZERO, equal_sets_symmetric(EMPTY_SET, ZERO)(zero_definition)));
+//						D_in_EMPTY_SET = equality_consistency[<U: D in U>](S, EMPTY_SET)(equal_S_EMPTY_SET)(D_in_S);
+//						absurdity = empty_set_condition(D)(D_in_EMPTY_SET);
+//						return axiom_absurdity[goal](absurdity);
+//					};
+//				}
+//				return iff(lemma0, lemma1);
+//			}
+//			return #is_addition_class(ZERO, A)(addition_class_def);
+//		}
+//		ZERO_in_R = R_def(ZERO)(and(zero_is_natural, ZERO_in_R));
+//		//Inductive step
+//	}
 //}
-
+//

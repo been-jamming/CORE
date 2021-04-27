@@ -146,17 +146,48 @@ prove union_unique: *A*B*C(is_union(A, B) & is_union(A, C) -> equal_sets(B, C)){
 	return definition_uniqueness_lemma[<X: ^Y(Y in A & X in Y)>](B, C)(and(expand(union_B), expand(union_C)));
 }
 
-define is_successor(A, B): ^C^D(is_pair(A, A, C) & is_pair(A, C, D) & is_union(D, B));
+define is_successor(A, B): *X(X in B <-> X in A | equal_sets(X, A));
 
-prove successor_exists: *A^B(is_successor(A, B)){
+prove successor: *A^B(is_successor(A, B)){
 	given |A|;
 	pair_AA = pair(A, A)|C|;
 	pair_AC = pair(A, C)|D|;
 	union_B = union(D)|B|;
 	choose B;
-	prove successor_def: ^C^D(is_pair(A, A, C) & is_pair(A, C, D) & is_union(D, B)){
-		choose C, D;
-		return and(pair_AA, pair_AC, union_B);
+	prove successor_def: *X(X in B <-> X in A | equal_sets(X, A)){
+		given |X|;
+		prove lemma0: X in B -> X in A | equal_sets(X, A){
+			implies X_in_B;
+			extract expand(union_B)(X)(X_in_B)|Y|: Y_in_D, X_in_Y;
+			equal_A_or_C = expand(pair_AC)(Y)(Y_in_D);
+			return branch(equal_A_or_C, equal_A, equal_C){
+				X_in_A = equality_consistency[<S: X in S>](Y, A)(equal_A)(X_in_Y);
+				return or(X_in_A, <:equal_sets(X, A)>);
+			} or {
+				X_in_C = equality_consistency[<S: X in S>](Y, C)(equal_C)(X_in_Y);
+				equal_A_or = expand(pair_AA)(X)(X_in_C);
+				equal_A = branch(equal_A_or, equal_A, equal_A){return equal_A;} or {return equal_A;};
+				return or(<:X in A>, equal_A);
+			};
+		}
+		prove lemma1: X in A | equal_sets(X, A) -> X in B{
+			implies premise;
+			return branch(premise, X_in_A, equal_XA){
+				prove union_def: ^Y(Y in D & X in Y){
+					choose A;
+					return and(expand(pair_AC)(A)(or(equal_sets_reflexive(A), <:equal_sets(A, C)>)), X_in_A);
+				}
+				return expand(union_B)(X)(union_def);
+			} or {
+				X_in_C = expand(pair_AA)(X)(or(equal_XA, equal_XA));
+				prove union_def: ^Y(Y in D & X in Y){
+					choose C;
+					return and(expand(pair_AC)(C)(or(<:equal_sets(C, A)>, equal_sets_reflexive(C))), X_in_C);
+				}
+				return expand(union_B)(X)(union_def);
+			};
+		}
+		return iff(lemma0, lemma1);
 	}
 	return #is_successor(A, B)(successor_def);
 }
@@ -165,13 +196,7 @@ prove successor_unique: *A*B*C(is_successor(A, B) & is_successor(A, C) -> equal_
 	given |A, B, C|;
 	implies successor_both;
 	extract successor_both: successor_B, successor_C;
-	extract expand(successor_B)|PAIR0_B, PAIR1_B|: PAIR0_B_condition, PAIR1_B_condition, union_B;
-	extract expand(successor_C)|PAIR0_C, PAIR1_C|: PAIR0_C_condition, PAIR1_C_condition, union_C;
-	PAIR0_equal = pair_unique(A, A, PAIR0_B, PAIR0_C)(and(PAIR0_B_condition, PAIR0_C_condition));
-	PAIR1_B_other = equality_consistency[<X: is_pair(A, X, PAIR1_B)>](PAIR0_B, PAIR0_C)(PAIR0_equal)(PAIR1_B_condition);
-	PAIR1_equal = pair_unique(A, PAIR0_C, PAIR1_B, PAIR1_C)(and(PAIR1_B_other, PAIR1_C_condition));
-	union_B_other = equality_consistency[<X: is_union(X, B)>](PAIR1_B, PAIR1_C)(PAIR1_equal)(union_B);
-	return union_unique(PAIR1_C, B, C)(and(union_B_other, union_C));
+	return definition_uniqueness_lemma[<X: X in A | equal_sets(X, A)>](B, C)(and(expand(successor_B), expand(successor_C)));
 }
 
 define is_inductive_set(X): ^E(E in X & is_empty(E)) & *Y*Z(Y in X & is_successor(Y, Z) -> Z in X);
