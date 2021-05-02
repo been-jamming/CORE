@@ -43,6 +43,7 @@ prove equal_sets_transitive: *A*B*C(equal_sets(A, B) & equal_sets(B, C) -> equal
 	return equality_consistency[<X: equal_sets(X, C)>](B, A)(equal_sets_symmetric(A, B)(equal_AB))(equal_BC);
 }
 
+//We prove the "axiom" using equality consistency, which is just a more useful form of this axiom for my purposes
 prove axiom_extensionality: *A*B(equal_sets(A, B) -> *W(A in W <-> B in W)){
 	given |A, B|;
 	implies equal_AB;
@@ -197,6 +198,37 @@ prove successor_unique: *A*B*C(is_successor(A, B) & is_successor(A, C) -> equal_
 	implies successor_both;
 	extract successor_both: successor_B, successor_C;
 	return definition_uniqueness_lemma[<X: X in A | equal_sets(X, A)>](B, C)(and(expand(successor_B), expand(successor_C)));
+}
+
+//One of the rare moments when we use the axiom of regularity
+prove no_pair_recursive_membership: *A*B(~A in B | ~B in A){
+	given |A, B|;
+	PAIR_AB_def = expand(pair(A, B)|PAIR_AB|);
+	prove PAIR_AB_not_empty: ^A(A in PAIR_AB){
+		choose A;
+		return PAIR_AB_def(A)(or(equal_sets_reflexive(A), <:equal_sets(A, B)>));
+	}
+	PAIR_AB_not_empty = #not_empty(PAIR_AB)(PAIR_AB_not_empty);
+	extract axiom_regularity(PAIR_AB)(PAIR_AB_not_empty)|D|: D_in_PAIR_AB, disjoint;
+	return branch(PAIR_AB_def(D)(D_in_PAIR_AB), equal_D_A, equal_D_B){
+		return branch(disjoint(B), not_B_in_D, not_B_in_PAIR_AB){
+			not_B_in_A = equality_consistency[<Q: ~B in Q>](D, A)(equal_D_A)(not_B_in_D);
+			return or(<:~A in B>, not_B_in_A);
+		} or {
+			B_in_PAIR_AB = PAIR_AB_def(B)(or(<:equal_sets(B, A)>, equal_sets_reflexive(B)));
+			absurdity = not_B_in_PAIR_AB(B_in_PAIR_AB);
+			return axiom_absurdity[goal](absurdity);
+		};
+	} or {
+		return branch(disjoint(A), not_A_in_D, not_A_in_PAIR_AB){
+			not_A_in_B = equality_consistency[<Q: ~A in Q>](D, B)(equal_D_B)(not_A_in_D);
+			return or(not_A_in_B, <:~B in A>);
+		} or {
+			A_in_PAIR_AB = PAIR_AB_def(A)(or(equal_sets_reflexive(A), <:equal_sets(A, B)>));
+			absurdity = not_A_in_PAIR_AB(A_in_PAIR_AB);
+			return axiom_absurdity[goal](absurdity);
+		};
+	};
 }
 
 define is_inductive_set(X): ^E(E in X & is_empty(E)) & *Y*Z(Y in X & is_successor(Y, Z) -> Z in X);

@@ -5,6 +5,70 @@ prove copy_set: *A^B(equal_sets(A, B)){
 	return equal_sets_reflexive(A);
 }
 
+//When we have the axiom of regularity, even outside of the natural numbers, the "predecessor" of a set is unique if it exists
+prove predecessor_unique: *A*B*C(is_successor(A, C) & is_successor(B, C) -> equal_sets(A, B)){
+	given |A, B, C|;
+	implies predecessor_both;
+	extract predecessor_both: predecessor_A, predecessor_B;
+	A_in_C = expand(predecessor_A)(A)(or(<:A in A>, equal_sets_reflexive(A)));
+	B_in_C = expand(predecessor_B)(B)(or(<:B in B>, equal_sets_reflexive(B)));
+	prove equal_def: *X(X in A <-> X in B){
+		given |X|;
+		prove lemma0: X in A -> X in B{
+			implies X_in_A;
+			X_in_C = expand(predecessor_A)(X)(or(X_in_A, <:equal_sets(X, A)>));
+			return branch(expand(predecessor_B)(X)(X_in_C), X_in_B, equal_X_B){
+				return X_in_B;
+			} or {
+				B_in_A = equality_consistency[<Q: Q in A>](X, B)(equal_X_B)(X_in_A);
+				A_in_B = branch(expand(predecessor_B)(A)(A_in_C), A_in_B, equal_A_B){
+					return A_in_B;
+				} or {
+					A_in_A = equality_consistency[<Q: Q in A>](A, B)(equal_A_B)(B_in_A);
+					return equality_consistency[<Q: A in Q>](A, B)(equal_A_B)(A_in_A);
+				};
+				prove is_false: ~(~A in B | ~B in A){
+					not either;
+					return branch(either, not_A_in_B, not_B_in_A){
+						return not_A_in_B(A_in_B);
+					} or {
+						return not_B_in_A(B_in_A);
+					};
+				}
+				absurdity = is_false(no_pair_recursive_membership(A, B));
+				return axiom_absurdity[goal](absurdity);
+			};
+		}
+		prove lemma1: X in B -> X in A{
+			implies X_in_B;
+			X_in_C = expand(predecessor_B)(X)(or(X_in_B, <:equal_sets(X, B)>));
+			return branch(expand(predecessor_A)(X)(X_in_C), X_in_A, equal_X_A){
+				return X_in_A;
+			} or {
+				A_in_B = equality_consistency[<Q: Q in B>](X, A)(equal_X_A)(X_in_B);
+				B_in_A = branch(expand(predecessor_A)(B)(B_in_C), B_in_A, equal_B_A){
+					return B_in_A;
+				} or {
+					B_in_B = equality_consistency[<Q: Q in B>](B, A)(equal_B_A)(A_in_B);
+					return equality_consistency[<Q: B in Q>](B, A)(equal_B_A)(B_in_B);
+				};
+				prove is_false: ~(~A in B | ~B in A){
+					not either;
+					return branch(either, not_A_in_B, not_B_in_A){
+						return not_A_in_B(A_in_B);
+					} or {
+						return not_B_in_A(B_in_A);
+					};
+				}
+				absurdity = is_false(no_pair_recursive_membership(A, B));
+				return axiom_absurdity[goal](absurdity);
+			};
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #equal_sets(A, B)(equal_def);
+}
+
 define is_power_set(A, B): *X(X in B <-> is_subset(X, A));
 
 prove power_set: *A^B(is_power_set(A, B)){
@@ -54,11 +118,11 @@ prove empty_set_unique: *E*F(is_empty(E) & is_empty(F) -> equal_sets(E, F)){
 		given |X|;
 		prove lemma0: X in E -> X in F{
 			implies X_in_E;
-			return axiom_absurdity[<:X in F>](empty_E(X)(X_in_E));
+			return axiom_absurdity[goal](empty_E(X)(X_in_E));
 		}
 		prove lemma1: X in F -> X in E{
 			implies X_in_F;
-			return axiom_absurdity[<:X in E>](empty_F(X)(X_in_F));
+			return axiom_absurdity[goal](empty_F(X)(X_in_F));
 		}
 		return iff(lemma0, lemma1);
 	}
