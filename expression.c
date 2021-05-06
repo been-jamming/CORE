@@ -704,6 +704,8 @@ statement *parse_right(char **c, unsigned char *is_verified){
 	return NULL;
 }
 
+//NOTE:
+//This function is reused for the parentheses operation with respect to implications and biconditionals
 statement *parse_and_or(char **c, unsigned char is_and, unsigned char *is_verified){
 	statement *output;
 	statement *last_parent = NULL;
@@ -1218,12 +1220,44 @@ statement *parse_statement_value_parentheses(char **c, statement *output, unsign
 		fprintf(stderr, "Error: expected expression or variable\n");
 		error(1);
 	}
-	while(**c != ')'){
-		if(output->type != compare_type){
-			fprintf(stderr, "Error: expected ')' before next arguments\n");
-			error(1);
+	if(compare_type == IMPLIES || compare_type == BICOND || compare_type == NOT){
+		arg = parse_and_or(c, 1, is_verified);
+		skip_whitespace(c);
+		if(compare_type == BICOND){
+			is_child0 = compare_statement(arg, output->child0);
+			if(!is_child0 && !compare_statement(arg, output->child1)){
+				fprintf(stderr, "Error: mismatching statement type for operation\n");
+				error(1);
+			}
+		} else {
+			if(!compare_statement(arg, output->child0)){
+				fprintf(stderr, "Error: mismatching statement type for operation\n");
+				error(1);
+			}
 		}
-		if(compare_type == FORALL){
+		free_statement(arg);
+		if(compare_type == IMPLIES || (compare_type == BICOND && is_child0)){
+			free_statement(output->child0);
+			next_output = output->child1;
+			free(output);
+			output = next_output;
+			output->parent = NULL;
+		} else if(compare_type == BICOND && !is_child0){
+			free_statement(output->child1);
+			next_output = output->child0;
+			free(output);
+			output = next_output;
+			output->parent = NULL;
+		} else if(compare_type == NOT){
+			free_statement(output);
+			output = create_statement(FALSE, 0, 0);
+		}
+	} else if(compare_type == FORALL){
+		while(**c != ')'){
+			if(output->type != compare_type){
+				fprintf(stderr, "Error: expected ')' before next arguments\n");
+				error(1);
+			}
 			get_identifier(c, var_name, 256);
 			if(var_name[0] == '\0'){
 				fprintf(stderr, "Error: expected identifier name\n");
@@ -1242,63 +1276,23 @@ statement *parse_statement_value_parentheses(char **c, statement *output, unsign
 				error(1);
 			}
 			output = next_output;
+			output->parent = NULL;
 			add_bound_variables(output, -1);
-		} else if(compare_type == IMPLIES || compare_type == BICOND || compare_type == NOT){
-			arg = parse_statement_value_recursive(c, is_verified, did_bind);
-			skip_whitespace(c);
-			if(!arg){
-				fprintf(stderr, "Error: failed to parse argument\n");
+			if(**c != ',' && **c != ')'){
+				fprintf(stderr, "Error: expected ',' or ')'\n");
 				error(1);
 			}
-			if(arg->num_bound_vars){
-				fprintf(stderr, "Error: argument has bound variables\n");
-				error(1);
+			if(**c == ','){
+				++*c;
+				skip_whitespace(c);
 			}
-			if(arg->num_bound_props){
-				fprintf(stderr, "Error: argument has bound propositions\n");
-				error(1);
-			}
-			if(compare_type == BICOND){
-				is_child0 = compare_statement(arg, output->child0);
-				if(!is_child0 && !compare_statement(arg, output->child1)){
-					fprintf(stderr, "Error: invalid statement type for operation\n");
-					error(1);
-				}
-			} else {
-				if(!compare_statement(arg, output->child0)){
-					fprintf(stderr, "Error: invalid statement type for operation\n");
-					error(1);
-				}
-			}
-			free_statement(arg);
-			if(compare_type == IMPLIES || (compare_type == BICOND && is_child0)){
-				free_statement(output->child0);
-				next_output = output->child1;
-				free(output);
-				output = next_output;
-			} else if(compare_type == BICOND && !is_child0){
-				free_statement(output->child1);
-				next_output = output->child0;
-				free(output);
-				output = next_output;
-			} else if(compare_type == NOT){
-				free_statement(output);
-				output = create_statement(FALSE, 0, 0);
-			}
-		} else {
-			fprintf(stderr, "Error: invalid statement type for parentheses operation\n");
-			error(1);
 		}
-		if(**c != ',' && **c != ')'){
-			fprintf(stderr, "Error: expected ',' or ')'\n");
-			error(1);
-		}
-		if(**c == ','){
-			++*c;
-			skip_whitespace(c);
-		}
+		++*c;
+		skip_whitespace(c);
+	} else {
+		fprintf(stderr, "Error: invalid statement type for parentheses operation\n");
+		error(1);
 	}
-	++*c;
 
 	return output;
 }

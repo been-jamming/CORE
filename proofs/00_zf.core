@@ -101,7 +101,7 @@ prove pair: *A*B^C(is_pair(A, B, C)){
 			} or {
 				return equality_consistency[<Z: Z in D>](X, B)(equal_XB)(B_in_D);
 			};
-			return C_specified(X)(and(X_in_D, equals_or));
+			return C_specified(X)(X_in_D, equals_or);
 		}
 		return iff(lemma0, lemma1);
 	}
@@ -112,7 +112,7 @@ prove pair_unique: *A*B*C*D(is_pair(A, B, C) & is_pair(A, B, D) -> equal_sets(C,
 	given |A, B, C, D|;
 	implies pairs_premise;
 	extract pairs_premise: pair_C, pair_D;
-	return definition_uniqueness_lemma[<X: equal_sets(X, A) | equal_sets(X, B)>](C, D)(and(expand(pair_C), expand(pair_D)));
+	return definition_uniqueness_lemma[<X: equal_sets(X, A) | equal_sets(X, B)>](C, D)(expand(pair_C), expand(pair_D));
 }
 
 define is_union(A, B): *X(X in B <-> ^Y(Y in A & X in Y));
@@ -133,7 +133,7 @@ prove union: *A^B(is_union(A, B)){
 			implies exists_condition;
 			condition_Y = exists_condition|Y|;
 			X_in_NEW = implies_in_NEW(Y, X)(condition_Y);
-			return specified(X)(and(X_in_NEW, exists_condition));
+			return specified(X)(X_in_NEW, exists_condition);
 		}
 		return iff(lemma0, lemma1);
 	}
@@ -144,7 +144,7 @@ prove union_unique: *A*B*C(is_union(A, B) & is_union(A, C) -> equal_sets(B, C)){
 	given |A, B, C|;
 	implies union_both;
 	extract union_both: union_B, union_C;
-	return definition_uniqueness_lemma[<X: ^Y(Y in A & X in Y)>](B, C)(and(expand(union_B), expand(union_C)));
+	return definition_uniqueness_lemma[<X: ^Y(Y in A & X in Y)>](B, C)(expand(union_B), expand(union_C));
 }
 
 define is_successor(A, B): *X(X in B <-> X in A | equal_sets(X, A));
@@ -197,7 +197,7 @@ prove successor_unique: *A*B*C(is_successor(A, B) & is_successor(A, C) -> equal_
 	given |A, B, C|;
 	implies successor_both;
 	extract successor_both: successor_B, successor_C;
-	return definition_uniqueness_lemma[<X: X in A | equal_sets(X, A)>](B, C)(and(expand(successor_B), expand(successor_C)));
+	return definition_uniqueness_lemma[<X: X in A | equal_sets(X, A)>](B, C)(expand(successor_B), expand(successor_C));
 }
 
 //One of the rare moments when we use the axiom of regularity

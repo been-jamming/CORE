@@ -963,6 +963,7 @@ statement *implies_command(char **c, statement *goal){
 	unsigned char explicit_scope;
 	char name_buffer[256];
 	statement *next_goal;
+	statement *goal_child0_copy;
 	statement *var_statement;
 	statement *return_statement;
 
@@ -974,31 +975,54 @@ statement *implies_command(char **c, statement *goal){
 	*c += 7;
 	skip_whitespace(c);
 
+	if(!is_alpha(**c)){
+		fprintf(stderr, "Error: expected identifier\n");
+		error(1);
+	}
+
 	if(goal->type != IMPLIES){
 		fprintf(stderr, "Error: incorrect goal type\n");
 		error(1);
 	}
 
-	get_identifier(c, name_buffer, 256);
-	if(name_buffer[0] == '\0'){
-		fprintf(stderr, "Error: expected identifier\n");
-		error(1);
-	}
+	goal_child0_copy = malloc(sizeof(statement));
+	copy_statement(goal_child0_copy, goal->child0);
+	goal_child0_copy->parent = NULL;
 
-	skip_whitespace(c);
-	if(**c != '{' && **c != ';'){
-		fprintf(stderr, "Error: expected '{' or ';'\n");
-		error(1);
-	}
+	up_scope();
+	do{
+		if(**c == ','){
+			++*c;
+			skip_whitespace(c);
+		}
+		get_identifier(c, name_buffer, 256);
+		if(name_buffer[0] == '\0'){
+			fprintf(stderr, "Error: expected identifier\n");
+			error(1);
+		}
+
+		skip_whitespace(c);
+		if(**c != '{' && **c != ';' && **c != ','){
+			fprintf(stderr, "Error: expected '{', ';', or ','\n");
+			error(1);
+		}
+
+		if(!goal_child0_copy){
+			fprintf(stderr, "Error: not enough premises to unpack\n");
+			error(1);
+		}
+		if(**c == ';'){
+			var_statement = goal_child0_copy;
+		} else {
+			var_statement = peel_and_left(&goal_child0_copy);
+		}
+		create_statement_var(name_buffer, var_statement);
+	} while(**c != ';' && **c != '{');
 
 	explicit_scope = (**c == '{');
 	++*c;
 	skip_whitespace(c);
 
-	up_scope();
-	var_statement = malloc(sizeof(statement));
-	copy_statement(var_statement, goal->child0);
-	create_statement_var(name_buffer, var_statement);
 	next_goal = malloc(sizeof(statement));
 	copy_statement(next_goal, goal->child1);
 	write_goal(next_goal);
