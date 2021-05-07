@@ -565,9 +565,10 @@ prove addition_function_exists: ^F(is_addition_function(F)){
 	}
 
 	//Next we prove a crucial lemma to the next important result, again using induction
-	prove addition_classes_cover_lemma: *A*B*T*F*N(N in NATURALS & is_addition_class(N, F) & is_tuple(A, B, T) & T in F -> ^S^T1^N1^F1(is_successor(A, S) & is_successor(N, N1) & is_addition_class(N1, F1) & is_tuple(S, B, T1) & T1 in F1)){
+	prove addition_classes_cover_lemma: *A(A in NATURALS -> *B*T*F*N(N in NATURALS & is_addition_class(N, F) & is_tuple(A, B, T) & T in F -> ^S^T1^N1^F1(is_successor(A, S) & is_successor(N, N1) & is_addition_class(N1, F1) & is_tuple(S, B, T1) & T1 in F1))){
 		//Again, we use induction!
 		R_def = axiom_specify[<Q: *B*T*F*N(N in NATURALS & is_addition_class(N, F) & is_tuple(Q, B, T) & T in F -> ^S^T1^N1^F1(is_successor(Q, S) & is_successor(N, N1) & is_addition_class(N1, F1) & is_tuple(S, B, T1) & T1 in F1))>](NATURALS)|R|;
+		//Base step
 		prove ZERO_in_R: *B*T*F*N(N in NATURALS & is_addition_class(N, F) & is_tuple(ZERO, B, T) & T in F -> ^S^T1^N1^F1(is_successor(ZERO, S) & is_successor(N, N1) & is_addition_class(N1, F1) & is_tuple(S, B, T1) & T1 in F1)){
 			given |B, T, F, N|;
 			implies N_in_NATURALS, addition_class_F, tuple_T, T_in_F;
@@ -592,16 +593,108 @@ prove addition_function_exists: ^F(is_addition_function(F)){
 			return and(one_definition, successor_N1, addition_class_F1, tuple_T1, T1_in_F1);
 		}
 		ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+		//Inductive step
 		prove closure_R: *Y*Z(Y in R & is_successor(Y, Z) -> Z in R){
 			given |Y, Y1|;
 			implies Y_in_R, successor_Y1;
+			Y1_not_ZERO = NATURAL_successor_nonzero(Y, Y1)(successor_Y1);
 			extract R_def(Y)(Y_in_R): Y_in_NATURALS, Y_condition;
 			successor_Y2 = successor(Y1)|Y2|;
-			prove Y1_in_R: *B*T*F*N(N in NATURALS & is_addition_class(N, F) & is_tuple(Y1, B, T) & T in F -> ^S^T1^N1^F1(is_successor(Y1, S) & is_successor(N, N1) & is_addition_class(N1, F1) & is_tuple(S, B, T1) & T1 in F1)){
+			Y2_not_ZERO = NATURAL_successor_nonzero(Y1, Y2)(successor_Y2);
+			Y1_in_NATURALS = closure_naturals(Y, Y1)(Y_in_NATURALS, successor_Y1);
+			prove Y1_in_R: *B*T*F*N(N in NATURALS & is_addition_class(N, F) & is_tuple(Y1, B, T) & T in F -> ^Y2^T1^N1^F1(is_successor(Y1, Y2) & is_successor(N, N1) & is_addition_class(N1, F1) & is_tuple(Y2, B, T1) & T1 in F1)){
 				given |B, T, F, N|;
 				implies N_in_NATURALS, addition_class_F, tuple_T, T_in_F;
+				extract expand(addition_class_F)(T)(T_in_F)|OTHER_Y1, OTHER_B|: other_tuple_T, either_T;
+				extract tuple_equal_condition(Y1, B, OTHER_Y1, OTHER_B, T, T)(tuple_T, other_tuple_T, equal_sets_reflexive(T)): equal_Y1, equal_B;
+				predecessor_exists_T = branch(either_T, equal_initial_T, predecessor_exists_T){
+					extract equal_initial_T: equal_OTHER_Y1_ZERO, equal_OTHER_B_N;
+					equal_Y1_ZERO = equality_consistency[<S: equal_sets(S, ZERO)>](Y1, OTHER_Y1)(equal_Y1)(equal_OTHER_Y1_ZERO);
+					absurdity = Y1_not_ZERO(equal_Y1_ZERO);
+					return axiom_absurdity[<:^Y^B1^T0(is_successor(Y, OTHER_Y1) & is_successor(OTHER_B, B1) & is_tuple(Y, B1, T0) & T0 in F)>](absurdity);
+				} or {
+					return predecessor_exists_T;
+				};
+				extract predecessor_exists_T|OTHER_Y, B1, T0|: successor_OTHER_Y1, successor_B1, tuple_T0, T0_in_F;
+				successor_Y1_OTHER_Y = equality_consistency[<S: is_successor(OTHER_Y, S)>](Y1, OTHER_Y1)(equal_Y1)(successor_OTHER_Y1);
+				equal_Y = predecessor_unique(Y, OTHER_Y, Y1)(successor_Y1, successor_Y1_OTHER_Y);
+				tuple_T0 = equality_consistency[<S: is_tuple(S, B1, T0)>](Y, OTHER_Y)(equal_Y)(tuple_T0);
+				existence_in_F1 = Y_condition(B1, T0, F, N)(N_in_NATURALS, addition_class_F, tuple_T0, T0_in_F);
+
+				//I want to overwrite OTHER_Y1 because I no longer need the older "version" of this object
+				//So I must overwrite the other statements which refer to this old object
+				other_tuple_T = axiom_true;
+				either_T = axiom_true;
+				equal_Y1 = axiom_true;
+				predecessor_exists_T = axiom_true;
+				successor_OTHER_Y1 = axiom_true;
+
+				extract existence_in_F1|OTHER_Y1, T1_PRED, N1, F1|: successor_OTHER_Y1, successor_N1, addition_class_F1, tuple_T1_PRED, T1_PRED_in_F1;
+				equal_Y1 = successor_unique(Y, Y1, OTHER_Y1)(successor_Y1, successor_OTHER_Y1);
+				successor_B1 = equality_consistency[<S: is_successor(S, B1)>](B, OTHER_B)(equal_B)(successor_B1);
+				tuple_T1_PRED = equality_consistency[<S: is_tuple(S, B1, T1_PRED)>](Y1, OTHER_Y1)(equal_Y1)(tuple_T1_PRED);
+				successor_Y2 = successor(Y1)|Y2|;
+				tuple_T1 = tuple(Y2, B)|T1|;
+				choose Y2, T1, N1, F1;
+				prove condition: ^P^S^T(is_successor(P, Y2) & is_successor(B, S) & is_tuple(P, S, T) & T in F1){
+					choose Y1, B1, T1_PRED;
+					return and(successor_Y2, successor_B1, tuple_T1_PRED, T1_PRED_in_F1);
+				}
+				prove T1_in_F1: ^Y2^B(is_tuple(Y2, B, T1) & ((equal_sets(Y2, ZERO) & equal_sets(B, N1)) | ^P^S^T(is_successor(P, Y2) & is_successor(B, S) & is_tuple(P, S, T) & T in F1))){
+					choose Y2, B;
+					return and(tuple_T1, or(<:equal_sets(Y2, ZERO) & equal_sets(B, N1)>, condition));
+				}
+				T1_in_F1 = expand(addition_class_F1)(T1)(T1_in_F1);
+				return and(successor_Y2, successor_N1, addition_class_F1, tuple_T1, T1_in_F1);
 			}
+			return R_def(Y1)(Y1_in_NATURALS, Y1_in_R);
 		}
+		NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+		given |A|;
+		implies A_in_NATURALS;
+		A_in_R = expand(NATURALS_subset_R)(A)(A_in_NATURALS);
+		extract R_def(A)(A_in_R): A_in_NATURALS, result;
+
+		return result;
 	}
+
+	//Now we prove that the addition classes "cover" the tuples of natural numbers
+	prove addition_classes_cover: *A*B(A in NATURALS & B in NATURALS -> ^T^N^F(is_tuple(B, A, T) & N in NATURALS & is_addition_class(N, F) & T in F)){
+		given |A, B|;
+		implies A_in_NATURALS, B_in_NATURALS;
+		R_def = axiom_specify[<S: ^T^N^F(is_tuple(S, A, T) & N in NATURALS & is_addition_class(N, F) & T in F)>](NATURALS)|R|;
+		prove ZERO_in_R: ^T^N^F(is_tuple(ZERO, A, T) & N in NATURALS & is_addition_class(N, F) & T in F){
+			tuple_T = tuple(ZERO, A)|T|;
+			extract addition_classes_exist(A)(A_in_NATURALS)|F|: addition_class_F, F_subset_C;
+			T_in_F = addition_class_initial_unique(A, T, F, A)(addition_class_F, tuple_T)(equal_sets_reflexive(A));
+			choose T, A, F;
+			return and(tuple_T, A_in_NATURALS, addition_class_F, T_in_F);
+		}
+		ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+		prove closure_R: *Y*Y1(Y in R & is_successor(Y, Y1) -> Y1 in R){
+			given |Y, Y1|;
+			implies Y_in_R, successor_Y1;
+			extract R_def(Y)(Y_in_R): Y_in_NATURALS, Y_condition;
+			extract Y_condition|T, N, F|: tuple_T, N_in_NATURALS, addition_class_F, T_in_F;
+			next_exists = addition_classes_cover_lemma(Y)(Y_in_NATURALS)(A, T, F, N)(N_in_NATURALS, addition_class_F, tuple_T, T_in_F);
+			extract next_exists|OTHER_Y1, T1, N1, F1|: successor_OTHER_Y1, successor_N1, addition_class_F1, tuple_T1, T1_in_F1;
+			equal_Y1 = successor_unique(Y, Y1, OTHER_Y1)(successor_Y1, successor_OTHER_Y1);
+			tuple_T1 = equality_consistency[<S: is_tuple(S, A, T1)>](Y1, OTHER_Y1)(equal_Y1)(tuple_T1);
+			N1_in_NATURALS = closure_naturals(N, N1)(N_in_NATURALS, successor_N1);
+			Y1_in_NATURALS = closure_naturals(Y, Y1)(Y_in_NATURALS, successor_Y1);
+			prove Y1_in_R: ^T1^N1^F1(is_tuple(Y1, A, T1) & N1 in NATURALS & is_addition_class(N1, F1) & T1 in F1){
+				choose T1, N1, F1;
+				return and(tuple_T1, N1_in_NATURALS, addition_class_F1, T1_in_F1);
+			}
+			return R_def(Y1)(Y1_in_NATURALS, Y1_in_R);
+		}
+		NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+		B_in_R = expand(NATURALS_subset_R)(B)(B_in_NATURALS);
+		extract R_def(B)(B_in_R): B_in_NATURALS, result;
+		
+		return result;
+	}
+
+	//TODO: prove that the addition classes are unique
 }
 
