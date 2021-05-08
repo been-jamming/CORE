@@ -14,7 +14,7 @@ define is_transitive(R): *X*Y*Z(are_related(X, Y, R) & are_related(Y, Z, R) -> a
 define is_equivalence_relation(R, A): is_reflexive(R, A) & is_symmetric(R) & is_transitive(R);
 
 //Define a function!
-define is_function(F): *X*Y*Z(are_related(X, Y, F) & are_related(X, Z, F) -> equal_sets(Y, Z)) & *Z(Z in F -> ^X^Y(is_tuple(X, Y, Z)));
+define is_function(F): *X*Y*Z(are_related(X, Y, F) & are_related(X, Z, F) -> equal_sets(Y, Z));
 
 //Define when a function is injective with respect to a domain A
 define is_injective(F, A): *X*Y(X in A & Y in A & ^Z(are_related(X, Z, F) & are_related(Y, Z, F)) -> equal_sets(X, Y));
@@ -198,50 +198,5 @@ prove equivalence_classes_unique: *A*R*C*D(is_equivalence_classes(R, A, C) & is_
 	implies both_equiv_classes;
 	extract both_equiv_classes: equiv_classes_C, equiv_classes_D;
 	return definition_uniqueness_lemma[<S: is_equivalence_class(R, A, S)>](C, D)(expand(equiv_classes_C), expand(equiv_classes_D));
-}
-
-//Prove that the set of all functions from A to B exists
-prove functions: *A*B^C*F(F in C <-> is_function(F) & is_domain(F, A) & is_codomain(F, B)){
-	given |A, B|;
-	T_def = expand(cross_product(A, B)|T|);
-	P_def = expand(power_set(T)|P|);
-	C_def = axiom_specify[<S: is_function(S) & is_domain(S, A) & is_codomain(S, B)>](P)|C|;
-	choose C;
-	given |F|;
-	prove lemma0: F in C -> is_function(F) & is_domain(F, A) & is_codomain(F, B){
-		implies F_in_C;
-		extract C_def(F)(F_in_C): F_in_P, function_F, domain_A, codomain_B;
-		return and(function_F, domain_A, codomain_B);
-	}
-	prove lemma1: is_function(F) & is_domain(F, A) & is_codomain(F, B) -> F in C{
-		implies premises;
-		extract premises: function_F, domain_A, codomain_B;
-		extract expand(function_F): unique_output, restricted_tuples;
-		prove F_subset_T: *S(S in F -> S in T){
-			given |S|;
-			implies S_in_F;
-			tuple_XY = restricted_tuples(S)(S_in_F)|X, Y|;
-			prove related_XY: ^S(S in F & is_tuple(X, Y, S)){
-				choose S;
-				return and(S_in_F, tuple_XY);
-			}
-			related_XY = #are_related(X, Y, F)(related_XY);
-			prove output_exists: ^Y(are_related(X, Y, F)){
-				choose Y;
-				return related_XY;
-			}
-			X_in_A = expand(domain_A)(X)(output_exists);
-			Y_in_B = expand(codomain_B)(X, Y)(related_XY);
-			prove T_cond: ^X^Y(X in A & Y in B & is_tuple(X, Y, S)){
-				choose X, Y;
-				return and(X_in_A, Y_in_B, tuple_XY);
-			}
-			return T_def(S)(T_cond);
-		}
-		F_subset_T = #is_subset(F, T)(F_subset_T);
-		F_in_P = P_def(F)(F_subset_T);
-		return C_def(F)(F_in_P, premises);
-	}
-	return iff(lemma0, lemma1);
 }
 

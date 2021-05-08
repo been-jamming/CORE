@@ -270,7 +270,8 @@ define is_addition_function(F): is_function(F) & ^T(is_cross_product(NATURALS, N
 //So I encapsulated them inside of this very large proof
 //The definition of an "addition function" characterizes the peano axioms of arithmetic
 prove addition_function_exists: ^F(is_addition_function(F)){
-	C_def = expand(cross_product(NATURALS, NATURALS)|C|);
+	C_cross_product = cross_product(NATURALS, NATURALS)|C|;
+	C_def = expand(C_cross_product);
 	extract expand(NATURALS_inductive): empty_in_naturals, closure_naturals;
 	
 	//We define an "addition class" to be the inverse image of the addition function for some N.
@@ -695,6 +696,111 @@ prove addition_function_exists: ^F(is_addition_function(F)){
 		return result;
 	}
 
-	//TODO: prove that the addition classes are unique
+	//Here we prove that (A, B) can belong to at most one addition class
+	prove addition_classes_unique: *A*B*N*M*FN*FM(A in NATURALS & B in NATURALS & is_addition_class(N, FN) & is_addition_class(M, FM) & ^T(is_tuple(A, B, T) & T in FN & T in FM) -> equal_sets(N, M)){
+		R_def = axiom_specify[<S: *B*N*M*FN*FM(S in NATURALS & B in NATURALS & is_addition_class(N, FN) & is_addition_class(M, FM) & ^T(is_tuple(S, B, T) & T in FN & T in FM) -> equal_sets(N, M))>](NATURALS)|R|;
+		prove ZERO_in_R: *B*N*M*FN*FM(ZERO in NATURALS & B in NATURALS & is_addition_class(N, FN) & is_addition_class(M, FM) & ^T(is_tuple(ZERO, B, T) & T in FN & T in FM) -> equal_sets(N, M)){
+			given |B, N, M, FN, FM|;
+			implies ZERO_in_NATURALS, B_in_NATURALS, addition_class_FN, addition_class_FM, T_exists;
+			extract T_exists|T|: tuple_T, T_in_FN, T_in_FM;
+			equal_B_N = addition_class_initial_unique(B, T, FN, N)(addition_class_FN, tuple_T)(T_in_FN);
+			equal_B_M = addition_class_initial_unique(B, T, FM, M)(addition_class_FM, tuple_T)(T_in_FM);
+			return equality_consistency[<S: equal_sets(S, M)>](B, N)(equal_B_N)(equal_B_M);
+		}
+		ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+		prove closure_R: *Y*Y1(Y in R & is_successor(Y, Y1) -> Y1 in R){
+			given |Y, Y1|;
+			implies Y_in_R, successor_Y1;
+			extract R_def(Y)(Y_in_R): Y_in_NATURALS, Y_condition;
+			Y1_in_NATURALS = closure_naturals(Y, Y1)(Y_in_NATURALS, successor_Y1);
+			prove Y1_in_R: *B*N*M*FN*FM(Y1 in NATURALS & B in NATURALS & is_addition_class(N, FN) & is_addition_class(M, FM) & ^T(is_tuple(Y1, B, T) & T in FN & T in FM) -> equal_sets(N, M)){
+				given |B, N, M, FN, FM|;
+				implies Y1_in_NATURALS, B_in_NATURALS, addition_class_FN, addition_class_FM, T_exists;
+				extract T_exists|T|: tuple_T, T_in_FN, T_in_FM;
+				
+				//First for FN
+				extract expand(addition_class_FN)(T)(T_in_FN)|OTHER_Y1, OTHER_B|: other_tuple_T, either_T;
+				extract tuple_equal_condition(Y1, B, OTHER_Y1, OTHER_B, T, T)(tuple_T, other_tuple_T, equal_sets_reflexive(T)): equal_Y1, equal_B;
+				T_PRED_exists = branch(either_T, initial_T, T_PRED_exists){
+					extract initial_T: equal_OTHER_Y1_ZERO, equal_B_N;
+					equal_Y1_ZERO = equality_consistency[<S: equal_sets(S, ZERO)>](Y1, OTHER_Y1)(equal_Y1)(equal_OTHER_Y1_ZERO);
+					not_equal_Y1_ZERO = NATURAL_successor_nonzero(Y, Y1)(successor_Y1);
+					absurdity = not_equal_Y1_ZERO(equal_Y1_ZERO);
+					return axiom_absurdity[<:^Y^B1^T1(is_successor(Y, OTHER_Y1) & is_successor(OTHER_B, B1) & is_tuple(Y, B1, T1) & T1 in FN)>](absurdity);
+				} or {
+					return T_PRED_exists;
+				};
+				extract T_PRED_exists|OTHER_Y, B1, T1|: other_successor_Y1, successor_B1, tuple_T1, T1_in_FN;
+				other_successor_Y1 = equality_consistency[<S: is_successor(OTHER_Y, S)>](Y1, OTHER_Y1)(equal_Y1)(other_successor_Y1);
+				equal_Y = predecessor_unique(Y, OTHER_Y, Y1)(successor_Y1, other_successor_Y1);
+				tuple_T1 = equality_consistency[<S: is_tuple(S, B1, T1)>](Y, OTHER_Y)(equal_Y)(tuple_T1);
+				successor_B1 = equality_consistency[<S: is_successor(S, B1)>](B, OTHER_B)(equal_B)(successor_B1);
+
+				//Now the same for FM
+				extract expand(addition_class_FM)(T)(T_in_FM)|M_OTHER_Y1, M_OTHER_B|: other_tuple_T, either_T;
+				extract tuple_equal_condition(Y1, B, M_OTHER_Y1, M_OTHER_B, T, T)(tuple_T, other_tuple_T, equal_sets_reflexive(T)): equal_Y1, equal_B;
+				T_PRED_exists = branch(either_T, initial_T, T_PRED_exists){
+					extract initial_T: equal_M_OTHER_Y1_ZERO, equal_B_N;
+					equal_Y1_ZERO = equality_consistency[<S: equal_sets(S, ZERO)>](Y1, M_OTHER_Y1)(equal_Y1)(equal_M_OTHER_Y1_ZERO);
+					not_equal_Y1_ZERO = NATURAL_successor_nonzero(Y, Y1)(successor_Y1);
+					absurdity = not_equal_Y1_ZERO(equal_Y1_ZERO);
+					return axiom_absurdity[<:^Y^B1^T1(is_successor(Y, M_OTHER_Y1) & is_successor(M_OTHER_B, B1) & is_tuple(Y, B1, T1) & T1 in FM)>](absurdity);
+				} or {
+					return T_PRED_exists;
+				};
+				extract T_PRED_exists|M_OTHER_Y, M_B1, M_T1|: other_successor_Y1, M_successor_B1, tuple_M_T1, M_T1_in_FM;
+				other_successor_Y1 = equality_consistency[<S: is_successor(M_OTHER_Y, S)>](Y1, M_OTHER_Y1)(equal_Y1)(other_successor_Y1);
+				equal_Y = predecessor_unique(Y, M_OTHER_Y, Y1)(successor_Y1, other_successor_Y1);
+				tuple_M_T1 = equality_consistency[<S: is_tuple(S, M_B1, M_T1)>](Y, M_OTHER_Y)(equal_Y)(tuple_M_T1);
+				M_successor_B1 = equality_consistency[<S: is_successor(S, M_B1)>](B, M_OTHER_B)(equal_B)(M_successor_B1);
+
+				B1_in_NATURALS = closure_naturals(B, B1)(B_in_NATURALS, successor_B1);
+				equal_B1 = successor_unique(B, B1, M_B1)(successor_B1, M_successor_B1);
+				tuple_M_T1 = equality_consistency[<S: is_tuple(Y, S, M_T1)>](B1, M_B1)(equal_B1)(tuple_M_T1);
+				equal_T1 = tuple_unique(Y, B1, T1, M_T1)(tuple_T1, tuple_M_T1);
+				T1_in_FM = equality_consistency[<S: S in FM>](T1, M_T1)(equal_T1)(M_T1_in_FM);
+
+				prove condition: ^T1(is_tuple(Y, B1, T1) & T1 in FN & T1 in FM){
+					choose T1;
+					return and(tuple_T1, T1_in_FN, T1_in_FM);
+				}
+				return Y_condition(B1, N, M, FN, FM)(Y_in_NATURALS, B1_in_NATURALS, addition_class_FN, addition_class_FM, condition);
+			}
+			return R_def(Y1)(Y1_in_NATURALS, Y1_in_R);
+		}
+		NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+		given |A, B, N, M, FN, FM|;
+		implies premises;
+		extract premises: A_in_NATURALS, rest_of_premises;
+		A_in_R = expand(NATURALS_subset_R)(A)(A_in_NATURALS);
+		extract R_def(A)(A_in_R): A_in_NATURALS, A_result;
+		return A_result(B, N, M, FN, FM)(premises);
+	}
+
+	//FINALLY! IT'S TIME TO CONSTRUCT THE ADDITION FUNCTION!
+	//Here it is!
+	addition_function_definition = relation_existence_lemma[<T, Y: ^F(is_addition_class(Y, F) & T in F)>](C, NATURALS)|ADDITION_FUNCTION|;
+
+	//We must first prove that this is indeed a function
+	prove ADDITION_FUNCTION_is_function: *X*Y*Z(are_related(X, Y, ADDITION_FUNCTION) & are_related(X, Z, ADDITION_FUNCTION) -> equal_sets(Y, Z)){
+		given |X, Y, Z|;
+		implies related_XY, related_XZ;
+
+		extract addition_function_definition(X, Y)(related_XY): X_in_C, Y_in_NATURALS, F0_exists;
+		extract F0_exists|F0|: addition_class_F0, X_in_F0;
+
+		extract addition_function_definition(X, Z)(related_XZ): X_in_C, Z_in_NATURALS, F1_exists;
+		extract F1_exists|F1|: addition_class_F1, X_in_F1;
+
+		extract C_def(X)(X_in_C)|X0, X1|: X0_in_NATURALS, X1_in_NATURALS, tuple_X;
+		prove condition: ^X(is_tuple(X0, X1, X) & X in F0 & X in F1){
+			choose X;
+			return and(tuple_X, X_in_F0, X_in_F1);
+		}
+
+		return addition_classes_unique(X0, X1, Y, Z, F0, F1)(X0_in_NATURALS, X1_in_NATURALS, addition_class_F0, addition_class_F1, condition);
+	}
+
+	ADDITION_FUNCTION_is_function = #is_function(ADDITION_FUNCTION)(ADDITION_FUNCTION_is_function);
 }
 
