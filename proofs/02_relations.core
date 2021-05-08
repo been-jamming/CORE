@@ -23,7 +23,7 @@ define is_injective(F, A): *X*Y(X in A & Y in A & ^Z(are_related(X, Z, F) & are_
 define is_surjective(F, A): *Y(Y in A -> ^X(are_related(X, Y, F)));
 
 //Define when A is a domain for F
-define is_domain(F, A): *X(X in A <-> ^Y(are_related(X, Y, F)));
+define is_domain(F, A): *X(X in A -> ^Y(are_related(X, Y, F)));
 
 //Define when A is a domain for F
 define is_codomain(F, A): *X*Y(are_related(X, Y, F) -> Y in A);

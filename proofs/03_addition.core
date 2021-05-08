@@ -80,6 +80,16 @@ prove two_is_natural: TWO in NATURALS{
 	extract expand(NATURALS_inductive): empty_in_naturals, closure_naturals;
 	return closure_naturals(ONE, TWO)(one_is_natural, two_definition);
 }
+three_definition = successor(TWO)|THREE|;
+prove three_is_natural: THREE in NATURALS{
+	extract expand(NATURALS_inductive): empty_in_naturals, closure_naturals;
+	return closure_naturals(TWO, THREE)(two_is_natural, three_definition);
+}
+four_definition = successor(THREE)|FOUR|;
+prove four_is_natural: FOUR in NATURALS{
+	extract expand(NATURALS_inductive): empty_in_naturals, closure_naturals;
+	return closure_naturals(THREE, FOUR)(three_is_natural, four_definition);
+}
 
 prove NATURALS_induction: *S(ZERO in S & *Y*Z(Y in S & is_successor(Y, Z) -> Z in S) -> is_subset(NATURALS, S)){
 	given |S|;
@@ -263,13 +273,13 @@ prove NATURALS_predecessor_closure: *N*M(N in NATURALS & is_successor(M, N) -> M
 //Define an "addition function"
 //It's quite a hefty definition, but it's just a stepping stone towards a better definition of addition
 //It is based on the definition of addition in Peano arithmetic
-define is_addition_function(F): is_function(F) & ^T(is_cross_product(NATURALS, NATURALS, T) & is_domain(F, T)) & is_codomain(F, NATURALS) & *X*Z(is_tuple(X, ZERO, Z) -> are_related(Z, X, F)) & *X*Y*SY*SXY*T0*T1*Z0*Z1(is_successor(Y, SY) & is_tuple(X, SY, T0) & are_related(T0, Z0, F) & is_tuple(X, Y, T1) & are_related(T1, Z1, F) & is_successor(Z1, SXY) -> equal_sets(Z0, SXY));
+define is_addition_function(F): is_function(F) & ^T(is_cross_product(NATURALS, NATURALS, T) & is_domain(F, T)) & is_codomain(F, NATURALS) & *X*Z(X in NATURALS & is_tuple(ZERO, X, Z) -> are_related(Z, X, F)) & *X*Y*T0*Z0(is_tuple(X, Y, T0) & are_related(T0, Z0, F) -> ^SX^T1^Z1(is_successor(X, SX) & is_tuple(SX, Y, T1) & are_related(T1, Z1, F) & is_successor(Z0, Z1)));
 
 //Prove that addition exists!
 //There are a lot of irrelevant results and definitions that need to be made for this proof
 //So I encapsulated them inside of this very large proof
 //The definition of an "addition function" characterizes the peano axioms of arithmetic
-prove addition_function_exists: ^F(is_addition_function(F)){
+prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION_FUNCTION)){
 	C_cross_product = cross_product(NATURALS, NATURALS)|C|;
 	C_def = expand(C_cross_product);
 	extract expand(NATURALS_inductive): empty_in_naturals, closure_naturals;
@@ -566,6 +576,7 @@ prove addition_function_exists: ^F(is_addition_function(F)){
 	}
 
 	//Next we prove a crucial lemma to the next important result, again using induction
+	//This result also shows the recursive peano axiom for addition
 	prove addition_classes_cover_lemma: *A(A in NATURALS -> *B*T*F*N(N in NATURALS & is_addition_class(N, F) & is_tuple(A, B, T) & T in F -> ^S^T1^N1^F1(is_successor(A, S) & is_successor(N, N1) & is_addition_class(N1, F1) & is_tuple(S, B, T1) & T1 in F1))){
 		//Again, we use induction!
 		R_def = axiom_specify[<Q: *B*T*F*N(N in NATURALS & is_addition_class(N, F) & is_tuple(Q, B, T) & T in F -> ^S^T1^N1^F1(is_successor(Q, S) & is_successor(N, N1) & is_addition_class(N1, F1) & is_tuple(S, B, T1) & T1 in F1))>](NATURALS)|R|;
@@ -780,6 +791,7 @@ prove addition_function_exists: ^F(is_addition_function(F)){
 	//FINALLY! IT'S TIME TO CONSTRUCT THE ADDITION FUNCTION!
 	//Here it is!
 	addition_function_definition = relation_existence_lemma[<T, Y: ^F(is_addition_class(Y, F) & T in F)>](C, NATURALS)|ADDITION_FUNCTION|;
+	choose ADDITION_FUNCTION;
 
 	//We must first prove that this is indeed a function
 	prove ADDITION_FUNCTION_is_function: *X*Y*Z(are_related(X, Y, ADDITION_FUNCTION) & are_related(X, Z, ADDITION_FUNCTION) -> equal_sets(Y, Z)){
@@ -802,5 +814,137 @@ prove addition_function_exists: ^F(is_addition_function(F)){
 	}
 
 	ADDITION_FUNCTION_is_function = #is_function(ADDITION_FUNCTION)(ADDITION_FUNCTION_is_function);
+
+	prove domain_C: *X(X in C -> ^Y(are_related(X, Y, ADDITION_FUNCTION))){
+		given |X|;
+		implies X_in_C;
+		extract C_def(X)(X_in_C)|X0, X1|: X0_in_NATURALS, X1_in_NATURALS, tuple_X;
+		extract addition_classes_cover(X1, X0)(X1_in_NATURALS, X0_in_NATURALS)|OTHER_X, Y, F|: tuple_OTHER_X, Y_in_NATURALS, addition_class_F, OTHER_X_in_F;
+		choose Y;
+		equal_X = tuple_unique(X0, X1, X, OTHER_X)(tuple_X, tuple_OTHER_X);
+		X_in_F = equality_consistency[<S: S in F>](X, OTHER_X)(equal_X)(OTHER_X_in_F);
+		prove related_XY: ^F(is_addition_class(Y, F) & X in F){
+			choose F;
+			return and(addition_class_F, X_in_F);
+		}
+		return addition_function_definition(X, Y)(X_in_C, Y_in_NATURALS, related_XY);
+	}
+
+	domain_C = #is_domain(ADDITION_FUNCTION, C)(domain_C);
+
+	prove domain_exists: ^T(is_cross_product(NATURALS, NATURALS, T) & is_domain(ADDITION_FUNCTION, T)){
+		choose C;
+		return and(C_cross_product, domain_C);
+	}
+
+	prove codomain_NATURALS: *X*Y(are_related(X, Y, ADDITION_FUNCTION) -> Y in NATURALS){
+		given |X, Y|;
+		implies related_XY;
+		extract addition_function_definition(X, Y)(related_XY): X_in_C, Y_in_NATURALS, addition_class_exists;
+		return Y_in_NATURALS;
+	}
+
+	codomain_NATURALS = #is_codomain(ADDITION_FUNCTION, NATURALS)(codomain_NATURALS);
+
+	prove zero_identity: *X*Z(X in NATURALS & is_tuple(ZERO, X, Z) -> are_related(Z, X, ADDITION_FUNCTION)){
+		given |X, Z|;
+		implies X_in_NATURALS, tuple_Z;
+		extract addition_classes_exist(X)(X_in_NATURALS)|F|: addition_class_F, F_subset_C;
+		Z_in_F = addition_class_initial_unique(X, Z, F, X)(addition_class_F, tuple_Z)(equal_sets_reflexive(X));
+		prove related_ZX: ^F(is_addition_class(X, F) & Z in F){
+			choose F;
+			return and(addition_class_F, Z_in_F);
+		}
+		Z_in_C = expand(F_subset_C)(Z)(Z_in_F);
+		return addition_function_definition(Z, X)(Z_in_C, X_in_NATURALS, related_ZX);
+	}
+
+	prove successor_recursion: *X*Y*T0*Z0(is_tuple(X, Y, T0) & are_related(T0, Z0, ADDITION_FUNCTION) -> ^SX^T1^Z1(is_successor(X, SX) & is_tuple(SX, Y, T1) & are_related(T1, Z1, ADDITION_FUNCTION) & is_successor(Z0, Z1))){
+		given |X, Y, T0, Z0|;
+		implies tuple_T0, related_T0Z0;
+		extract addition_function_definition(T0, Z0)(related_T0Z0): T0_in_C, Z0_in_NATURALS, addition_class_exists;
+		extract addition_class_exists|F0|: addition_class_F0, T0_in_F0;
+		extract C_def(T0)(T0_in_C)|OTHER_X, OTHER_Y|: OTHER_X_in_NATURALS, OTHER_Y_in_NATURALS, other_tuple_T0;
+		extract tuple_equal_condition(X, Y, OTHER_X, OTHER_Y, T0, T0)(tuple_T0, other_tuple_T0, equal_sets_reflexive(T0)): equal_X, equal_Y;
+		X_in_NATURALS = equality_consistency[<S: S in NATURALS>](X, OTHER_X)(equal_X)(OTHER_X_in_NATURALS);
+		Y_in_NATURALS = equality_consistency[<S: S in NATURALS>](Y, OTHER_Y)(equal_Y)(OTHER_Y_in_NATURALS);
+		extract addition_classes_cover_lemma(X)(X_in_NATURALS)(Y, T0, F0, Z0)(Z0_in_NATURALS, addition_class_F0, tuple_T0, T0_in_F0)|SX, T1, Z1, F1|: successor_SX, successor_Z1, addition_class_F1, tuple_T1, T1_in_F1;
+		choose SX, T1, Z1;
+		SX_in_NATURALS = closure_naturals(X, SX)(X_in_NATURALS, successor_SX);
+		prove T1_in_C: ^SX^Y(SX in NATURALS & Y in NATURALS & is_tuple(SX, Y, T1)){
+			choose SX, Y;
+			return and(SX_in_NATURALS, Y_in_NATURALS, tuple_T1);
+		}
+		T1_in_C = C_def(T1)(T1_in_C);
+		Z1_in_NATURALS = closure_naturals(Z0, Z1)(Z0_in_NATURALS, successor_Z1);
+		prove addition_class_exists: ^F1(is_addition_class(Z1, F1) & T1 in F1){
+			choose F1;
+			return and(addition_class_F1, T1_in_F1);
+		}
+		related_T1Z1 = addition_function_definition(T1, Z1)(T1_in_C, Z1_in_NATURALS, addition_class_exists);
+		return and(successor_SX, tuple_T1, related_T1Z1, successor_Z1);
+	}
+
+	//Holy shit!
+	return #is_addition_function(ADDITION_FUNCTION)(ADDITION_FUNCTION_is_function, domain_exists, codomain_NATURALS, zero_identity, successor_recursion);
+}
+
+naturals_addition_function_definition = addition_function_exists|NATURALS_ADDITION_FUNCTION|;
+
+define is_natural_sum(X, Y, Z): X in NATURALS & Y in NATURALS & ^T(is_tuple(X, Y, T) & are_related(T, Z, NATURALS_ADDITION_FUNCTION));
+
+prove natural_sum_zero_identity: *X(X in NATURALS -> is_natural_sum(ZERO, X, X)){
+	given |X|;
+	implies X_in_NATURALS;
+	extract expand(naturals_addition_function_definition): is_function, domain_exists, codomain_NATURALS, zero_identity, successor_recursion;
+	extract domain_exists|C|: cross_product_C, domain_C;
+	tuple_T = tuple(ZERO, X)|T|;
+	prove T_in_C: ^ZERO^X(ZERO in NATURALS & X in NATURALS & is_tuple(ZERO, X, T)){
+		choose ZERO, X;
+		return and(zero_is_natural, X_in_NATURALS, tuple_T);
+	}
+	T_in_C = expand(cross_product_C)(T)(T_in_C);
+	related_TX = zero_identity(X, T)(X_in_NATURALS, tuple_T);
+	prove natural_sum: ^T(is_tuple(ZERO, X, T) & are_related(T, X, NATURALS_ADDITION_FUNCTION)){
+		choose T;
+		return and(tuple_T, related_TX);
+	}
+	return #is_natural_sum(ZERO, X, X)(zero_is_natural, X_in_NATURALS, natural_sum);
+}
+
+prove natural_sum_successor_recursion: *X*Y*Z(is_natural_sum(X, Y, Z) -> ^X1^Z1(is_successor(X, X1) & is_successor(Z, Z1) & is_natural_sum(X1, Y, Z1))){
+	given |X, Y, Z|;
+	implies Z_natural_sum;
+	extract expand(NATURALS_inductive): empty_in_naturals, closure_naturals;
+	extract expand(Z_natural_sum): X_in_NATURALS, Y_in_NATURALS, T_exists;
+	extract T_exists|T|: tuple_T, related_TZ;
+	extract expand(naturals_addition_function_definition): is_function, domain_exists, codomain_NATURALS, zero_identity, successor_recursion;
+	extract successor_recursion(X, Y, T, Z)(tuple_T, related_TZ)|X1, T1, Z1|: successor_X1, tuple_T1, related_T1Z1, successor_Z1;
+	choose X1, Z1;
+	prove natural_sum: ^T1(is_tuple(X1, Y, T1) & are_related(T1, Z1, NATURALS_ADDITION_FUNCTION)){
+		choose T1;
+		return and(tuple_T1, related_T1Z1);
+	}
+	X1_in_NATURALS = closure_naturals(X, X1)(X_in_NATURALS, successor_X1);
+	natural_sum = #is_natural_sum(X1, Y, Z1)(X1_in_NATURALS, Y_in_NATURALS, natural_sum);
+	return and(successor_X1, successor_Z1, natural_sum);
+}
+
+//TIME TO PROVE THAT 2+2=4
+prove TWO_plus_TWO_is_FOUR: is_natural_sum(TWO, TWO, FOUR){
+	ZERO_plus_TWO = natural_sum_zero_identity(TWO)(two_is_natural);
+	exists = natural_sum_successor_recursion(ZERO, TWO, TWO)(ZERO_plus_TWO);
+	extract exists|OTHER_ONE, OTHER_THREE|: successor_OTHER_ONE, successor_OTHER_THREE, natural_sum;
+	equal_ONE = successor_unique(ZERO, ONE, OTHER_ONE)(one_definition, successor_OTHER_ONE);
+	equal_THREE = successor_unique(TWO, THREE, OTHER_THREE)(three_definition, successor_OTHER_THREE);
+	natural_sum = equality_consistency[<S: is_natural_sum(OTHER_ONE, TWO, S)>](THREE, OTHER_THREE)(equal_THREE)(natural_sum);
+	natural_sum = equality_consistency[<S: is_natural_sum(S, TWO, THREE)>](ONE, OTHER_ONE)(equal_ONE)(natural_sum);
+
+	exists = natural_sum_successor_recursion(ONE, TWO, THREE)(natural_sum);
+	extract exists|OTHER_TWO, OTHER_FOUR|: successor_OTHER_TWO, successor_OTHER_FOUR, natural_sum;
+	equal_TWO = successor_unique(ONE, TWO, OTHER_TWO)(two_definition, successor_OTHER_TWO);
+	equal_FOUR = successor_unique(THREE, FOUR, OTHER_FOUR)(four_definition, successor_OTHER_FOUR);
+	natural_sum = equality_consistency[<S: is_natural_sum(OTHER_TWO, TWO, S)>](FOUR, OTHER_FOUR)(equal_FOUR)(natural_sum);
+	return equality_consistency[<S: is_natural_sum(S, TWO, FOUR)>](TWO, OTHER_TWO)(equal_TWO)(natural_sum);
 }
 
