@@ -58,24 +58,24 @@ prove relation_existence_lemma[P(2)]: *A*B^C*X*Y(are_related(X, Y, C) <-> X in A
 		Y_in_B = equality_consistency[<S: S in B>](OTHER_Y, Y)(equal_Y)(OTHER_Y_in_B);
 		P_other = equality_consistency[<S: P(S, OTHER_Y)>](OTHER_X, X)(equal_X)(P_other);
 		P_XY = equality_consistency[<S: P(X, S)>](OTHER_Y, Y)(equal_Y)(P_other);
-		return and(X_in_A, Y_in_B, P_XY);
+		return X_in_A, Y_in_B, P_XY;
 	}
 	prove lemma1: X in A & Y in B & P(X, Y) -> are_related(X, Y, C){
 		implies X_in_A, Y_in_B, P_XY;
 		Z_tuple = tuple(X, Y)|Z|;
 		prove lemma: ^J^K(J in A & K in B & is_tuple(J, K, Z)){
 			choose X, Y;
-			return and(X_in_A, Y_in_B, Z_tuple);
+			return X_in_A, Y_in_B, Z_tuple;
 		}
 		Z_in_T = T_cross(Z)(lemma);
 		prove lemma: ^J^K(J in A & K in B & is_tuple(J, K, Z) & P(J, K)){
 			choose X, Y;
-			return and(X_in_A, Y_in_B, Z_tuple, P_XY);
+			return X_in_A, Y_in_B, Z_tuple, P_XY;
 		}
 		Z_in_C = C_specified(Z)(Z_in_T, lemma);
 		prove related_def: ^S(S in C & is_tuple(X, Y, S)){
 			choose Z;
-			return and(Z_in_C, Z_tuple);
+			return Z_in_C, Z_tuple;
 		}
 		return #are_related(X, Y, C)(related_def);
 	}
@@ -177,7 +177,7 @@ prove equivalence_classes_class: *A*R*C(is_equivalence_relation(R, A) & is_equiv
 			prove lemma0: Y in D -> Y in A & are_related(X, Y, R){
 				implies Y_in_D;
 				extract D_def(Y)(Y_in_D): Y_in_A, related;
-				return and(Y_in_A, related);
+				return Y_in_A, related;
 			}
 			prove lemma1: Y in A & are_related(X, Y, R) -> Y in D{
 				implies premises;
@@ -185,11 +185,11 @@ prove equivalence_classes_class: *A*R*C(is_equivalence_relation(R, A) & is_equiv
 			}
 			return iff(lemma0, lemma1);
 		}
-		return and(X_in_A, right_def);
+		return X_in_A, right_def;
 	}
 	equiv_class = #is_equivalence_class(R, A, D)(equiv_class_def);
 	D_in_C = expand(equiv_classes)(D)(equiv_class);
-	return and(D_in_C, X_in_D);
+	return D_in_C, X_in_D;
 }
 
 //Prove that equivalence classes, if they exist, are unique

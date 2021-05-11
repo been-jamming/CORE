@@ -176,14 +176,14 @@ prove successor: *A^B(is_successor(A, B)){
 			return branch(premise, X_in_A, equal_XA){
 				prove union_def: ^Y(Y in D & X in Y){
 					choose A;
-					return and(expand(pair_AC)(A)(or(equal_sets_reflexive(A), <:equal_sets(A, C)>)), X_in_A);
+					return expand(pair_AC)(A)(or(equal_sets_reflexive(A), <:equal_sets(A, C)>)), X_in_A;
 				}
 				return expand(union_B)(X)(union_def);
 			} or {
 				X_in_C = expand(pair_AA)(X)(or(equal_XA, equal_XA));
 				prove union_def: ^Y(Y in D & X in Y){
 					choose C;
-					return and(expand(pair_AC)(C)(or(<:equal_sets(C, A)>, equal_sets_reflexive(C))), X_in_C);
+					return expand(pair_AC)(C)(or(<:equal_sets(C, A)>, equal_sets_reflexive(C))), X_in_C;
 				}
 				return expand(union_B)(X)(union_def);
 			};

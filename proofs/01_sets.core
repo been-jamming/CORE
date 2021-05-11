@@ -170,7 +170,7 @@ prove tuple: *A*B^C(is_tuple(A, B, C)){
 	choose C;
 	prove tuple_def: ^E^F(is_pair(A, A, E) & is_pair(A, B, F) & is_pair(E, F, C)){
 		choose E, F;
-		return and(E_pair, F_pair, C_pair);
+		return E_pair, F_pair, C_pair;
 	}
 	return #is_tuple(A, B, C)(tuple_def);
 }
@@ -246,11 +246,11 @@ prove tuple_equal_condition: *A*B*C*D*E*F(is_tuple(A, B, E) & is_tuple(C, D, F) 
 			} or {
 				return equal_sets_symmetric(D, B)(DB);
 			};
-			return and(AC, BD);
+			return AC, BD;
 		} or {
 			//Case 2
 			//(This case is trivial)
-			return and(AC, BD);
+			return AC, BD;
 		};
 	} or {
 		return branch(BC_or_BD, BC, BD){
@@ -266,7 +266,7 @@ prove tuple_equal_condition: *A*B*C*D*E*F(is_tuple(A, B, E) & is_tuple(C, D, F) 
 			};
 			AC = equal_sets_transitive(A, D, C)(AD, DC);
 			BD = equal_sets_transitive(B, C, D)(BC, equal_sets_symmetric(D, C)(DC));
-			return and(AC, BD);
+			return AC, BD;
 		} or {
 			//Case 4
 			//The final case
@@ -277,7 +277,7 @@ prove tuple_equal_condition: *A*B*C*D*E*F(is_tuple(A, B, E) & is_tuple(C, D, F) 
 				CA = equal_sets_transitive(C, B, A)(CB, BA);
 				return equal_sets_symmetric(C, A)(CA);
 			};
-			return and(AC, BD);
+			return AC, BD;
 		};
 	};
 }
@@ -337,7 +337,7 @@ prove pairs: *A*B^C(is_pairs(A, B, C)){
 			Z_in_U = U_union(B, Z)(Q_contains_B, Z_in_B);
 			prove lemma: ^Y^Z(Y in U & Z in U & is_pair(Y, Z, X)){
 				choose Y, Z;
-				return and(Y_in_U, Z_in_U, pair_X);
+				return Y_in_U, Z_in_U, pair_X;
 			}
 			X_subset_U = pair_subset(U, X)(lemma);
 			X_in_P = P_power_set(X)(X_subset_U);
@@ -374,17 +374,17 @@ prove cross_product: *A*B^C(is_cross_product(A, B, C)){
 			extract tuple_X|PAIR_DD, PAIR_DE|: pair_DD, pair_DE, pair_X;
 			prove lemma: ^J^K(J in A & K in A & is_pair(J, K, PAIR_DD)){
 				choose D, D;
-				return and(D_in_A, D_in_A, pair_DD);
+				return D_in_A, D_in_A, pair_DD;
 			}
 			PAIR_DD_in_PAIRS_AA = pairs_AA(PAIR_DD)(lemma);
 			prove lemma: ^J^K(J in A & K in B & is_pair(J, K, PAIR_DE)){
 				choose D, E;
-				return and(D_in_A, E_in_B, pair_DE);
+				return D_in_A, E_in_B, pair_DE;
 			}
 			PAIR_DE_in_PAIRS_AB = pairs_AB(PAIR_DE)(lemma);
 			prove lemma: ^J^K(J in PAIRS_AA & K in PAIRS_AB & is_pair(J, K, X)){
 				choose PAIR_DD, PAIR_DE;
-				return and(PAIR_DD_in_PAIRS_AA, PAIR_DE_in_PAIRS_AB, pair_X);
+				return PAIR_DD_in_PAIRS_AA, PAIR_DE_in_PAIRS_AB, pair_X;
 			}
 			X_in_CBIG = CBIG_def(X)(lemma);
 			return C_def(X)(X_in_CBIG, DE_exist);
@@ -416,7 +416,7 @@ prove intersection: *A(not_empty(A) -> ^B(is_intersection(A, B))){
 			X_in_S = intersect_condition(S)(S_in_A);
 			prove lemma: ^S(S in A & X in S){
 				choose S;
-				return and(S_in_A, X_in_S);
+				return S_in_A, X_in_S;
 			}
 			X_in_U = U_union(X)(lemma);
 			return B_def(X)(X_in_U, intersect_condition);

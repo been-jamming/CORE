@@ -377,8 +377,12 @@ variable *assign_command(char **c){
 }
 
 statement *return_command(char **c){
-	unsigned char is_verified;
+	unsigned char is_verified = 1;
+	unsigned char arg_verified;
 	statement *output;
+	statement *last_parent = NULL;
+	statement *s;
+	statement *new;
 
 	skip_whitespace(c);
 	if(strncmp(*c, "return", 6) || is_alphanumeric((*c)[6])){
@@ -387,23 +391,71 @@ statement *return_command(char **c){
 
 	*c += 6;
 	skip_whitespace(c);
+
 	output = parse_statement_value(c, &is_verified);
 	if(!output){
 		fprintf(stderr, "Error: could not parse statement value\n");
 		error(1);
 	}
-	skip_whitespace(c);
-	if(**c != ';'){
+	if(output->num_bound_props || output->num_bound_vars){
 		free_statement(output);
-		fprintf(stderr, "Error: expected ';'\n");
+		fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
 		error(1);
 	}
+	skip_whitespace(c);
+
+	if(**c != ';' && **c != ','){
+		fprintf(stderr, "Error: expected ';' or ','\n");
+		error(1);
+	}
+
+	while(**c != ';'){
+		++*c;
+		skip_whitespace(c);
+		arg_verified = 1;
+		s = parse_statement_value(c, &arg_verified);
+		if(!s){
+			fprintf(stderr, "Error: could not parse statement value\n");
+			error(1);
+		}
+		if(s->num_bound_props || s->num_bound_vars){
+			fprintf(stderr, "Error: expected operand to have no bound variables or propositions\n");
+			error(1);
+		}
+		is_verified = is_verified && arg_verified;
+		new = create_statement(AND, 0, 0);
+		if(!last_parent){
+			last_parent = new;
+			last_parent->child0 = output;
+			last_parent->child1 = s;
+			last_parent->child0->parent = last_parent;
+			last_parent->child1->parent = last_parent;
+			output = last_parent;
+		} else {
+			new->child0 = last_parent->child1;
+			new->child1 = s;
+			new->child0->parent = new;
+			new->child1->parent = new;
+			last_parent->child1 = new;
+			last_parent->child1->parent = last_parent;
+			last_parent = new;
+		}
+
+		skip_whitespace(c);
+		if(**c != ';' && **c != ','){
+			free_statement(output);
+			fprintf(stderr, "Error: expected ',' or ';'\n");
+			error(1);
+		}
+	}
+
+	++*c;
+
 	if(!is_verified){
 		free_statement(output);
-		fprintf(stderr, "Error: statement must be verified\n");
+		fprintf(stderr, "Error: statements must be verified\n");
 		error(1);
 	}
-	++*c;
 
 	return output;
 }
