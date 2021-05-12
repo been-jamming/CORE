@@ -1120,3 +1120,67 @@ prove natural_sum_commutative: *X*Y*Z(is_natural_sum(X, Y, Z) -> is_natural_sum(
 	return result(Y, Z)(sum_Z);
 }
 
+//Prove that addition is associative
+prove natural_sum_associative: *X*Y*Z*S*SXY*SYZ(is_natural_sum(X, Y, SXY) & is_natural_sum(SXY, Z, S) & is_natural_sum(Y, Z, SYZ) -> is_natural_sum(X, SYZ, S)){
+	extract expand(NATURALS_inductive): empty_in_NATURALS, closure_naturals;
+	//By induction
+	R_def = axiom_specify[<Q: *Y*Z*S*SXY*SYZ(is_natural_sum(Q, Y, SXY) & is_natural_sum(SXY, Z, S) & is_natural_sum(Y, Z, SYZ) -> is_natural_sum(Q, SYZ, S))>](NATURALS)|R|;
+	prove ZERO_in_R: *Y*Z*S*SXY*SYZ(is_natural_sum(ZERO, Y, SXY) & is_natural_sum(SXY, Z, S) & is_natural_sum(Y, Z, SYZ) -> is_natural_sum(ZERO, SYZ, S)){
+		given |Y, Z, S, SXY, SYZ|;
+		implies sum_SXY, sum_S, sum_SYZ;
+		extract expand(sum_SXY): ZERO_in_NATURALS, Y_in_NATURALS, tuple_exists;
+		extract expand(sum_S): SXY_in_NATURALS, Z_in_NATURALS, tuple_exists;
+		other_sum_SXY = natural_sum_zero_identity(Y)(Y_in_NATURALS);
+		equal_Y_SXY = natural_sum_unique(ZERO, Y, Y, SXY)(other_sum_SXY, sum_SXY);
+		sum_S = equality_consistency[<Q: is_natural_sum(Q, Z, S)>](Y, SXY)(equal_Y_SXY)(sum_S);
+		equal_S_SYZ = natural_sum_unique(Y, Z, S, SYZ)(sum_S, sum_SYZ);
+		
+		extract natural_sum(Y, Z)(Y_in_NATURALS, Z_in_NATURALS)|OTHER_S|: OTHER_S_in_NATURALS, other_sum_S;
+		equal_S = natural_sum_unique(Y, Z, S, OTHER_S)(sum_S, other_sum_S);
+		S_in_NATURALS = equality_consistency[<Q: Q in NATURALS>](S, OTHER_S)(equal_S)(OTHER_S_in_NATURALS);
+
+		sum_S = natural_sum_zero_identity(S)(S_in_NATURALS);
+		return equality_consistency[<Q: is_natural_sum(ZERO, Q, S)>](S, SYZ)(equal_S_SYZ)(sum_S);
+	}
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+	prove closure_R: *K*K1(K in R & is_successor(K, K1) -> K1 in R){
+		given |K, K1|;
+		implies K_in_R, successor_K1;
+		extract R_def(K)(K_in_R): K_in_NATURALS, K_condition;
+		K1_in_NATURALS = closure_naturals(K, K1)(K_in_NATURALS, successor_K1);
+		prove K1_in_R: *Y*Z*S*SXY*SYZ(is_natural_sum(K1, Y, SXY) & is_natural_sum(SXY, Z, S) & is_natural_sum(Y, Z, SYZ) -> is_natural_sum(K1, SYZ, S)){
+			given |Y, Z, S, SXY, SYZ|;
+			implies sum_SXY, sum_S, sum_SYZ;
+			extract expand(sum_SYZ): Y_in_NATURALS, Z_in_NATURALS, tuple_exists;
+			extract natural_sum(K, Y)(K_in_NATURALS, Y_in_NATURALS)|P_SXY|: P_SXY_in_NATURALS, sum_P_SXY;
+			extract natural_sum_successor_recursion(K, Y, P_SXY)(sum_P_SXY)|OTHER_K1, OTHER_SXY|: other_successor_K1, other_successor_SXY, other_sum_SXY;
+			equal_K1 = successor_unique(K, K1, OTHER_K1)(successor_K1, other_successor_K1);
+			other_sum_SXY = equality_consistency[<Q: is_natural_sum(Q, Y, OTHER_SXY)>](K1, OTHER_K1)(equal_K1)(other_sum_SXY);
+			equal_SXY = natural_sum_unique(K1, Y, SXY, OTHER_SXY)(sum_SXY, other_sum_SXY);
+			successor_SXY = equality_consistency[<Q: is_successor(P_SXY, Q)>](SXY, OTHER_SXY)(equal_SXY)(other_successor_SXY);
+
+			extract natural_sum(P_SXY, Z)(P_SXY_in_NATURALS, Z_in_NATURALS)|P_S|: P_S_in_NATURALS, sum_P_S;
+			extract natural_sum_successor_recursion(P_SXY, Z, P_S)(sum_P_S)|OTHER_SXY_2, OTHER_S|: other_successor_SXY, other_successor_S, other_sum_S;
+			equal_SXY = successor_unique(P_SXY, SXY, OTHER_SXY_2)(successor_SXY, other_successor_SXY);
+			other_sum_S = equality_consistency[<Q: is_natural_sum(Q, Z, OTHER_S)>](SXY, OTHER_SXY_2)(equal_SXY)(other_sum_S);
+			equal_S = natural_sum_unique(SXY, Z, S, OTHER_S)(sum_S, other_sum_S);
+			successor_S = equality_consistency[<Q: is_successor(P_S, Q)>](S, OTHER_S)(equal_S)(other_successor_S);
+
+			sum_P_S = K_condition(Y, Z, P_S, P_SXY, SYZ)(sum_P_SXY, sum_P_S, sum_SYZ);
+			extract natural_sum_successor_recursion(K, SYZ, P_S)(sum_P_S)|OTHER_K1_2, OTHER_S_2|: other_successor_K1, other_successor_S, other_sum_S;
+			equal_K1 = successor_unique(K, K1, OTHER_K1_2)(successor_K1, other_successor_K1);
+			other_sum_S = equality_consistency[<Q: is_natural_sum(Q, SYZ, OTHER_S_2)>](K1, OTHER_K1_2)(equal_K1)(other_sum_S);
+			equal_S = successor_unique(P_S, S, OTHER_S_2)(successor_S, other_successor_S);
+			return equality_consistency[<Q: is_natural_sum(K1, SYZ, Q)>](S, OTHER_S_2)(equal_S)(other_sum_S);
+		}
+		return R_def(K1)(K1_in_NATURALS, K1_in_R);
+	}
+	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+	given |X, Y, Z, S, SXY, SYZ|;
+	implies sum_SXY, sum_S, sum_SYZ;
+	extract expand(sum_SXY): X_in_NATURALS, Y_in_NATURALS, tuple_exists;
+	X_in_R = expand(NATURALS_subset_R)(X)(X_in_NATURALS);
+	extract R_def(X)(X_in_R): X_in_NATURALS, result;
+	return result(Y, Z, S, SXY, SYZ)(sum_SXY, sum_S, sum_SYZ);
+}
+
