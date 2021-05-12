@@ -1167,6 +1167,7 @@ prove natural_sum_associative: *X*Y*Z*S*SXY*SYZ(is_natural_sum(X, Y, SXY) & is_n
 			successor_S = equality_consistency[<Q: is_successor(P_S, Q)>](S, OTHER_S)(equal_S)(other_successor_S);
 
 			sum_P_S = K_condition(Y, Z, P_S, P_SXY, SYZ)(sum_P_SXY, sum_P_S, sum_SYZ);
+
 			extract natural_sum_successor_recursion(K, SYZ, P_S)(sum_P_S)|OTHER_K1_2, OTHER_S_2|: other_successor_K1, other_successor_S, other_sum_S;
 			equal_K1 = successor_unique(K, K1, OTHER_K1_2)(successor_K1, other_successor_K1);
 			other_sum_S = equality_consistency[<Q: is_natural_sum(Q, SYZ, OTHER_S_2)>](K1, OTHER_K1_2)(equal_K1)(other_sum_S);

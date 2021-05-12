@@ -239,3 +239,17 @@ axiom axiom_power_set: *X^Y*Z(is_subset(Z, X) -> Z in Y);
 
 //These are all of the ZF axioms
 
+//Finally, I want to show that the inverse of the axiom of extensionality can also be proven
+prove axiom_extensionality_inverse: *A*B(*W(A in W <-> B in W) -> equal_sets(A, B)){
+	given |A, B|;
+	implies premise;
+	pair_U = expand(pair(B, B)|U|);
+	B_in_U = pair_U(B)(or(equal_sets_reflexive(B), equal_sets_reflexive(B)));
+	A_in_U = premise(U)(B_in_U);
+	return branch(pair_U(A)(A_in_U), equal_A_B, equal_A_B){
+		return equal_A_B;
+	} or {
+		return equal_A_B;
+	};
+}
+
