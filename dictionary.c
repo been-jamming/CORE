@@ -1,7 +1,8 @@
-#include "dictionary.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "dictionary.h"
+#include "custom_malloc.h"
 
 dictionary create_dictionary(void *value){
 	dictionary output = (dictionary) {.value = value};

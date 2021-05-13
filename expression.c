@@ -4,6 +4,7 @@
 #include "dictionary.h"
 #include "proposition.h"
 #include "expression.h"
+#include "custom_malloc.h"
 
 char *program_text;
 statement *goals[MAX_DEPTH];

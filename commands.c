@@ -4,6 +4,7 @@
 #include "dictionary.h"
 #include "proposition.h"
 #include "expression.h"
+#include "custom_malloc.h"
 
 void init_verifier(){
 	int i;
@@ -1271,6 +1272,10 @@ int main(int argc, char **argv){
 		return 1;
 	}
 
+#ifdef USE_CUSTOM_ALLOC
+	custom_malloc_init();
+#endif
+
 	init_verifier();
 	
 	for(i = 1; i < argc; i++){
@@ -1301,6 +1306,10 @@ int main(int argc, char **argv){
 	}
 	free_dictionary(variables, free_variable_void);
 	free_dictionary(definitions, free_proposition_void);
+
+#ifdef USE_CUSTOM_ALLOC
+	custom_malloc_deinit();
+#endif
 
 	printf("Proof validation successful.\n");
 	return 0;

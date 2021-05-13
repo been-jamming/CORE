@@ -4,6 +4,7 @@
 #include <string.h>
 #include "dictionary.h"
 #include "proposition.h"
+#include "custom_malloc.h"
 
 unsigned int current_depth;
 dictionary variables[MAX_DEPTH];
@@ -62,6 +63,9 @@ void error(int error_code){
 	}
 	fprintf(stderr, "\n%*c^\n", (int) (error_place - line_start), ' ');
 
+#ifdef USE_CUSTOM_ALLOC
+	custom_malloc_abort();
+#endif
 	exit(error_code);
 }
 

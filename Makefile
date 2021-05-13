@@ -1,9 +1,12 @@
 CC = gcc
 DEL = rm
-FLAGS = -Wall
+FLAGS = -Wall -DUSE_CUSTOM_ALLOC
 
-core: commands.c dictionary.o proposition.o expression.o
-	$(CC) commands.c expression.o proposition.o dictionary.o $(FLAGS) -o core
+core: commands.c custom_malloc.o dictionary.o proposition.o expression.o
+	$(CC) commands.c expression.o proposition.o dictionary.o custom_malloc.o $(FLAGS) -o core
+
+custom_malloc.o: custom_malloc.c
+	$(CC) custom_malloc.c -c $(FLAGS)
 
 dictionary.o: dictionary.c
 	$(CC) dictionary.c -c $(FLAGS)
