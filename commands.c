@@ -413,7 +413,6 @@ statement *return_command(char **c){
 	while(**c != ';'){
 		++*c;
 		skip_whitespace(c);
-		arg_verified = 1;
 		s = parse_statement_value(c, &arg_verified);
 		if(!s){
 			fprintf(stderr, "Error: could not parse statement value\n");

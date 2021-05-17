@@ -18,6 +18,7 @@ expression.o: expression.c
 	$(CC) expression.c -c $(FLAGS)
 
 clean:
+	$(DEL) custom_malloc.o
 	$(DEL) dictionary.o
 	$(DEL) proposition.o
 	$(DEL) expression.o

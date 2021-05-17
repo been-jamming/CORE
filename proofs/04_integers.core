@@ -1,0 +1,46 @@
+//Next we prove that the integers exist!
+//We construct them as equivalence classes of pairs of natural numbers
+//(A, B) is the representative for A - B
+
+NATURALS_X_NATURALS_definition = cross_product(NATURALS, NATURALS)|NATURALS_X_NATURALS|;
+
+prove integer_def_relation_exists: ^R*T0*T1(are_related(T0, T1, R) <-> T0 in NATURALS_X_NATURALS & T1 in NATURALS_X_NATURALS & *X0*Y0*X1*Y1(is_tuple(X0, Y0, T0) & is_tuple(X1, Y1, T1) -> ^S(is_natural_sum(X0, Y1, S) & is_natural_sum(X1, Y0, S)))){
+	R_def = relation_existence_lemma[<T0, T1: *X0*Y0*X1*Y1(is_tuple(X0, Y0, T0) & is_tuple(X1, Y1, T1) -> ^S(is_natural_sum(X0, Y1, S) & is_natural_sum(X1, Y0, S)))>](NATURALS_X_NATURALS, NATURALS_X_NATURALS)|R|;
+	choose R;
+	given |T0, T1|;
+	prove lemma0: are_related(T0, T1, R) -> T0 in NATURALS_X_NATURALS & T1 in NATURALS_X_NATURALS & *X0*Y0*X1*Y1(is_tuple(X0, Y0, T0) & is_tuple(X1, Y1, T1) -> ^S(is_natural_sum(X0, Y1, S) & is_natural_sum(X1, Y0, S))){
+		implies related_R;
+		return R_def(T0, T1)(related_R);
+	}
+	prove lemma1: T0 in NATURALS_X_NATURALS & T1 in NATURALS_X_NATURALS & *X0*Y0*X1*Y1(is_tuple(X0, Y0, T0) & is_tuple(X1, Y1, T1) -> ^S(is_natural_sum(X0, Y1, S) & is_natural_sum(X1, Y0, S))) -> are_related(T0, T1, R){
+		implies R_condition;
+		return R_def(T0, T1)(R_condition);
+	}
+	return iff(lemma0, lemma1);
+}
+
+integer_def_relation_def = integer_def_relation_exists|INTEGER_DEFINITION_RELATION|;
+
+prove integer_def_relation_reflexive: *T(T in NATURALS_X_NATURALS -> are_related(T, T, INTEGER_DEFINITION_RELATION)){
+	given |T|;
+	implies T_in_NATURALS_X_NATURALS;
+	prove related_condition: *X0*Y0*X1*Y1(is_tuple(X0, Y0, T) & is_tuple(X1, Y1, T) -> ^S(is_natural_sum(X0, Y1, S) & is_natural_sum(X1, Y0, S))){
+		given |X0, Y0, X1, Y1|;
+		implies tuple0, tuple1;
+		extract tuple_equal_condition(X0, Y0, X1, Y1, T, T)(tuple0, tuple1, equal_sets_reflexive(T)): equal_X, equal_Y;
+		extract expand(NATURALS_X_NATURALS_definition)(T)(T_in_NATURALS_X_NATURALS)|X, Y|: X_in_NATURALS, Y_in_NATURALS, tuple_T;
+		extract tuple_equal_condition(X0, Y0, X, Y, T, T)(tuple0, tuple_T, equal_sets_reflexive(T)): equal_X0, equal_Y0;
+		X0_in_NATURALS = equality_consistency[<Q: Q in NATURALS>](X0, X)(equal_X0)(X_in_NATURALS);
+		extract tuple_equal_condition(X1, Y1, X, Y, T, T)(tuple1, tuple_T, equal_sets_reflexive(T)): equal_X1, equal_Y1;
+		Y1_in_NATURALS = equality_consistency[<Q: Q in NATURALS>](Y1, Y)(equal_Y1)(Y_in_NATURALS);
+		extract natural_sum(X0, Y1)(X0_in_NATURALS, Y1_in_NATURALS)|S|: S_in_NATURALS, sum_S;
+		choose S;
+		other_sum_S = equality_consistency[<Q: is_natural_sum(Q, Y1, S)>](X0, X1)(equal_X)(sum_S);
+		other_sum_S = equality_consistency[<Q: is_natural_sum(X1, Q, S)>](Y0, Y1)(equal_Y)(other_sum_S);
+		return sum_S, other_sum_S;
+	}
+	return integer_def_relation_def(T, T)(T_in_NATURALS_X_NATURALS, T_in_NATURALS_X_NATURALS, related_condition);
+}
+
+integer_def_relation_reflexive = #is_reflexive(INTEGER_DEFINITION_RELATION, NATURALS_X_NATURALS)(integer_def_relation_reflexive);
+print integer_def_relation_reflexive;

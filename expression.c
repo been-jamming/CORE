@@ -10,7 +10,7 @@ char *program_text;
 statement *goals[MAX_DEPTH];
 unsigned int goal_depth;
 
-static statement *parse_statement_value_recursive(char **c, unsigned char *is_verified, unsigned char *did_bind);
+static statement *parse_statement_value_recursive(char **c, unsigned char *is_verified);
 
 unsigned int umax(unsigned int a, unsigned int b){
 	if(a > b){
@@ -1149,7 +1149,7 @@ statement *parse_statement_value_builtin(char **c, unsigned char *is_verified){
 	return NULL;
 }
 
-statement *parse_statement_value_pipe(char **c, statement *output, unsigned char *is_verified, unsigned char *did_bind){
+statement *parse_statement_value_pipe(char **c, statement *output, unsigned char *is_verified){
 	statement *next_output;
 	variable *var;
 	char var_name[256];
@@ -1187,7 +1187,6 @@ statement *parse_statement_value_pipe(char **c, statement *output, unsigned char
 		}
 		output = next_output;
 		add_bound_variables(output, -1);
-		*did_bind = 1;
 
 		if(**c != ',' && **c != '|'){
 			fprintf(stderr, "Error: expected ',' or '|'\n");
@@ -1203,7 +1202,7 @@ statement *parse_statement_value_pipe(char **c, statement *output, unsigned char
 	return output;
 }
 
-statement *parse_statement_value_parentheses(char **c, statement *output, unsigned char *is_verified, unsigned char *did_bind){
+statement *parse_statement_value_parentheses(char **c, statement *output, unsigned char *is_verified){
 	statement_type compare_type;
 	statement *next_output;
 	statement *arg;
@@ -1374,7 +1373,7 @@ statement *parse_anonymous_definition(char **c){
 	return output;
 }
 
-static statement *parse_statement_value_recursive(char **c, unsigned char *is_verified, unsigned char *did_bind){
+static statement *parse_statement_value_recursive(char **c, unsigned char *is_verified){
 	statement *output;
 
 	skip_whitespace(c);
@@ -1382,7 +1381,7 @@ static statement *parse_statement_value_recursive(char **c, unsigned char *is_ve
 		//pass
 	} else if(**c == '('){
 		++*c;
-		output = parse_statement_value_recursive(c, is_verified, did_bind);
+		output = parse_statement_value_recursive(c, is_verified);
 		if(**c != ')'){
 			if(output){
 				free_statement(output);
@@ -1409,10 +1408,14 @@ static statement *parse_statement_value_recursive(char **c, unsigned char *is_ve
 			}
 		} else if(**c == '('){
 			++*c;
-			output = parse_statement_value_parentheses(c, output, is_verified, did_bind);
+			output = parse_statement_value_parentheses(c, output, is_verified);
 		} else if(**c == '|'){
+			if(!*is_verified){
+				fprintf(stderr, "Error: cannot bind variable in unverified statement\n");
+				error(1);
+			}
 			++*c;
-			output = parse_statement_value_pipe(c, output, is_verified, did_bind);
+			output = parse_statement_value_pipe(c, output, is_verified);
 		} else {
 			free_statement(output);
 			return NULL;
@@ -1424,16 +1427,10 @@ static statement *parse_statement_value_recursive(char **c, unsigned char *is_ve
 }
 
 statement *parse_statement_value(char **c, unsigned char *is_verified){
-	unsigned char did_bind = 0;
 	statement *output;
 
 	*is_verified = 1;
-	output = parse_statement_value_recursive(c, is_verified, &did_bind);
-	if(output && !*is_verified && did_bind){
-		free_statement(output);
-		fprintf(stderr, "Error: cannot bind variable in unverified statement\n");
-		error(1);
-	}
+	output = parse_statement_value_recursive(c, is_verified);
 
 	return output;
 }
