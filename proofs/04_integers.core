@@ -43,4 +43,34 @@ prove integer_def_relation_reflexive: *T(T in NATURALS_X_NATURALS -> are_related
 }
 
 integer_def_relation_reflexive = #is_reflexive(INTEGER_DEFINITION_RELATION, NATURALS_X_NATURALS)(integer_def_relation_reflexive);
-print integer_def_relation_reflexive;
+
+prove integer_def_relation_symmetric: *S*T(are_related(S, T, INTEGER_DEFINITION_RELATION) -> are_related(T, S, INTEGER_DEFINITION_RELATION)){
+	given |S, T|;
+	implies related_ST;
+	extract integer_def_relation_def(S, T)(related_ST): S_in_NATURALS_X_NATURALS, T_in_NATURALS_X_NATURALS, condition_ST;
+	prove condition_TS: *X0*Y0*X1*Y1(is_tuple(X0, Y0, T) & is_tuple(X1, Y1, S) -> ^SUM(is_natural_sum(X0, Y1, SUM) & is_natural_sum(X1, Y0, SUM))){
+		given |X0, Y0, X1, Y1|;
+		implies tuple_T, tuple_S;
+		extract condition_ST(X1, Y1, X0, Y0)(tuple_S, tuple_T)|SUM|: sum1, sum0;
+		choose SUM;
+		return sum0, sum1;
+	}
+	return integer_def_relation_def(T, S)(T_in_NATURALS_X_NATURALS, S_in_NATURALS_X_NATURALS, condition_TS);
+}
+
+integer_def_relation_symmetric = #is_symmetric(INTEGER_DEFINITION_RELATION)(integer_def_relation_symmetric);
+
+prove integer_def_relation_transitive: *R*S*T(are_related(R, S, INTEGER_DEFINITION_RELATION) & are_related(S, T, INTEGER_DEFINITION_RELATION) -> are_related(R, T, INTEGER_DEFINITION_RELATION)){
+	given |R, S, T|;
+	implies related_RS, related_ST;
+	extract integer_def_relation_def(R, S)(related_RS): R_in_NATURALS_X_NATURALS, S_in_NATURALS_X_NATURALS, condition_RS;
+	extract integer_def_relation_def(S, T)(related_ST): S_in_NATURALS_X_NATURALS, T_in_NATURALS_X_NATURALS, condition_ST;
+	prove condition_RT: *X0*Y0*X1*Y1(is_tuple(X0, Y0, R) & is_tuple(X1, Y1, T) -> ^SUM(is_natural_sum(X0, Y1, SUM) & is_natural_sum(X1, Y0, SUM))){
+		given |X0, Y0, X1, Y1|;
+		implies tuple_R, tuple_T;
+		extract expand(NATURALS_X_NATURALS_definition)(S)(S_in_NATURALS_X_NATURALS)|XS, YS|: XS_in_NATURALS, YS_in_NATURALS, tuple_S;
+		extract condition_RS(X0, Y0, XS, YS)(tuple_R, tuple_S)|SUM|: sum_X0_YS, sum_XS_Y0;
+		extract condition_ST(XS, YS, X1, Y1)(tuple_S, tuple_T)|OTHER_SUM|: sum_XS_Y1, sum_X1_YS;
+	}
+}
+
