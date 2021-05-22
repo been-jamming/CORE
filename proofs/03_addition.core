@@ -987,6 +987,16 @@ prove natural_sum_unique: *X*Y*Z0*Z1(is_natural_sum(X, Y, Z0) & is_natural_sum(X
 	return expand(is_function)(T0, Z0, Z1)(related_T0_Z0, related_T0_Z1);
 }
 
+//Prove that if a natural sum exists then the sum must be a natural number
+prove natural_sum_is_natural: *X*Y*Z(is_natural_sum(X, Y, Z) -> Z in NATURALS){
+	given |X, Y, Z|;
+	implies sum_Z;
+	extract expand(sum_Z): X_in_NATURALS, Y_in_NATURALS, tuple_exists;
+	extract natural_sum(X, Y)(X_in_NATURALS, Y_in_NATURALS)|OTHER_Z|: OTHER_Z_in_NATURALS, other_sum_Z;
+	equal_Z = natural_sum_unique(X, Y, Z, OTHER_Z)(sum_Z, other_sum_Z);
+	return equality_consistency[<Q: Q in NATURALS>](Z, OTHER_Z)(equal_Z)(OTHER_Z_in_NATURALS);
+}
+
 //Prove that addition commutes
 //This is also a big theorem
 prove natural_sum_commutative: *X*Y*Z(is_natural_sum(X, Y, Z) -> is_natural_sum(Y, X, Z)){
@@ -1183,6 +1193,18 @@ prove natural_sum_associative: *X*Y*Z*S*SXY*SYZ(is_natural_sum(X, Y, SXY) & is_n
 	X_in_R = expand(NATURALS_subset_R)(X)(X_in_NATURALS);
 	extract R_def(X)(X_in_R): X_in_NATURALS, result;
 	return result(Y, Z, S, SXY, SYZ)(sum_SXY, sum_S, sum_SYZ);
+}
+
+//Prove associativity in the other direction
+//We can actually just use the previous proof and commutativity. Watch!
+prove natural_sum_associative2: *X*Y*Z*S*SXY*SYZ(is_natural_sum(Y, Z, SYZ) & is_natural_sum(X, SYZ, S) & is_natural_sum(X, Y, SXY) -> is_natural_sum(SXY, Z, S)){
+	given |X, Y, Z, S, SXY, SYZ|;
+	implies sum_SYZ, sum_S, sum_SXY;
+	sum_S = natural_sum_commutative(X, SYZ, S)(sum_S);
+	sum_SYZ = natural_sum_commutative(Y, Z, SYZ)(sum_SYZ);
+	sum_SXY = natural_sum_commutative(X, Y, SXY)(sum_SXY);
+	sum_S = natural_sum_associative(Z, Y, X, S, SYZ, SXY)(sum_SYZ, sum_S, sum_SXY);
+	return natural_sum_commutative(Z, SXY, S)(sum_S);
 }
 
 //Prove the cancellation property of addition

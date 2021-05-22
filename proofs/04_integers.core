@@ -65,12 +65,61 @@ prove integer_def_relation_transitive: *R*S*T(are_related(R, S, INTEGER_DEFINITI
 	implies related_RS, related_ST;
 	extract integer_def_relation_def(R, S)(related_RS): R_in_NATURALS_X_NATURALS, S_in_NATURALS_X_NATURALS, condition_RS;
 	extract integer_def_relation_def(S, T)(related_ST): S_in_NATURALS_X_NATURALS, T_in_NATURALS_X_NATURALS, condition_ST;
-	prove condition_RT: *X0*Y0*X1*Y1(is_tuple(X0, Y0, R) & is_tuple(X1, Y1, T) -> ^SUM(is_natural_sum(X0, Y1, SUM) & is_natural_sum(X1, Y0, SUM))){
-		given |X0, Y0, X1, Y1|;
+	prove condition_RT: *A*B*E*F(is_tuple(A, B, R) & is_tuple(E, F, T) -> ^SUM(is_natural_sum(A, F, SUM) & is_natural_sum(E, B, SUM))){
+		given |A, B, E, F|;
 		implies tuple_R, tuple_T;
-		extract expand(NATURALS_X_NATURALS_definition)(S)(S_in_NATURALS_X_NATURALS)|XS, YS|: XS_in_NATURALS, YS_in_NATURALS, tuple_S;
-		extract condition_RS(X0, Y0, XS, YS)(tuple_R, tuple_S)|SUM|: sum_X0_YS, sum_XS_Y0;
-		extract condition_ST(XS, YS, X1, Y1)(tuple_S, tuple_T)|OTHER_SUM|: sum_XS_Y1, sum_X1_YS;
+		extract expand(NATURALS_X_NATURALS_definition)(S)(S_in_NATURALS_X_NATURALS)|C, D|: C_in_NATURALS, D_in_NATURALS, tuple_S;
+		extract condition_RS(A, B, C, D)(tuple_R, tuple_S)|SUM_AD_CB|: sum_AD, sum_CB;
+		extract condition_ST(C, D, E, F)(tuple_S, tuple_T)|SUM_CF_ED|: sum_CF, sum_ED;
+		sum_BC = natural_sum_commutative(C, B, SUM_AD_CB)(sum_CB);
+		sum_DE = natural_sum_commutative(E, D, SUM_CF_ED)(sum_ED);
+		extract expand(sum_AD): A_in_NATURALS, D_in_NATURALS, tuple_exists;
+		extract expand(sum_CF): C_in_NATURALS, F_in_NATURALS, tuple_exists;
+		extract expand(sum_CB): C_in_NATURALS, B_in_NATURALS, tuple_exists;
+		extract expand(sum_ED): E_in_NATURALS, D_in_NATURALS, tuple_exists;
+		SUM_AD_CB_in_NATURALS = natural_sum_is_natural(A, D, SUM_AD_CB)(sum_AD);
+		SUM_CF_ED_in_NATURALS = natural_sum_is_natural(C, F, SUM_CF_ED)(sum_CF);
+		extract natural_sum(SUM_AD_CB, SUM_CF_ED)(SUM_AD_CB_in_NATURALS, SUM_CF_ED_in_NATURALS)|NEW_SUM|: NEW_SUM_in_NATURALS, sum_NEW_SUM;
+
+		extract natural_sum(D, SUM_CF_ED)(D_in_NATURALS, SUM_CF_ED_in_NATURALS)|SUM_D_CF|: SUM_D_CF_in_NATURALS, sum_D_CF;
+		extract natural_sum(D, C)(D_in_NATURALS, C_in_NATURALS)|SUM_DC|: SUM_DC_in_NATURALS, sum_DC;
+		extract natural_sum(A, F)(A_in_NATURALS, F_in_NATURALS)|SUM_AF|: SUM_AF_in_NATURALS, sum_AF;
+		choose SUM_AF;
+		sum_A_D_CF = natural_sum_associative(A, D, SUM_CF_ED, NEW_SUM, SUM_AD_CB, SUM_D_CF)(sum_AD, sum_NEW_SUM, sum_D_CF);
+		sum_DC_F = natural_sum_associative2(D, C, F, SUM_D_CF, SUM_DC, SUM_CF_ED)(sum_CF, sum_D_CF, sum_DC);
+		sum_F_DC = natural_sum_commutative(SUM_DC, F, SUM_D_CF)(sum_DC_F);
+		sum_AF_DC = natural_sum_associative2(A, F, SUM_DC, NEW_SUM, SUM_AF, SUM_D_CF)(sum_F_DC, sum_A_D_CF, sum_AF);
+
+		extract natural_sum(C, SUM_CF_ED)(C_in_NATURALS, SUM_CF_ED_in_NATURALS)|SUM_C_ED|: SUM_C_ED_in_NATURALS, sum_C_ED;
+		extract natural_sum(C, D)(C_in_NATURALS, D_in_NATURALS)|SUM_CD|: SUM_CD_in_NATURALS, sum_CD;
+		extract natural_sum(B, E)(B_in_NATURALS, E_in_NATURALS)|SUM_BE|: SUM_BE_in_NATURALS, sum_BE;
+		sum_B_C_ED = natural_sum_associative(B, C, SUM_CF_ED, NEW_SUM, SUM_AD_CB, SUM_C_ED)(sum_BC, sum_NEW_SUM, sum_C_ED);
+		sum_CD_E = natural_sum_associative2(C, D, E, SUM_C_ED, SUM_CD, SUM_CF_ED)(sum_DE, sum_C_ED, sum_CD);
+		sum_E_CD = natural_sum_commutative(SUM_CD, E, SUM_C_ED)(sum_CD_E);
+		sum_BE_CD = natural_sum_associative2(B, E, SUM_CD, NEW_SUM, SUM_BE, SUM_C_ED)(sum_E_CD, sum_B_C_ED, sum_BE);
+
+		other_sum_DC = natural_sum_commutative(C, D, SUM_CD)(sum_CD);
+		equal_DC = natural_sum_unique(D, C, SUM_DC, SUM_CD)(sum_DC, other_sum_DC);
+		sum_BE_DC = equality_consistency[<Q: is_natural_sum(SUM_BE, Q, NEW_SUM)>](SUM_DC, SUM_CD)(equal_DC)(sum_BE_CD);
+		
+		sum_DC_AF = natural_sum_commutative(SUM_AF, SUM_DC, NEW_SUM)(sum_AF_DC);
+		sum_DC_BE = natural_sum_commutative(SUM_BE, SUM_DC, NEW_SUM)(sum_BE_DC);
+
+		equal_AF_BE = natural_sum_cancellation(SUM_DC, SUM_AF, SUM_BE, NEW_SUM)(sum_DC_AF, sum_DC_BE);
+		sum_EB = natural_sum_commutative(B, E, SUM_BE)(sum_BE);
+		sum_EB = equality_consistency[<Q: is_natural_sum(E, B, Q)>](SUM_AF, SUM_BE)(equal_AF_BE)(sum_EB);
+
+		return sum_AF, sum_EB;
 	}
+	
+	return integer_def_relation_def(R, T)(R_in_NATURALS_X_NATURALS, T_in_NATURALS_X_NATURALS, condition_RT);
 }
+
+integer_def_relation_transitive = #is_transitive(INTEGER_DEFINITION_RELATION)(integer_def_relation_transitive);
+
+//And we've proven that the integer definition relation is an equivalence relation
+integer_def_relation_equivalence = #is_equivalence_relation(INTEGER_DEFINITION_RELATION, NATURALS_X_NATURALS)(integer_def_relation_reflexive, integer_def_relation_symmetric, integer_def_relation_transitive);
+
+//WE DEFINE THE INTEGERS
+integers_definition = equivalence_classes(NATURALS_X_NATURALS, INTEGER_DEFINITION_RELATION)(integer_def_relation_equivalence)|INTEGERS|;
 
