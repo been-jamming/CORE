@@ -8,15 +8,7 @@ prove integer_def_relation_exists: ^R*T0*T1(are_related(T0, T1, R) <-> T0 in NAT
 	R_def = relation_existence_lemma[<T0, T1: *X0*Y0*X1*Y1(is_tuple(X0, Y0, T0) & is_tuple(X1, Y1, T1) -> ^S(is_natural_sum(X0, Y1, S) & is_natural_sum(X1, Y0, S)))>](NATURALS_X_NATURALS, NATURALS_X_NATURALS)|R|;
 	choose R;
 	given |T0, T1|;
-	prove lemma0: are_related(T0, T1, R) -> T0 in NATURALS_X_NATURALS & T1 in NATURALS_X_NATURALS & *X0*Y0*X1*Y1(is_tuple(X0, Y0, T0) & is_tuple(X1, Y1, T1) -> ^S(is_natural_sum(X0, Y1, S) & is_natural_sum(X1, Y0, S))){
-		implies related_R;
-		return R_def(T0, T1)(related_R);
-	}
-	prove lemma1: T0 in NATURALS_X_NATURALS & T1 in NATURALS_X_NATURALS & *X0*Y0*X1*Y1(is_tuple(X0, Y0, T0) & is_tuple(X1, Y1, T1) -> ^S(is_natural_sum(X0, Y1, S) & is_natural_sum(X1, Y0, S))) -> are_related(T0, T1, R){
-		implies R_condition;
-		return R_def(T0, T1)(R_condition);
-	}
-	return iff(lemma0, lemma1);
+	return R_def(T0, T1);
 }
 
 integer_def_relation_def = integer_def_relation_exists|INTEGER_DEFINITION_RELATION|;

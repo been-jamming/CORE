@@ -1269,3 +1269,55 @@ prove natural_sum_cancellation: *X*Y*Z*S(is_natural_sum(X, Y, S) & is_natural_su
 	return result(Y, Z, S)(sum0, sum1);
 }
 
+//Prove that 1+n = S(n)
+prove natural_sum_successor: *N*M(is_natural_sum(N, ONE, M) -> is_successor(N, M)){
+	extract expand(NATURALS_inductive): empty_in_NATURALS, closure_naturals;
+	R_def = axiom_specify[<Q: *M(is_natural_sum(Q, ONE, M) -> is_successor(Q, M))>](NATURALS)|R|;
+
+	prove ZERO_in_R: *M(is_natural_sum(ZERO, ONE, M) -> is_successor(ZERO, M)){
+		given |M|;
+		implies sum_M;
+		other_sum_M = natural_sum_zero_identity(ONE)(one_is_natural);
+		equal_M_ONE = natural_sum_unique(ZERO, ONE, M, ONE)(sum_M, other_sum_M);
+		return equality_consistency[<Q: is_successor(ZERO, Q)>](M, ONE)(equal_M_ONE)(one_definition);
+	}
+
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+	prove closure_R: *K*N(K in R & is_successor(K, N) -> N in R){
+		given |K, N|;
+		implies K_in_R, successor_N;
+		extract R_def(K)(K_in_R): K_in_NATURALS, K_cond;
+		N_in_NATURALS = closure_naturals(K, N)(K_in_NATURALS, successor_N);
+		extract natural_sum(K, ONE)(K_in_NATURALS, one_is_natural)|OTHER_N|: OTHER_N_in_NATURALS, sum_OTHER_N;
+		successor_other_N = K_cond(OTHER_N)(sum_OTHER_N);
+		equal_N = successor_unique(K, N, OTHER_N)(successor_N, successor_other_N);
+		sum_N = equality_consistency[<Q: is_natural_sum(K, ONE, Q)>](N, OTHER_N)(equal_N)(sum_OTHER_N);
+		extract natural_sum_successor_recursion(K, ONE, N)(sum_N)|OTHER_N2, M|: successor_other_N2, successor_M, sum_M;
+		equal_N = successor_unique(K, N, OTHER_N2)(successor_N, successor_other_N2);
+		sum_M = equality_consistency[<Q: is_natural_sum(Q, ONE, M)>](N, OTHER_N2)(equal_N)(sum_M);
+		prove N_cond: *M_OTHER(is_natural_sum(N, ONE, M_OTHER) -> is_successor(N, M_OTHER)){
+			given |M_OTHER|;
+			implies other_sum_M;
+			equal_M = natural_sum_unique(N, ONE, M, M_OTHER)(sum_M, other_sum_M);
+			return equality_consistency[<Q: is_successor(N, Q)>](M, M_OTHER)(equal_M)(successor_M);
+		}
+		return R_def(N)(N_in_NATURALS, N_cond);
+	}
+	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+
+	given |N, M|;
+	implies sum_M;
+	extract expand(sum_M): N_in_NATURALS, ONE_in_NATURALS, tuple_exists;
+	N_in_R = expand(NATURALS_subset_R)(N)(N_in_NATURALS);
+	extract R_def(N)(N_in_R): N_in_NATURALS, result;
+
+	return result(M)(sum_M);
+}
+
+//Proving that if a <= b then there exists some n <= b such that a + n = b
+prove natural_sum_less_than: *A*B(A in NATURALS & B in NATURALS & NATURAL_less_than(A, B) <-> ^N(is_natural_sum(A, N, B))){
+	extract expand(NATURALS_inductive): empty_in_NATURALS, closure_naturals;
+
+
+}
