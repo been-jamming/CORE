@@ -1,436 +1,436 @@
 <!DOCTYPE html><html><head><title>file</title></head><body><div class="header">CORE Source</div><div class="CORE_source"><code style="white-space: pre-wrap;">//If we want to copy one set to another object, we use this (fairly tautological) result
-<b style="color: blue">prove </b>copy_set: *A^B(equal_sets(A, B)){
-	<b style="color: blue">given </b>|A|;
-	<b style="color: blue">choose </b>A;
-	<b style="color: blue">return </b>equal_sets_reflexive(A);
+<b style="color: blue;">prove</b> copy_set: <b style="color: red;">*</b>A<b style="color: red;">^</b>B(equal_sets(A, B)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A<b style="color: red;">|</b>;
+	<b style="color: blue;">choose</b> A;
+	<b style="color: blue;">return</b> equal_sets_reflexive(A);
 }
 
-//When we have the <b style="color: blue">axiom </b>of regularity, even outside of the natural numbers, the "predecessor" of a set is unique if it exists
-<b style="color: blue">prove </b>predecessor_unique: *A*B*C(is_successor(A, C) & is_successor(B, C) -&gt equal_sets(A, B)){
-	<b style="color: blue">given </b>|A, B, C|;
-	<b style="color: blue">implies </b>predecessor_both;
-	<b style="color: blue">extract </b>predecessor_both: predecessor_A, predecessor_B;
-	A_in_C = expand(predecessor_A)(A)(or(&lt:A in A&gt, equal_sets_reflexive(A)));
-	B_in_C = expand(predecessor_B)(B)(or(&lt:B in B&gt, equal_sets_reflexive(B)));
-	<b style="color: blue">prove </b>equal_def: *X(X in A &lt-&gt X in B){
-		<b style="color: blue">given </b>|X|;
-		<b style="color: blue">prove </b>lemma0: X in A -&gt X in B{
-			<b style="color: blue">implies </b>X_in_A;
-			X_in_C = expand(predecessor_A)(X)(or(X_in_A, &lt:equal_sets(X, A)&gt));
-			<b style="color: blue">return </b>branch(expand(predecessor_B)(X)(X_in_C), X_in_B, equal_X_B){
-				<b style="color: blue">return </b>X_in_B;
-			} or {
+//When we have the <b style="color: blue;">axiom</b> of regularity, even outside of the natural numbers, the "predecessor" of a set is unique if it exists
+<b style="color: blue;">prove</b> predecessor_unique: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C(is_successor(A, C) <b style="color: red;">&</b> is_successor(B, C) <b style="color: red;">-&gt</b> equal_sets(A, B)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> predecessor_both;
+	<b style="color: blue;">extract</b> predecessor_both: predecessor_A, predecessor_B;
+	A_in_C = <b style="color: green;">expand</b>(predecessor_A)(A)(<b style="color: green;">or</b>(&lt:A in A&gt, equal_sets_reflexive(A)));
+	B_in_C = <b style="color: green;">expand</b>(predecessor_B)(B)(<b style="color: green;">or</b>(&lt:B in B&gt, equal_sets_reflexive(B)));
+	<b style="color: blue;">prove</b> equal_def: <b style="color: red;">*</b>X(X in A <b style="color: red;">&lt-&gt</b> X in B){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma0: X in A <b style="color: red;">-&gt</b> X in B{
+			<b style="color: blue;">implies</b> X_in_A;
+			X_in_C = <b style="color: green;">expand</b>(predecessor_A)(X)(<b style="color: green;">or</b>(X_in_A, &lt:equal_sets(X, A)&gt));
+			<b style="color: blue;">return</b> <b style="color: green;">branch</b>(<b style="color: green;">expand</b>(predecessor_B)(X)(X_in_C), X_in_B, equal_X_B){
+				<b style="color: blue;">return</b> X_in_B;
+			} <b style="color: green;">or</b> {
 				B_in_A = equality_consistency[&ltQ: Q in A&gt](X, B)(equal_X_B)(X_in_A);
-				A_in_B = branch(expand(predecessor_B)(A)(A_in_C), A_in_B, equal_A_B){
-					<b style="color: blue">return </b>A_in_B;
-				} or {
+				A_in_B = <b style="color: green;">branch</b>(<b style="color: green;">expand</b>(predecessor_B)(A)(A_in_C), A_in_B, equal_A_B){
+					<b style="color: blue;">return</b> A_in_B;
+				} <b style="color: green;">or</b> {
 					A_in_A = equality_consistency[&ltQ: Q in A&gt](A, B)(equal_A_B)(B_in_A);
-					<b style="color: blue">return </b>equality_consistency[&ltQ: A in Q&gt](A, B)(equal_A_B)(A_in_A);
+					<b style="color: blue;">return</b> equality_consistency[&ltQ: A in Q&gt](A, B)(equal_A_B)(A_in_A);
 				};
-				<b style="color: blue">prove </b>is_false: ~(~A in B | ~B in A){
+				<b style="color: blue;">prove</b> is_false: ~(~A in B <b style="color: red;">|</b> ~B in A){
 					not either;
-					<b style="color: blue">return </b>branch(either, not_A_in_B, not_B_in_A){
-						<b style="color: blue">return </b>not_A_in_B(A_in_B);
-					} or {
-						<b style="color: blue">return </b>not_B_in_A(B_in_A);
+					<b style="color: blue;">return</b> <b style="color: green;">branch</b>(either, not_A_in_B, not_B_in_A){
+						<b style="color: blue;">return</b> not_A_in_B(A_in_B);
+					} <b style="color: green;">or</b> {
+						<b style="color: blue;">return</b> not_B_in_A(B_in_A);
 					};
 				}
 				absurdity = is_false(no_pair_recursive_membership(A, B));
-				<b style="color: blue">return </b>axiom_absurdity[goal](absurdity);
+				<b style="color: blue;">return</b> axiom_absurdity[goal](absurdity);
 			};
 		}
-		<b style="color: blue">prove </b>lemma1: X in B -&gt X in A{
-			<b style="color: blue">implies </b>X_in_B;
-			X_in_C = expand(predecessor_B)(X)(or(X_in_B, &lt:equal_sets(X, B)&gt));
-			<b style="color: blue">return </b>branch(expand(predecessor_A)(X)(X_in_C), X_in_A, equal_X_A){
-				<b style="color: blue">return </b>X_in_A;
-			} or {
+		<b style="color: blue;">prove</b> lemma1: X in B <b style="color: red;">-&gt</b> X in A{
+			<b style="color: blue;">implies</b> X_in_B;
+			X_in_C = <b style="color: green;">expand</b>(predecessor_B)(X)(<b style="color: green;">or</b>(X_in_B, &lt:equal_sets(X, B)&gt));
+			<b style="color: blue;">return</b> <b style="color: green;">branch</b>(<b style="color: green;">expand</b>(predecessor_A)(X)(X_in_C), X_in_A, equal_X_A){
+				<b style="color: blue;">return</b> X_in_A;
+			} <b style="color: green;">or</b> {
 				A_in_B = equality_consistency[&ltQ: Q in B&gt](X, A)(equal_X_A)(X_in_B);
-				B_in_A = branch(expand(predecessor_A)(B)(B_in_C), B_in_A, equal_B_A){
-					<b style="color: blue">return </b>B_in_A;
-				} or {
+				B_in_A = <b style="color: green;">branch</b>(<b style="color: green;">expand</b>(predecessor_A)(B)(B_in_C), B_in_A, equal_B_A){
+					<b style="color: blue;">return</b> B_in_A;
+				} <b style="color: green;">or</b> {
 					B_in_B = equality_consistency[&ltQ: Q in B&gt](B, A)(equal_B_A)(A_in_B);
-					<b style="color: blue">return </b>equality_consistency[&ltQ: B in Q&gt](B, A)(equal_B_A)(B_in_B);
+					<b style="color: blue;">return</b> equality_consistency[&ltQ: B in Q&gt](B, A)(equal_B_A)(B_in_B);
 				};
-				<b style="color: blue">prove </b>is_false: ~(~A in B | ~B in A){
+				<b style="color: blue;">prove</b> is_false: ~(~A in B <b style="color: red;">|</b> ~B in A){
 					not either;
-					<b style="color: blue">return </b>branch(either, not_A_in_B, not_B_in_A){
-						<b style="color: blue">return </b>not_A_in_B(A_in_B);
-					} or {
-						<b style="color: blue">return </b>not_B_in_A(B_in_A);
+					<b style="color: blue;">return</b> <b style="color: green;">branch</b>(either, not_A_in_B, not_B_in_A){
+						<b style="color: blue;">return</b> not_A_in_B(A_in_B);
+					} <b style="color: green;">or</b> {
+						<b style="color: blue;">return</b> not_B_in_A(B_in_A);
 					};
 				}
 				absurdity = is_false(no_pair_recursive_membership(A, B));
-				<b style="color: blue">return </b>axiom_absurdity[goal](absurdity);
+				<b style="color: blue;">return</b> axiom_absurdity[goal](absurdity);
 			};
 		}
-		<b style="color: blue">return </b>iff(lemma0, lemma1);
+		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
 	}
-	<b style="color: blue">return </b>#equal_sets(A, B)(equal_def);
+	<b style="color: blue;">return</b> #equal_sets(A, B)(equal_def);
 }
 
-<b style="color: blue">define </b>is_power_set(A, B): *X(X in B &lt-&gt is_subset(X, A));
+<b style="color: blue;">define</b> is_power_set(A, B): <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> is_subset(X, A));
 
-<b style="color: blue">prove </b>power_set: *A^B(is_power_set(A, B)){
-	<b style="color: blue">given </b>|A|;
-	contains_subsets = axiom_power_set(A)|B_BIG|;
-	restricted = axiom_specify[&ltX: is_subset(X, A)&gt](B_BIG)|B|;
-	<b style="color: blue">choose </b>B;
-	<b style="color: blue">prove </b>power_set_def: *X(X in B &lt-&gt is_subset(X, A)){
-		<b style="color: blue">given </b>|X|;
-		<b style="color: blue">prove </b>lemma0: X in B -&gt is_subset(X, A){
-			<b style="color: blue">implies </b>X_in_B;
-			<b style="color: blue">extract </b>restricted(X)(X_in_B): X_in_B_BIG, result;
-			<b style="color: blue">return </b>result;
+<b style="color: blue;">prove</b> power_set: <b style="color: red;">*</b>A<b style="color: red;">^</b>B(is_power_set(A, B)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A<b style="color: red;">|</b>;
+	contains_subsets = axiom_power_set(A)<b style="color: red;">|</b>B_BIG<b style="color: red;">|</b>;
+	restricted = axiom_specify[&ltX: is_subset(X, A)&gt](B_BIG)<b style="color: red;">|</b>B<b style="color: red;">|</b>;
+	<b style="color: blue;">choose</b> B;
+	<b style="color: blue;">prove</b> power_set_def: <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> is_subset(X, A)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma0: X in B <b style="color: red;">-&gt</b> is_subset(X, A){
+			<b style="color: blue;">implies</b> X_in_B;
+			<b style="color: blue;">extract</b> restricted(X)(X_in_B): X_in_B_BIG, result;
+			<b style="color: blue;">return</b> result;
 		}
-		<b style="color: blue">prove </b>lemma1: is_subset(X, A) -&gt X in B{
-			<b style="color: blue">implies </b>X_subset_A;
+		<b style="color: blue;">prove</b> lemma1: is_subset(X, A) <b style="color: red;">-&gt</b> X in B{
+			<b style="color: blue;">implies</b> X_subset_A;
 			X_in_B_BIG = contains_subsets(X)(X_subset_A);
-			<b style="color: blue">return </b>restricted(X)(X_in_B_BIG, X_subset_A);
+			<b style="color: blue;">return</b> restricted(X)(X_in_B_BIG, X_subset_A);
 		}
-		<b style="color: blue">return </b>iff(lemma0, lemma1);
+		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
 	}
-	<b style="color: blue">return </b>#is_power_set(A, B)(power_set_def);
+	<b style="color: blue;">return</b> #is_power_set(A, B)(power_set_def);
 }
 
-<b style="color: blue">prove </b>power_set_unique: *A*B*C(is_power_set(A, B) & is_power_set(A, C) -&gt equal_sets(B, C)){
-	<b style="color: blue">given </b>|A, B, C|;
-	<b style="color: blue">implies </b>both_power_set;
-	<b style="color: blue">extract </b>both_power_set: power_set_B, power_set_C;
-	<b style="color: blue">return </b>definition_uniqueness_lemma[&ltX: is_subset(X, A)&gt](B, C)(expand(power_set_B), expand(power_set_C));
+<b style="color: blue;">prove</b> power_set_unique: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C(is_power_set(A, B) <b style="color: red;">&</b> is_power_set(A, C) <b style="color: red;">-&gt</b> equal_sets(B, C)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> both_power_set;
+	<b style="color: blue;">extract</b> both_power_set: power_set_B, power_set_C;
+	<b style="color: blue;">return</b> definition_uniqueness_lemma[&ltX: is_subset(X, A)&gt](B, C)(<b style="color: green;">expand</b>(power_set_B), <b style="color: green;">expand</b>(power_set_C));
 }
 
-<b style="color: blue">prove </b>empty_set_exists: ^E*X(~X in E){
-	inductive = expand(axiom_infinity|INDUCTIVE_SET|);
-	<b style="color: blue">extract </b>inductive: exists, closure;
-	<b style="color: blue">extract </b>exists|EMPTY|: member, empty;
-	<b style="color: blue">choose </b>EMPTY;
-	<b style="color: blue">return </b>expand(empty);
+<b style="color: blue;">prove</b> empty_set_exists: <b style="color: red;">^</b>E<b style="color: red;">*</b>X(~X in E){
+	inductive = <b style="color: green;">expand</b>(axiom_infinity<b style="color: red;">|</b>INDUCTIVE_SET<b style="color: red;">|</b>);
+	<b style="color: blue;">extract</b> inductive: exists, closure;
+	<b style="color: blue;">extract</b> exists<b style="color: red;">|</b>EMPTY<b style="color: red;">|</b>: member, empty;
+	<b style="color: blue;">choose</b> EMPTY;
+	<b style="color: blue;">return</b> <b style="color: green;">expand</b>(empty);
 }
 
-<b style="color: blue">prove </b>empty_set_unique: *E*F(is_empty(E) & is_empty(F) -&gt equal_sets(E, F)){
-	<b style="color: blue">given </b>|E, F|;
-	<b style="color: blue">implies </b>both_empty;
-	<b style="color: blue">extract </b>both_empty: empty_E, empty_F;
-	empty_E = expand(empty_E);
-	empty_F = expand(empty_F);
-	<b style="color: blue">prove </b>equal_def: *X(X in E &lt-&gt X in F){
-		<b style="color: blue">given </b>|X|;
-		<b style="color: blue">prove </b>lemma0: X in E -&gt X in F{
-			<b style="color: blue">implies </b>X_in_E;
-			<b style="color: blue">return </b>axiom_absurdity[goal](empty_E(X)(X_in_E));
+<b style="color: blue;">prove</b> empty_set_unique: <b style="color: red;">*</b>E<b style="color: red;">*</b>F(is_empty(E) <b style="color: red;">&</b> is_empty(F) <b style="color: red;">-&gt</b> equal_sets(E, F)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>E, F<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> both_empty;
+	<b style="color: blue;">extract</b> both_empty: empty_E, empty_F;
+	empty_E = <b style="color: green;">expand</b>(empty_E);
+	empty_F = <b style="color: green;">expand</b>(empty_F);
+	<b style="color: blue;">prove</b> equal_def: <b style="color: red;">*</b>X(X in E <b style="color: red;">&lt-&gt</b> X in F){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma0: X in E <b style="color: red;">-&gt</b> X in F{
+			<b style="color: blue;">implies</b> X_in_E;
+			<b style="color: blue;">return</b> axiom_absurdity[goal](empty_E(X)(X_in_E));
 		}
-		<b style="color: blue">prove </b>lemma1: X in F -&gt X in E{
-			<b style="color: blue">implies </b>X_in_F;
-			<b style="color: blue">return </b>axiom_absurdity[goal](empty_F(X)(X_in_F));
+		<b style="color: blue;">prove</b> lemma1: X in F <b style="color: red;">-&gt</b> X in E{
+			<b style="color: blue;">implies</b> X_in_F;
+			<b style="color: blue;">return</b> axiom_absurdity[goal](empty_F(X)(X_in_F));
 		}
-		<b style="color: blue">return </b>iff(lemma0, lemma1);
+		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
 	}
-	<b style="color: blue">return </b>#equal_sets(E, F)(equal_def);
+	<b style="color: blue;">return</b> #equal_sets(E, F)(equal_def);
 }
 
-empty_set_condition = empty_set_exists|EMPTY_SET|;
+empty_set_condition = empty_set_exists<b style="color: red;">|</b>EMPTY_SET<b style="color: red;">|</b>;
 
-<b style="color: blue">prove </b>pair_swap: *A*B*C(is_pair(A, B, C) -&gt is_pair(B, A, C)){
-	<b style="color: blue">given </b>|A, B, C|;
-	<b style="color: blue">implies </b>pair_C;
-	pair_C = expand(pair_C);
-	<b style="color: blue">prove </b>pair_def: *X(X in C &lt-&gt equal_sets(X, B) | equal_sets(X, A)){
-		<b style="color: blue">given </b>|X|;
-		<b style="color: blue">prove </b>lemma0: X in C -&gt equal_sets(X, B) | equal_sets(X, A){
-			<b style="color: blue">implies </b>X_in_C;
-			<b style="color: blue">return </b>swap(pair_C(X)(X_in_C));
+<b style="color: blue;">prove</b> pair_swap: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C(is_pair(A, B, C) <b style="color: red;">-&gt</b> is_pair(B, A, C)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> pair_C;
+	pair_C = <b style="color: green;">expand</b>(pair_C);
+	<b style="color: blue;">prove</b> pair_def: <b style="color: red;">*</b>X(X in C <b style="color: red;">&lt-&gt</b> equal_sets(X, B) <b style="color: red;">|</b> equal_sets(X, A)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma0: X in C <b style="color: red;">-&gt</b> equal_sets(X, B) <b style="color: red;">|</b> equal_sets(X, A){
+			<b style="color: blue;">implies</b> X_in_C;
+			<b style="color: blue;">return</b> <b style="color: green;">swap</b>(pair_C(X)(X_in_C));
 		}
-		<b style="color: blue">prove </b>lemma1: equal_sets(X, B) | equal_sets(X, A) -&gt X in C{
-			<b style="color: blue">implies </b>both;
-			<b style="color: blue">return </b>pair_C(X)(swap(both));
+		<b style="color: blue;">prove</b> lemma1: equal_sets(X, B) <b style="color: red;">|</b> equal_sets(X, A) <b style="color: red;">-&gt</b> X in C{
+			<b style="color: blue;">implies</b> both;
+			<b style="color: blue;">return</b> pair_C(X)(<b style="color: green;">swap</b>(both));
 		}
-		<b style="color: blue">return </b>iff(lemma0, lemma1);
+		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
 	}
-	<b style="color: blue">return </b>#is_pair(B, A, C)(pair_def);
+	<b style="color: blue;">return</b> #is_pair(B, A, C)(pair_def);
 }
 
-<b style="color: blue">prove </b>pair_equal_condition: *A*B*C*D*E*F(is_pair(A, B, E) & is_pair(C, D, F) & equal_sets(E, F) -&gt equal_sets(A, C) | equal_sets(A, D)){
-	<b style="color: blue">given </b>|A, B, C, D, E, F|;
-	<b style="color: blue">implies </b>pair_E, pair_F, equal_EF;
-	pair_E = expand(pair_E);
-	pair_F = expand(pair_F);
-	A_in_E = pair_E(A)(or(equal_sets_reflexive(A), &lt:equal_sets(A, B)&gt));
-	pair_E = equality_consistency[&ltX: *Y(Y in X &lt-&gt equal_sets(Y, C) | equal_sets(Y, D))&gt](E, F)(equal_EF)(pair_F);
-	<b style="color: blue">return </b>pair_E(A)(A_in_E);
+<b style="color: blue;">prove</b> pair_equal_condition: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C<b style="color: red;">*</b>D<b style="color: red;">*</b>E<b style="color: red;">*</b>F(is_pair(A, B, E) <b style="color: red;">&</b> is_pair(C, D, F) <b style="color: red;">&</b> equal_sets(E, F) <b style="color: red;">-&gt</b> equal_sets(A, C) <b style="color: red;">|</b> equal_sets(A, D)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C, D, E, F<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> pair_E, pair_F, equal_EF;
+	pair_E = <b style="color: green;">expand</b>(pair_E);
+	pair_F = <b style="color: green;">expand</b>(pair_F);
+	A_in_E = pair_E(A)(<b style="color: green;">or</b>(equal_sets_reflexive(A), &lt:equal_sets(A, B)&gt));
+	pair_E = equality_consistency[&ltX: <b style="color: red;">*</b>Y(Y in X <b style="color: red;">&lt-&gt</b> equal_sets(Y, C) <b style="color: red;">|</b> equal_sets(Y, D))&gt](E, F)(equal_EF)(pair_F);
+	<b style="color: blue;">return</b> pair_E(A)(A_in_E);
 }
 
-<b style="color: blue">define </b>is_tuple(A, B, C): ^E^F(is_pair(A, A, E) & is_pair(A, B, F) & is_pair(E, F, C));
+<b style="color: blue;">define</b> is_tuple(A, B, C): <b style="color: red;">^</b>E<b style="color: red;">^</b>F(is_pair(A, A, E) <b style="color: red;">&</b> is_pair(A, B, F) <b style="color: red;">&</b> is_pair(E, F, C));
 
-<b style="color: blue">prove </b>tuple: *A*B^C(is_tuple(A, B, C)){
-	<b style="color: blue">given </b>|A, B|;
-	E_pair = pair(A, A)|E|;
-	F_pair = pair(A, B)|F|;
-	C_pair = pair(E, F)|C|;
-	<b style="color: blue">choose </b>C;
-	<b style="color: blue">prove </b>tuple_def: ^E^F(is_pair(A, A, E) & is_pair(A, B, F) & is_pair(E, F, C)){
-		<b style="color: blue">choose </b>E, F;
-		<b style="color: blue">return </b>E_pair, F_pair, C_pair;
+<b style="color: blue;">prove</b> tuple: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">^</b>C(is_tuple(A, B, C)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
+	E_pair = pair(A, A)<b style="color: red;">|</b>E<b style="color: red;">|</b>;
+	F_pair = pair(A, B)<b style="color: red;">|</b>F<b style="color: red;">|</b>;
+	C_pair = pair(E, F)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
+	<b style="color: blue;">choose</b> C;
+	<b style="color: blue;">prove</b> tuple_def: <b style="color: red;">^</b>E<b style="color: red;">^</b>F(is_pair(A, A, E) <b style="color: red;">&</b> is_pair(A, B, F) <b style="color: red;">&</b> is_pair(E, F, C)){
+		<b style="color: blue;">choose</b> E, F;
+		<b style="color: blue;">return</b> E_pair, F_pair, C_pair;
 	}
-	<b style="color: blue">return </b>#is_tuple(A, B, C)(tuple_def);
+	<b style="color: blue;">return</b> #is_tuple(A, B, C)(tuple_def);
 }
 
-<b style="color: blue">prove </b>tuple_unique: *A*B*C*D(is_tuple(A, B, C) & is_tuple(A, B, D) -&gt equal_sets(C, D)){
-	<b style="color: blue">given </b>|A, B, C, D|;
-	<b style="color: blue">implies </b>both_tuples;
-	<b style="color: blue">extract </b>both_tuples: tuple_C, tuple_D;
-	tuple_C_def = expand(tuple_C);
-	tuple_D_def = expand(tuple_D);
-	<b style="color: blue">extract </b>tuple_C_def|E_C, F_C|: pair_E_C, pair_F_C, pair_C;
-	<b style="color: blue">extract </b>tuple_D_def|E_D, F_D|: pair_E_D, pair_F_D, pair_D;
+<b style="color: blue;">prove</b> tuple_unique: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C<b style="color: red;">*</b>D(is_tuple(A, B, C) <b style="color: red;">&</b> is_tuple(A, B, D) <b style="color: red;">-&gt</b> equal_sets(C, D)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C, D<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> both_tuples;
+	<b style="color: blue;">extract</b> both_tuples: tuple_C, tuple_D;
+	tuple_C_def = <b style="color: green;">expand</b>(tuple_C);
+	tuple_D_def = <b style="color: green;">expand</b>(tuple_D);
+	<b style="color: blue;">extract</b> tuple_C_def<b style="color: red;">|</b>E_C, F_C<b style="color: red;">|</b>: pair_E_C, pair_F_C, pair_C;
+	<b style="color: blue;">extract</b> tuple_D_def<b style="color: red;">|</b>E_D, F_D<b style="color: red;">|</b>: pair_E_D, pair_F_D, pair_D;
 	E_C_equal_E_D = pair_unique(A, A, E_C, E_D)(pair_E_C, pair_E_D);
 	F_C_equal_F_D = pair_unique(A, B, F_C, F_D)(pair_F_C, pair_F_D);
 	pair_C_next = equality_consistency[&ltX: is_pair(X, F_C, C)&gt](E_C, E_D)(E_C_equal_E_D)(pair_C);
 	pair_C_final = equality_consistency[&ltX: is_pair(E_D, X, C)&gt](F_C, F_D)(F_C_equal_F_D)(pair_C_next);
-	<b style="color: blue">return </b>pair_unique(E_D, F_D, C, D)(pair_C_final, pair_D);
+	<b style="color: blue;">return</b> pair_unique(E_D, F_D, C, D)(pair_C_final, pair_D);
 }
 
-<b style="color: blue">prove </b>tuple_equal_condition: *A*B*C*D*E*F(is_tuple(A, B, E) & is_tuple(C, D, F) & equal_sets(E, F) -&gt equal_sets(A, C) & equal_sets(B, D)){
-	<b style="color: blue">given </b>|A, B, C, D, E, F|;
-	<b style="color: blue">implies </b>tuple_E, tuple_F, equal_EF;
+<b style="color: blue;">prove</b> tuple_equal_condition: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C<b style="color: red;">*</b>D<b style="color: red;">*</b>E<b style="color: red;">*</b>F(is_tuple(A, B, E) <b style="color: red;">&</b> is_tuple(C, D, F) <b style="color: red;">&</b> equal_sets(E, F) <b style="color: red;">-&gt</b> equal_sets(A, C) <b style="color: red;">&</b> equal_sets(B, D)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C, D, E, F<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> tuple_E, tuple_F, equal_EF;
 	equal_FE = equal_sets_symmetric(E, F)(equal_EF);
-	tuple_E = expand(tuple_E);
-	tuple_F = expand(tuple_F);
-	<b style="color: blue">extract </b>tuple_E|PAIR_AA, PAIR_AB|: pair_AA, pair_AB, pair_E;
-	<b style="color: blue">extract </b>tuple_F|PAIR_CC, PAIR_CD|: pair_CC, pair_CD, pair_F;
+	tuple_E = <b style="color: green;">expand</b>(tuple_E);
+	tuple_F = <b style="color: green;">expand</b>(tuple_F);
+	<b style="color: blue;">extract</b> tuple_E<b style="color: red;">|</b>PAIR_AA, PAIR_AB<b style="color: red;">|</b>: pair_AA, pair_AB, pair_E;
+	<b style="color: blue;">extract</b> tuple_F<b style="color: red;">|</b>PAIR_CC, PAIR_CD<b style="color: red;">|</b>: pair_CC, pair_CD, pair_F;
 	other_pair_E = pair_swap(PAIR_AA, PAIR_AB, E)(pair_E);
 	other_pair_F = pair_swap(PAIR_CC, PAIR_CD, F)(pair_F);
 	other_pair_AB = pair_swap(A, B, PAIR_AB)(pair_AB);
 	other_pair_CD = pair_swap(C, D, PAIR_CD)(pair_CD);
 
 	AA_CC_or_AA_CD = pair_equal_condition(PAIR_AA, PAIR_AB, PAIR_CC, PAIR_CD, E, F)(pair_E, pair_F, equal_EF);
-	AC_or_AD = branch(AA_CC_or_AA_CD, AA_CC, AA_CD){
+	AC_or_AD = <b style="color: green;">branch</b>(AA_CC_or_AA_CD, AA_CC, AA_CD){
 		AC_or_AC = pair_equal_condition(A, A, C, C, PAIR_AA, PAIR_CC)(pair_AA, pair_CC, AA_CC);
-		<b style="color: blue">return </b>branch(AC_or_AC, AC, AC){<b style="color: blue">return </b>or(AC, &lt:equal_sets(A, D)&gt);} or {<b style="color: blue">return </b>or(AC, &lt:equal_sets(A, D)&gt);};
-	} or {
-		<b style="color: blue">return </b>pair_equal_condition(A, A, C, D, PAIR_AA, PAIR_CD)(pair_AA, pair_CD, AA_CD);
+		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(AC_or_AC, AC, AC){<b style="color: blue;">return</b> <b style="color: green;">or</b>(AC, &lt:equal_sets(A, D)&gt);} <b style="color: green;">or</b> {<b style="color: blue;">return</b> <b style="color: green;">or</b>(AC, &lt:equal_sets(A, D)&gt);};
+	} <b style="color: green;">or</b> {
+		<b style="color: blue;">return</b> pair_equal_condition(A, A, C, D, PAIR_AA, PAIR_CD)(pair_AA, pair_CD, AA_CD);
 	};
 
 	AB_CC_or_AB_CD = pair_equal_condition(PAIR_AB, PAIR_AA, PAIR_CC, PAIR_CD, E, F)(other_pair_E, pair_F, equal_EF);
-	BC_or_BD = branch(AB_CC_or_AB_CD, AB_CC, AB_CD){
+	BC_or_BD = <b style="color: green;">branch</b>(AB_CC_or_AB_CD, AB_CC, AB_CD){
 		BC_or_BC = pair_equal_condition(B, A, C, C, PAIR_AB, PAIR_CC)(other_pair_AB, pair_CC, AB_CC);
-		<b style="color: blue">return </b>branch(BC_or_BC, BC, BC){<b style="color: blue">return </b>or(BC, &lt:equal_sets(B, D)&gt);} or {<b style="color: blue">return </b>or(BC, &lt:equal_sets(B, D)&gt);};
-	} or {
-		<b style="color: blue">return </b>pair_equal_condition(B, A, C, D, PAIR_AB, PAIR_CD)(other_pair_AB, pair_CD, AB_CD);
+		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(BC_or_BC, BC, BC){<b style="color: blue;">return</b> <b style="color: green;">or</b>(BC, &lt:equal_sets(B, D)&gt);} <b style="color: green;">or</b> {<b style="color: blue;">return</b> <b style="color: green;">or</b>(BC, &lt:equal_sets(B, D)&gt);};
+	} <b style="color: green;">or</b> {
+		<b style="color: blue;">return</b> pair_equal_condition(B, A, C, D, PAIR_AB, PAIR_CD)(other_pair_AB, pair_CD, AB_CD);
 	};
 
 	CC_AA_or_CC_AB = pair_equal_condition(PAIR_CC, PAIR_CD, PAIR_AA, PAIR_AB, F, E)(pair_F, pair_E, equal_FE);
-	CA_or_CB = branch(CC_AA_or_CC_AB, CC_AA, CC_AB){
+	CA_or_CB = <b style="color: green;">branch</b>(CC_AA_or_CC_AB, CC_AA, CC_AB){
 		CA_or_CA = pair_equal_condition(C, C, A, A, PAIR_CC, PAIR_AA)(pair_CC, pair_AA, CC_AA);
-		<b style="color: blue">return </b>branch(CA_or_CA, CA, CA){<b style="color: blue">return </b>or(CA, &lt:equal_sets(C, B)&gt);} or {<b style="color: blue">return </b>or(CA, &lt:equal_sets(C, B)&gt);};
-	} or {
-		<b style="color: blue">return </b>pair_equal_condition(C, C, A, B, PAIR_CC, PAIR_AB)(pair_CC, pair_AB, CC_AB);
+		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(CA_or_CA, CA, CA){<b style="color: blue;">return</b> <b style="color: green;">or</b>(CA, &lt:equal_sets(C, B)&gt);} <b style="color: green;">or</b> {<b style="color: blue;">return</b> <b style="color: green;">or</b>(CA, &lt:equal_sets(C, B)&gt);};
+	} <b style="color: green;">or</b> {
+		<b style="color: blue;">return</b> pair_equal_condition(C, C, A, B, PAIR_CC, PAIR_AB)(pair_CC, pair_AB, CC_AB);
 	};
 
 	CD_AA_or_CD_AB = pair_equal_condition(PAIR_CD, PAIR_CC, PAIR_AA, PAIR_AB, F, E)(other_pair_F, pair_E, equal_FE);
-	DA_or_DB = branch(CD_AA_or_CD_AB, CD_AA, CD_AB){
+	DA_or_DB = <b style="color: green;">branch</b>(CD_AA_or_CD_AB, CD_AA, CD_AB){
 		DA_or_DA = pair_equal_condition(D, C, A, A, PAIR_CD, PAIR_AA)(other_pair_CD, pair_AA, CD_AA);
-		<b style="color: blue">return </b>branch(DA_or_DA, DA, DA){<b style="color: blue">return </b>or(DA, &lt:equal_sets(D, B)&gt);} or {<b style="color: blue">return </b>or(DA, &lt:equal_sets(D, B)&gt);};
-	} or {
-		<b style="color: blue">return </b>pair_equal_condition(D, C, A, B, PAIR_CD, PAIR_AB)(other_pair_CD, pair_AB, CD_AB);
+		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(DA_or_DA, DA, DA){<b style="color: blue;">return</b> <b style="color: green;">or</b>(DA, &lt:equal_sets(D, B)&gt);} <b style="color: green;">or</b> {<b style="color: blue;">return</b> <b style="color: green;">or</b>(DA, &lt:equal_sets(D, B)&gt);};
+	} <b style="color: green;">or</b> {
+		<b style="color: blue;">return</b> pair_equal_condition(D, C, A, B, PAIR_CD, PAIR_AB)(other_pair_CD, pair_AB, CD_AB);
 	};
 
 	//Now the proof splits into 4 cases
-	<b style="color: blue">return </b>branch(AC_or_AD, AC, AD){
-		<b style="color: blue">return </b>branch(BC_or_BD, BC, BD){
+	<b style="color: blue;">return</b> <b style="color: green;">branch</b>(AC_or_AD, AC, AD){
+		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(BC_or_BD, BC, BD){
 			//Case 1
 			AB = equal_sets_transitive(A, C, B)(AC, equal_sets_symmetric(B, C)(BC));
-			BD = branch(DA_or_DB, DA, DB){
+			BD = <b style="color: green;">branch</b>(DA_or_DB, DA, DB){
 				DB = equality_consistency[&ltX: equal_sets(D, X)&gt](A, B)(AB)(DA);
-				<b style="color: blue">return </b>equal_sets_symmetric(D, B)(DB);
-			} or {
-				<b style="color: blue">return </b>equal_sets_symmetric(D, B)(DB);
+				<b style="color: blue;">return</b> equal_sets_symmetric(D, B)(DB);
+			} <b style="color: green;">or</b> {
+				<b style="color: blue;">return</b> equal_sets_symmetric(D, B)(DB);
 			};
-			<b style="color: blue">return </b>AC, BD;
-		} or {
+			<b style="color: blue;">return</b> AC, BD;
+		} <b style="color: green;">or</b> {
 			//Case 2
 			//(This case is trivial)
-			<b style="color: blue">return </b>AC, BD;
+			<b style="color: blue;">return</b> AC, BD;
 		};
-	} or {
-		<b style="color: blue">return </b>branch(BC_or_BD, BC, BD){
+	} <b style="color: green;">or</b> {
+		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(BC_or_BD, BC, BD){
 			//Case 3
 			//(This case is the most important)
 			pair_DD = equality_consistency[&ltX: is_pair(X, X, PAIR_AA)&gt](A, D)(AD)(pair_AA);
-			DC = branch(AA_CC_or_AA_CD, AA_CC, AA_CD){
+			DC = <b style="color: green;">branch</b>(AA_CC_or_AA_CD, AA_CC, AA_CD){
 				DC_or_DC = pair_equal_condition(D, D, C, C, PAIR_AA, PAIR_CC)(pair_DD, pair_CC, AA_CC);
-				<b style="color: blue">return </b>branch(DC_or_DC, DC, DC){<b style="color: blue">return </b>DC;} or {<b style="color: blue">return </b>DC;};
-			} or {
+				<b style="color: blue;">return</b> <b style="color: green;">branch</b>(DC_or_DC, DC, DC){<b style="color: blue;">return</b> DC;} <b style="color: green;">or</b> {<b style="color: blue;">return</b> DC;};
+			} <b style="color: green;">or</b> {
 				CD_or_CD = pair_equal_condition(C, D, D, D, PAIR_CD, PAIR_AA)(pair_CD, pair_DD, equal_sets_symmetric(PAIR_AA, PAIR_CD)(AA_CD));
-				<b style="color: blue">return </b>branch(CD_or_CD, CD, CD){<b style="color: blue">return </b>equal_sets_symmetric(C, D)(CD);} or {<b style="color: blue">return </b>equal_sets_symmetric(C, D)(CD);};
+				<b style="color: blue;">return</b> <b style="color: green;">branch</b>(CD_or_CD, CD, CD){<b style="color: blue;">return</b> equal_sets_symmetric(C, D)(CD);} <b style="color: green;">or</b> {<b style="color: blue;">return</b> equal_sets_symmetric(C, D)(CD);};
 			};
 			AC = equal_sets_transitive(A, D, C)(AD, DC);
 			BD = equal_sets_transitive(B, C, D)(BC, equal_sets_symmetric(D, C)(DC));
-			<b style="color: blue">return </b>AC, BD;
-		} or {
+			<b style="color: blue;">return</b> AC, BD;
+		} <b style="color: green;">or</b> {
 			//Case 4
 			//The final case
 			BA = equal_sets_transitive(B, D, A)(BD, equal_sets_symmetric(A, D)(AD));
-			AC = branch(CA_or_CB, CA, CB){
-				<b style="color: blue">return </b>equal_sets_symmetric(C, A)(CA);
-			} or {
+			AC = <b style="color: green;">branch</b>(CA_or_CB, CA, CB){
+				<b style="color: blue;">return</b> equal_sets_symmetric(C, A)(CA);
+			} <b style="color: green;">or</b> {
 				CA = equal_sets_transitive(C, B, A)(CB, BA);
-				<b style="color: blue">return </b>equal_sets_symmetric(C, A)(CA);
+				<b style="color: blue;">return</b> equal_sets_symmetric(C, A)(CA);
 			};
-			<b style="color: blue">return </b>AC, BD;
+			<b style="color: blue;">return</b> AC, BD;
 		};
 	};
 }
 
-<b style="color: blue">prove </b>subset_transitive: *A*B*C(is_subset(A, B) & is_subset(B, C) -&gt is_subset(A, C)){
-	<b style="color: blue">given </b>|A, B, C|;
-	<b style="color: blue">implies </b>subset_both;
-	<b style="color: blue">extract </b>subset_both: subset_B, subset_C;
-	subset_B = expand(subset_B);
-	subset_C = expand(subset_C);
-	<b style="color: blue">prove </b>subset_def: *X(X in A -&gt X in C){
-		<b style="color: blue">given </b>|X|;
-		<b style="color: blue">implies </b>X_in_A;
-		<b style="color: blue">return </b>subset_C(X)(subset_B(X)(X_in_A));
+<b style="color: blue;">prove</b> subset_transitive: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C(is_subset(A, B) <b style="color: red;">&</b> is_subset(B, C) <b style="color: red;">-&gt</b> is_subset(A, C)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> subset_both;
+	<b style="color: blue;">extract</b> subset_both: subset_B, subset_C;
+	subset_B = <b style="color: green;">expand</b>(subset_B);
+	subset_C = <b style="color: green;">expand</b>(subset_C);
+	<b style="color: blue;">prove</b> subset_def: <b style="color: red;">*</b>X(X in A <b style="color: red;">-&gt</b> X in C){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> X_in_A;
+		<b style="color: blue;">return</b> subset_C(X)(subset_B(X)(X_in_A));
 	}
-	<b style="color: blue">return </b>#is_subset(A, C)(subset_def);
+	<b style="color: blue;">return</b> #is_subset(A, C)(subset_def);
 }
 
-<b style="color: blue">prove </b>pair_subset: *A*X(^Y^Z(Y in A & Z in A & is_pair(Y, Z, X)) -&gt is_subset(X, A)){
-	<b style="color: blue">given </b>|A, X|;
-	<b style="color: blue">implies </b>YZ_exist;
-	<b style="color: blue">extract </b>YZ_exist|Y, Z|: Y_in_A, Z_in_A, pair_X;
-	pair_X = expand(pair_X);
-	<b style="color: blue">prove </b>subset_def: *W(W in X -&gt W in A){
-		<b style="color: blue">given </b>|W|;
-		<b style="color: blue">implies </b>W_in_X;
-		<b style="color: blue">return </b>branch(pair_X(W)(W_in_X), equal_WY, equal_WZ){
-			<b style="color: blue">return </b>equality_consistency[&ltX: X in A&gt](Y, W)(equal_sets_symmetric(W, Y)(equal_WY))(Y_in_A);
-		} or {
-			<b style="color: blue">return </b>equality_consistency[&ltX: X in A&gt](Z, W)(equal_sets_symmetric(W, Z)(equal_WZ))(Z_in_A);
+<b style="color: blue;">prove</b> pair_subset: <b style="color: red;">*</b>A<b style="color: red;">*</b>X(<b style="color: red;">^</b>Y<b style="color: red;">^</b>Z(Y in A <b style="color: red;">&</b> Z in A <b style="color: red;">&</b> is_pair(Y, Z, X)) <b style="color: red;">-&gt</b> is_subset(X, A)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, X<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> YZ_exist;
+	<b style="color: blue;">extract</b> YZ_exist<b style="color: red;">|</b>Y, Z<b style="color: red;">|</b>: Y_in_A, Z_in_A, pair_X;
+	pair_X = <b style="color: green;">expand</b>(pair_X);
+	<b style="color: blue;">prove</b> subset_def: <b style="color: red;">*</b>W(W in X <b style="color: red;">-&gt</b> W in A){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>W<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> W_in_X;
+		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(pair_X(W)(W_in_X), equal_WY, equal_WZ){
+			<b style="color: blue;">return</b> equality_consistency[&ltX: X in A&gt](Y, W)(equal_sets_symmetric(W, Y)(equal_WY))(Y_in_A);
+		} <b style="color: green;">or</b> {
+			<b style="color: blue;">return</b> equality_consistency[&ltX: X in A&gt](Z, W)(equal_sets_symmetric(W, Z)(equal_WZ))(Z_in_A);
 		};
 	}
-	<b style="color: blue">return </b>#is_subset(X, A)(subset_def);
+	<b style="color: blue;">return</b> #is_subset(X, A)(subset_def);
 }
 
-<b style="color: blue">define </b>is_pairs(A, B, P): *X(X in P &lt-&gt ^Y^Z(Y in A & Z in B & is_pair(Y, Z, X)));
+<b style="color: blue;">define</b> is_pairs(A, B, P): <b style="color: red;">*</b>X(X in P <b style="color: red;">&lt-&gt</b> <b style="color: red;">^</b>Y<b style="color: red;">^</b>Z(Y in A <b style="color: red;">&</b> Z in B <b style="color: red;">&</b> is_pair(Y, Z, X)));
 
-<b style="color: blue">prove </b>pairs: *A*B^C(is_pairs(A, B, C)){
-	<b style="color: blue">given </b>|A, B|;
-	Q_contains_both = axiom_pairing(A, B)|Q|;
-	<b style="color: blue">extract </b>Q_contains_both: Q_contains_A, Q_contains_B;
-	U_union = axiom_union(Q)|U|;
-	P_power_set = axiom_power_set(U)|P|;
-	C_def = axiom_specify[&ltX: ^Y^Z(Y in A & Z in B & is_pair(Y, Z, X))&gt](P)|C|;
-	<b style="color: blue">choose </b>C;
-	<b style="color: blue">prove </b>pairs_def: *X(X in C &lt-&gt ^Y^Z(Y in A & Z in B & is_pair(Y, Z, X))){
-		<b style="color: blue">given </b>|X|;
-		<b style="color: blue">prove </b>lemma0: X in C -&gt ^Y^Z(Y in A & Z in B & is_pair(Y, Z, X)){
-			<b style="color: blue">implies </b>X_in_C;
-			<b style="color: blue">extract </b>C_def(X)(X_in_C): X_in_P, result;
-			<b style="color: blue">return </b>result;
+<b style="color: blue;">prove</b> pairs: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">^</b>C(is_pairs(A, B, C)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
+	Q_contains_both = axiom_pairing(A, B)<b style="color: red;">|</b>Q<b style="color: red;">|</b>;
+	<b style="color: blue;">extract</b> Q_contains_both: Q_contains_A, Q_contains_B;
+	U_union = axiom_union(Q)<b style="color: red;">|</b>U<b style="color: red;">|</b>;
+	P_power_set = axiom_power_set(U)<b style="color: red;">|</b>P<b style="color: red;">|</b>;
+	C_def = axiom_specify[&ltX: <b style="color: red;">^</b>Y<b style="color: red;">^</b>Z(Y in A <b style="color: red;">&</b> Z in B <b style="color: red;">&</b> is_pair(Y, Z, X))&gt](P)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
+	<b style="color: blue;">choose</b> C;
+	<b style="color: blue;">prove</b> pairs_def: <b style="color: red;">*</b>X(X in C <b style="color: red;">&lt-&gt</b> <b style="color: red;">^</b>Y<b style="color: red;">^</b>Z(Y in A <b style="color: red;">&</b> Z in B <b style="color: red;">&</b> is_pair(Y, Z, X))){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma0: X in C <b style="color: red;">-&gt</b> <b style="color: red;">^</b>Y<b style="color: red;">^</b>Z(Y in A <b style="color: red;">&</b> Z in B <b style="color: red;">&</b> is_pair(Y, Z, X)){
+			<b style="color: blue;">implies</b> X_in_C;
+			<b style="color: blue;">extract</b> C_def(X)(X_in_C): X_in_P, result;
+			<b style="color: blue;">return</b> result;
 		}
-		<b style="color: blue">prove </b>lemma1: ^Y^Z(Y in A & Z in B & is_pair(Y, Z, X)) -&gt X in C{
-			<b style="color: blue">implies </b>premise;
-			<b style="color: blue">extract </b>premise|Y, Z|: Y_in_A, Z_in_B, pair_X;
+		<b style="color: blue;">prove</b> lemma1: <b style="color: red;">^</b>Y<b style="color: red;">^</b>Z(Y in A <b style="color: red;">&</b> Z in B <b style="color: red;">&</b> is_pair(Y, Z, X)) <b style="color: red;">-&gt</b> X in C{
+			<b style="color: blue;">implies</b> premise;
+			<b style="color: blue;">extract</b> premise<b style="color: red;">|</b>Y, Z<b style="color: red;">|</b>: Y_in_A, Z_in_B, pair_X;
 			Y_in_U = U_union(A, Y)(Q_contains_A, Y_in_A);
 			Z_in_U = U_union(B, Z)(Q_contains_B, Z_in_B);
-			<b style="color: blue">prove </b>lemma: ^Y^Z(Y in U & Z in U & is_pair(Y, Z, X)){
-				<b style="color: blue">choose </b>Y, Z;
-				<b style="color: blue">return </b>Y_in_U, Z_in_U, pair_X;
+			<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>Y<b style="color: red;">^</b>Z(Y in U <b style="color: red;">&</b> Z in U <b style="color: red;">&</b> is_pair(Y, Z, X)){
+				<b style="color: blue;">choose</b> Y, Z;
+				<b style="color: blue;">return</b> Y_in_U, Z_in_U, pair_X;
 			}
 			X_subset_U = pair_subset(U, X)(lemma);
 			X_in_P = P_power_set(X)(X_subset_U);
-			<b style="color: blue">return </b>C_def(X)(X_in_P, premise);
+			<b style="color: blue;">return</b> C_def(X)(X_in_P, premise);
 		}
-		<b style="color: blue">return </b>iff(lemma0, lemma1);
+		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
 	}
-	<b style="color: blue">return </b>#is_pairs(A, B, C)(pairs_def);
+	<b style="color: blue;">return</b> #is_pairs(A, B, C)(pairs_def);
 }
 
-<b style="color: blue">define </b>is_cross_product(A, B, C): *X(X in C &lt-&gt ^D^E(D in A & E in B & is_tuple(D, E, X)));
+<b style="color: blue;">define</b> is_cross_product(A, B, C): <b style="color: red;">*</b>X(X in C <b style="color: red;">&lt-&gt</b> <b style="color: red;">^</b>D<b style="color: red;">^</b>E(D in A <b style="color: red;">&</b> E in B <b style="color: red;">&</b> is_tuple(D, E, X)));
 
-<b style="color: blue">prove </b>cross_product: *A*B^C(is_cross_product(A, B, C)){
-	<b style="color: blue">given </b>|A, B|;
-	pairs_AA = pairs(A, A)|PAIRS_AA|;
-	pairs_AA = expand(pairs_AA);
-	pairs_AB = pairs(A, B)|PAIRS_AB|;
-	pairs_AB = expand(pairs_AB);
-	CBIG_def = pairs(PAIRS_AA, PAIRS_AB)|CBIG|;
-	CBIG_def = expand(CBIG_def);
-	C_def = axiom_specify[&ltX: ^Y^Z(Y in A & Z in B & is_tuple(Y, Z, X))&gt](CBIG)|C|;
-	<b style="color: blue">choose </b>C;
-	<b style="color: blue">prove </b>cross_product_def: *X(X in C &lt-&gt ^D^E(D in A & E in B & is_tuple(D, E, X))){
-		<b style="color: blue">given </b>|X|;
-		<b style="color: blue">prove </b>lemma0: X in C -&gt ^D^E(D in A & E in B & is_tuple(D, E, X)){
-			<b style="color: blue">implies </b>X_in_C;
-			<b style="color: blue">extract </b>C_def(X)(X_in_C): X_in_CBIG, result;
-			<b style="color: blue">return </b>result;
+<b style="color: blue;">prove</b> cross_product: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">^</b>C(is_cross_product(A, B, C)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
+	pairs_AA = pairs(A, A)<b style="color: red;">|</b>PAIRS_AA<b style="color: red;">|</b>;
+	pairs_AA = <b style="color: green;">expand</b>(pairs_AA);
+	pairs_AB = pairs(A, B)<b style="color: red;">|</b>PAIRS_AB<b style="color: red;">|</b>;
+	pairs_AB = <b style="color: green;">expand</b>(pairs_AB);
+	CBIG_def = pairs(PAIRS_AA, PAIRS_AB)<b style="color: red;">|</b>CBIG<b style="color: red;">|</b>;
+	CBIG_def = <b style="color: green;">expand</b>(CBIG_def);
+	C_def = axiom_specify[&ltX: <b style="color: red;">^</b>Y<b style="color: red;">^</b>Z(Y in A <b style="color: red;">&</b> Z in B <b style="color: red;">&</b> is_tuple(Y, Z, X))&gt](CBIG)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
+	<b style="color: blue;">choose</b> C;
+	<b style="color: blue;">prove</b> cross_product_def: <b style="color: red;">*</b>X(X in C <b style="color: red;">&lt-&gt</b> <b style="color: red;">^</b>D<b style="color: red;">^</b>E(D in A <b style="color: red;">&</b> E in B <b style="color: red;">&</b> is_tuple(D, E, X))){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma0: X in C <b style="color: red;">-&gt</b> <b style="color: red;">^</b>D<b style="color: red;">^</b>E(D in A <b style="color: red;">&</b> E in B <b style="color: red;">&</b> is_tuple(D, E, X)){
+			<b style="color: blue;">implies</b> X_in_C;
+			<b style="color: blue;">extract</b> C_def(X)(X_in_C): X_in_CBIG, result;
+			<b style="color: blue;">return</b> result;
 		}
-		<b style="color: blue">prove </b>lemma1: ^D^E(D in A & E in B & is_tuple(D, E, X)) -&gt X in C{
-			<b style="color: blue">implies </b>DE_exist;
-			<b style="color: blue">extract </b>DE_exist|D, E|: D_in_A, E_in_B, tuple_X;
-			tuple_X = expand(tuple_X);
-			<b style="color: blue">extract </b>tuple_X|PAIR_DD, PAIR_DE|: pair_DD, pair_DE, pair_X;
-			<b style="color: blue">prove </b>lemma: ^J^K(J in A & K in A & is_pair(J, K, PAIR_DD)){
-				<b style="color: blue">choose </b>D, D;
-				<b style="color: blue">return </b>D_in_A, D_in_A, pair_DD;
+		<b style="color: blue;">prove</b> lemma1: <b style="color: red;">^</b>D<b style="color: red;">^</b>E(D in A <b style="color: red;">&</b> E in B <b style="color: red;">&</b> is_tuple(D, E, X)) <b style="color: red;">-&gt</b> X in C{
+			<b style="color: blue;">implies</b> DE_exist;
+			<b style="color: blue;">extract</b> DE_exist<b style="color: red;">|</b>D, E<b style="color: red;">|</b>: D_in_A, E_in_B, tuple_X;
+			tuple_X = <b style="color: green;">expand</b>(tuple_X);
+			<b style="color: blue;">extract</b> tuple_X<b style="color: red;">|</b>PAIR_DD, PAIR_DE<b style="color: red;">|</b>: pair_DD, pair_DE, pair_X;
+			<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>J<b style="color: red;">^</b>K(J in A <b style="color: red;">&</b> K in A <b style="color: red;">&</b> is_pair(J, K, PAIR_DD)){
+				<b style="color: blue;">choose</b> D, D;
+				<b style="color: blue;">return</b> D_in_A, D_in_A, pair_DD;
 			}
 			PAIR_DD_in_PAIRS_AA = pairs_AA(PAIR_DD)(lemma);
-			<b style="color: blue">prove </b>lemma: ^J^K(J in A & K in B & is_pair(J, K, PAIR_DE)){
-				<b style="color: blue">choose </b>D, E;
-				<b style="color: blue">return </b>D_in_A, E_in_B, pair_DE;
+			<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>J<b style="color: red;">^</b>K(J in A <b style="color: red;">&</b> K in B <b style="color: red;">&</b> is_pair(J, K, PAIR_DE)){
+				<b style="color: blue;">choose</b> D, E;
+				<b style="color: blue;">return</b> D_in_A, E_in_B, pair_DE;
 			}
 			PAIR_DE_in_PAIRS_AB = pairs_AB(PAIR_DE)(lemma);
-			<b style="color: blue">prove </b>lemma: ^J^K(J in PAIRS_AA & K in PAIRS_AB & is_pair(J, K, X)){
-				<b style="color: blue">choose </b>PAIR_DD, PAIR_DE;
-				<b style="color: blue">return </b>PAIR_DD_in_PAIRS_AA, PAIR_DE_in_PAIRS_AB, pair_X;
+			<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>J<b style="color: red;">^</b>K(J in PAIRS_AA <b style="color: red;">&</b> K in PAIRS_AB <b style="color: red;">&</b> is_pair(J, K, X)){
+				<b style="color: blue;">choose</b> PAIR_DD, PAIR_DE;
+				<b style="color: blue;">return</b> PAIR_DD_in_PAIRS_AA, PAIR_DE_in_PAIRS_AB, pair_X;
 			}
 			X_in_CBIG = CBIG_def(X)(lemma);
-			<b style="color: blue">return </b>C_def(X)(X_in_CBIG, DE_exist);
+			<b style="color: blue;">return</b> C_def(X)(X_in_CBIG, DE_exist);
 		}
-		<b style="color: blue">return </b>iff(lemma0, lemma1);
+		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
 	}
-	<b style="color: blue">return </b>#is_cross_product(A, B, C)(cross_product_def);
+	<b style="color: blue;">return</b> #is_cross_product(A, B, C)(cross_product_def);
 }
 
-<b style="color: blue">define </b>is_intersection(A, B): *X(X in B &lt-&gt *Y(Y in A -&gt X in Y));
+<b style="color: blue;">define</b> is_intersection(A, B): <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> <b style="color: red;">*</b>Y(Y in A <b style="color: red;">-&gt</b> X in Y));
 
 //The intersection only exists when the set isn't empty!
-<b style="color: blue">prove </b>intersection: *A(not_empty(A) -&gt ^B(is_intersection(A, B))){
-	<b style="color: blue">given </b>|A|;
-	<b style="color: blue">implies </b>contains;
-	S_in_A = expand(contains)|S|;
-	U_union = expand(union(A)|U|);
-	B_def = axiom_specify[&ltX: *Y(Y in A -&gt X in Y)&gt](U)|B|;
-	<b style="color: blue">choose </b>B;
-	<b style="color: blue">prove </b>intersection_def: *X(X in B &lt-&gt *Y(Y in A -&gt X in Y)){
-		<b style="color: blue">given </b>|X|;
-		<b style="color: blue">prove </b>lemma0: X in B -&gt *Y(Y in A -&gt X in Y){
-			<b style="color: blue">implies </b>X_in_B;
-			<b style="color: blue">extract </b>B_def(X)(X_in_B): X_in_U, result;
-			<b style="color: blue">return </b>result;
+<b style="color: blue;">prove</b> intersection: <b style="color: red;">*</b>A(not_empty(A) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>B(is_intersection(A, B))){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> contains;
+	S_in_A = <b style="color: green;">expand</b>(contains)<b style="color: red;">|</b>S<b style="color: red;">|</b>;
+	U_union = <b style="color: green;">expand</b>(union(A)<b style="color: red;">|</b>U<b style="color: red;">|</b>);
+	B_def = axiom_specify[&ltX: <b style="color: red;">*</b>Y(Y in A <b style="color: red;">-&gt</b> X in Y)&gt](U)<b style="color: red;">|</b>B<b style="color: red;">|</b>;
+	<b style="color: blue;">choose</b> B;
+	<b style="color: blue;">prove</b> intersection_def: <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> <b style="color: red;">*</b>Y(Y in A <b style="color: red;">-&gt</b> X in Y)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma0: X in B <b style="color: red;">-&gt</b> <b style="color: red;">*</b>Y(Y in A <b style="color: red;">-&gt</b> X in Y){
+			<b style="color: blue;">implies</b> X_in_B;
+			<b style="color: blue;">extract</b> B_def(X)(X_in_B): X_in_U, result;
+			<b style="color: blue;">return</b> result;
 		}
-		<b style="color: blue">prove </b>lemma1: *Y(Y in A -&gt X in Y) -&gt X in B{
-			<b style="color: blue">implies </b>intersect_condition;
+		<b style="color: blue;">prove</b> lemma1: <b style="color: red;">*</b>Y(Y in A <b style="color: red;">-&gt</b> X in Y) <b style="color: red;">-&gt</b> X in B{
+			<b style="color: blue;">implies</b> intersect_condition;
 			X_in_S = intersect_condition(S)(S_in_A);
-			<b style="color: blue">prove </b>lemma: ^S(S in A & X in S){
-				<b style="color: blue">choose </b>S;
-				<b style="color: blue">return </b>S_in_A, X_in_S;
+			<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>S(S in A <b style="color: red;">&</b> X in S){
+				<b style="color: blue;">choose</b> S;
+				<b style="color: blue;">return</b> S_in_A, X_in_S;
 			}
 			X_in_U = U_union(X)(lemma);
-			<b style="color: blue">return </b>B_def(X)(X_in_U, intersect_condition);
+			<b style="color: blue;">return</b> B_def(X)(X_in_U, intersect_condition);
 		}
-		<b style="color: blue">return </b>iff(lemma0, lemma1);
+		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
 	}
-	<b style="color: blue">return </b>#is_intersection(A, B)(intersection_def);
+	<b style="color: blue;">return</b> #is_intersection(A, B)(intersection_def);
 }
 
-<b style="color: blue">prove </b>intersection_unique: *A*B*C(is_intersection(A, B) & is_intersection(A, C) -&gt equal_sets(B, C)){
-	<b style="color: blue">given </b>|A, B, C|;
-	<b style="color: blue">implies </b>intersection_both;
-	<b style="color: blue">extract </b>intersection_both: intersection_B, intersection_C;
-	<b style="color: blue">return </b>definition_uniqueness_lemma[&ltX: *Y(Y in A -&gt X in Y)&gt](B, C)(expand(intersection_B), expand(intersection_C));
+<b style="color: blue;">prove</b> intersection_unique: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C(is_intersection(A, B) <b style="color: red;">&</b> is_intersection(A, C) <b style="color: red;">-&gt</b> equal_sets(B, C)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> intersection_both;
+	<b style="color: blue;">extract</b> intersection_both: intersection_B, intersection_C;
+	<b style="color: blue;">return</b> definition_uniqueness_lemma[&ltX: <b style="color: red;">*</b>Y(Y in A <b style="color: red;">-&gt</b> X in Y)&gt](B, C)(<b style="color: green;">expand</b>(intersection_B), <b style="color: green;">expand</b>(intersection_C));
 }
 
 </code></div></body></html>
