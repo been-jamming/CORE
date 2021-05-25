@@ -1,0 +1,9 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">pair_equal_condition</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove pair_equal_condition: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C<b style="color: red;">*</b>D<b style="color: red;">*</b>E<b style="color: red;">*</b>F(is_pair(A, B, E) <b style="color: red;">&</b> is_pair(C, D, F) <b style="color: red;">&</b> equal_sets(E, F) <b style="color: red;">-&gt</b> equal_sets(A, C) <b style="color: red;">|</b> equal_sets(A, D)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C, D, E, F<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> pair_E, pair_F, equal_EF;
+	pair_E = <b style="color: green;">expand</b>(pair_E);
+	pair_F = <b style="color: green;">expand</b>(pair_F);
+	A_in_E = pair_E(A)(<b style="color: green;">or</b>(equal_sets_reflexive(A), &lt:equal_sets(A, B)&gt));
+	pair_E = equality_consistency[&ltX: <b style="color: red;">*</b>Y(Y in X <b style="color: red;">&lt-&gt</b> equal_sets(Y, C) <b style="color: red;">|</b> equal_sets(Y, D))&gt](E, F)(equal_EF)(pair_F);
+	<b style="color: blue;">return</b> pair_E(A)(A_in_E);
+}</code></body></html>

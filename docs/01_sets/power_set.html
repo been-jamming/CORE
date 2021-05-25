@@ -1,0 +1,21 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">power_set</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove power_set: <b style="color: red;">*</b>A<b style="color: red;">^</b>B(is_power_set(A, B)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A<b style="color: red;">|</b>;
+	contains_subsets = axiom_power_set(A)<b style="color: red;">|</b>B_BIG<b style="color: red;">|</b>;
+	restricted = axiom_specify[&ltX: is_subset(X, A)&gt](B_BIG)<b style="color: red;">|</b>B<b style="color: red;">|</b>;
+	<b style="color: blue;">choose</b> B;
+	<b style="color: blue;">prove</b> power_set_def: <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> is_subset(X, A)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma0: X in B <b style="color: red;">-&gt</b> is_subset(X, A){
+			<b style="color: blue;">implies</b> X_in_B;
+			<b style="color: blue;">extract</b> restricted(X)(X_in_B): X_in_B_BIG, result;
+			<b style="color: blue;">return</b> result;
+		}
+		<b style="color: blue;">prove</b> lemma1: is_subset(X, A) <b style="color: red;">-&gt</b> X in B{
+			<b style="color: blue;">implies</b> X_subset_A;
+			X_in_B_BIG = contains_subsets(X)(X_subset_A);
+			<b style="color: blue;">return</b> restricted(X)(X_in_B_BIG, X_subset_A);
+		}
+		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
+	}
+	<b style="color: blue;">return</b> #is_power_set(A, B)(power_set_def);
+}</code></body></html>

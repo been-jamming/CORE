@@ -1,0 +1,7 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">empty_set_exists</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove empty_set_exists: <b style="color: red;">^</b>E<b style="color: red;">*</b>X(~X in E){
+	inductive = <b style="color: green;">expand</b>(axiom_infinity<b style="color: red;">|</b>INDUCTIVE_SET<b style="color: red;">|</b>);
+	<b style="color: blue;">extract</b> inductive: exists, closure;
+	<b style="color: blue;">extract</b> exists<b style="color: red;">|</b>EMPTY<b style="color: red;">|</b>: member, empty;
+	<b style="color: blue;">choose</b> EMPTY;
+	<b style="color: blue;">return</b> <b style="color: green;">expand</b>(empty);
+}</code></body></html>

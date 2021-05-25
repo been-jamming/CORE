@@ -1,0 +1,12 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">tuple</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove tuple: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">^</b>C(is_tuple(A, B, C)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
+	E_pair = pair(A, A)<b style="color: red;">|</b>E<b style="color: red;">|</b>;
+	F_pair = pair(A, B)<b style="color: red;">|</b>F<b style="color: red;">|</b>;
+	C_pair = pair(E, F)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
+	<b style="color: blue;">choose</b> C;
+	<b style="color: blue;">prove</b> tuple_def: <b style="color: red;">^</b>E<b style="color: red;">^</b>F(is_pair(A, A, E) <b style="color: red;">&</b> is_pair(A, B, F) <b style="color: red;">&</b> is_pair(E, F, C)){
+		<b style="color: blue;">choose</b> E, F;
+		<b style="color: blue;">return</b> E_pair, F_pair, C_pair;
+	}
+	<b style="color: blue;">return</b> #is_tuple(A, B, C)(tuple_def);
+}</code></body></html>

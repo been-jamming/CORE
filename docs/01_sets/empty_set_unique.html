@@ -1,0 +1,20 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">empty_set_unique</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove empty_set_unique: <b style="color: red;">*</b>E<b style="color: red;">*</b>F(is_empty(E) <b style="color: red;">&</b> is_empty(F) <b style="color: red;">-&gt</b> equal_sets(E, F)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>E, F<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> both_empty;
+	<b style="color: blue;">extract</b> both_empty: empty_E, empty_F;
+	empty_E = <b style="color: green;">expand</b>(empty_E);
+	empty_F = <b style="color: green;">expand</b>(empty_F);
+	<b style="color: blue;">prove</b> equal_def: <b style="color: red;">*</b>X(X in E <b style="color: red;">&lt-&gt</b> X in F){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma0: X in E <b style="color: red;">-&gt</b> X in F{
+			<b style="color: blue;">implies</b> X_in_E;
+			<b style="color: blue;">return</b> axiom_absurdity[goal](empty_E(X)(X_in_E));
+		}
+		<b style="color: blue;">prove</b> lemma1: X in F <b style="color: red;">-&gt</b> X in E{
+			<b style="color: blue;">implies</b> X_in_F;
+			<b style="color: blue;">return</b> axiom_absurdity[goal](empty_F(X)(X_in_F));
+		}
+		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
+	}
+	<b style="color: blue;">return</b> #equal_sets(E, F)(equal_def);
+}</code></body></html>

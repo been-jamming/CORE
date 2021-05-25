@@ -1,0 +1,6 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">power_set_unique</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove power_set_unique: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C(is_power_set(A, B) <b style="color: red;">&</b> is_power_set(A, C) <b style="color: red;">-&gt</b> equal_sets(B, C)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> both_power_set;
+	<b style="color: blue;">extract</b> both_power_set: power_set_B, power_set_C;
+	<b style="color: blue;">return</b> definition_uniqueness_lemma[&ltX: is_subset(X, A)&gt](B, C)(<b style="color: green;">expand</b>(power_set_B), <b style="color: green;">expand</b>(power_set_C));
+}</code></body></html>

@@ -1,0 +1,6 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">union_unique</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove union_unique: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C(is_union(A, B) <b style="color: red;">&</b> is_union(A, C) <b style="color: red;">-&gt</b> equal_sets(B, C)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> union_both;
+	<b style="color: blue;">extract</b> union_both: union_B, union_C;
+	<b style="color: blue;">return</b> definition_uniqueness_lemma[&ltX: <b style="color: red;">^</b>Y(Y in A <b style="color: red;">&</b> X in Y)&gt](B, C)(<b style="color: green;">expand</b>(union_B), <b style="color: green;">expand</b>(union_C));
+}</code></body></html>

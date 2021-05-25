@@ -1,0 +1,32 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">equivalence_classes</div><div class="result_description">Description: Prove that equivalence classes exist for any equivalence relation
+</div><code style="white-space: pre-wrap;">prove equivalence_classes: <b style="color: red;">*</b>A<b style="color: red;">*</b>R(is_equivalence_relation(R, A) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>C(is_equivalence_classes(R, A, C))){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, R<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> equiv_relation;
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(equiv_relation): reflexive, symmetric, transitive;
+	power_set_P = <b style="color: green;">expand</b>(power_set(A)<b style="color: red;">|</b>P<b style="color: red;">|</b>);
+	C_def = axiom_specify[&ltS: is_equivalence_class(R, A, S)&gt](P)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
+	<b style="color: blue;">choose</b> C;
+	<b style="color: blue;">prove</b> equiv_classes_def: <b style="color: red;">*</b>Y(Y in C <b style="color: red;">&lt-&gt</b> is_equivalence_class(R, A, Y)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>Y<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma0: Y in C <b style="color: red;">-&gt</b> is_equivalence_class(R, A, Y){
+			<b style="color: blue;">implies</b> Y_in_C;
+			<b style="color: blue;">extract</b> C_def(Y)(Y_in_C): Y_in_P, result;
+			<b style="color: blue;">return</b> result;
+		}
+		<b style="color: blue;">prove</b> lemma1: is_equivalence_class(R, A, Y) <b style="color: red;">-&gt</b> Y in C{
+			<b style="color: blue;">implies</b> equiv_class;
+			<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(equiv_class)<b style="color: red;">|</b>Y_REP<b style="color: red;">|</b>: Y_REP_in_A, closure;
+			<b style="color: blue;">prove</b> subset_def: <b style="color: red;">*</b>J(J in Y <b style="color: red;">-&gt</b> J in A){
+				<b style="color: blue;">given</b> <b style="color: red;">|</b>J<b style="color: red;">|</b>;
+				<b style="color: blue;">implies</b> J_in_Y;
+				<b style="color: blue;">extract</b> closure(J)(J_in_Y): J_in_A, related_Y_REP_J;
+				<b style="color: blue;">return</b> J_in_A;
+			}
+			Y_subset_A = #is_subset(Y, A)(subset_def);
+			Y_in_P = power_set_P(Y)(Y_subset_A);
+			<b style="color: blue;">return</b> C_def(Y)(Y_in_P, equiv_class);
+		}
+		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
+	}
+	<b style="color: blue;">return</b> #is_equivalence_classes(R, A, C)(equiv_classes_def);
+}</code></body></html>

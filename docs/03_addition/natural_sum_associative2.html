@@ -1,0 +1,11 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">natural_sum_associative2</div><div class="result_description">Description: Prove associativity in the other direction
+We can actually just use the previous proof and commutativity. Watch!
+</div><code style="white-space: pre-wrap;">prove natural_sum_associative2: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y<b style="color: red;">*</b>Z<b style="color: red;">*</b>S<b style="color: red;">*</b>SXY<b style="color: red;">*</b>SYZ(is_natural_sum(Y, Z, SYZ) <b style="color: red;">&</b> is_natural_sum(X, SYZ, S) <b style="color: red;">&</b> is_natural_sum(X, Y, SXY) <b style="color: red;">-&gt</b> is_natural_sum(SXY, Z, S)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Y, Z, S, SXY, SYZ<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> sum_SYZ, sum_S, sum_SXY;
+	sum_S = natural_sum_commutative(X, SYZ, S)(sum_S);
+	sum_SYZ = natural_sum_commutative(Y, Z, SYZ)(sum_SYZ);
+	sum_SXY = natural_sum_commutative(X, Y, SXY)(sum_SXY);
+	sum_S = natural_sum_associative(Z, Y, X, S, SYZ, SXY)(sum_SYZ, sum_S, sum_SXY);
+	<b style="color: blue;">return</b> natural_sum_commutative(Z, SXY, S)(sum_S);
+}</code></body></html>

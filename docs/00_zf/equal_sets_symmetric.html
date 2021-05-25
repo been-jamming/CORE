@@ -1,0 +1,9 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">equal_sets_symmetric</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove equal_sets_symmetric: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(equal_sets(A, B) <b style="color: red;">-&gt</b> equal_sets(B, A)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> equal_AB;
+	<b style="color: blue;">prove</b> def: <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> X in A){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">return</b> <b style="color: green;">expand</b>(equal_AB)(X);
+	}
+	<b style="color: blue;">return</b> #equal_sets(B, A)(def);
+}</code></body></html>

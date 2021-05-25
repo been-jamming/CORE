@@ -1,0 +1,43 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">successor</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove successor: <b style="color: red;">*</b>A<b style="color: red;">^</b>B(is_successor(A, B)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A<b style="color: red;">|</b>;
+	pair_AA = pair(A, A)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
+	pair_AC = pair(A, C)<b style="color: red;">|</b>D<b style="color: red;">|</b>;
+	union_B = union(D)<b style="color: red;">|</b>B<b style="color: red;">|</b>;
+	<b style="color: blue;">choose</b> B;
+	<b style="color: blue;">prove</b> successor_def: <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> X in A <b style="color: red;">|</b> equal_sets(X, A)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma0: X in B <b style="color: red;">-&gt</b> X in A <b style="color: red;">|</b> equal_sets(X, A){
+			<b style="color: blue;">implies</b> X_in_B;
+			<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(union_B)(X)(X_in_B)<b style="color: red;">|</b>Y<b style="color: red;">|</b>: Y_in_D, X_in_Y;
+			equal_A_or_C = <b style="color: green;">expand</b>(pair_AC)(Y)(Y_in_D);
+			<b style="color: blue;">return</b> <b style="color: green;">branch</b>(equal_A_or_C, equal_A, equal_C){
+				X_in_A = equality_consistency[&ltS: X in S&gt](Y, A)(equal_A)(X_in_Y);
+				<b style="color: blue;">return</b> <b style="color: green;">or</b>(X_in_A, &lt:equal_sets(X, A)&gt);
+			} <b style="color: green;">or</b> {
+				X_in_C = equality_consistency[&ltS: X in S&gt](Y, C)(equal_C)(X_in_Y);
+				equal_A_or = <b style="color: green;">expand</b>(pair_AA)(X)(X_in_C);
+				equal_A = <b style="color: green;">branch</b>(equal_A_or, equal_A, equal_A){<b style="color: blue;">return</b> equal_A;} <b style="color: green;">or</b> {<b style="color: blue;">return</b> equal_A;};
+				<b style="color: blue;">return</b> <b style="color: green;">or</b>(&lt:X in A&gt, equal_A);
+			};
+		}
+		<b style="color: blue;">prove</b> lemma1: X in A <b style="color: red;">|</b> equal_sets(X, A) <b style="color: red;">-&gt</b> X in B{
+			<b style="color: blue;">implies</b> premise;
+			<b style="color: blue;">return</b> <b style="color: green;">branch</b>(premise, X_in_A, equal_XA){
+				<b style="color: blue;">prove</b> union_def: <b style="color: red;">^</b>Y(Y in D <b style="color: red;">&</b> X in Y){
+					<b style="color: blue;">choose</b> A;
+					<b style="color: blue;">return</b> <b style="color: green;">expand</b>(pair_AC)(A)(<b style="color: green;">or</b>(equal_sets_reflexive(A), &lt:equal_sets(A, C)&gt)), X_in_A;
+				}
+				<b style="color: blue;">return</b> <b style="color: green;">expand</b>(union_B)(X)(union_def);
+			} <b style="color: green;">or</b> {
+				X_in_C = <b style="color: green;">expand</b>(pair_AA)(X)(<b style="color: green;">or</b>(equal_XA, equal_XA));
+				<b style="color: blue;">prove</b> union_def: <b style="color: red;">^</b>Y(Y in D <b style="color: red;">&</b> X in Y){
+					<b style="color: blue;">choose</b> C;
+					<b style="color: blue;">return</b> <b style="color: green;">expand</b>(pair_AC)(C)(<b style="color: green;">or</b>(&lt:equal_sets(C, A)&gt, equal_sets_reflexive(C))), X_in_C;
+				}
+				<b style="color: blue;">return</b> <b style="color: green;">expand</b>(union_B)(X)(union_def);
+			};
+		}
+		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
+	}
+	<b style="color: blue;">return</b> #is_successor(A, B)(successor_def);
+}</code></body></html>

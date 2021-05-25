@@ -1,0 +1,29 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">NATURALS_inductive</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove NATURALS_inductive: is_inductive_set(NATURALS){
+	<b style="color: blue;">prove</b> lemma0: <b style="color: red;">^</b>E(E in NATURALS <b style="color: red;">&</b> is_empty(E)){
+		<b style="color: blue;">choose</b> EMPTY_SET;
+		empty = #is_empty(EMPTY_SET)(empty_set_condition);
+		<b style="color: blue;">prove</b> lemma: <b style="color: red;">*</b>I(is_inductive_set(I) <b style="color: red;">-&gt</b> EMPTY_SET in I){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>I<b style="color: red;">|</b>;
+			<b style="color: blue;">implies</b> is_inductive;
+			<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(is_inductive): empty_condition, closure;
+			<b style="color: blue;">extract</b> empty_condition<b style="color: red;">|</b>EMPTY_OTHER<b style="color: red;">|</b>: empty_in, is_empty_other;
+			empty_equal = empty_set_unique(EMPTY_OTHER, EMPTY_SET)(is_empty_other, empty);
+			<b style="color: blue;">return</b> equality_consistency[&ltX: X in I&gt](EMPTY_OTHER, EMPTY_SET)(empty_equal)(empty_in);
+		}
+		<b style="color: blue;">return</b> naturals_definition(EMPTY_SET)(lemma), empty;
+	}
+	<b style="color: blue;">prove</b> lemma1: <b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(Y in NATURALS <b style="color: red;">&</b> is_successor(Y, Z) <b style="color: red;">-&gt</b> Z in NATURALS){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>Y, Z<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> both;
+		<b style="color: blue;">extract</b> both: Y_in_NATURALS, Z_successor;
+		<b style="color: blue;">prove</b> lemma: <b style="color: red;">*</b>I(is_inductive_set(I) <b style="color: red;">-&gt</b> Z in I){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>I<b style="color: red;">|</b>;
+			<b style="color: blue;">implies</b> is_inductive;
+			<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(is_inductive): empty_condition, closure;
+			Y_in_I = naturals_definition(Y)(Y_in_NATURALS)(I)(is_inductive);
+			<b style="color: blue;">return</b> closure(Y, Z)(Y_in_I, Z_successor);
+		}
+		<b style="color: blue;">return</b> naturals_definition(Z)(lemma);
+	}
+	<b style="color: blue;">return</b> #is_inductive_set(NATURALS)(lemma0, lemma1);
+}</code></body></html>

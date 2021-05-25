@@ -1,0 +1,13 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">natural_sum_unique</div><div class="result_description">Description: We also have to prove that the sum of two natural numbers is unique
+</div><code style="white-space: pre-wrap;">prove natural_sum_unique: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y<b style="color: red;">*</b>Z0<b style="color: red;">*</b>Z1(is_natural_sum(X, Y, Z0) <b style="color: red;">&</b> is_natural_sum(X, Y, Z1) <b style="color: red;">-&gt</b> equal_sets(Z0, Z1)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Y, Z0, Z1<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> natural_sum_Z0, natural_sum_Z1;
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(naturals_addition_function_definition): is_function, domain_exists, codomain_NATURALS, zero_identity, successor_recursion;
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(natural_sum_Z0): X_in_NATURALS, Y_in_NATURALS, T0_exists;
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(natural_sum_Z1): X_in_NATURALS, Y_in_NATURALS, T1_exists;
+	<b style="color: blue;">extract</b> T0_exists<b style="color: red;">|</b>T0<b style="color: red;">|</b>: tuple_T0, related_T0_Z0;
+	<b style="color: blue;">extract</b> T1_exists<b style="color: red;">|</b>T1<b style="color: red;">|</b>: tuple_T1, related_T1_Z1;
+	equal_T = tuple_unique(X, Y, T0, T1)(tuple_T0, tuple_T1);
+	related_T0_Z1 = equality_consistency[&ltS: are_related(S, Z1, NATURALS_ADDITION_FUNCTION)&gt](T0, T1)(equal_T)(related_T1_Z1);
+	<b style="color: blue;">return</b> <b style="color: green;">expand</b>(is_function)(T0, Z0, Z1)(related_T0_Z0, related_T0_Z1);
+}</code></body></html>

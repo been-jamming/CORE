@@ -1,0 +1,17 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">TWO_plus_TWO_is_FOUR</div><div class="result_description">Description: TIME TO PROVE THAT 2+2=4
+</div><code style="white-space: pre-wrap;">prove TWO_plus_TWO_is_FOUR: is_natural_sum(TWO, TWO, FOUR){
+	ZERO_plus_TWO = natural_sum_zero_identity(TWO)(two_is_natural);
+	exists = natural_sum_successor_recursion(ZERO, TWO, TWO)(ZERO_plus_TWO);
+	<b style="color: blue;">extract</b> exists<b style="color: red;">|</b>OTHER_ONE, OTHER_THREE<b style="color: red;">|</b>: successor_OTHER_ONE, successor_OTHER_THREE, natural_sum;
+	equal_ONE = successor_unique(ZERO, ONE, OTHER_ONE)(one_definition, successor_OTHER_ONE);
+	equal_THREE = successor_unique(TWO, THREE, OTHER_THREE)(three_definition, successor_OTHER_THREE);
+	natural_sum = equality_consistency[&ltS: is_natural_sum(OTHER_ONE, TWO, S)&gt](THREE, OTHER_THREE)(equal_THREE)(natural_sum);
+	natural_sum = equality_consistency[&ltS: is_natural_sum(S, TWO, THREE)&gt](ONE, OTHER_ONE)(equal_ONE)(natural_sum);
+
+	exists = natural_sum_successor_recursion(ONE, TWO, THREE)(natural_sum);
+	<b style="color: blue;">extract</b> exists<b style="color: red;">|</b>OTHER_TWO, OTHER_FOUR<b style="color: red;">|</b>: successor_OTHER_TWO, successor_OTHER_FOUR, natural_sum;
+	equal_TWO = successor_unique(ONE, TWO, OTHER_TWO)(two_definition, successor_OTHER_TWO);
+	equal_FOUR = successor_unique(THREE, FOUR, OTHER_FOUR)(four_definition, successor_OTHER_FOUR);
+	natural_sum = equality_consistency[&ltS: is_natural_sum(OTHER_TWO, TWO, S)&gt](FOUR, OTHER_FOUR)(equal_FOUR)(natural_sum);
+	<b style="color: blue;">return</b> equality_consistency[&ltS: is_natural_sum(S, TWO, FOUR)&gt](TWO, OTHER_TWO)(equal_TWO)(natural_sum);
+}</code></body></html>

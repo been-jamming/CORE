@@ -1,0 +1,7 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">equivalence_classes_unique</div><div class="result_description">Description: Prove that equivalence classes, if they exist, are unique
+</div><code style="white-space: pre-wrap;">prove equivalence_classes_unique: <b style="color: red;">*</b>A<b style="color: red;">*</b>R<b style="color: red;">*</b>C<b style="color: red;">*</b>D(is_equivalence_classes(R, A, C) <b style="color: red;">&</b> is_equivalence_classes(R, A, D) <b style="color: red;">-&gt</b> equal_sets(C, D)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, R, C, D<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> both_equiv_classes;
+	<b style="color: blue;">extract</b> both_equiv_classes: equiv_classes_C, equiv_classes_D;
+	<b style="color: blue;">return</b> definition_uniqueness_lemma[&ltS: is_equivalence_class(R, A, S)&gt](C, D)(<b style="color: green;">expand</b>(equiv_classes_C), <b style="color: green;">expand</b>(equiv_classes_D));
+}</code></body></html>

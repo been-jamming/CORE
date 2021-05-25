@@ -1,0 +1,45 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">natural_sum_successor</div><div class="result_description">Description: Prove that 1+n = S(n)
+</div><code style="white-space: pre-wrap;">prove natural_sum_successor: <b style="color: red;">*</b>N<b style="color: red;">*</b>M(is_natural_sum(N, ONE, M) <b style="color: red;">-&gt</b> is_successor(N, M)){
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(NATURALS_inductive): empty_in_NATURALS, closure_naturals;
+	R_def = axiom_specify[&ltQ: <b style="color: red;">*</b>M(is_natural_sum(Q, ONE, M) <b style="color: red;">-&gt</b> is_successor(Q, M))&gt](NATURALS)<b style="color: red;">|</b>R<b style="color: red;">|</b>;
+
+	<b style="color: blue;">prove</b> ZERO_in_R: <b style="color: red;">*</b>M(is_natural_sum(ZERO, ONE, M) <b style="color: red;">-&gt</b> is_successor(ZERO, M)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>M<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> sum_M;
+		other_sum_M = natural_sum_zero_identity(ONE)(one_is_natural);
+		equal_M_ONE = natural_sum_unique(ZERO, ONE, M, ONE)(sum_M, other_sum_M);
+		<b style="color: blue;">return</b> equality_consistency[&ltQ: is_successor(ZERO, Q)&gt](M, ONE)(equal_M_ONE)(one_definition);
+	}
+
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+	<b style="color: blue;">prove</b> closure_R: <b style="color: red;">*</b>K<b style="color: red;">*</b>N(K in R <b style="color: red;">&</b> is_successor(K, N) <b style="color: red;">-&gt</b> N in R){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>K, N<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> K_in_R, successor_N;
+		<b style="color: blue;">extract</b> R_def(K)(K_in_R): K_in_NATURALS, K_cond;
+		N_in_NATURALS = closure_naturals(K, N)(K_in_NATURALS, successor_N);
+		<b style="color: blue;">extract</b> natural_sum(K, ONE)(K_in_NATURALS, one_is_natural)<b style="color: red;">|</b>OTHER_N<b style="color: red;">|</b>: OTHER_N_in_NATURALS, sum_OTHER_N;
+		successor_other_N = K_cond(OTHER_N)(sum_OTHER_N);
+		equal_N = successor_unique(K, N, OTHER_N)(successor_N, successor_other_N);
+		sum_N = equality_consistency[&ltQ: is_natural_sum(K, ONE, Q)&gt](N, OTHER_N)(equal_N)(sum_OTHER_N);
+		<b style="color: blue;">extract</b> natural_sum_successor_recursion(K, ONE, N)(sum_N)<b style="color: red;">|</b>OTHER_N2, M<b style="color: red;">|</b>: successor_other_N2, successor_M, sum_M;
+		equal_N = successor_unique(K, N, OTHER_N2)(successor_N, successor_other_N2);
+		sum_M = equality_consistency[&ltQ: is_natural_sum(Q, ONE, M)&gt](N, OTHER_N2)(equal_N)(sum_M);
+		<b style="color: blue;">prove</b> N_cond: <b style="color: red;">*</b>M_OTHER(is_natural_sum(N, ONE, M_OTHER) <b style="color: red;">-&gt</b> is_successor(N, M_OTHER)){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>M_OTHER<b style="color: red;">|</b>;
+			<b style="color: blue;">implies</b> other_sum_M;
+			equal_M = natural_sum_unique(N, ONE, M, M_OTHER)(sum_M, other_sum_M);
+			<b style="color: blue;">return</b> equality_consistency[&ltQ: is_successor(N, Q)&gt](M, M_OTHER)(equal_M)(successor_M);
+		}
+		<b style="color: blue;">return</b> R_def(N)(N_in_NATURALS, N_cond);
+	}
+	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>N, M<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> sum_M;
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(sum_M): N_in_NATURALS, ONE_in_NATURALS, tuple_exists;
+	N_in_R = <b style="color: green;">expand</b>(NATURALS_subset_R)(N)(N_in_NATURALS);
+	<b style="color: blue;">extract</b> R_def(N)(N_in_R): N_in_NATURALS, result;
+
+	<b style="color: blue;">return</b> result(M)(sum_M);
+}</code></body></html>

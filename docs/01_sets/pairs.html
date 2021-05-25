@@ -1,0 +1,32 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">pairs</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove pairs: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">^</b>C(is_pairs(A, B, C)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
+	Q_contains_both = axiom_pairing(A, B)<b style="color: red;">|</b>Q<b style="color: red;">|</b>;
+	<b style="color: blue;">extract</b> Q_contains_both: Q_contains_A, Q_contains_B;
+	U_union = axiom_union(Q)<b style="color: red;">|</b>U<b style="color: red;">|</b>;
+	P_power_set = axiom_power_set(U)<b style="color: red;">|</b>P<b style="color: red;">|</b>;
+	C_def = axiom_specify[&ltX: <b style="color: red;">^</b>Y<b style="color: red;">^</b>Z(Y in A <b style="color: red;">&</b> Z in B <b style="color: red;">&</b> is_pair(Y, Z, X))&gt](P)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
+	<b style="color: blue;">choose</b> C;
+	<b style="color: blue;">prove</b> pairs_def: <b style="color: red;">*</b>X(X in C <b style="color: red;">&lt-&gt</b> <b style="color: red;">^</b>Y<b style="color: red;">^</b>Z(Y in A <b style="color: red;">&</b> Z in B <b style="color: red;">&</b> is_pair(Y, Z, X))){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma0: X in C <b style="color: red;">-&gt</b> <b style="color: red;">^</b>Y<b style="color: red;">^</b>Z(Y in A <b style="color: red;">&</b> Z in B <b style="color: red;">&</b> is_pair(Y, Z, X)){
+			<b style="color: blue;">implies</b> X_in_C;
+			<b style="color: blue;">extract</b> C_def(X)(X_in_C): X_in_P, result;
+			<b style="color: blue;">return</b> result;
+		}
+		<b style="color: blue;">prove</b> lemma1: <b style="color: red;">^</b>Y<b style="color: red;">^</b>Z(Y in A <b style="color: red;">&</b> Z in B <b style="color: red;">&</b> is_pair(Y, Z, X)) <b style="color: red;">-&gt</b> X in C{
+			<b style="color: blue;">implies</b> premise;
+			<b style="color: blue;">extract</b> premise<b style="color: red;">|</b>Y, Z<b style="color: red;">|</b>: Y_in_A, Z_in_B, pair_X;
+			Y_in_U = U_union(A, Y)(Q_contains_A, Y_in_A);
+			Z_in_U = U_union(B, Z)(Q_contains_B, Z_in_B);
+			<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>Y<b style="color: red;">^</b>Z(Y in U <b style="color: red;">&</b> Z in U <b style="color: red;">&</b> is_pair(Y, Z, X)){
+				<b style="color: blue;">choose</b> Y, Z;
+				<b style="color: blue;">return</b> Y_in_U, Z_in_U, pair_X;
+			}
+			X_subset_U = pair_subset(U, X)(lemma);
+			X_in_P = P_power_set(X)(X_subset_U);
+			<b style="color: blue;">return</b> C_def(X)(X_in_P, premise);
+		}
+		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
+	}
+	<b style="color: blue;">return</b> #is_pairs(A, B, C)(pairs_def);
+}</code></body></html>

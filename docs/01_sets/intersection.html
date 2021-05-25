@@ -1,0 +1,29 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">intersection</div><div class="result_description">Description: The intersection only exists when the set isn't empty!
+</div><code style="white-space: pre-wrap;">prove intersection: <b style="color: red;">*</b>A(not_empty(A) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>B(is_intersection(A, B))){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> contains;
+	S_in_A = <b style="color: green;">expand</b>(contains)<b style="color: red;">|</b>S<b style="color: red;">|</b>;
+	U_union = <b style="color: green;">expand</b>(union(A)<b style="color: red;">|</b>U<b style="color: red;">|</b>);
+	B_def = axiom_specify[&ltX: <b style="color: red;">*</b>Y(Y in A <b style="color: red;">-&gt</b> X in Y)&gt](U)<b style="color: red;">|</b>B<b style="color: red;">|</b>;
+	<b style="color: blue;">choose</b> B;
+	<b style="color: blue;">prove</b> intersection_def: <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> <b style="color: red;">*</b>Y(Y in A <b style="color: red;">-&gt</b> X in Y)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma0: X in B <b style="color: red;">-&gt</b> <b style="color: red;">*</b>Y(Y in A <b style="color: red;">-&gt</b> X in Y){
+			<b style="color: blue;">implies</b> X_in_B;
+			<b style="color: blue;">extract</b> B_def(X)(X_in_B): X_in_U, result;
+			<b style="color: blue;">return</b> result;
+		}
+		<b style="color: blue;">prove</b> lemma1: <b style="color: red;">*</b>Y(Y in A <b style="color: red;">-&gt</b> X in Y) <b style="color: red;">-&gt</b> X in B{
+			<b style="color: blue;">implies</b> intersect_condition;
+			X_in_S = intersect_condition(S)(S_in_A);
+			<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>S(S in A <b style="color: red;">&</b> X in S){
+				<b style="color: blue;">choose</b> S;
+				<b style="color: blue;">return</b> S_in_A, X_in_S;
+			}
+			X_in_U = U_union(X)(lemma);
+			<b style="color: blue;">return</b> B_def(X)(X_in_U, intersect_condition);
+		}
+		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
+	}
+	<b style="color: blue;">return</b> #is_intersection(A, B)(intersection_def);
+}</code></body></html>

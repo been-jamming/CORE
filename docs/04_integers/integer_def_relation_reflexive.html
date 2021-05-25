@@ -1,0 +1,20 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">integer_def_relation_reflexive</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove integer_def_relation_reflexive: <b style="color: red;">*</b>T(T in NATURALS_X_NATURALS <b style="color: red;">-&gt</b> are_related(T, T, INTEGER_DEFINITION_RELATION)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>T<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> T_in_NATURALS_X_NATURALS;
+	<b style="color: blue;">prove</b> related_condition: <b style="color: red;">*</b>X0<b style="color: red;">*</b>Y0<b style="color: red;">*</b>X1<b style="color: red;">*</b>Y1(is_tuple(X0, Y0, T) <b style="color: red;">&</b> is_tuple(X1, Y1, T) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>S(is_natural_sum(X0, Y1, S) <b style="color: red;">&</b> is_natural_sum(X1, Y0, S))){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X0, Y0, X1, Y1<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> tuple0, tuple1;
+		<b style="color: blue;">extract</b> tuple_equal_condition(X0, Y0, X1, Y1, T, T)(tuple0, tuple1, equal_sets_reflexive(T)): equal_X, equal_Y;
+		<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(NATURALS_X_NATURALS_definition)(T)(T_in_NATURALS_X_NATURALS)<b style="color: red;">|</b>X, Y<b style="color: red;">|</b>: X_in_NATURALS, Y_in_NATURALS, tuple_T;
+		<b style="color: blue;">extract</b> tuple_equal_condition(X0, Y0, X, Y, T, T)(tuple0, tuple_T, equal_sets_reflexive(T)): equal_X0, equal_Y0;
+		X0_in_NATURALS = equality_consistency[&ltQ: Q in NATURALS&gt](X0, X)(equal_X0)(X_in_NATURALS);
+		<b style="color: blue;">extract</b> tuple_equal_condition(X1, Y1, X, Y, T, T)(tuple1, tuple_T, equal_sets_reflexive(T)): equal_X1, equal_Y1;
+		Y1_in_NATURALS = equality_consistency[&ltQ: Q in NATURALS&gt](Y1, Y)(equal_Y1)(Y_in_NATURALS);
+		<b style="color: blue;">extract</b> natural_sum(X0, Y1)(X0_in_NATURALS, Y1_in_NATURALS)<b style="color: red;">|</b>S<b style="color: red;">|</b>: S_in_NATURALS, sum_S;
+		<b style="color: blue;">choose</b> S;
+		other_sum_S = equality_consistency[&ltQ: is_natural_sum(Q, Y1, S)&gt](X0, X1)(equal_X)(sum_S);
+		other_sum_S = equality_consistency[&ltQ: is_natural_sum(X1, Q, S)&gt](Y0, Y1)(equal_Y)(other_sum_S);
+		<b style="color: blue;">return</b> sum_S, other_sum_S;
+	}
+	<b style="color: blue;">return</b> integer_def_relation_def(T, T)(T_in_NATURALS_X_NATURALS, T_in_NATURALS_X_NATURALS, related_condition);
+}</code></body></html>

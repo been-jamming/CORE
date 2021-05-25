@@ -1,0 +1,12 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">equal_sets_reflexive</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove equal_sets_reflexive: <b style="color: red;">*</b>A(equal_sets(A, A)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A<b style="color: red;">|</b>;
+	<b style="color: blue;">prove</b> equal_sets_def: <b style="color: red;">*</b>X(X in A <b style="color: red;">&lt-&gt</b> X in A){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma: X in A <b style="color: red;">-&gt</b> X in A{
+			<b style="color: blue;">implies</b> X_in_A;
+			<b style="color: blue;">return</b> X_in_A;
+		}
+		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma, lemma);
+	}
+	<b style="color: blue;">return</b> #equal_sets(A, A)(equal_sets_def);
+}</code></body></html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">NATURALS_interpretation</div><div class="result_description">Description: The natural numbers here have been defined such that N is the set {0, 1..., N - 1}
+Here we formally prove this
+</div><code style="white-space: pre-wrap;">prove NATURALS_interpretation: <b style="color: red;">*</b>N(N in NATURALS <b style="color: red;">-&gt</b> <b style="color: red;">*</b>X(X in N <b style="color: red;">&lt-&gt</b> X in NATURALS <b style="color: red;">&</b> NATURAL_less_than_strict(X, N))){
+	//First we take the set of all natural numbers for which the statement is true
+	//Then we will apply induction
+	R_def = axiom_specify[&ltN: <b style="color: red;">*</b>X(X in N <b style="color: red;">&lt-&gt</b> X in NATURALS <b style="color: red;">&</b> NATURAL_less_than_strict(X, N))&gt](NATURALS)<b style="color: red;">|</b>R<b style="color: red;">|</b>;
+	<b style="color: blue;">prove</b> ZERO_in_R: <b style="color: red;">*</b>X(X in ZERO <b style="color: red;">&lt-&gt</b> X in NATURALS <b style="color: red;">&</b> NATURAL_less_than_strict(X, ZERO)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma0: X in ZERO <b style="color: red;">-&gt</b> X in NATURALS <b style="color: red;">&</b> NATURAL_less_than_strict(X, ZERO){
+			<b style="color: blue;">implies</b> X_in_ZERO;
+			X_in_EMPTY_SET = equality_consistency[&ltS: X in S&gt](EMPTY_SET, ZERO)(zero_definition)(X_in_ZERO);
+			<b style="color: blue;">return</b> axiom_absurdity[&lt:X in NATURALS <b style="color: red;">&</b> NATURAL_less_than_strict(X, ZERO)&gt](empty_set_condition(X)(X_in_EMPTY_SET));
+		}
+		<b style="color: blue;">prove</b> lemma1: X in NATURALS <b style="color: red;">&</b> NATURAL_less_than_strict(X, ZERO) <b style="color: red;">-&gt</b> X in ZERO{
+			<b style="color: blue;">implies</b> X_in_NATURALS, less_than_strict;
+			<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(less_than_strict)<b style="color: red;">|</b>S<b style="color: red;">|</b>: successor, less_than;
+			X_in_S = <b style="color: green;">expand</b>(successor)(X)(<b style="color: green;">or</b>(&lt:X in X&gt, equal_sets_reflexive(X)));
+			<b style="color: blue;">return</b> <b style="color: green;">expand</b>(less_than)(X)(X_in_S);
+		}
+		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
+	}
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+	<b style="color: blue;">prove</b> closure: <b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(Y in R <b style="color: red;">&</b> is_successor(Y, Z) <b style="color: red;">-&gt</b> Z in R){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>Y, Z<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> Y_in_R, successor_Z;
+		<b style="color: blue;">extract</b> R_def(Y)(Y_in_R): Y_in_NATURALS, Y_cond;
+		<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(NATURALS_inductive): empty_exists, successor_closure;
+		Z_in_NATURALS = successor_closure(Y, Z)(Y_in_NATURALS, successor_Z);
+		<b style="color: blue;">prove</b> Z_in_R: <b style="color: red;">*</b>X(X in Z <b style="color: red;">&lt-&gt</b> X in NATURALS <b style="color: red;">&</b> NATURAL_less_than_strict(X, Z)){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+			<b style="color: blue;">prove</b> lemma0: X in Z <b style="color: red;">-&gt</b> X in NATURALS <b style="color: red;">&</b> NATURAL_less_than_strict(X, Z){
+				<b style="color: blue;">implies</b> X_in_Z;
+				X_in_Y_or_equal_Z = <b style="color: green;">expand</b>(successor_Z)(X)(X_in_Z);
+				<b style="color: blue;">return</b> <b style="color: green;">branch</b>(X_in_Y_or_equal_Z, X_in_Y, equal_Y){
+					<b style="color: blue;">extract</b> Y_cond(X)(X_in_Y): X_in_NATURALS , X_less_than_strict;
+					<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(X_less_than_strict)<b style="color: red;">|</b>T<b style="color: red;">|</b>: successor_T, T_less_than_Y;
+					Y_less_than_Z = NATURAL_less_than_weaken(Y, Z)(NATURAL_less_than_strict_successor(Y, Z)(successor_Z));
+					<b style="color: blue;">prove</b> less_than_strict_def: <b style="color: red;">^</b>S(is_successor(X, S) <b style="color: red;">&</b> NATURAL_less_than(S, Z)){
+						<b style="color: blue;">choose</b> T;
+						<b style="color: blue;">return</b> successor_T, NATURAL_less_than_transitive(T, Y, Z)(T_less_than_Y, Y_less_than_Z);
+					}
+					<b style="color: blue;">return</b> X_in_NATURALS, #NATURAL_less_than_strict(X, Z)(less_than_strict_def);
+				} <b style="color: green;">or</b> {
+					X_in_NATURALS = equality_consistency[&ltS: S in NATURALS&gt](X, Y)(equal_Y)(Y_in_NATURALS);
+					Y_less_than_strict_Z = NATURAL_less_than_strict_successor(Y, Z)(successor_Z);
+					<b style="color: blue;">return</b> X_in_NATURALS, equality_consistency[&ltS: NATURAL_less_than_strict(S, Z)&gt](X, Y)(equal_Y)(Y_less_than_strict_Z);
+				};
+			}
+			<b style="color: blue;">prove</b> lemma1: X in NATURALS <b style="color: red;">&</b> NATURAL_less_than_strict(X, Z) <b style="color: red;">-&gt</b> X in Z{
+				<b style="color: blue;">implies</b> X_in_NATURALS, X_less_than_strict_Z;
+				<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(X_less_than_strict_Z)<b style="color: red;">|</b>T<b style="color: red;">|</b>: successor_T, T_less_than_Z;
+				X_in_T = <b style="color: green;">expand</b>(successor_T)(X)(<b style="color: green;">or</b>(&lt:X in X&gt, equal_sets_reflexive(X)));
+				<b style="color: blue;">return</b> <b style="color: green;">expand</b>(T_less_than_Z)(X)(X_in_T);
+			}
+			<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
+		}
+		<b style="color: blue;">return</b> R_def(Z)(Z_in_NATURALS, Z_in_R);
+	}
+	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure);
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>N<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> N_in_NATURALS;
+	N_in_R = <b style="color: green;">expand</b>(NATURALS_subset_R)(N)(N_in_NATURALS);
+	<b style="color: blue;">extract</b> R_def(N)(N_in_R): N_in_NATURALS, result;
+	<b style="color: blue;">return</b> result;
+}</code></body></html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">equivalence_classes_disjoint</div><div class="result_description">Description: Prove that equivalence classes are disjoint
+</div><code style="white-space: pre-wrap;">prove equivalence_classes_disjoint: <b style="color: red;">*</b>A<b style="color: red;">*</b>R<b style="color: red;">*</b>C(is_equivalence_relation(R, A) <b style="color: red;">&</b> is_equivalence_classes(R, A, C) <b style="color: red;">-&gt</b> <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(X in C <b style="color: red;">&</b> Y in C <b style="color: red;">&</b> <b style="color: red;">^</b>Z(Z in X <b style="color: red;">&</b> Z in Y) <b style="color: red;">-&gt</b> equal_sets(X, Y))){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, R, C<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> equiv_relation, equiv_classes;
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(equiv_relation): reflexive, symmetric, transitive;
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Y<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> X_in_C, Y_in_C, not_disjoint;
+	X_equiv_class = <b style="color: green;">expand</b>(equiv_classes)(X)(X_in_C);
+	Y_equiv_class = <b style="color: green;">expand</b>(equiv_classes)(Y)(Y_in_C);
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(X_equiv_class)<b style="color: red;">|</b>X_REP<b style="color: red;">|</b>: X_REP_in_A, X_closure;
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(Y_equiv_class)<b style="color: red;">|</b>Y_REP<b style="color: red;">|</b>: Y_REP_in_A, Y_closure;
+	<b style="color: blue;">extract</b> not_disjoint<b style="color: red;">|</b>Z<b style="color: red;">|</b>: Z_in_X, Z_in_Y;
+	<b style="color: blue;">extract</b> X_closure(Z)(Z_in_X): Z_in_A, related_X_REP_Z;
+	<b style="color: blue;">extract</b> Y_closure(Z)(Z_in_Y): Z_in_A, related_Y_REP_Z;
+	related_Z_Y_REP = <b style="color: green;">expand</b>(symmetric)(Y_REP, Z)(related_Y_REP_Z);
+	related_reps = <b style="color: green;">expand</b>(transitive)(X_REP, Z, Y_REP)(related_X_REP_Z, related_Z_Y_REP);
+	related_reps_other = <b style="color: green;">expand</b>(symmetric)(X_REP, Y_REP)(related_reps);
+	<b style="color: blue;">prove</b> equal_def: <b style="color: red;">*</b>J(J in X <b style="color: red;">&lt-&gt</b> J in Y){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>J<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma0: J in X <b style="color: red;">-&gt</b> J in Y{
+			<b style="color: blue;">implies</b> J_in_X;
+			<b style="color: blue;">extract</b> X_closure(J)(J_in_X): J_in_A, related_X_REP_J;
+			related_Y_REP_J = <b style="color: green;">expand</b>(transitive)(Y_REP, X_REP, J)(related_reps_other, related_X_REP_J);
+			<b style="color: blue;">return</b> Y_closure(J)(J_in_A, related_Y_REP_J);
+		}
+		<b style="color: blue;">prove</b> lemma1: J in Y <b style="color: red;">-&gt</b> J in X{
+			<b style="color: blue;">implies</b> J_in_Y;
+			<b style="color: blue;">extract</b> Y_closure(J)(J_in_Y): J_in_A, related_Y_REP_J;
+			related_X_REP_J = <b style="color: green;">expand</b>(transitive)(X_REP, Y_REP, J)(related_reps, related_Y_REP_J);
+			<b style="color: blue;">return</b> X_closure(J)(J_in_A, related_X_REP_J);
+		}
+		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
+	}
+	<b style="color: blue;">return</b> #equal_sets(X, Y)(equal_def);
+}</code></body></html>

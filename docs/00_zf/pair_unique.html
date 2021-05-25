@@ -1,0 +1,6 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">pair_unique</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove pair_unique: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C<b style="color: red;">*</b>D(is_pair(A, B, C) <b style="color: red;">&</b> is_pair(A, B, D) <b style="color: red;">-&gt</b> equal_sets(C, D)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C, D<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> pairs_premise;
+	<b style="color: blue;">extract</b> pairs_premise: pair_C, pair_D;
+	<b style="color: blue;">return</b> definition_uniqueness_lemma[&ltX: equal_sets(X, A) <b style="color: red;">|</b> equal_sets(X, B)&gt](C, D)(<b style="color: green;">expand</b>(pair_C), <b style="color: green;">expand</b>(pair_D));
+}</code></body></html>

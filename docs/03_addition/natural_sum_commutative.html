@@ -1,0 +1,132 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">natural_sum_commutative</div><div class="result_description">Description: Prove that addition commutes
+This is also a big theorem
+</div><code style="white-space: pre-wrap;">prove natural_sum_commutative: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(is_natural_sum(X, Y, Z) <b style="color: red;">-&gt</b> is_natural_sum(Y, X, Z)){
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(NATURALS_inductive): empty_in_naturals, closure_naturals;
+
+	//First we have to <b style="color: blue;">prove</b> that ZERO is a <b style="color: green;">right</b> identity
+	<b style="color: blue;">prove</b> identity_lemma: <b style="color: red;">*</b>X(X in NATURALS <b style="color: red;">-&gt</b> is_natural_sum(X, ZERO, X)){
+		//Induction on X
+		R_def = axiom_specify[&ltS: is_natural_sum(S, ZERO, S)&gt](NATURALS)<b style="color: red;">|</b>R<b style="color: red;">|</b>;
+		ZERO_in_R = natural_sum_zero_identity(ZERO)(zero_is_natural);
+		ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+		<b style="color: blue;">prove</b> closure_R: <b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(Y in R <b style="color: red;">&</b> is_successor(Y, Z) <b style="color: red;">-&gt</b> Z in R){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>Y, Z<b style="color: red;">|</b>;
+			<b style="color: blue;">implies</b> Y_in_R, successor_Z;
+			<b style="color: blue;">extract</b> R_def(Y)(Y_in_R): Y_in_NATURALS, sum_Y_ZERO;
+			Z_in_NATURALS = closure_naturals(Y, Z)(Y_in_NATURALS, successor_Z);
+			<b style="color: blue;">extract</b> natural_sum_successor_recursion(Y, ZERO, Y)(sum_Y_ZERO)<b style="color: red;">|</b>OTHER_Z0, OTHER_Z1<b style="color: red;">|</b>: successor_OTHER_Z0, successor_OTHER_Z1, sum_Z_ZERO;
+			Z0_equal_Z1 = successor_unique(Y, OTHER_Z0, OTHER_Z1)(successor_OTHER_Z0, successor_OTHER_Z1);
+			Z_equal_Z0 = successor_unique(Y, Z, OTHER_Z0)(successor_Z, successor_OTHER_Z0);
+			sum_Z_ZERO = equality_consistency[&ltS: is_natural_sum(OTHER_Z0, ZERO, S)&gt](OTHER_Z0, OTHER_Z1)(Z0_equal_Z1)(sum_Z_ZERO);
+			sum_Z_ZERO = equality_consistency[&ltS: is_natural_sum(S, ZERO, S)&gt](Z, OTHER_Z0)(Z_equal_Z0)(sum_Z_ZERO);
+			<b style="color: blue;">return</b> R_def(Z)(Z_in_NATURALS, sum_Z_ZERO);
+		}
+		NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> X_in_NATURALS;
+		X_in_R = <b style="color: green;">expand</b>(NATURALS_subset_R)(X)(X_in_NATURALS);
+		<b style="color: blue;">extract</b> R_def(X)(X_in_R): X_in_NATURALS, result;
+		<b style="color: blue;">return</b> result;
+	}
+
+	<b style="color: blue;">prove</b> commutative_lemma: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y<b style="color: red;">*</b>Z<b style="color: red;">*</b>SZ(is_natural_sum(X, Y, Z) <b style="color: red;">&</b> is_successor(Z, SZ) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>SY(is_natural_sum(X, SY, SZ) <b style="color: red;">&</b> is_successor(Y, SY))){
+		//Induction on X
+		R_def = axiom_specify[&ltS: <b style="color: red;">*</b>Y<b style="color: red;">*</b>Z<b style="color: red;">*</b>SZ(is_natural_sum(S, Y, Z) <b style="color: red;">&</b> is_successor(Z, SZ) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>SY(is_natural_sum(S, SY, SZ) <b style="color: red;">&</b> is_successor(Y, SY)))&gt](NATURALS)<b style="color: red;">|</b>R<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> ZERO_in_R: <b style="color: red;">*</b>Y<b style="color: red;">*</b>Z<b style="color: red;">*</b>SZ(is_natural_sum(ZERO, Y, Z) <b style="color: red;">&</b> is_successor(Z, SZ) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>SY(is_natural_sum(ZERO, SY, SZ) <b style="color: red;">&</b> is_successor(Y, SY))){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>Y, Z, SZ<b style="color: red;">|</b>;
+			<b style="color: blue;">implies</b> sum_Z, successor_SZ;
+			<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(sum_Z): ZERO_in_NATURALS, Y_in_NATURALS, tuple_exists;
+			sum_Y = natural_sum_zero_identity(Y)(Y_in_NATURALS);
+			equal_Y_Z = natural_sum_unique(ZERO, Y, Y, Z)(sum_Y, sum_Z);
+			successor_SY = successor(Y)<b style="color: red;">|</b>SY<b style="color: red;">|</b>;
+			<b style="color: blue;">choose</b> SY;
+			SY_in_NATURALS = closure_naturals(Y, SY)(Y_in_NATURALS, successor_SY);
+			other_successor_SY = equality_consistency[&ltS: is_successor(S, SY)&gt](Y, Z)(equal_Y_Z)(successor_SY);
+			SY_equal_SZ = successor_unique(Z, SY, SZ)(other_successor_SY, successor_SZ);
+			sum_SY = natural_sum_zero_identity(SY)(SY_in_NATURALS);
+			sum_SZ = equality_consistency[&ltS: is_natural_sum(ZERO, SY, S)&gt](SY, SZ)(SY_equal_SZ)(sum_SY);
+			<b style="color: blue;">return</b> sum_SZ, successor_SY;
+		}
+		ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+		<b style="color: blue;">prove</b> closure_R: <b style="color: red;">*</b>X<b style="color: red;">*</b>SX(X in R <b style="color: red;">&</b> is_successor(X, SX) <b style="color: red;">-&gt</b> SX in R){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>X, SX<b style="color: red;">|</b>;
+			<b style="color: blue;">implies</b> X_in_R, successor_SX;
+			<b style="color: blue;">extract</b> R_def(X)(X_in_R): X_in_NATURALS, X_condition;
+			SX_in_NATURALS = closure_naturals(X, SX)(X_in_NATURALS, successor_SX);
+			<b style="color: blue;">prove</b> SX_in_R: <b style="color: red;">*</b>Y<b style="color: red;">*</b>Z<b style="color: red;">*</b>SZ(is_natural_sum(SX, Y, Z) <b style="color: red;">&</b> is_successor(Z, SZ) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>SY(is_natural_sum(SX, SY, SZ) <b style="color: red;">&</b> is_successor(Y, SY))){
+				<b style="color: blue;">given</b> <b style="color: red;">|</b>Y, Z, SZ<b style="color: red;">|</b>;
+				<b style="color: blue;">implies</b> sum_Z, successor_SZ;
+				<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(sum_Z): SX_in_NATURALS, Y_in_NATURALS, exists_tuple;
+				<b style="color: blue;">extract</b> natural_sum(X, Y)(X_in_NATURALS, Y_in_NATURALS)<b style="color: red;">|</b>PZ<b style="color: red;">|</b>: PZ_in_NATURALS, sum_PZ;
+				<b style="color: blue;">extract</b> natural_sum_successor_recursion(X, Y, PZ)(sum_PZ)<b style="color: red;">|</b>OTHER_SX, OTHER_Z<b style="color: red;">|</b>: other_successor_SX, other_successor_Z, other_sum_Z;
+				equal_SX = successor_unique(X, SX, OTHER_SX)(successor_SX, other_successor_SX);
+				other_sum_Z = equality_consistency[&ltS: is_natural_sum(S, Y, OTHER_Z)&gt](SX, OTHER_SX)(equal_SX)(other_sum_Z);
+				equal_Z = natural_sum_unique(SX, Y, Z, OTHER_Z)(sum_Z, other_sum_Z);
+				successor_Z = equality_consistency[&ltS: is_successor(PZ, S)&gt](Z, OTHER_Z)(equal_Z)(other_successor_Z);
+				<b style="color: blue;">extract</b> X_condition(Y, PZ, Z)(sum_PZ, successor_Z)<b style="color: red;">|</b>SY<b style="color: red;">|</b>: sum_X_SY, successor_SY;
+				<b style="color: blue;">choose</b> SY;
+
+				<b style="color: blue;">extract</b> natural_sum_successor_recursion(X, SY, Z)(sum_X_SY)<b style="color: red;">|</b>OTHER_SX_2, OTHER_SZ<b style="color: red;">|</b>: successor_OTHER_SX_2, successor_OTHER_SZ, other_sum_SZ;
+				equal_SX = successor_unique(X, SX, OTHER_SX_2)(successor_SX, successor_OTHER_SX_2);
+				other_sum_SZ = equality_consistency[&ltS: is_natural_sum(S, SY, OTHER_SZ)&gt](SX, OTHER_SX_2)(equal_SX)(other_sum_SZ);
+				equal_SZ = successor_unique(Z, SZ, OTHER_SZ)(successor_SZ, successor_OTHER_SZ);
+				<b style="color: blue;">return</b> equality_consistency[&ltS: is_natural_sum(SX, SY, S)&gt](SZ, OTHER_SZ)(equal_SZ)(other_sum_SZ), successor_SY;
+			}
+			<b style="color: blue;">return</b> R_def(SX)(SX_in_NATURALS, SX_in_R);
+		}
+		NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Y, Z, SZ<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> sum_Z, successor_SZ;
+		<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(sum_Z): X_in_NATURALS, Y_in_NATURALS, tuple_exists;
+		X_in_R = <b style="color: green;">expand</b>(NATURALS_subset_R)(X)(X_in_NATURALS);
+		<b style="color: blue;">extract</b> R_def(X)(X_in_R): X_in_NATURALS, result;
+		<b style="color: blue;">return</b> result(Y, Z, SZ)(sum_Z, successor_SZ);
+	}
+
+	R_def = axiom_specify[&ltS: <b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(is_natural_sum(S, Y, Z) <b style="color: red;">-&gt</b> is_natural_sum(Y, S, Z))&gt](NATURALS)<b style="color: red;">|</b>R<b style="color: red;">|</b>;
+
+	<b style="color: blue;">prove</b> ZERO_in_R: <b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(is_natural_sum(ZERO, Y, Z) <b style="color: red;">-&gt</b> is_natural_sum(Y, ZERO, Z)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>Y, Z<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> sum_Z;
+		<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(sum_Z): ZERO_in_NATURALS, Y_in_NATURALS, tuple_exists;
+		sum_Y = natural_sum_zero_identity(Y)(Y_in_NATURALS);
+		equal_Y_Z = natural_sum_unique(ZERO, Y, Y, Z)(sum_Y, sum_Z);
+		sum_Y = identity_lemma(Y)(Y_in_NATURALS);
+		<b style="color: blue;">return</b> equality_consistency[&ltS: is_natural_sum(Y, ZERO, S)&gt](Y, Z)(equal_Y_Z)(sum_Y);
+	}
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+	<b style="color: blue;">prove</b> closure_R: <b style="color: red;">*</b>Y<b style="color: red;">*</b>Y1(Y in R <b style="color: red;">&</b> is_successor(Y, Y1) <b style="color: red;">-&gt</b> Y1 in R){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>Y, Y1<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> Y_in_R, successor_Y1;
+		<b style="color: blue;">extract</b> R_def(Y)(Y_in_R): Y_in_NATURALS, Y_condition;
+		Y1_in_NATURALS = closure_naturals(Y, Y1)(Y_in_NATURALS, successor_Y1);
+		<b style="color: blue;">prove</b> Y1_in_R: <b style="color: red;">*</b>R<b style="color: red;">*</b>S(is_natural_sum(Y1, R, S) <b style="color: red;">-&gt</b> is_natural_sum(R, Y1, S)){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>R, S<b style="color: red;">|</b>;
+			<b style="color: blue;">implies</b> sum_S;
+			<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(sum_S): Y1_in_NATURALS, R_in_NATURALS, tuple_exists;
+			<b style="color: blue;">extract</b> natural_sum(Y, R)(Y_in_NATURALS, R_in_NATURALS)<b style="color: red;">|</b>PS<b style="color: red;">|</b>: PS_in_NATURALS, old_sum_PS;
+			sum_PS = Y_condition(R, PS)(old_sum_PS);
+			successor_OTHER_S = successor(PS)<b style="color: red;">|</b>OTHER_S<b style="color: red;">|</b>;
+			<b style="color: blue;">extract</b> commutative_lemma(R, Y, PS, OTHER_S)(sum_PS, successor_OTHER_S)<b style="color: red;">|</b>OTHER_Y1<b style="color: red;">|</b>: sum_OTHER_S, other_successor_Y1;
+			equal_Y1 = successor_unique(Y, Y1, OTHER_Y1)(successor_Y1, other_successor_Y1);
+			sum_OTHER_S = equality_consistency[&ltQ: is_natural_sum(R, Q, OTHER_S)&gt](Y1, OTHER_Y1)(equal_Y1)(sum_OTHER_S);
+			<b style="color: blue;">extract</b> natural_sum_successor_recursion(Y, R, PS)(old_sum_PS)<b style="color: red;">|</b>OTHER_Y1_2, OTHER_S_2<b style="color: red;">|</b>: successor_OTHER_Y1_2, successor_OTHER_S_2, sum_OTHER_S_2;
+			equal_Y1_2 = successor_unique(Y, Y1, OTHER_Y1_2)(successor_Y1, successor_OTHER_Y1_2);
+			equal_others_S = successor_unique(PS, OTHER_S, OTHER_S_2)(successor_OTHER_S, successor_OTHER_S_2);
+			other_sum = equality_consistency[&ltQ: is_natural_sum(Q, R, OTHER_S_2)&gt](Y1, OTHER_Y1_2)(equal_Y1_2)(sum_OTHER_S_2);
+			other_sum = equality_consistency[&ltQ: is_natural_sum(Y1, R, Q)&gt](OTHER_S, OTHER_S_2)(equal_others_S)(other_sum);
+			equal_S = natural_sum_unique(Y1, R, S, OTHER_S)(sum_S, other_sum);
+			<b style="color: blue;">return</b> equality_consistency[&ltQ: is_natural_sum(R, Y1, Q)&gt](S, OTHER_S)(equal_S)(sum_OTHER_S);
+		}
+		<b style="color: blue;">return</b> R_def(Y1)(Y1_in_NATURALS, Y1_in_R);
+	}
+
+	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Y, Z<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> sum_Z;
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(sum_Z): X_in_NATURALS, Y_in_NATURALS, tuple_exists;
+	X_in_R = <b style="color: green;">expand</b>(NATURALS_subset_R)(X)(X_in_NATURALS);
+	<b style="color: blue;">extract</b> R_def(X)(X_in_R): X_in_NATURALS, result;
+	<b style="color: blue;">return</b> result(Y, Z)(sum_Z);
+}</code></body></html>

@@ -1,0 +1,18 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">natural_sum_zero_identity</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove natural_sum_zero_identity: <b style="color: red;">*</b>X(X in NATURALS <b style="color: red;">-&gt</b> is_natural_sum(ZERO, X, X)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> X_in_NATURALS;
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(naturals_addition_function_definition): is_function, domain_exists, codomain_NATURALS, zero_identity, successor_recursion;
+	<b style="color: blue;">extract</b> domain_exists<b style="color: red;">|</b>C<b style="color: red;">|</b>: cross_product_C, domain_C;
+	tuple_T = tuple(ZERO, X)<b style="color: red;">|</b>T<b style="color: red;">|</b>;
+	<b style="color: blue;">prove</b> T_in_C: <b style="color: red;">^</b>ZERO<b style="color: red;">^</b>X(ZERO in NATURALS <b style="color: red;">&</b> X in NATURALS <b style="color: red;">&</b> is_tuple(ZERO, X, T)){
+		<b style="color: blue;">choose</b> ZERO, X;
+		<b style="color: blue;">return</b> zero_is_natural, X_in_NATURALS, tuple_T;
+	}
+	T_in_C = <b style="color: green;">expand</b>(cross_product_C)(T)(T_in_C);
+	related_TX = zero_identity(X, T)(X_in_NATURALS, tuple_T);
+	<b style="color: blue;">prove</b> natural_sum: <b style="color: red;">^</b>T(is_tuple(ZERO, X, T) <b style="color: red;">&</b> are_related(T, X, NATURALS_ADDITION_FUNCTION)){
+		<b style="color: blue;">choose</b> T;
+		<b style="color: blue;">return</b> tuple_T, related_TX;
+	}
+	<b style="color: blue;">return</b> #is_natural_sum(ZERO, X, X)(zero_is_natural, X_in_NATURALS, natural_sum);
+}</code></body></html>

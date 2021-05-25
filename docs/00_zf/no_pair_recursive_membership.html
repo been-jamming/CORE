@@ -1,0 +1,30 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">no_pair_recursive_membership</div><div class="result_description">Description: One of the rare moments when we use the axiom of regularity
+</div><code style="white-space: pre-wrap;">prove no_pair_recursive_membership: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(~A in B <b style="color: red;">|</b> ~B in A){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
+	PAIR_AB_def = <b style="color: green;">expand</b>(pair(A, B)<b style="color: red;">|</b>PAIR_AB<b style="color: red;">|</b>);
+	<b style="color: blue;">prove</b> PAIR_AB_not_empty: <b style="color: red;">^</b>A(A in PAIR_AB){
+		<b style="color: blue;">choose</b> A;
+		<b style="color: blue;">return</b> PAIR_AB_def(A)(<b style="color: green;">or</b>(equal_sets_reflexive(A), &lt:equal_sets(A, B)&gt));
+	}
+	PAIR_AB_not_empty = #not_empty(PAIR_AB)(PAIR_AB_not_empty);
+	<b style="color: blue;">extract</b> axiom_regularity(PAIR_AB)(PAIR_AB_not_empty)<b style="color: red;">|</b>D<b style="color: red;">|</b>: D_in_PAIR_AB, disjoint;
+	<b style="color: blue;">return</b> <b style="color: green;">branch</b>(PAIR_AB_def(D)(D_in_PAIR_AB), equal_D_A, equal_D_B){
+		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(disjoint(B), not_B_in_D, not_B_in_PAIR_AB){
+			not_B_in_A = equality_consistency[&ltQ: ~B in Q&gt](D, A)(equal_D_A)(not_B_in_D);
+			<b style="color: blue;">return</b> <b style="color: green;">or</b>(&lt:~A in B&gt, not_B_in_A);
+		} <b style="color: green;">or</b> {
+			B_in_PAIR_AB = PAIR_AB_def(B)(<b style="color: green;">or</b>(&lt:equal_sets(B, A)&gt, equal_sets_reflexive(B)));
+			absurdity = not_B_in_PAIR_AB(B_in_PAIR_AB);
+			<b style="color: blue;">return</b> axiom_absurdity[goal](absurdity);
+		};
+	} <b style="color: green;">or</b> {
+		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(disjoint(A), not_A_in_D, not_A_in_PAIR_AB){
+			not_A_in_B = equality_consistency[&ltQ: ~A in Q&gt](D, B)(equal_D_B)(not_A_in_D);
+			<b style="color: blue;">return</b> <b style="color: green;">or</b>(not_A_in_B, &lt:~B in A&gt);
+		} <b style="color: green;">or</b> {
+			A_in_PAIR_AB = PAIR_AB_def(A)(<b style="color: green;">or</b>(equal_sets_reflexive(A), &lt:equal_sets(A, B)&gt));
+			absurdity = not_A_in_PAIR_AB(A_in_PAIR_AB);
+			<b style="color: blue;">return</b> axiom_absurdity[goal](absurdity);
+		};
+	};
+}</code></body></html>

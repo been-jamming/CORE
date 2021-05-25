@@ -1,0 +1,6 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">natural_numbers_unique</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove natural_numbers_unique: <b style="color: red;">*</b>N<b style="color: red;">*</b>M(is_natural_numbers(N) <b style="color: red;">&</b> is_natural_numbers(M) <b style="color: red;">-&gt</b> equal_sets(N, M)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>N, M<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> both_natural_numbers;
+	<b style="color: blue;">extract</b> both_natural_numbers: natural_numbers_N, natural_numbers_M;
+	<b style="color: blue;">return</b> definition_uniqueness_lemma[&ltX: <b style="color: red;">*</b>I(is_inductive_set(I) <b style="color: red;">-&gt</b> X in I)&gt](N, M)(<b style="color: green;">expand</b>(natural_numbers_N), <b style="color: green;">expand</b>(natural_numbers_M));
+}</code></body></html>

@@ -1,0 +1,9 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">natural_sum_is_natural</div><div class="result_description">Description: Prove that if a natural sum exists then the sum must be a natural number
+</div><code style="white-space: pre-wrap;">prove natural_sum_is_natural: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(is_natural_sum(X, Y, Z) <b style="color: red;">-&gt</b> Z in NATURALS){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Y, Z<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> sum_Z;
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(sum_Z): X_in_NATURALS, Y_in_NATURALS, tuple_exists;
+	<b style="color: blue;">extract</b> natural_sum(X, Y)(X_in_NATURALS, Y_in_NATURALS)<b style="color: red;">|</b>OTHER_Z<b style="color: red;">|</b>: OTHER_Z_in_NATURALS, other_sum_Z;
+	equal_Z = natural_sum_unique(X, Y, Z, OTHER_Z)(sum_Z, other_sum_Z);
+	<b style="color: blue;">return</b> equality_consistency[&ltQ: Q in NATURALS&gt](Z, OTHER_Z)(equal_Z)(OTHER_Z_in_NATURALS);
+}</code></body></html>

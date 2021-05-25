@@ -1,0 +1,22 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">union</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove union: <b style="color: red;">*</b>A<b style="color: red;">^</b>B(is_union(A, B)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A<b style="color: red;">|</b>;
+	implies_in_NEW = axiom_union(A)<b style="color: red;">|</b>NEW<b style="color: red;">|</b>;
+	specified = axiom_specify[&ltX: <b style="color: red;">^</b>Y(Y in A <b style="color: red;">&</b> X in Y)&gt](NEW)<b style="color: red;">|</b>B<b style="color: red;">|</b>;
+	<b style="color: blue;">choose</b> B;
+	<b style="color: blue;">prove</b> union_def: <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> <b style="color: red;">^</b>Y(Y in A <b style="color: red;">&</b> X in Y)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma0: X in B <b style="color: red;">-&gt</b> <b style="color: red;">^</b>Y(Y in A <b style="color: red;">&</b> X in Y){
+			<b style="color: blue;">implies</b> X_in_B;
+			<b style="color: blue;">extract</b> specified(X)(X_in_B): X_in_NEW, result;
+			<b style="color: blue;">return</b> result;
+		}
+		<b style="color: blue;">prove</b> lemma1: <b style="color: red;">^</b>Y(Y in A <b style="color: red;">&</b> X in Y) <b style="color: red;">-&gt</b> X in B{
+			<b style="color: blue;">implies</b> exists_condition;
+			condition_Y = exists_condition<b style="color: red;">|</b>Y<b style="color: red;">|</b>;
+			X_in_NEW = implies_in_NEW(Y, X)(condition_Y);
+			<b style="color: blue;">return</b> specified(X)(X_in_NEW, exists_condition);
+		}
+		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
+	}
+	<b style="color: blue;">return</b> #is_union(A, B)(union_def);
+}</code></body></html>

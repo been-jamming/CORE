@@ -1,0 +1,10 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">NATURAL_successor_nonzero</div><div class="result_description">Description: We want to show that if a number has a successor, that the number is not zero (for later purposes)
+</div><code style="white-space: pre-wrap;">prove NATURAL_successor_nonzero: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(is_successor(A, B) <b style="color: red;">-&gt</b> ~equal_sets(B, ZERO)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> successor_B;
+	not equal_B_ZERO;
+	equal_B_EMPTY_SET = equality_consistency[&ltQ: equal_sets(B, Q)&gt](EMPTY_SET, ZERO)(zero_definition)(equal_B_ZERO);
+	A_in_B = <b style="color: green;">expand</b>(successor_B)(A)(<b style="color: green;">or</b>(&lt:A in A&gt, equal_sets_reflexive(A)));
+	A_in_EMPTY_SET = equality_consistency[&ltQ: A in Q&gt](B, EMPTY_SET)(equal_B_EMPTY_SET)(A_in_B);
+	<b style="color: blue;">return</b> empty_set_condition(A)(A_in_EMPTY_SET);
+}</code></body></html>

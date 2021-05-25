@@ -1,0 +1,13 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">integer_def_relation_symmetric</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove integer_def_relation_symmetric: <b style="color: red;">*</b>S<b style="color: red;">*</b>T(are_related(S, T, INTEGER_DEFINITION_RELATION) <b style="color: red;">-&gt</b> are_related(T, S, INTEGER_DEFINITION_RELATION)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>S, T<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> related_ST;
+	<b style="color: blue;">extract</b> integer_def_relation_def(S, T)(related_ST): S_in_NATURALS_X_NATURALS, T_in_NATURALS_X_NATURALS, condition_ST;
+	<b style="color: blue;">prove</b> condition_TS: <b style="color: red;">*</b>X0<b style="color: red;">*</b>Y0<b style="color: red;">*</b>X1<b style="color: red;">*</b>Y1(is_tuple(X0, Y0, T) <b style="color: red;">&</b> is_tuple(X1, Y1, S) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>SUM(is_natural_sum(X0, Y1, SUM) <b style="color: red;">&</b> is_natural_sum(X1, Y0, SUM))){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X0, Y0, X1, Y1<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> tuple_T, tuple_S;
+		<b style="color: blue;">extract</b> condition_ST(X1, Y1, X0, Y0)(tuple_S, tuple_T)<b style="color: red;">|</b>SUM<b style="color: red;">|</b>: sum1, sum0;
+		<b style="color: blue;">choose</b> SUM;
+		<b style="color: blue;">return</b> sum0, sum1;
+	}
+	<b style="color: blue;">return</b> integer_def_relation_def(T, S)(T_in_NATURALS_X_NATURALS, S_in_NATURALS_X_NATURALS, condition_TS);
+}</code></body></html>

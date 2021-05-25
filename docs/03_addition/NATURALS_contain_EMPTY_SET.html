@@ -1,0 +1,7 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">NATURALS_contain_EMPTY_SET</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove NATURALS_contain_EMPTY_SET: EMPTY_SET in NATURALS{
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(NATURALS_inductive): empty_in_NATURALS, NATURALS_closure;
+	<b style="color: blue;">extract</b> empty_in_NATURALS<b style="color: red;">|</b>EMPTY_OTHER<b style="color: red;">|</b>: EMPTY_OTHER_in_NATURALS, EMPTY_OTHER_def;
+	empty_EMPTY = #is_empty(EMPTY_SET)(empty_set_condition);
+	EMPTY_equal = empty_set_unique(EMPTY_OTHER, EMPTY_SET)(EMPTY_OTHER_def, empty_EMPTY);
+	<b style="color: blue;">return</b> equality_consistency[&ltS: S in NATURALS&gt](EMPTY_OTHER, EMPTY_SET)(EMPTY_equal)(EMPTY_OTHER_in_NATURALS);
+}</code></body></html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">natural_sum_successor_recursion</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove natural_sum_successor_recursion: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(is_natural_sum(X, Y, Z) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>X1<b style="color: red;">^</b>Z1(is_successor(X, X1) <b style="color: red;">&</b> is_successor(Z, Z1) <b style="color: red;">&</b> is_natural_sum(X1, Y, Z1))){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Y, Z<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> Z_natural_sum;
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(NATURALS_inductive): empty_in_naturals, closure_naturals;
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(Z_natural_sum): X_in_NATURALS, Y_in_NATURALS, T_exists;
+	<b style="color: blue;">extract</b> T_exists<b style="color: red;">|</b>T<b style="color: red;">|</b>: tuple_T, related_TZ;
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(naturals_addition_function_definition): is_function, domain_exists, codomain_NATURALS, zero_identity, successor_recursion;
+	<b style="color: blue;">extract</b> successor_recursion(X, Y, T, Z)(tuple_T, related_TZ)<b style="color: red;">|</b>X1, T1, Z1<b style="color: red;">|</b>: successor_X1, tuple_T1, related_T1Z1, successor_Z1;
+	<b style="color: blue;">choose</b> X1, Z1;
+	<b style="color: blue;">prove</b> natural_sum: <b style="color: red;">^</b>T1(is_tuple(X1, Y, T1) <b style="color: red;">&</b> are_related(T1, Z1, NATURALS_ADDITION_FUNCTION)){
+		<b style="color: blue;">choose</b> T1;
+		<b style="color: blue;">return</b> tuple_T1, related_T1Z1;
+	}
+	X1_in_NATURALS = closure_naturals(X, X1)(X_in_NATURALS, successor_X1);
+	natural_sum = #is_natural_sum(X1, Y, Z1)(X1_in_NATURALS, Y_in_NATURALS, natural_sum);
+	<b style="color: blue;">return</b> successor_X1, successor_Z1, natural_sum;
+}</code></body></html>

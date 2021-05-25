@@ -1,0 +1,31 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">equivalence_classes_class</div><div class="result_description">Description: Prove that every element of A has an equivalence class
+</div><code style="white-space: pre-wrap;">prove equivalence_classes_class: <b style="color: red;">*</b>A<b style="color: red;">*</b>R<b style="color: red;">*</b>C(is_equivalence_relation(R, A) <b style="color: red;">&</b> is_equivalence_classes(R, A, C) <b style="color: red;">-&gt</b> <b style="color: red;">*</b>X(X in A <b style="color: red;">-&gt</b> <b style="color: red;">^</b>D(D in C <b style="color: red;">&</b> X in D))){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, R, C<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> equiv_relation, equiv_classes;
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(equiv_relation): reflexive, symmetric, transitive;
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> X_in_A;
+	D_def = axiom_specify[&ltS: are_related(X, S, R)&gt](A)<b style="color: red;">|</b>D<b style="color: red;">|</b>;
+	<b style="color: blue;">choose</b> D;
+	X_in_D = D_def(X)(X_in_A, <b style="color: green;">expand</b>(reflexive)(X)(X_in_A));
+	<b style="color: blue;">prove</b> equiv_class_def: <b style="color: red;">^</b>X(X in A <b style="color: red;">&</b> <b style="color: red;">*</b>Y(Y in D <b style="color: red;">&lt-&gt</b> Y in A <b style="color: red;">&</b> are_related(X, Y, R))){
+		<b style="color: blue;">choose</b> X;
+		<b style="color: blue;">prove</b> right_def: <b style="color: red;">*</b>Y(Y in D <b style="color: red;">&lt-&gt</b> Y in A <b style="color: red;">&</b> are_related(X, Y, R)){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>Y<b style="color: red;">|</b>;
+			<b style="color: blue;">prove</b> lemma0: Y in D <b style="color: red;">-&gt</b> Y in A <b style="color: red;">&</b> are_related(X, Y, R){
+				<b style="color: blue;">implies</b> Y_in_D;
+				<b style="color: blue;">extract</b> D_def(Y)(Y_in_D): Y_in_A, related;
+				<b style="color: blue;">return</b> Y_in_A, related;
+			}
+			<b style="color: blue;">prove</b> lemma1: Y in A <b style="color: red;">&</b> are_related(X, Y, R) <b style="color: red;">-&gt</b> Y in D{
+				<b style="color: blue;">implies</b> premises;
+				<b style="color: blue;">return</b> D_def(Y)(premises);
+			}
+			<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
+		}
+		<b style="color: blue;">return</b> X_in_A, right_def;
+	}
+	equiv_class = #is_equivalence_class(R, A, D)(equiv_class_def);
+	D_in_C = <b style="color: green;">expand</b>(equiv_classes)(D)(equiv_class);
+	<b style="color: blue;">return</b> D_in_C, X_in_D;
+}</code></body></html>

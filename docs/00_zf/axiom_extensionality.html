@@ -1,0 +1,7 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">axiom_extensionality</div><div class="result_description">Description: We prove the "axiom" using equality consistency, which is just a more useful form of this axiom for my purposes
+</div><code style="white-space: pre-wrap;">prove axiom_extensionality: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(equal_sets(A, B) <b style="color: red;">-&gt</b> <b style="color: red;">*</b>W(A in W <b style="color: red;">&lt-&gt</b> B in W)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> equal_AB;
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>W<b style="color: red;">|</b>;
+	<b style="color: blue;">return</b> equality_consistency[&ltX: X in W&gt](A, B)(equal_AB);
+}</code></body></html>

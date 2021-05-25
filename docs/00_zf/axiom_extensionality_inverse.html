@@ -1,0 +1,13 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">axiom_extensionality_inverse</div><div class="result_description">Description: Finally, I want to show that the inverse of the axiom of extensionality can also be proven
+</div><code style="white-space: pre-wrap;">prove axiom_extensionality_inverse: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(<b style="color: red;">*</b>W(A in W <b style="color: red;">&lt-&gt</b> B in W) <b style="color: red;">-&gt</b> equal_sets(A, B)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> premise;
+	pair_U = <b style="color: green;">expand</b>(pair(B, B)<b style="color: red;">|</b>U<b style="color: red;">|</b>);
+	B_in_U = pair_U(B)(<b style="color: green;">or</b>(equal_sets_reflexive(B), equal_sets_reflexive(B)));
+	A_in_U = premise(U)(B_in_U);
+	<b style="color: blue;">return</b> <b style="color: green;">branch</b>(pair_U(A)(A_in_U), equal_A_B, equal_A_B){
+		<b style="color: blue;">return</b> equal_A_B;
+	} <b style="color: green;">or</b> {
+		<b style="color: blue;">return</b> equal_A_B;
+	};
+}</code></body></html>

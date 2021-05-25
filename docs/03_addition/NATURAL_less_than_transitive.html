@@ -1,0 +1,11 @@
+<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">NATURAL_less_than_transitive</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove NATURAL_less_than_transitive: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(NATURAL_less_than(X, Y) <b style="color: red;">&</b> NATURAL_less_than(Y, Z) <b style="color: red;">-&gt</b> NATURAL_less_than(X, Z)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Y, Z<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> less_than_XY, less_than_YZ;
+	<b style="color: blue;">prove</b> less_than_def: <b style="color: red;">*</b>S(S in X <b style="color: red;">-&gt</b> S in Z){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>S<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> S_in_X;
+		S_in_Y = <b style="color: green;">expand</b>(less_than_XY)(S)(S_in_X);
+		<b style="color: blue;">return</b> <b style="color: green;">expand</b>(less_than_YZ)(S)(S_in_Y);
+	}
+	<b style="color: blue;">return</b> #NATURAL_less_than(X, Z)(less_than_def);
+}</code></body></html>
