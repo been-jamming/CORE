@@ -1,58 +1,58 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">tuple_equal_condition</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove tuple_equal_condition: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C<b style="color: red;">*</b>D<b style="color: red;">*</b>E<b style="color: red;">*</b>F(is_tuple(A, B, E) <b style="color: red;">&</b> is_tuple(C, D, F) <b style="color: red;">&</b> equal_sets(E, F) <b style="color: red;">-&gt</b> equal_sets(A, C) <b style="color: red;">&</b> equal_sets(B, D)){
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: tuple_equal_condition<br><b>Description</b>: None given<br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/tuple_equal_condition.html';" onmouseover="popup_window(this, 'tuple_equal_condition | 01_sets');" onmouseout="close_popup();">tuple_equal_condition</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C<b style="color: red;">*</b>D<b style="color: red;">*</b>E<b style="color: red;">*</b>F(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(A, B, E) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(C, D, F) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(E, F) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, C) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(B, D)){
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C, D, E, F<b style="color: red;">|</b>;
 	<b style="color: blue;">implies</b> tuple_E, tuple_F, equal_EF;
-	equal_FE = equal_sets_symmetric(E, F)(equal_EF);
+	equal_FE = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_symmetric.html';" onmouseover="popup_window(this, 'equal_sets_symmetric | 00_zf');" onmouseout="close_popup();">equal_sets_symmetric</b>(E, F)(equal_EF);
 	tuple_E = <b style="color: green;">expand</b>(tuple_E);
 	tuple_F = <b style="color: green;">expand</b>(tuple_F);
 	<b style="color: blue;">extract</b> tuple_E<b style="color: red;">|</b>PAIR_AA, PAIR_AB<b style="color: red;">|</b>: pair_AA, pair_AB, pair_E;
 	<b style="color: blue;">extract</b> tuple_F<b style="color: red;">|</b>PAIR_CC, PAIR_CD<b style="color: red;">|</b>: pair_CC, pair_CD, pair_F;
-	other_pair_E = pair_swap(PAIR_AA, PAIR_AB, E)(pair_E);
-	other_pair_F = pair_swap(PAIR_CC, PAIR_CD, F)(pair_F);
-	other_pair_AB = pair_swap(A, B, PAIR_AB)(pair_AB);
-	other_pair_CD = pair_swap(C, D, PAIR_CD)(pair_CD);
+	other_pair_E = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_swap.html';" onmouseover="popup_window(this, 'pair_swap | 01_sets');" onmouseout="close_popup();">pair_swap</b>(PAIR_AA, PAIR_AB, E)(pair_E);
+	other_pair_F = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_swap.html';" onmouseover="popup_window(this, 'pair_swap | 01_sets');" onmouseout="close_popup();">pair_swap</b>(PAIR_CC, PAIR_CD, F)(pair_F);
+	other_pair_AB = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_swap.html';" onmouseover="popup_window(this, 'pair_swap | 01_sets');" onmouseout="close_popup();">pair_swap</b>(A, B, PAIR_AB)(pair_AB);
+	other_pair_CD = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_swap.html';" onmouseover="popup_window(this, 'pair_swap | 01_sets');" onmouseout="close_popup();">pair_swap</b>(C, D, PAIR_CD)(pair_CD);
 
-	AA_CC_or_AA_CD = pair_equal_condition(PAIR_AA, PAIR_AB, PAIR_CC, PAIR_CD, E, F)(pair_E, pair_F, equal_EF);
+	AA_CC_or_AA_CD = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_equal_condition.html';" onmouseover="popup_window(this, 'pair_equal_condition | 01_sets');" onmouseout="close_popup();">pair_equal_condition</b>(PAIR_AA, PAIR_AB, PAIR_CC, PAIR_CD, E, F)(pair_E, pair_F, equal_EF);
 	AC_or_AD = <b style="color: green;">branch</b>(AA_CC_or_AA_CD, AA_CC, AA_CD){
-		AC_or_AC = pair_equal_condition(A, A, C, C, PAIR_AA, PAIR_CC)(pair_AA, pair_CC, AA_CC);
-		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(AC_or_AC, AC, AC){<b style="color: blue;">return</b> <b style="color: green;">or</b>(AC, &lt:equal_sets(A, D)&gt);} <b style="color: green;">or</b> {<b style="color: blue;">return</b> <b style="color: green;">or</b>(AC, &lt:equal_sets(A, D)&gt);};
+		AC_or_AC = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_equal_condition.html';" onmouseover="popup_window(this, 'pair_equal_condition | 01_sets');" onmouseout="close_popup();">pair_equal_condition</b>(A, A, C, C, PAIR_AA, PAIR_CC)(pair_AA, pair_CC, AA_CC);
+		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(AC_or_AC, AC, AC){<b style="color: blue;">return</b> <b style="color: green;">or</b>(AC, &lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, D)&gt);} <b style="color: green;">or</b> {<b style="color: blue;">return</b> <b style="color: green;">or</b>(AC, &lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, D)&gt);};
 	} <b style="color: green;">or</b> {
-		<b style="color: blue;">return</b> pair_equal_condition(A, A, C, D, PAIR_AA, PAIR_CD)(pair_AA, pair_CD, AA_CD);
+		<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_equal_condition.html';" onmouseover="popup_window(this, 'pair_equal_condition | 01_sets');" onmouseout="close_popup();">pair_equal_condition</b>(A, A, C, D, PAIR_AA, PAIR_CD)(pair_AA, pair_CD, AA_CD);
 	};
 
-	AB_CC_or_AB_CD = pair_equal_condition(PAIR_AB, PAIR_AA, PAIR_CC, PAIR_CD, E, F)(other_pair_E, pair_F, equal_EF);
+	AB_CC_or_AB_CD = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_equal_condition.html';" onmouseover="popup_window(this, 'pair_equal_condition | 01_sets');" onmouseout="close_popup();">pair_equal_condition</b>(PAIR_AB, PAIR_AA, PAIR_CC, PAIR_CD, E, F)(other_pair_E, pair_F, equal_EF);
 	BC_or_BD = <b style="color: green;">branch</b>(AB_CC_or_AB_CD, AB_CC, AB_CD){
-		BC_or_BC = pair_equal_condition(B, A, C, C, PAIR_AB, PAIR_CC)(other_pair_AB, pair_CC, AB_CC);
-		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(BC_or_BC, BC, BC){<b style="color: blue;">return</b> <b style="color: green;">or</b>(BC, &lt:equal_sets(B, D)&gt);} <b style="color: green;">or</b> {<b style="color: blue;">return</b> <b style="color: green;">or</b>(BC, &lt:equal_sets(B, D)&gt);};
+		BC_or_BC = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_equal_condition.html';" onmouseover="popup_window(this, 'pair_equal_condition | 01_sets');" onmouseout="close_popup();">pair_equal_condition</b>(B, A, C, C, PAIR_AB, PAIR_CC)(other_pair_AB, pair_CC, AB_CC);
+		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(BC_or_BC, BC, BC){<b style="color: blue;">return</b> <b style="color: green;">or</b>(BC, &lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(B, D)&gt);} <b style="color: green;">or</b> {<b style="color: blue;">return</b> <b style="color: green;">or</b>(BC, &lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(B, D)&gt);};
 	} <b style="color: green;">or</b> {
-		<b style="color: blue;">return</b> pair_equal_condition(B, A, C, D, PAIR_AB, PAIR_CD)(other_pair_AB, pair_CD, AB_CD);
+		<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_equal_condition.html';" onmouseover="popup_window(this, 'pair_equal_condition | 01_sets');" onmouseout="close_popup();">pair_equal_condition</b>(B, A, C, D, PAIR_AB, PAIR_CD)(other_pair_AB, pair_CD, AB_CD);
 	};
 
-	CC_AA_or_CC_AB = pair_equal_condition(PAIR_CC, PAIR_CD, PAIR_AA, PAIR_AB, F, E)(pair_F, pair_E, equal_FE);
+	CC_AA_or_CC_AB = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_equal_condition.html';" onmouseover="popup_window(this, 'pair_equal_condition | 01_sets');" onmouseout="close_popup();">pair_equal_condition</b>(PAIR_CC, PAIR_CD, PAIR_AA, PAIR_AB, F, E)(pair_F, pair_E, equal_FE);
 	CA_or_CB = <b style="color: green;">branch</b>(CC_AA_or_CC_AB, CC_AA, CC_AB){
-		CA_or_CA = pair_equal_condition(C, C, A, A, PAIR_CC, PAIR_AA)(pair_CC, pair_AA, CC_AA);
-		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(CA_or_CA, CA, CA){<b style="color: blue;">return</b> <b style="color: green;">or</b>(CA, &lt:equal_sets(C, B)&gt);} <b style="color: green;">or</b> {<b style="color: blue;">return</b> <b style="color: green;">or</b>(CA, &lt:equal_sets(C, B)&gt);};
+		CA_or_CA = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_equal_condition.html';" onmouseover="popup_window(this, 'pair_equal_condition | 01_sets');" onmouseout="close_popup();">pair_equal_condition</b>(C, C, A, A, PAIR_CC, PAIR_AA)(pair_CC, pair_AA, CC_AA);
+		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(CA_or_CA, CA, CA){<b style="color: blue;">return</b> <b style="color: green;">or</b>(CA, &lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(C, B)&gt);} <b style="color: green;">or</b> {<b style="color: blue;">return</b> <b style="color: green;">or</b>(CA, &lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(C, B)&gt);};
 	} <b style="color: green;">or</b> {
-		<b style="color: blue;">return</b> pair_equal_condition(C, C, A, B, PAIR_CC, PAIR_AB)(pair_CC, pair_AB, CC_AB);
+		<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_equal_condition.html';" onmouseover="popup_window(this, 'pair_equal_condition | 01_sets');" onmouseout="close_popup();">pair_equal_condition</b>(C, C, A, B, PAIR_CC, PAIR_AB)(pair_CC, pair_AB, CC_AB);
 	};
 
-	CD_AA_or_CD_AB = pair_equal_condition(PAIR_CD, PAIR_CC, PAIR_AA, PAIR_AB, F, E)(other_pair_F, pair_E, equal_FE);
+	CD_AA_or_CD_AB = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_equal_condition.html';" onmouseover="popup_window(this, 'pair_equal_condition | 01_sets');" onmouseout="close_popup();">pair_equal_condition</b>(PAIR_CD, PAIR_CC, PAIR_AA, PAIR_AB, F, E)(other_pair_F, pair_E, equal_FE);
 	DA_or_DB = <b style="color: green;">branch</b>(CD_AA_or_CD_AB, CD_AA, CD_AB){
-		DA_or_DA = pair_equal_condition(D, C, A, A, PAIR_CD, PAIR_AA)(other_pair_CD, pair_AA, CD_AA);
-		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(DA_or_DA, DA, DA){<b style="color: blue;">return</b> <b style="color: green;">or</b>(DA, &lt:equal_sets(D, B)&gt);} <b style="color: green;">or</b> {<b style="color: blue;">return</b> <b style="color: green;">or</b>(DA, &lt:equal_sets(D, B)&gt);};
+		DA_or_DA = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_equal_condition.html';" onmouseover="popup_window(this, 'pair_equal_condition | 01_sets');" onmouseout="close_popup();">pair_equal_condition</b>(D, C, A, A, PAIR_CD, PAIR_AA)(other_pair_CD, pair_AA, CD_AA);
+		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(DA_or_DA, DA, DA){<b style="color: blue;">return</b> <b style="color: green;">or</b>(DA, &lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(D, B)&gt);} <b style="color: green;">or</b> {<b style="color: blue;">return</b> <b style="color: green;">or</b>(DA, &lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(D, B)&gt);};
 	} <b style="color: green;">or</b> {
-		<b style="color: blue;">return</b> pair_equal_condition(D, C, A, B, PAIR_CD, PAIR_AB)(other_pair_CD, pair_AB, CD_AB);
+		<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_equal_condition.html';" onmouseover="popup_window(this, 'pair_equal_condition | 01_sets');" onmouseout="close_popup();">pair_equal_condition</b>(D, C, A, B, PAIR_CD, PAIR_AB)(other_pair_CD, pair_AB, CD_AB);
 	};
 
 	//Now the proof splits into 4 cases
 	<b style="color: blue;">return</b> <b style="color: green;">branch</b>(AC_or_AD, AC, AD){
 		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(BC_or_BD, BC, BD){
 			//Case 1
-			AB = equal_sets_transitive(A, C, B)(AC, equal_sets_symmetric(B, C)(BC));
+			AB = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_transitive.html';" onmouseover="popup_window(this, 'equal_sets_transitive | 00_zf');" onmouseout="close_popup();">equal_sets_transitive</b>(A, C, B)(AC, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_symmetric.html';" onmouseover="popup_window(this, 'equal_sets_symmetric | 00_zf');" onmouseout="close_popup();">equal_sets_symmetric</b>(B, C)(BC));
 			BD = <b style="color: green;">branch</b>(DA_or_DB, DA, DB){
-				DB = equality_consistency[&ltX: equal_sets(D, X)&gt](A, B)(AB)(DA);
-				<b style="color: blue;">return</b> equal_sets_symmetric(D, B)(DB);
+				DB = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltX: <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(D, X)&gt](A, B)(AB)(DA);
+				<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_symmetric.html';" onmouseover="popup_window(this, 'equal_sets_symmetric | 00_zf');" onmouseout="close_popup();">equal_sets_symmetric</b>(D, B)(DB);
 			} <b style="color: green;">or</b> {
-				<b style="color: blue;">return</b> equal_sets_symmetric(D, B)(DB);
+				<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_symmetric.html';" onmouseover="popup_window(this, 'equal_sets_symmetric | 00_zf');" onmouseout="close_popup();">equal_sets_symmetric</b>(D, B)(DB);
 			};
 			<b style="color: blue;">return</b> AC, BD;
 		} <b style="color: green;">or</b> {
@@ -64,28 +64,43 @@
 		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(BC_or_BD, BC, BD){
 			//Case 3
 			//(This case is the most important)
-			pair_DD = equality_consistency[&ltX: is_pair(X, X, PAIR_AA)&gt](A, D)(AD)(pair_AA);
+			pair_DD = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltX: <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_pair.html';" onmouseover="popup_window(this, 'is_pair | 00_zf');" onmouseout="close_popup();">is_pair</b>(X, X, PAIR_AA)&gt](A, D)(AD)(pair_AA);
 			DC = <b style="color: green;">branch</b>(AA_CC_or_AA_CD, AA_CC, AA_CD){
-				DC_or_DC = pair_equal_condition(D, D, C, C, PAIR_AA, PAIR_CC)(pair_DD, pair_CC, AA_CC);
+				DC_or_DC = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_equal_condition.html';" onmouseover="popup_window(this, 'pair_equal_condition | 01_sets');" onmouseout="close_popup();">pair_equal_condition</b>(D, D, C, C, PAIR_AA, PAIR_CC)(pair_DD, pair_CC, AA_CC);
 				<b style="color: blue;">return</b> <b style="color: green;">branch</b>(DC_or_DC, DC, DC){<b style="color: blue;">return</b> DC;} <b style="color: green;">or</b> {<b style="color: blue;">return</b> DC;};
 			} <b style="color: green;">or</b> {
-				CD_or_CD = pair_equal_condition(C, D, D, D, PAIR_CD, PAIR_AA)(pair_CD, pair_DD, equal_sets_symmetric(PAIR_AA, PAIR_CD)(AA_CD));
-				<b style="color: blue;">return</b> <b style="color: green;">branch</b>(CD_or_CD, CD, CD){<b style="color: blue;">return</b> equal_sets_symmetric(C, D)(CD);} <b style="color: green;">or</b> {<b style="color: blue;">return</b> equal_sets_symmetric(C, D)(CD);};
+				CD_or_CD = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_equal_condition.html';" onmouseover="popup_window(this, 'pair_equal_condition | 01_sets');" onmouseout="close_popup();">pair_equal_condition</b>(C, D, D, D, PAIR_CD, PAIR_AA)(pair_CD, pair_DD, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_symmetric.html';" onmouseover="popup_window(this, 'equal_sets_symmetric | 00_zf');" onmouseout="close_popup();">equal_sets_symmetric</b>(PAIR_AA, PAIR_CD)(AA_CD));
+				<b style="color: blue;">return</b> <b style="color: green;">branch</b>(CD_or_CD, CD, CD){<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_symmetric.html';" onmouseover="popup_window(this, 'equal_sets_symmetric | 00_zf');" onmouseout="close_popup();">equal_sets_symmetric</b>(C, D)(CD);} <b style="color: green;">or</b> {<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_symmetric.html';" onmouseover="popup_window(this, 'equal_sets_symmetric | 00_zf');" onmouseout="close_popup();">equal_sets_symmetric</b>(C, D)(CD);};
 			};
-			AC = equal_sets_transitive(A, D, C)(AD, DC);
-			BD = equal_sets_transitive(B, C, D)(BC, equal_sets_symmetric(D, C)(DC));
+			AC = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_transitive.html';" onmouseover="popup_window(this, 'equal_sets_transitive | 00_zf');" onmouseout="close_popup();">equal_sets_transitive</b>(A, D, C)(AD, DC);
+			BD = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_transitive.html';" onmouseover="popup_window(this, 'equal_sets_transitive | 00_zf');" onmouseout="close_popup();">equal_sets_transitive</b>(B, C, D)(BC, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_symmetric.html';" onmouseover="popup_window(this, 'equal_sets_symmetric | 00_zf');" onmouseout="close_popup();">equal_sets_symmetric</b>(D, C)(DC));
 			<b style="color: blue;">return</b> AC, BD;
 		} <b style="color: green;">or</b> {
 			//Case 4
 			//The final case
-			BA = equal_sets_transitive(B, D, A)(BD, equal_sets_symmetric(A, D)(AD));
+			BA = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_transitive.html';" onmouseover="popup_window(this, 'equal_sets_transitive | 00_zf');" onmouseout="close_popup();">equal_sets_transitive</b>(B, D, A)(BD, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_symmetric.html';" onmouseover="popup_window(this, 'equal_sets_symmetric | 00_zf');" onmouseout="close_popup();">equal_sets_symmetric</b>(A, D)(AD));
 			AC = <b style="color: green;">branch</b>(CA_or_CB, CA, CB){
-				<b style="color: blue;">return</b> equal_sets_symmetric(C, A)(CA);
+				<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_symmetric.html';" onmouseover="popup_window(this, 'equal_sets_symmetric | 00_zf');" onmouseout="close_popup();">equal_sets_symmetric</b>(C, A)(CA);
 			} <b style="color: green;">or</b> {
-				CA = equal_sets_transitive(C, B, A)(CB, BA);
-				<b style="color: blue;">return</b> equal_sets_symmetric(C, A)(CA);
+				CA = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_transitive.html';" onmouseover="popup_window(this, 'equal_sets_transitive | 00_zf');" onmouseout="close_popup();">equal_sets_transitive</b>(C, B, A)(CB, BA);
+				<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_symmetric.html';" onmouseover="popup_window(this, 'equal_sets_symmetric | 00_zf');" onmouseout="close_popup();">equal_sets_symmetric</b>(C, A)(CA);
 			};
 			<b style="color: blue;">return</b> AC, BD;
 		};
 	};
-}</code></body></html>
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

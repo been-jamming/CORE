@@ -1,40 +1,54 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">relation_existence_lemma</div><div class="result_description">Description: Useful lemma for constructing relations using propositions
-</div><code style="white-space: pre-wrap;">prove relation_existence_lemma[P(2)]: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">^</b>C<b style="color: red;">*</b>X<b style="color: red;">*</b>Y(are_related(X, Y, C) <b style="color: red;">&lt-&gt</b> X in A <b style="color: red;">&</b> Y in B <b style="color: red;">&</b> P(X, Y)){
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: relation_existence_lemma<br><b>Description</b>: Useful lemma for constructing relations using propositions<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/relation_existence_lemma.html';" onmouseover="popup_window(this, 'relation_existence_lemma | 02_relations');" onmouseout="close_popup();">relation_existence_lemma</b>[P(2)]: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">^</b>C<b style="color: red;">*</b>X<b style="color: red;">*</b>Y(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, C) <b style="color: red;">&lt-&gt</b> X in A <b style="color: red;">&</b> Y in B <b style="color: red;">&</b> P(X, Y)){
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
-	T_cross = <b style="color: green;">expand</b>(cross_product(A, B)<b style="color: red;">|</b>T<b style="color: red;">|</b>);
-	C_specified = axiom_specify[&ltS: <b style="color: red;">^</b>X<b style="color: red;">^</b>Y(X in A <b style="color: red;">&</b> Y in B <b style="color: red;">&</b> is_tuple(X, Y, S) <b style="color: red;">&</b> P(X, Y))&gt](T)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
+	T_cross = <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/cross_product.html';" onmouseover="popup_window(this, 'cross_product | 01_sets');" onmouseout="close_popup();">cross_product</b>(A, B)<b style="color: red;">|</b>T<b style="color: red;">|</b>);
+	C_specified = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[&ltS: <b style="color: red;">^</b>X<b style="color: red;">^</b>Y(X in A <b style="color: red;">&</b> Y in B <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X, Y, S) <b style="color: red;">&</b> P(X, Y))&gt](T)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
 	<b style="color: blue;">choose</b> C;
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Y<b style="color: red;">|</b>;
-	<b style="color: blue;">prove</b> lemma0: are_related(X, Y, C) <b style="color: red;">-&gt</b> X in A <b style="color: red;">&</b> Y in B <b style="color: red;">&</b> P(X, Y){
+	<b style="color: blue;">prove</b> lemma0: <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, C) <b style="color: red;">-&gt</b> X in A <b style="color: red;">&</b> Y in B <b style="color: red;">&</b> P(X, Y){
 		<b style="color: blue;">implies</b> related_XY;
 		<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(related_XY)<b style="color: red;">|</b>TUPLE_XY<b style="color: red;">|</b>: XY_in_C, tuple_XY;
 		<b style="color: blue;">extract</b> C_specified(TUPLE_XY)(XY_in_C): XY_in_T, tuple_existence;
 		<b style="color: blue;">extract</b> tuple_existence<b style="color: red;">|</b>OTHER_X, OTHER_Y<b style="color: red;">|</b>: OTHER_X_in_A, OTHER_Y_in_B, other_tuple_XY, P_other;
-		<b style="color: blue;">extract</b> tuple_equal_condition(OTHER_X, OTHER_Y, X, Y, TUPLE_XY, TUPLE_XY)(other_tuple_XY, tuple_XY, equal_sets_reflexive(TUPLE_XY)): equal_X, equal_Y;
-		X_in_A = equality_consistency[&ltS: S in A&gt](OTHER_X, X)(equal_X)(OTHER_X_in_A);
-		Y_in_B = equality_consistency[&ltS: S in B&gt](OTHER_Y, Y)(equal_Y)(OTHER_Y_in_B);
-		P_other = equality_consistency[&ltS: P(S, OTHER_Y)&gt](OTHER_X, X)(equal_X)(P_other);
-		P_XY = equality_consistency[&ltS: P(X, S)&gt](OTHER_Y, Y)(equal_Y)(P_other);
+		<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/tuple_equal_condition.html';" onmouseover="popup_window(this, 'tuple_equal_condition | 01_sets');" onmouseout="close_popup();">tuple_equal_condition</b>(OTHER_X, OTHER_Y, X, Y, TUPLE_XY, TUPLE_XY)(other_tuple_XY, tuple_XY, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(TUPLE_XY)): equal_X, equal_Y;
+		X_in_A = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltS: S in A&gt](OTHER_X, X)(equal_X)(OTHER_X_in_A);
+		Y_in_B = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltS: S in B&gt](OTHER_Y, Y)(equal_Y)(OTHER_Y_in_B);
+		P_other = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltS: P(S, OTHER_Y)&gt](OTHER_X, X)(equal_X)(P_other);
+		P_XY = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltS: P(X, S)&gt](OTHER_Y, Y)(equal_Y)(P_other);
 		<b style="color: blue;">return</b> X_in_A, Y_in_B, P_XY;
 	}
-	<b style="color: blue;">prove</b> lemma1: X in A <b style="color: red;">&</b> Y in B <b style="color: red;">&</b> P(X, Y) <b style="color: red;">-&gt</b> are_related(X, Y, C){
+	<b style="color: blue;">prove</b> lemma1: X in A <b style="color: red;">&</b> Y in B <b style="color: red;">&</b> P(X, Y) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, C){
 		<b style="color: blue;">implies</b> X_in_A, Y_in_B, P_XY;
-		Z_tuple = tuple(X, Y)<b style="color: red;">|</b>Z<b style="color: red;">|</b>;
-		<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>J<b style="color: red;">^</b>K(J in A <b style="color: red;">&</b> K in B <b style="color: red;">&</b> is_tuple(J, K, Z)){
+		Z_tuple = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/tuple.html';" onmouseover="popup_window(this, 'tuple | 01_sets');" onmouseout="close_popup();">tuple</b>(X, Y)<b style="color: red;">|</b>Z<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>J<b style="color: red;">^</b>K(J in A <b style="color: red;">&</b> K in B <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(J, K, Z)){
 			<b style="color: blue;">choose</b> X, Y;
 			<b style="color: blue;">return</b> X_in_A, Y_in_B, Z_tuple;
 		}
 		Z_in_T = T_cross(Z)(lemma);
-		<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>J<b style="color: red;">^</b>K(J in A <b style="color: red;">&</b> K in B <b style="color: red;">&</b> is_tuple(J, K, Z) <b style="color: red;">&</b> P(J, K)){
+		<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>J<b style="color: red;">^</b>K(J in A <b style="color: red;">&</b> K in B <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(J, K, Z) <b style="color: red;">&</b> P(J, K)){
 			<b style="color: blue;">choose</b> X, Y;
 			<b style="color: blue;">return</b> X_in_A, Y_in_B, Z_tuple, P_XY;
 		}
 		Z_in_C = C_specified(Z)(Z_in_T, lemma);
-		<b style="color: blue;">prove</b> related_def: <b style="color: red;">^</b>S(S in C <b style="color: red;">&</b> is_tuple(X, Y, S)){
+		<b style="color: blue;">prove</b> related_def: <b style="color: red;">^</b>S(S in C <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X, Y, S)){
 			<b style="color: blue;">choose</b> Z;
 			<b style="color: blue;">return</b> Z_in_C, Z_tuple;
 		}
-		<b style="color: blue;">return</b> #are_related(X, Y, C)(related_def);
+		<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, C)(related_def);
 	}
 	<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
-}</code></body></html>
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

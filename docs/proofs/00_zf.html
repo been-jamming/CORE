@@ -1,10 +1,10 @@
-<!DOCTYPE html><html><head><title>file</title></head><body><div class="header">CORE Source</div><div class="CORE_source"><code style="white-space: pre-wrap;">//A few logical axioms first
+<!DOCTYPE html><html><head><title>file</title></head><body><div class="header">CORE Source</div><div class="CORE_source"><code style="white-space: pre-wrap; cursor: default;"> //A few logical axioms first
 
-<b style="color: blue;">axiom</b> axiom_absurdity[P]: false <b style="color: red;">-&gt</b> P;
+<b style="color: blue;">axiom</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_absurdity.html';" onmouseover="popup_window(this, 'axiom_absurdity | 00_zf');" onmouseout="close_popup();">axiom_absurdity</b>[P]: false <b style="color: red;">-&gt</b> P;
 
-<b style="color: blue;">axiom</b> axiom_true: true;
+<b style="color: blue;">axiom</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_true.html';" onmouseover="popup_window(this, 'axiom_true | 00_zf');" onmouseout="close_popup();">axiom_true</b>: true;
 
-<b style="color: blue;">axiom</b> axiom_excluded_middle[P]: P <b style="color: red;">|</b> ~P;
+<b style="color: blue;">axiom</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_excluded_middle.html';" onmouseover="popup_window(this, 'axiom_excluded_middle | 00_zf');" onmouseout="close_popup();">axiom_excluded_middle</b>[P]: P <b style="color: red;">|</b> ~P;
 
 
 
@@ -12,23 +12,23 @@
 
 
 
-<b style="color: blue;">define</b> equal_sets(A, B): <b style="color: red;">*</b>X(X in A <b style="color: red;">&lt-&gt</b> X in B);
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, B): <b style="color: red;">*</b>X(X in A <b style="color: red;">&lt-&gt</b> X in B);
 
-<b style="color: blue;">define</b> is_subset(A, B): <b style="color: red;">*</b>X(X in A <b style="color: red;">-&gt</b> X in B);
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_subset.html';" onmouseover="popup_window(this, 'is_subset | 00_zf');" onmouseout="close_popup();">is_subset</b>(A, B): <b style="color: red;">*</b>X(X in A <b style="color: red;">-&gt</b> X in B);
 
-<b style="color: blue;">define</b> not_empty(A): <b style="color: red;">^</b>X(X in A);
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/not_empty.html';" onmouseover="popup_window(this, 'not_empty | 00_zf');" onmouseout="close_popup();">not_empty</b>(A): <b style="color: red;">^</b>X(X in A);
 
-<b style="color: blue;">define</b> is_empty(A): <b style="color: red;">*</b>X(~X in A);
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_empty.html';" onmouseover="popup_window(this, 'is_empty | 00_zf');" onmouseout="close_popup();">is_empty</b>(A): <b style="color: red;">*</b>X(~X in A);
 
-<b style="color: blue;">define</b> disjoint_sets(A, B): <b style="color: red;">*</b>X(X in A <b style="color: red;">-&gt</b> ~X in B);
-
-
-
-<b style="color: blue;">axiom</b> equality_consistency[P(1)]: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(equal_sets(X, Y) <b style="color: red;">-&gt</b> (P(X) <b style="color: red;">&lt-&gt</b> P(Y)));
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/disjoint_sets.html';" onmouseover="popup_window(this, 'disjoint_sets | 00_zf');" onmouseout="close_popup();">disjoint_sets</b>(A, B): <b style="color: red;">*</b>X(X in A <b style="color: red;">-&gt</b> ~X in B);
 
 
 
-<b style="color: blue;">prove</b> equal_sets_reflexive: <b style="color: red;">*</b>A(equal_sets(A, A)){
+<b style="color: blue;">axiom</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[P(1)]: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, Y) <b style="color: red;">-&gt</b> (P(X) <b style="color: red;">&lt-&gt</b> P(Y)));
+
+
+
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>: <b style="color: red;">*</b>A(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, A)){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A<b style="color: red;">|</b>;
 
@@ -48,13 +48,13 @@
 
 	}
 
-	<b style="color: blue;">return</b> #equal_sets(A, A)(equal_sets_def);
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, A)(equal_sets_def);
 
 }
 
 
 
-<b style="color: blue;">prove</b> equal_sets_symmetric: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(equal_sets(A, B) <b style="color: red;">-&gt</b> equal_sets(B, A)){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_symmetric.html';" onmouseover="popup_window(this, 'equal_sets_symmetric | 00_zf');" onmouseout="close_popup();">equal_sets_symmetric</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, B) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(B, A)){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
 
@@ -68,13 +68,13 @@
 
 	}
 
-	<b style="color: blue;">return</b> #equal_sets(B, A)(def);
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(B, A)(def);
 
 }
 
 
 
-<b style="color: blue;">prove</b> equal_sets_transitive: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C(equal_sets(A, B) <b style="color: red;">&</b> equal_sets(B, C) <b style="color: red;">-&gt</b> equal_sets(A, C)){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_transitive.html';" onmouseover="popup_window(this, 'equal_sets_transitive | 00_zf');" onmouseout="close_popup();">equal_sets_transitive</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, B) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(B, C) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, C)){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C<b style="color: red;">|</b>;
 
@@ -82,7 +82,7 @@
 
 	<b style="color: blue;">extract</b> equals_both: equal_AB, equal_BC;
 
-	<b style="color: blue;">return</b> equality_consistency[&ltX: equal_sets(X, C)&gt](B, A)(equal_sets_symmetric(A, B)(equal_AB))(equal_BC);
+	<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltX: <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, C)&gt](B, A)(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_symmetric.html';" onmouseover="popup_window(this, 'equal_sets_symmetric | 00_zf');" onmouseout="close_popup();">equal_sets_symmetric</b>(A, B)(equal_AB))(equal_BC);
 
 }
 
@@ -90,7 +90,7 @@
 
 //We <b style="color: blue;">prove</b> the "<b style="color: blue;">axiom</b>" using equality consistency, which is just a more useful form of this <b style="color: blue;">axiom</b> for my purposes
 
-<b style="color: blue;">prove</b> axiom_extensionality: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(equal_sets(A, B) <b style="color: red;">-&gt</b> <b style="color: red;">*</b>W(A in W <b style="color: red;">&lt-&gt</b> B in W)){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_extensionality.html';" onmouseover="popup_window(this, 'axiom_extensionality | 00_zf');" onmouseout="close_popup();">axiom_extensionality</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, B) <b style="color: red;">-&gt</b> <b style="color: red;">*</b>W(A in W <b style="color: red;">&lt-&gt</b> B in W)){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
 
@@ -98,37 +98,37 @@
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>W<b style="color: red;">|</b>;
 
-	<b style="color: blue;">return</b> equality_consistency[&ltX: X in W&gt](A, B)(equal_AB);
+	<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltX: X in W&gt](A, B)(equal_AB);
 
 }
 
 
 
-<b style="color: blue;">axiom</b> axiom_regularity: <b style="color: red;">*</b>A(not_empty(A) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>B(B in A <b style="color: red;">&</b> <b style="color: red;">*</b>C(~C in B <b style="color: red;">|</b> ~C in A)));
+<b style="color: blue;">axiom</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_regularity.html';" onmouseover="popup_window(this, 'axiom_regularity | 00_zf');" onmouseout="close_popup();">axiom_regularity</b>: <b style="color: red;">*</b>A(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/not_empty.html';" onmouseover="popup_window(this, 'not_empty | 00_zf');" onmouseout="close_popup();">not_empty</b>(A) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>B(B in A <b style="color: red;">&</b> <b style="color: red;">*</b>C(~C in B <b style="color: red;">|</b> ~C in A)));
 
 
 
-<b style="color: blue;">axiom</b> axiom_specify[P(1)]: <b style="color: red;">*</b>A<b style="color: red;">^</b>B<b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> X in A <b style="color: red;">&</b> P(X));
+<b style="color: blue;">axiom</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[P(1)]: <b style="color: red;">*</b>A<b style="color: red;">^</b>B<b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> X in A <b style="color: red;">&</b> P(X));
 
 
 
-<b style="color: blue;">axiom</b> axiom_pairing: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">^</b>C(A in C <b style="color: red;">&</b> B in C);
+<b style="color: blue;">axiom</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_pairing.html';" onmouseover="popup_window(this, 'axiom_pairing | 00_zf');" onmouseout="close_popup();">axiom_pairing</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">^</b>C(A in C <b style="color: red;">&</b> B in C);
 
 
 
-<b style="color: blue;">axiom</b> axiom_union: <b style="color: red;">*</b>F<b style="color: red;">^</b>A<b style="color: red;">*</b>Y<b style="color: red;">*</b>X((Y in F <b style="color: red;">&</b> X in Y) <b style="color: red;">-&gt</b> X in A);
+<b style="color: blue;">axiom</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_union.html';" onmouseover="popup_window(this, 'axiom_union | 00_zf');" onmouseout="close_popup();">axiom_union</b>: <b style="color: red;">*</b>F<b style="color: red;">^</b>A<b style="color: red;">*</b>Y<b style="color: red;">*</b>X((Y in F <b style="color: red;">&</b> X in Y) <b style="color: red;">-&gt</b> X in A);
 
 
 
-<b style="color: blue;">axiom</b> axiom_replacement[P(3)]: <b style="color: red;">*</b>A(<b style="color: red;">*</b>X(X in A <b style="color: red;">-&gt</b> <b style="color: red;">^</b>Y(P(X, Y, A) <b style="color: red;">&</b> <b style="color: red;">*</b>Z(P(X, Z, A) <b style="color: red;">-&gt</b> equal_sets(Y, Z)))) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>B<b style="color: red;">*</b>Y((Y in B <b style="color: red;">-&gt</b> <b style="color: red;">^</b>X(X in A <b style="color: red;">&</b> P(X, Y, A))) <b style="color: red;">&</b> (<b style="color: red;">^</b>X(X in A <b style="color: red;">&</b> P(X, Y, A)) <b style="color: red;">-&gt</b> Y in B)));
+<b style="color: blue;">axiom</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_replacement.html';" onmouseover="popup_window(this, 'axiom_replacement | 00_zf');" onmouseout="close_popup();">axiom_replacement</b>[P(3)]: <b style="color: red;">*</b>A(<b style="color: red;">*</b>X(X in A <b style="color: red;">-&gt</b> <b style="color: red;">^</b>Y(P(X, Y, A) <b style="color: red;">&</b> <b style="color: red;">*</b>Z(P(X, Z, A) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(Y, Z)))) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>B<b style="color: red;">*</b>Y((Y in B <b style="color: red;">-&gt</b> <b style="color: red;">^</b>X(X in A <b style="color: red;">&</b> P(X, Y, A))) <b style="color: red;">&</b> (<b style="color: red;">^</b>X(X in A <b style="color: red;">&</b> P(X, Y, A)) <b style="color: red;">-&gt</b> Y in B)));
 
 
 
-<b style="color: blue;">define</b> is_pair(A, B, C): <b style="color: red;">*</b>X(X in C <b style="color: red;">&lt-&gt</b> equal_sets(X, A) <b style="color: red;">|</b> equal_sets(X, B));
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_pair.html';" onmouseover="popup_window(this, 'is_pair | 00_zf');" onmouseout="close_popup();">is_pair</b>(A, B, C): <b style="color: red;">*</b>X(X in C <b style="color: red;">&lt-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A) <b style="color: red;">|</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, B));
 
 
 
-<b style="color: blue;">prove</b> definition_uniqueness_lemma[P(1)]: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(<b style="color: red;">*</b>X(X in A <b style="color: red;">&lt-&gt</b> P(X)) <b style="color: red;">&</b> <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> P(X)) <b style="color: red;">-&gt</b> equal_sets(A, B)){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/definition_uniqueness_lemma.html';" onmouseover="popup_window(this, 'definition_uniqueness_lemma | 00_zf');" onmouseout="close_popup();">definition_uniqueness_lemma</b>[P(1)]: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(<b style="color: red;">*</b>X(X in A <b style="color: red;">&lt-&gt</b> P(X)) <b style="color: red;">&</b> <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> P(X)) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, B)){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
 
@@ -160,27 +160,27 @@
 
 	}
 
-	<b style="color: blue;">return</b> #equal_sets(A, B)(equal_def);
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, B)(equal_def);
 
 }
 
 
 
-<b style="color: blue;">prove</b> pair: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">^</b>C(is_pair(A, B, C)){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/pair.html';" onmouseover="popup_window(this, 'pair | 00_zf');" onmouseout="close_popup();">pair</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">^</b>C(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_pair.html';" onmouseover="popup_window(this, 'is_pair | 00_zf');" onmouseout="close_popup();">is_pair</b>(A, B, C)){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
 
-	<b style="color: blue;">extract</b> axiom_pairing(A, B)<b style="color: red;">|</b>D<b style="color: red;">|</b>: A_in_D, B_in_D;
+	<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_pairing.html';" onmouseover="popup_window(this, 'axiom_pairing | 00_zf');" onmouseout="close_popup();">axiom_pairing</b>(A, B)<b style="color: red;">|</b>D<b style="color: red;">|</b>: A_in_D, B_in_D;
 
-	C_specified = axiom_specify[&ltX: equal_sets(X, A) <b style="color: red;">|</b> equal_sets(X, B)&gt](D)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
+	C_specified = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[&ltX: <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A) <b style="color: red;">|</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, B)&gt](D)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
 
 	<b style="color: blue;">choose</b> C;
 
-	<b style="color: blue;">prove</b> pair_def: <b style="color: red;">*</b>X(X in C <b style="color: red;">&lt-&gt</b> equal_sets(X, A) <b style="color: red;">|</b> equal_sets(X, B)){
+	<b style="color: blue;">prove</b> pair_def: <b style="color: red;">*</b>X(X in C <b style="color: red;">&lt-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A) <b style="color: red;">|</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, B)){
 
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
 
-		<b style="color: blue;">prove</b> lemma0: X in C <b style="color: red;">-&gt</b> equal_sets(X, A) <b style="color: red;">|</b> equal_sets(X, B){
+		<b style="color: blue;">prove</b> lemma0: X in C <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A) <b style="color: red;">|</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, B){
 
 			<b style="color: blue;">implies</b> X_in_C;
 
@@ -190,17 +190,17 @@
 
 		}
 
-		<b style="color: blue;">prove</b> lemma1: equal_sets(X, A) <b style="color: red;">|</b> equal_sets(X, B) <b style="color: red;">-&gt</b> X in C{
+		<b style="color: blue;">prove</b> lemma1: <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A) <b style="color: red;">|</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, B) <b style="color: red;">-&gt</b> X in C{
 
 			<b style="color: blue;">implies</b> equals_or;
 
 			X_in_D = <b style="color: green;">branch</b>(equals_or, equal_XA, equal_XB){
 
-				<b style="color: blue;">return</b> equality_consistency[&ltZ: Z in D&gt](X, A)(equal_XA)(A_in_D);
+				<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltZ: Z in D&gt](X, A)(equal_XA)(A_in_D);
 
 			} <b style="color: green;">or</b> {
 
-				<b style="color: blue;">return</b> equality_consistency[&ltZ: Z in D&gt](X, B)(equal_XB)(B_in_D);
+				<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltZ: Z in D&gt](X, B)(equal_XB)(B_in_D);
 
 			};
 
@@ -212,13 +212,13 @@
 
 	}
 
-	<b style="color: blue;">return</b> #is_pair(A, B, C)(pair_def);
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_pair.html';" onmouseover="popup_window(this, 'is_pair | 00_zf');" onmouseout="close_popup();">is_pair</b>(A, B, C)(pair_def);
 
 }
 
 
 
-<b style="color: blue;">prove</b> pair_unique: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C<b style="color: red;">*</b>D(is_pair(A, B, C) <b style="color: red;">&</b> is_pair(A, B, D) <b style="color: red;">-&gt</b> equal_sets(C, D)){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/pair_unique.html';" onmouseover="popup_window(this, 'pair_unique | 00_zf');" onmouseout="close_popup();">pair_unique</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C<b style="color: red;">*</b>D(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_pair.html';" onmouseover="popup_window(this, 'is_pair | 00_zf');" onmouseout="close_popup();">is_pair</b>(A, B, C) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_pair.html';" onmouseover="popup_window(this, 'is_pair | 00_zf');" onmouseout="close_popup();">is_pair</b>(A, B, D) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(C, D)){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C, D<b style="color: red;">|</b>;
 
@@ -226,23 +226,23 @@
 
 	<b style="color: blue;">extract</b> pairs_premise: pair_C, pair_D;
 
-	<b style="color: blue;">return</b> definition_uniqueness_lemma[&ltX: equal_sets(X, A) <b style="color: red;">|</b> equal_sets(X, B)&gt](C, D)(<b style="color: green;">expand</b>(pair_C), <b style="color: green;">expand</b>(pair_D));
+	<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/definition_uniqueness_lemma.html';" onmouseover="popup_window(this, 'definition_uniqueness_lemma | 00_zf');" onmouseout="close_popup();">definition_uniqueness_lemma</b>[&ltX: <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A) <b style="color: red;">|</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, B)&gt](C, D)(<b style="color: green;">expand</b>(pair_C), <b style="color: green;">expand</b>(pair_D));
 
 }
 
 
 
-<b style="color: blue;">define</b> is_union(A, B): <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> <b style="color: red;">^</b>Y(Y in A <b style="color: red;">&</b> X in Y));
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_union.html';" onmouseover="popup_window(this, 'is_union | 00_zf');" onmouseout="close_popup();">is_union</b>(A, B): <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> <b style="color: red;">^</b>Y(Y in A <b style="color: red;">&</b> X in Y));
 
 
 
-<b style="color: blue;">prove</b> union: <b style="color: red;">*</b>A<b style="color: red;">^</b>B(is_union(A, B)){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/union.html';" onmouseover="popup_window(this, 'union | 00_zf');" onmouseout="close_popup();">union</b>: <b style="color: red;">*</b>A<b style="color: red;">^</b>B(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_union.html';" onmouseover="popup_window(this, 'is_union | 00_zf');" onmouseout="close_popup();">is_union</b>(A, B)){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A<b style="color: red;">|</b>;
 
-	implies_in_NEW = axiom_union(A)<b style="color: red;">|</b>NEW<b style="color: red;">|</b>;
+	implies_in_NEW = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_union.html';" onmouseover="popup_window(this, 'axiom_union | 00_zf');" onmouseout="close_popup();">axiom_union</b>(A)<b style="color: red;">|</b>NEW<b style="color: red;">|</b>;
 
-	specified = axiom_specify[&ltX: <b style="color: red;">^</b>Y(Y in A <b style="color: red;">&</b> X in Y)&gt](NEW)<b style="color: red;">|</b>B<b style="color: red;">|</b>;
+	specified = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[&ltX: <b style="color: red;">^</b>Y(Y in A <b style="color: red;">&</b> X in Y)&gt](NEW)<b style="color: red;">|</b>B<b style="color: red;">|</b>;
 
 	<b style="color: blue;">choose</b> B;
 
@@ -276,13 +276,13 @@
 
 	}
 
-	<b style="color: blue;">return</b> #is_union(A, B)(union_def);
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_union.html';" onmouseover="popup_window(this, 'is_union | 00_zf');" onmouseout="close_popup();">is_union</b>(A, B)(union_def);
 
 }
 
 
 
-<b style="color: blue;">prove</b> union_unique: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C(is_union(A, B) <b style="color: red;">&</b> is_union(A, C) <b style="color: red;">-&gt</b> equal_sets(B, C)){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/union_unique.html';" onmouseover="popup_window(this, 'union_unique | 00_zf');" onmouseout="close_popup();">union_unique</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_union.html';" onmouseover="popup_window(this, 'is_union | 00_zf');" onmouseout="close_popup();">is_union</b>(A, B) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_union.html';" onmouseover="popup_window(this, 'is_union | 00_zf');" onmouseout="close_popup();">is_union</b>(A, C) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(B, C)){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C<b style="color: red;">|</b>;
 
@@ -290,33 +290,33 @@
 
 	<b style="color: blue;">extract</b> union_both: union_B, union_C;
 
-	<b style="color: blue;">return</b> definition_uniqueness_lemma[&ltX: <b style="color: red;">^</b>Y(Y in A <b style="color: red;">&</b> X in Y)&gt](B, C)(<b style="color: green;">expand</b>(union_B), <b style="color: green;">expand</b>(union_C));
+	<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/definition_uniqueness_lemma.html';" onmouseover="popup_window(this, 'definition_uniqueness_lemma | 00_zf');" onmouseout="close_popup();">definition_uniqueness_lemma</b>[&ltX: <b style="color: red;">^</b>Y(Y in A <b style="color: red;">&</b> X in Y)&gt](B, C)(<b style="color: green;">expand</b>(union_B), <b style="color: green;">expand</b>(union_C));
 
 }
 
 
 
-<b style="color: blue;">define</b> is_successor(A, B): <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> X in A <b style="color: red;">|</b> equal_sets(X, A));
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(A, B): <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> X in A <b style="color: red;">|</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A));
 
 
 
-<b style="color: blue;">prove</b> successor: <b style="color: red;">*</b>A<b style="color: red;">^</b>B(is_successor(A, B)){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/successor.html';" onmouseover="popup_window(this, 'successor | 00_zf');" onmouseout="close_popup();">successor</b>: <b style="color: red;">*</b>A<b style="color: red;">^</b>B(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(A, B)){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A<b style="color: red;">|</b>;
 
-	pair_AA = pair(A, A)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
+	pair_AA = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/pair.html';" onmouseover="popup_window(this, 'pair | 00_zf');" onmouseout="close_popup();">pair</b>(A, A)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
 
-	pair_AC = pair(A, C)<b style="color: red;">|</b>D<b style="color: red;">|</b>;
+	pair_AC = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/pair.html';" onmouseover="popup_window(this, 'pair | 00_zf');" onmouseout="close_popup();">pair</b>(A, C)<b style="color: red;">|</b>D<b style="color: red;">|</b>;
 
-	union_B = union(D)<b style="color: red;">|</b>B<b style="color: red;">|</b>;
+	union_B = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/union.html';" onmouseover="popup_window(this, 'union | 00_zf');" onmouseout="close_popup();">union</b>(D)<b style="color: red;">|</b>B<b style="color: red;">|</b>;
 
 	<b style="color: blue;">choose</b> B;
 
-	<b style="color: blue;">prove</b> successor_def: <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> X in A <b style="color: red;">|</b> equal_sets(X, A)){
+	<b style="color: blue;">prove</b> successor_def: <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> X in A <b style="color: red;">|</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A)){
 
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
 
-		<b style="color: blue;">prove</b> lemma0: X in B <b style="color: red;">-&gt</b> X in A <b style="color: red;">|</b> equal_sets(X, A){
+		<b style="color: blue;">prove</b> lemma0: X in B <b style="color: red;">-&gt</b> X in A <b style="color: red;">|</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A){
 
 			<b style="color: blue;">implies</b> X_in_B;
 
@@ -326,13 +326,13 @@
 
 			<b style="color: blue;">return</b> <b style="color: green;">branch</b>(equal_A_or_C, equal_A, equal_C){
 
-				X_in_A = equality_consistency[&ltS: X in S&gt](Y, A)(equal_A)(X_in_Y);
+				X_in_A = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltS: X in S&gt](Y, A)(equal_A)(X_in_Y);
 
-				<b style="color: blue;">return</b> <b style="color: green;">or</b>(X_in_A, &lt:equal_sets(X, A)&gt);
+				<b style="color: blue;">return</b> <b style="color: green;">or</b>(X_in_A, &lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A)&gt);
 
 			} <b style="color: green;">or</b> {
 
-				X_in_C = equality_consistency[&ltS: X in S&gt](Y, C)(equal_C)(X_in_Y);
+				X_in_C = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltS: X in S&gt](Y, C)(equal_C)(X_in_Y);
 
 				equal_A_or = <b style="color: green;">expand</b>(pair_AA)(X)(X_in_C);
 
@@ -344,7 +344,7 @@
 
 		}
 
-		<b style="color: blue;">prove</b> lemma1: X in A <b style="color: red;">|</b> equal_sets(X, A) <b style="color: red;">-&gt</b> X in B{
+		<b style="color: blue;">prove</b> lemma1: X in A <b style="color: red;">|</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A) <b style="color: red;">-&gt</b> X in B{
 
 			<b style="color: blue;">implies</b> premise;
 
@@ -354,7 +354,7 @@
 
 					<b style="color: blue;">choose</b> A;
 
-					<b style="color: blue;">return</b> <b style="color: green;">expand</b>(pair_AC)(A)(<b style="color: green;">or</b>(equal_sets_reflexive(A), &lt:equal_sets(A, C)&gt)), X_in_A;
+					<b style="color: blue;">return</b> <b style="color: green;">expand</b>(pair_AC)(A)(<b style="color: green;">or</b>(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(A), &lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, C)&gt)), X_in_A;
 
 				}
 
@@ -368,7 +368,7 @@
 
 					<b style="color: blue;">choose</b> C;
 
-					<b style="color: blue;">return</b> <b style="color: green;">expand</b>(pair_AC)(C)(<b style="color: green;">or</b>(&lt:equal_sets(C, A)&gt, equal_sets_reflexive(C))), X_in_C;
+					<b style="color: blue;">return</b> <b style="color: green;">expand</b>(pair_AC)(C)(<b style="color: green;">or</b>(&lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(C, A)&gt, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(C))), X_in_C;
 
 				}
 
@@ -382,13 +382,13 @@
 
 	}
 
-	<b style="color: blue;">return</b> #is_successor(A, B)(successor_def);
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(A, B)(successor_def);
 
 }
 
 
 
-<b style="color: blue;">prove</b> successor_unique: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C(is_successor(A, B) <b style="color: red;">&</b> is_successor(A, C) <b style="color: red;">-&gt</b> equal_sets(B, C)){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/successor_unique.html';" onmouseover="popup_window(this, 'successor_unique | 00_zf');" onmouseout="close_popup();">successor_unique</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(A, B) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(A, C) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(B, C)){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C<b style="color: red;">|</b>;
 
@@ -396,7 +396,7 @@
 
 	<b style="color: blue;">extract</b> successor_both: successor_B, successor_C;
 
-	<b style="color: blue;">return</b> definition_uniqueness_lemma[&ltX: X in A <b style="color: red;">|</b> equal_sets(X, A)&gt](B, C)(<b style="color: green;">expand</b>(successor_B), <b style="color: green;">expand</b>(successor_C));
+	<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/definition_uniqueness_lemma.html';" onmouseover="popup_window(this, 'definition_uniqueness_lemma | 00_zf');" onmouseout="close_popup();">definition_uniqueness_lemma</b>[&ltX: X in A <b style="color: red;">|</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A)&gt](B, C)(<b style="color: green;">expand</b>(successor_B), <b style="color: green;">expand</b>(successor_C));
 
 }
 
@@ -404,39 +404,39 @@
 
 //One of the rare moments when we use the <b style="color: blue;">axiom</b> of regularity
 
-<b style="color: blue;">prove</b> no_pair_recursive_membership: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(~A in B <b style="color: red;">|</b> ~B in A){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/no_pair_recursive_membership.html';" onmouseover="popup_window(this, 'no_pair_recursive_membership | 00_zf');" onmouseout="close_popup();">no_pair_recursive_membership</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(~A in B <b style="color: red;">|</b> ~B in A){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
 
-	PAIR_AB_def = <b style="color: green;">expand</b>(pair(A, B)<b style="color: red;">|</b>PAIR_AB<b style="color: red;">|</b>);
+	PAIR_AB_def = <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/pair.html';" onmouseover="popup_window(this, 'pair | 00_zf');" onmouseout="close_popup();">pair</b>(A, B)<b style="color: red;">|</b>PAIR_AB<b style="color: red;">|</b>);
 
 	<b style="color: blue;">prove</b> PAIR_AB_not_empty: <b style="color: red;">^</b>A(A in PAIR_AB){
 
 		<b style="color: blue;">choose</b> A;
 
-		<b style="color: blue;">return</b> PAIR_AB_def(A)(<b style="color: green;">or</b>(equal_sets_reflexive(A), &lt:equal_sets(A, B)&gt));
+		<b style="color: blue;">return</b> PAIR_AB_def(A)(<b style="color: green;">or</b>(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(A), &lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, B)&gt));
 
 	}
 
-	PAIR_AB_not_empty = #not_empty(PAIR_AB)(PAIR_AB_not_empty);
+	PAIR_AB_not_empty = #<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/not_empty.html';" onmouseover="popup_window(this, 'not_empty | 00_zf');" onmouseout="close_popup();">not_empty</b>(PAIR_AB)(PAIR_AB_not_empty);
 
-	<b style="color: blue;">extract</b> axiom_regularity(PAIR_AB)(PAIR_AB_not_empty)<b style="color: red;">|</b>D<b style="color: red;">|</b>: D_in_PAIR_AB, disjoint;
+	<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_regularity.html';" onmouseover="popup_window(this, 'axiom_regularity | 00_zf');" onmouseout="close_popup();">axiom_regularity</b>(PAIR_AB)(PAIR_AB_not_empty)<b style="color: red;">|</b>D<b style="color: red;">|</b>: D_in_PAIR_AB, disjoint;
 
 	<b style="color: blue;">return</b> <b style="color: green;">branch</b>(PAIR_AB_def(D)(D_in_PAIR_AB), equal_D_A, equal_D_B){
 
 		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(disjoint(B), not_B_in_D, not_B_in_PAIR_AB){
 
-			not_B_in_A = equality_consistency[&ltQ: ~B in Q&gt](D, A)(equal_D_A)(not_B_in_D);
+			not_B_in_A = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: ~B in Q&gt](D, A)(equal_D_A)(not_B_in_D);
 
 			<b style="color: blue;">return</b> <b style="color: green;">or</b>(&lt:~A in B&gt, not_B_in_A);
 
 		} <b style="color: green;">or</b> {
 
-			B_in_PAIR_AB = PAIR_AB_def(B)(<b style="color: green;">or</b>(&lt:equal_sets(B, A)&gt, equal_sets_reflexive(B)));
+			B_in_PAIR_AB = PAIR_AB_def(B)(<b style="color: green;">or</b>(&lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(B, A)&gt, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(B)));
 
 			absurdity = not_B_in_PAIR_AB(B_in_PAIR_AB);
 
-			<b style="color: blue;">return</b> axiom_absurdity[goal](absurdity);
+			<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_absurdity.html';" onmouseover="popup_window(this, 'axiom_absurdity | 00_zf');" onmouseout="close_popup();">axiom_absurdity</b>[goal](absurdity);
 
 		};
 
@@ -444,17 +444,17 @@
 
 		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(disjoint(A), not_A_in_D, not_A_in_PAIR_AB){
 
-			not_A_in_B = equality_consistency[&ltQ: ~A in Q&gt](D, B)(equal_D_B)(not_A_in_D);
+			not_A_in_B = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: ~A in Q&gt](D, B)(equal_D_B)(not_A_in_D);
 
 			<b style="color: blue;">return</b> <b style="color: green;">or</b>(not_A_in_B, &lt:~B in A&gt);
 
 		} <b style="color: green;">or</b> {
 
-			A_in_PAIR_AB = PAIR_AB_def(A)(<b style="color: green;">or</b>(equal_sets_reflexive(A), &lt:equal_sets(A, B)&gt));
+			A_in_PAIR_AB = PAIR_AB_def(A)(<b style="color: green;">or</b>(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(A), &lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, B)&gt));
 
 			absurdity = not_A_in_PAIR_AB(A_in_PAIR_AB);
 
-			<b style="color: blue;">return</b> axiom_absurdity[goal](absurdity);
+			<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_absurdity.html';" onmouseover="popup_window(this, 'axiom_absurdity | 00_zf');" onmouseout="close_popup();">axiom_absurdity</b>[goal](absurdity);
 
 		};
 
@@ -464,15 +464,15 @@
 
 
 
-<b style="color: blue;">define</b> is_inductive_set(X): <b style="color: red;">^</b>E(E in X <b style="color: red;">&</b> is_empty(E)) <b style="color: red;">&</b> <b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(Y in X <b style="color: red;">&</b> is_successor(Y, Z) <b style="color: red;">-&gt</b> Z in X);
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_inductive_set.html';" onmouseover="popup_window(this, 'is_inductive_set | 00_zf');" onmouseout="close_popup();">is_inductive_set</b>(X): <b style="color: red;">^</b>E(E in X <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_empty.html';" onmouseover="popup_window(this, 'is_empty | 00_zf');" onmouseout="close_popup();">is_empty</b>(E)) <b style="color: red;">&</b> <b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(Y in X <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(Y, Z) <b style="color: red;">-&gt</b> Z in X);
 
 
 
-<b style="color: blue;">axiom</b> axiom_infinity: <b style="color: red;">^</b>X(is_inductive_set(X));
+<b style="color: blue;">axiom</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_infinity.html';" onmouseover="popup_window(this, 'axiom_infinity | 00_zf');" onmouseout="close_popup();">axiom_infinity</b>: <b style="color: red;">^</b>X(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_inductive_set.html';" onmouseover="popup_window(this, 'is_inductive_set | 00_zf');" onmouseout="close_popup();">is_inductive_set</b>(X));
 
 
 
-<b style="color: blue;">axiom</b> axiom_power_set: <b style="color: red;">*</b>X<b style="color: red;">^</b>Y<b style="color: red;">*</b>Z(is_subset(Z, X) <b style="color: red;">-&gt</b> Z in Y);
+<b style="color: blue;">axiom</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_power_set.html';" onmouseover="popup_window(this, 'axiom_power_set | 00_zf');" onmouseout="close_popup();">axiom_power_set</b>: <b style="color: red;">*</b>X<b style="color: red;">^</b>Y<b style="color: red;">*</b>Z(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_subset.html';" onmouseover="popup_window(this, 'is_subset | 00_zf');" onmouseout="close_popup();">is_subset</b>(Z, X) <b style="color: red;">-&gt</b> Z in Y);
 
 
 
@@ -482,15 +482,15 @@
 
 //Finally, I want to show that the inverse of the <b style="color: blue;">axiom</b> of extensionality can also be proven
 
-<b style="color: blue;">prove</b> axiom_extensionality_inverse: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(<b style="color: red;">*</b>W(A in W <b style="color: red;">&lt-&gt</b> B in W) <b style="color: red;">-&gt</b> equal_sets(A, B)){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_extensionality_inverse.html';" onmouseover="popup_window(this, 'axiom_extensionality_inverse | 00_zf');" onmouseout="close_popup();">axiom_extensionality_inverse</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(<b style="color: red;">*</b>W(A in W <b style="color: red;">&lt-&gt</b> B in W) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, B)){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
 
 	<b style="color: blue;">implies</b> premise;
 
-	pair_U = <b style="color: green;">expand</b>(pair(B, B)<b style="color: red;">|</b>U<b style="color: red;">|</b>);
+	pair_U = <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/pair.html';" onmouseover="popup_window(this, 'pair | 00_zf');" onmouseout="close_popup();">pair</b>(B, B)<b style="color: red;">|</b>U<b style="color: red;">|</b>);
 
-	B_in_U = pair_U(B)(<b style="color: green;">or</b>(equal_sets_reflexive(B), equal_sets_reflexive(B)));
+	B_in_U = pair_U(B)(<b style="color: green;">or</b>(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(B), <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(B)));
 
 	A_in_U = premise(U)(B_in_U);
 
@@ -507,4 +507,19 @@
 }
 
 
-</code></div></body></html>
+ </code></div>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</body></html>

@@ -1,9 +1,24 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">NATURAL_less_than_strict_successor</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove NATURAL_less_than_strict_successor: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(is_successor(A, B) <b style="color: red;">-&gt</b> NATURAL_less_than_strict(A, B)){
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: NATURAL_less_than_strict_successor<br><b>Description</b>: None given<br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURAL_less_than_strict_successor.html';" onmouseover="popup_window(this, 'NATURAL_less_than_strict_successor | 03_addition');" onmouseout="close_popup();">NATURAL_less_than_strict_successor</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(A, B) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURAL_less_than_strict.html';" onmouseover="popup_window(this, 'NATURAL_less_than_strict | 03_addition');" onmouseout="close_popup();">NATURAL_less_than_strict</b>(A, B)){
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
 	<b style="color: blue;">implies</b> successor_B;
-	<b style="color: blue;">prove</b> less_than_strict_def: <b style="color: red;">^</b>S(is_successor(A, S) <b style="color: red;">&</b> NATURAL_less_than(S, B)){
+	<b style="color: blue;">prove</b> less_than_strict_def: <b style="color: red;">^</b>S(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(A, S) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURAL_less_than.html';" onmouseover="popup_window(this, 'NATURAL_less_than | 03_addition');" onmouseout="close_popup();">NATURAL_less_than</b>(S, B)){
 		<b style="color: blue;">choose</b> B;
-		<b style="color: blue;">return</b> successor_B, NATURAL_less_than_reflexive(B);
+		<b style="color: blue;">return</b> successor_B, <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURAL_less_than_reflexive.html';" onmouseover="popup_window(this, 'NATURAL_less_than_reflexive | 03_addition');" onmouseout="close_popup();">NATURAL_less_than_reflexive</b>(B);
 	}
-	<b style="color: blue;">return</b> #NATURAL_less_than_strict(A, B)(less_than_strict_def);
-}</code></body></html>
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURAL_less_than_strict.html';" onmouseover="popup_window(this, 'NATURAL_less_than_strict | 03_addition');" onmouseout="close_popup();">NATURAL_less_than_strict</b>(A, B)(less_than_strict_def);
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

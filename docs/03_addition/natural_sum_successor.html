@@ -1,39 +1,38 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">natural_sum_successor</div><div class="result_description">Description: Prove that 1+n = S(n)
-</div><code style="white-space: pre-wrap;">prove natural_sum_successor: <b style="color: red;">*</b>N<b style="color: red;">*</b>M(is_natural_sum(N, ONE, M) <b style="color: red;">-&gt</b> is_successor(N, M)){
-	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(NATURALS_inductive): empty_in_NATURALS, closure_naturals;
-	R_def = axiom_specify[&ltQ: <b style="color: red;">*</b>M(is_natural_sum(Q, ONE, M) <b style="color: red;">-&gt</b> is_successor(Q, M))&gt](NATURALS)<b style="color: red;">|</b>R<b style="color: red;">|</b>;
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: natural_sum_successor<br><b>Description</b>: Prove that 1+n = S(n)<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_successor.html';" onmouseover="popup_window(this, 'natural_sum_successor | 03_addition');" onmouseout="close_popup();">natural_sum_successor</b>: <b style="color: red;">*</b>N<b style="color: red;">*</b>M(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(N, ONE, M) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(N, M)){
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_inductive.html';" onmouseover="popup_window(this, 'NATURALS_inductive | 03_addition');" onmouseout="close_popup();">NATURALS_inductive</b>): empty_in_NATURALS, closure_naturals;
+	R_def = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[&ltQ: <b style="color: red;">*</b>M(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(Q, ONE, M) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(Q, M))&gt](NATURALS)<b style="color: red;">|</b>R<b style="color: red;">|</b>;
 
-	<b style="color: blue;">prove</b> ZERO_in_R: <b style="color: red;">*</b>M(is_natural_sum(ZERO, ONE, M) <b style="color: red;">-&gt</b> is_successor(ZERO, M)){
+	<b style="color: blue;">prove</b> ZERO_in_R: <b style="color: red;">*</b>M(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(ZERO, ONE, M) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(ZERO, M)){
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>M<b style="color: red;">|</b>;
 		<b style="color: blue;">implies</b> sum_M;
-		other_sum_M = natural_sum_zero_identity(ONE)(one_is_natural);
-		equal_M_ONE = natural_sum_unique(ZERO, ONE, M, ONE)(sum_M, other_sum_M);
-		<b style="color: blue;">return</b> equality_consistency[&ltQ: is_successor(ZERO, Q)&gt](M, ONE)(equal_M_ONE)(one_definition);
+		other_sum_M = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_zero_identity.html';" onmouseover="popup_window(this, 'natural_sum_zero_identity | 03_addition');" onmouseout="close_popup();">natural_sum_zero_identity</b>(ONE)(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/one_is_natural.html';" onmouseover="popup_window(this, 'one_is_natural | 03_addition');" onmouseout="close_popup();">one_is_natural</b>);
+		equal_M_ONE = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_unique.html';" onmouseover="popup_window(this, 'natural_sum_unique | 03_addition');" onmouseout="close_popup();">natural_sum_unique</b>(ZERO, ONE, M, ONE)(sum_M, other_sum_M);
+		<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(ZERO, Q)&gt](M, ONE)(equal_M_ONE)(one_definition);
 	}
 
 	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
 
-	<b style="color: blue;">prove</b> closure_R: <b style="color: red;">*</b>K<b style="color: red;">*</b>N(K in R <b style="color: red;">&</b> is_successor(K, N) <b style="color: red;">-&gt</b> N in R){
+	<b style="color: blue;">prove</b> closure_R: <b style="color: red;">*</b>K<b style="color: red;">*</b>N(K in R <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(K, N) <b style="color: red;">-&gt</b> N in R){
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>K, N<b style="color: red;">|</b>;
 		<b style="color: blue;">implies</b> K_in_R, successor_N;
 		<b style="color: blue;">extract</b> R_def(K)(K_in_R): K_in_NATURALS, K_cond;
 		N_in_NATURALS = closure_naturals(K, N)(K_in_NATURALS, successor_N);
-		<b style="color: blue;">extract</b> natural_sum(K, ONE)(K_in_NATURALS, one_is_natural)<b style="color: red;">|</b>OTHER_N<b style="color: red;">|</b>: OTHER_N_in_NATURALS, sum_OTHER_N;
+		<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum.html';" onmouseover="popup_window(this, 'natural_sum | 03_addition');" onmouseout="close_popup();">natural_sum</b>(K, ONE)(K_in_NATURALS, <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/one_is_natural.html';" onmouseover="popup_window(this, 'one_is_natural | 03_addition');" onmouseout="close_popup();">one_is_natural</b>)<b style="color: red;">|</b>OTHER_N<b style="color: red;">|</b>: OTHER_N_in_NATURALS, sum_OTHER_N;
 		successor_other_N = K_cond(OTHER_N)(sum_OTHER_N);
-		equal_N = successor_unique(K, N, OTHER_N)(successor_N, successor_other_N);
-		sum_N = equality_consistency[&ltQ: is_natural_sum(K, ONE, Q)&gt](N, OTHER_N)(equal_N)(sum_OTHER_N);
-		<b style="color: blue;">extract</b> natural_sum_successor_recursion(K, ONE, N)(sum_N)<b style="color: red;">|</b>OTHER_N2, M<b style="color: red;">|</b>: successor_other_N2, successor_M, sum_M;
-		equal_N = successor_unique(K, N, OTHER_N2)(successor_N, successor_other_N2);
-		sum_M = equality_consistency[&ltQ: is_natural_sum(Q, ONE, M)&gt](N, OTHER_N2)(equal_N)(sum_M);
-		<b style="color: blue;">prove</b> N_cond: <b style="color: red;">*</b>M_OTHER(is_natural_sum(N, ONE, M_OTHER) <b style="color: red;">-&gt</b> is_successor(N, M_OTHER)){
+		equal_N = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/successor_unique.html';" onmouseover="popup_window(this, 'successor_unique | 00_zf');" onmouseout="close_popup();">successor_unique</b>(K, N, OTHER_N)(successor_N, successor_other_N);
+		sum_N = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(K, ONE, Q)&gt](N, OTHER_N)(equal_N)(sum_OTHER_N);
+		<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_successor_recursion.html';" onmouseover="popup_window(this, 'natural_sum_successor_recursion | 03_addition');" onmouseout="close_popup();">natural_sum_successor_recursion</b>(K, ONE, N)(sum_N)<b style="color: red;">|</b>OTHER_N2, M<b style="color: red;">|</b>: successor_other_N2, successor_M, sum_M;
+		equal_N = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/successor_unique.html';" onmouseover="popup_window(this, 'successor_unique | 00_zf');" onmouseout="close_popup();">successor_unique</b>(K, N, OTHER_N2)(successor_N, successor_other_N2);
+		sum_M = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(Q, ONE, M)&gt](N, OTHER_N2)(equal_N)(sum_M);
+		<b style="color: blue;">prove</b> N_cond: <b style="color: red;">*</b>M_OTHER(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(N, ONE, M_OTHER) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(N, M_OTHER)){
 			<b style="color: blue;">given</b> <b style="color: red;">|</b>M_OTHER<b style="color: red;">|</b>;
 			<b style="color: blue;">implies</b> other_sum_M;
-			equal_M = natural_sum_unique(N, ONE, M, M_OTHER)(sum_M, other_sum_M);
-			<b style="color: blue;">return</b> equality_consistency[&ltQ: is_successor(N, Q)&gt](M, M_OTHER)(equal_M)(successor_M);
+			equal_M = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_unique.html';" onmouseover="popup_window(this, 'natural_sum_unique | 03_addition');" onmouseout="close_popup();">natural_sum_unique</b>(N, ONE, M, M_OTHER)(sum_M, other_sum_M);
+			<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(N, Q)&gt](M, M_OTHER)(equal_M)(successor_M);
 		}
 		<b style="color: blue;">return</b> R_def(N)(N_in_NATURALS, N_cond);
 	}
-	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+	NATURALS_subset_R = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_induction.html';" onmouseover="popup_window(this, 'NATURALS_induction | 03_addition');" onmouseout="close_popup();">NATURALS_induction</b>(R)(ZERO_in_R, closure_R);
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>N, M<b style="color: red;">|</b>;
 	<b style="color: blue;">implies</b> sum_M;
@@ -42,4 +41,19 @@
 	<b style="color: blue;">extract</b> R_def(N)(N_in_R): N_in_NATURALS, result;
 
 	<b style="color: blue;">return</b> result(M)(sum_M);
-}</code></body></html>
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

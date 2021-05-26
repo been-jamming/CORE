@@ -1,2 +1,17 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">definition</div><div class="result_name">is_inductive_set</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">define is_inductive_set(X): <b style="color: red;">^</b>E(E in X <b style="color: red;">&</b> is_empty(E)) <b style="color: red;">&</b> <b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(Y in X <b style="color: red;">&</b> is_successor(Y, Z) <b style="color: red;">-&gt</b> Z in X);
-</code></body></html>
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: definition<br><b>Result name</b>: is_inductive_set<br><b>Description</b>: None given<br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_inductive_set.html';" onmouseover="popup_window(this, 'is_inductive_set | 00_zf');" onmouseout="close_popup();">is_inductive_set</b>(X): <b style="color: red;">^</b>E(E in X <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_empty.html';" onmouseover="popup_window(this, 'is_empty | 00_zf');" onmouseout="close_popup();">is_empty</b>(E)) <b style="color: red;">&</b> <b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(Y in X <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(Y, Z) <b style="color: red;">-&gt</b> Z in X);
+</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">subset_transitive</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove subset_transitive: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C(is_subset(A, B) <b style="color: red;">&</b> is_subset(B, C) <b style="color: red;">-&gt</b> is_subset(A, C)){
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: subset_transitive<br><b>Description</b>: None given<br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/subset_transitive.html';" onmouseover="popup_window(this, 'subset_transitive | 01_sets');" onmouseout="close_popup();">subset_transitive</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_subset.html';" onmouseover="popup_window(this, 'is_subset | 00_zf');" onmouseout="close_popup();">is_subset</b>(A, B) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_subset.html';" onmouseover="popup_window(this, 'is_subset | 00_zf');" onmouseout="close_popup();">is_subset</b>(B, C) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_subset.html';" onmouseover="popup_window(this, 'is_subset | 00_zf');" onmouseout="close_popup();">is_subset</b>(A, C)){
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C<b style="color: red;">|</b>;
 	<b style="color: blue;">implies</b> subset_both;
 	<b style="color: blue;">extract</b> subset_both: subset_B, subset_C;
@@ -9,5 +9,20 @@
 		<b style="color: blue;">implies</b> X_in_A;
 		<b style="color: blue;">return</b> subset_C(X)(subset_B(X)(X_in_A));
 	}
-	<b style="color: blue;">return</b> #is_subset(A, C)(subset_def);
-}</code></body></html>
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_subset.html';" onmouseover="popup_window(this, 'is_subset | 00_zf');" onmouseout="close_popup();">is_subset</b>(A, C)(subset_def);
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

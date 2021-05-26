@@ -1,84 +1,84 @@
-<!DOCTYPE html><html><head><title>file</title></head><body><div class="header">CORE Source</div><div class="CORE_source"><code style="white-space: pre-wrap;">//Define when X <b style="color: green;">and</b> Y are related under R
+<!DOCTYPE html><html><head><title>file</title></head><body><div class="header">CORE Source</div><div class="CORE_source"><code style="white-space: pre-wrap; cursor: default;"> //Define when X <b style="color: green;">and</b> Y are related under R
 
-<b style="color: blue;">define</b> are_related(X, Y, R): <b style="color: red;">^</b>T(T in R <b style="color: red;">&</b> is_tuple(X, Y, T));
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, R): <b style="color: red;">^</b>T(T in R <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X, Y, T));
 
 
 
 //Define when a relation R is reflexive with respect to A
 
-<b style="color: blue;">define</b> is_reflexive(R, A): <b style="color: red;">*</b>X(X in A <b style="color: red;">-&gt</b> are_related(X, X, R));
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_reflexive.html';" onmouseover="popup_window(this, 'is_reflexive | 02_relations');" onmouseout="close_popup();">is_reflexive</b>(R, A): <b style="color: red;">*</b>X(X in A <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, X, R));
 
 
 
 //Define when a relation R is symmetric
 
-<b style="color: blue;">define</b> is_symmetric(R): <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(are_related(X, Y, R) <b style="color: red;">-&gt</b> are_related(Y, X, R));
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_symmetric.html';" onmouseover="popup_window(this, 'is_symmetric | 02_relations');" onmouseout="close_popup();">is_symmetric</b>(R): <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, R) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(Y, X, R));
 
 
 
 //Define when a relation R is transitive
 
-<b style="color: blue;">define</b> is_transitive(R): <b style="color: red;">*</b>X<b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(are_related(X, Y, R) <b style="color: red;">&</b> are_related(Y, Z, R) <b style="color: red;">-&gt</b> are_related(X, Z, R));
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_transitive.html';" onmouseover="popup_window(this, 'is_transitive | 02_relations');" onmouseout="close_popup();">is_transitive</b>(R): <b style="color: red;">*</b>X<b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, R) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(Y, Z, R) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Z, R));
 
 
 
 //Define an equivalence relation with respect to A (for reflexivity)
 
-<b style="color: blue;">define</b> is_equivalence_relation(R, A): is_reflexive(R, A) <b style="color: red;">&</b> is_symmetric(R) <b style="color: red;">&</b> is_transitive(R);
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_relation.html';" onmouseover="popup_window(this, 'is_equivalence_relation | 02_relations');" onmouseout="close_popup();">is_equivalence_relation</b>(R, A): <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_reflexive.html';" onmouseover="popup_window(this, 'is_reflexive | 02_relations');" onmouseout="close_popup();">is_reflexive</b>(R, A) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_symmetric.html';" onmouseover="popup_window(this, 'is_symmetric | 02_relations');" onmouseout="close_popup();">is_symmetric</b>(R) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_transitive.html';" onmouseover="popup_window(this, 'is_transitive | 02_relations');" onmouseout="close_popup();">is_transitive</b>(R);
 
 
 
 //Define a function!
 
-<b style="color: blue;">define</b> is_function(F): <b style="color: red;">*</b>X<b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(are_related(X, Y, F) <b style="color: red;">&</b> are_related(X, Z, F) <b style="color: red;">-&gt</b> equal_sets(Y, Z));
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_function.html';" onmouseover="popup_window(this, 'is_function | 02_relations');" onmouseout="close_popup();">is_function</b>(F): <b style="color: red;">*</b>X<b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, F) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Z, F) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(Y, Z));
 
 
 
 //Define when a function is injective with respect to a domain A
 
-<b style="color: blue;">define</b> is_injective(F, A): <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(X in A <b style="color: red;">&</b> Y in A <b style="color: red;">&</b> <b style="color: red;">^</b>Z(are_related(X, Z, F) <b style="color: red;">&</b> are_related(Y, Z, F)) <b style="color: red;">-&gt</b> equal_sets(X, Y));
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_injective.html';" onmouseover="popup_window(this, 'is_injective | 02_relations');" onmouseout="close_popup();">is_injective</b>(F, A): <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(X in A <b style="color: red;">&</b> Y in A <b style="color: red;">&</b> <b style="color: red;">^</b>Z(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Z, F) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(Y, Z, F)) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, Y));
 
 
 
 //Define when a function is surjective with respect to a codomain A
 
-<b style="color: blue;">define</b> is_surjective(F, A): <b style="color: red;">*</b>Y(Y in A <b style="color: red;">-&gt</b> <b style="color: red;">^</b>X(are_related(X, Y, F)));
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_surjective.html';" onmouseover="popup_window(this, 'is_surjective | 02_relations');" onmouseout="close_popup();">is_surjective</b>(F, A): <b style="color: red;">*</b>Y(Y in A <b style="color: red;">-&gt</b> <b style="color: red;">^</b>X(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, F)));
 
 
 
 //Define when A is a domain for F
 
-<b style="color: blue;">define</b> is_domain(F, A): <b style="color: red;">*</b>X(X in A <b style="color: red;">-&gt</b> <b style="color: red;">^</b>Y(are_related(X, Y, F)));
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_domain.html';" onmouseover="popup_window(this, 'is_domain | 02_relations');" onmouseout="close_popup();">is_domain</b>(F, A): <b style="color: red;">*</b>X(X in A <b style="color: red;">-&gt</b> <b style="color: red;">^</b>Y(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, F)));
 
 
 
 //Define when A is a domain for F
 
-<b style="color: blue;">define</b> is_codomain(F, A): <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(are_related(X, Y, F) <b style="color: red;">-&gt</b> Y in A);
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_codomain.html';" onmouseover="popup_window(this, 'is_codomain | 02_relations');" onmouseout="close_popup();">is_codomain</b>(F, A): <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, F) <b style="color: red;">-&gt</b> Y in A);
 
 
 
 //Define when B is the image of A under F
 
-<b style="color: blue;">define</b> is_image(F, A, B): <b style="color: red;">*</b>Y(Y in B <b style="color: red;">&lt-&gt</b> <b style="color: red;">^</b>X(X in A <b style="color: red;">&</b> are_related(X, Y, F)));
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_image.html';" onmouseover="popup_window(this, 'is_image | 02_relations');" onmouseout="close_popup();">is_image</b>(F, A, B): <b style="color: red;">*</b>Y(Y in B <b style="color: red;">&lt-&gt</b> <b style="color: red;">^</b>X(X in A <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, F)));
 
 
 
 //Define an identity function on A
 
-<b style="color: blue;">define</b> is_identity_function(F, A): is_function(F) <b style="color: red;">&</b> is_domain(F, A) <b style="color: red;">&</b> <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(are_related(X, Y, F) <b style="color: red;">&lt-&gt</b> equal_sets(X, Y));
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_identity_function.html';" onmouseover="popup_window(this, 'is_identity_function | 02_relations');" onmouseout="close_popup();">is_identity_function</b>(F, A): <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_function.html';" onmouseover="popup_window(this, 'is_function | 02_relations');" onmouseout="close_popup();">is_function</b>(F) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_domain.html';" onmouseover="popup_window(this, 'is_domain | 02_relations');" onmouseout="close_popup();">is_domain</b>(F, A) <b style="color: red;">&</b> <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, F) <b style="color: red;">&lt-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, Y));
 
 
 
 //Define the composition H of two relations
 
-<b style="color: blue;">define</b> is_composition(F, G, H): <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(are_related(X, Y, H) <b style="color: red;">&lt-&gt</b> <b style="color: red;">^</b>Z(are_related(X, Z, G) <b style="color: red;">&</b> are_related(Z, Y, F)));
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_composition.html';" onmouseover="popup_window(this, 'is_composition | 02_relations');" onmouseout="close_popup();">is_composition</b>(F, G, H): <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, H) <b style="color: red;">&lt-&gt</b> <b style="color: red;">^</b>Z(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Z, G) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(Z, Y, F)));
 
 
 
 //The <b style="color: blue;">axiom</b> of choice!
 
-<b style="color: blue;">axiom</b> axiom_choice: <b style="color: red;">*</b>C(<b style="color: red;">*</b>X(X in C <b style="color: red;">-&gt</b> not_empty(X)) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>F(is_function(F) <b style="color: red;">&</b> is_domain(F, C) <b style="color: red;">&</b> <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(are_related(X, Y, F) <b style="color: red;">-&gt</b> Y in X)));
+<b style="color: blue;">axiom</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/axiom_choice.html';" onmouseover="popup_window(this, 'axiom_choice | 02_relations');" onmouseout="close_popup();">axiom_choice</b>: <b style="color: red;">*</b>C(<b style="color: red;">*</b>X(X in C <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/not_empty.html';" onmouseover="popup_window(this, 'not_empty | 00_zf');" onmouseout="close_popup();">not_empty</b>(X)) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>F(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_function.html';" onmouseover="popup_window(this, 'is_function | 02_relations');" onmouseout="close_popup();">is_function</b>(F) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_domain.html';" onmouseover="popup_window(this, 'is_domain | 02_relations');" onmouseout="close_popup();">is_domain</b>(F, C) <b style="color: red;">&</b> <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, F) <b style="color: red;">-&gt</b> Y in X)));
 
 //The axiomization of ZFC is complete. Time to do some math!
 
@@ -86,19 +86,19 @@
 
 //Useful lemma for constructing relations using propositions
 
-<b style="color: blue;">prove</b> relation_existence_lemma[P(2)]: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">^</b>C<b style="color: red;">*</b>X<b style="color: red;">*</b>Y(are_related(X, Y, C) <b style="color: red;">&lt-&gt</b> X in A <b style="color: red;">&</b> Y in B <b style="color: red;">&</b> P(X, Y)){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/relation_existence_lemma.html';" onmouseover="popup_window(this, 'relation_existence_lemma | 02_relations');" onmouseout="close_popup();">relation_existence_lemma</b>[P(2)]: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">^</b>C<b style="color: red;">*</b>X<b style="color: red;">*</b>Y(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, C) <b style="color: red;">&lt-&gt</b> X in A <b style="color: red;">&</b> Y in B <b style="color: red;">&</b> P(X, Y)){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
 
-	T_cross = <b style="color: green;">expand</b>(cross_product(A, B)<b style="color: red;">|</b>T<b style="color: red;">|</b>);
+	T_cross = <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/cross_product.html';" onmouseover="popup_window(this, 'cross_product | 01_sets');" onmouseout="close_popup();">cross_product</b>(A, B)<b style="color: red;">|</b>T<b style="color: red;">|</b>);
 
-	C_specified = axiom_specify[&ltS: <b style="color: red;">^</b>X<b style="color: red;">^</b>Y(X in A <b style="color: red;">&</b> Y in B <b style="color: red;">&</b> is_tuple(X, Y, S) <b style="color: red;">&</b> P(X, Y))&gt](T)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
+	C_specified = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[&ltS: <b style="color: red;">^</b>X<b style="color: red;">^</b>Y(X in A <b style="color: red;">&</b> Y in B <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X, Y, S) <b style="color: red;">&</b> P(X, Y))&gt](T)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
 
 	<b style="color: blue;">choose</b> C;
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Y<b style="color: red;">|</b>;
 
-	<b style="color: blue;">prove</b> lemma0: are_related(X, Y, C) <b style="color: red;">-&gt</b> X in A <b style="color: red;">&</b> Y in B <b style="color: red;">&</b> P(X, Y){
+	<b style="color: blue;">prove</b> lemma0: <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, C) <b style="color: red;">-&gt</b> X in A <b style="color: red;">&</b> Y in B <b style="color: red;">&</b> P(X, Y){
 
 		<b style="color: blue;">implies</b> related_XY;
 
@@ -108,27 +108,27 @@
 
 		<b style="color: blue;">extract</b> tuple_existence<b style="color: red;">|</b>OTHER_X, OTHER_Y<b style="color: red;">|</b>: OTHER_X_in_A, OTHER_Y_in_B, other_tuple_XY, P_other;
 
-		<b style="color: blue;">extract</b> tuple_equal_condition(OTHER_X, OTHER_Y, X, Y, TUPLE_XY, TUPLE_XY)(other_tuple_XY, tuple_XY, equal_sets_reflexive(TUPLE_XY)): equal_X, equal_Y;
+		<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/tuple_equal_condition.html';" onmouseover="popup_window(this, 'tuple_equal_condition | 01_sets');" onmouseout="close_popup();">tuple_equal_condition</b>(OTHER_X, OTHER_Y, X, Y, TUPLE_XY, TUPLE_XY)(other_tuple_XY, tuple_XY, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(TUPLE_XY)): equal_X, equal_Y;
 
-		X_in_A = equality_consistency[&ltS: S in A&gt](OTHER_X, X)(equal_X)(OTHER_X_in_A);
+		X_in_A = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltS: S in A&gt](OTHER_X, X)(equal_X)(OTHER_X_in_A);
 
-		Y_in_B = equality_consistency[&ltS: S in B&gt](OTHER_Y, Y)(equal_Y)(OTHER_Y_in_B);
+		Y_in_B = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltS: S in B&gt](OTHER_Y, Y)(equal_Y)(OTHER_Y_in_B);
 
-		P_other = equality_consistency[&ltS: P(S, OTHER_Y)&gt](OTHER_X, X)(equal_X)(P_other);
+		P_other = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltS: P(S, OTHER_Y)&gt](OTHER_X, X)(equal_X)(P_other);
 
-		P_XY = equality_consistency[&ltS: P(X, S)&gt](OTHER_Y, Y)(equal_Y)(P_other);
+		P_XY = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltS: P(X, S)&gt](OTHER_Y, Y)(equal_Y)(P_other);
 
 		<b style="color: blue;">return</b> X_in_A, Y_in_B, P_XY;
 
 	}
 
-	<b style="color: blue;">prove</b> lemma1: X in A <b style="color: red;">&</b> Y in B <b style="color: red;">&</b> P(X, Y) <b style="color: red;">-&gt</b> are_related(X, Y, C){
+	<b style="color: blue;">prove</b> lemma1: X in A <b style="color: red;">&</b> Y in B <b style="color: red;">&</b> P(X, Y) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, C){
 
 		<b style="color: blue;">implies</b> X_in_A, Y_in_B, P_XY;
 
-		Z_tuple = tuple(X, Y)<b style="color: red;">|</b>Z<b style="color: red;">|</b>;
+		Z_tuple = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/tuple.html';" onmouseover="popup_window(this, 'tuple | 01_sets');" onmouseout="close_popup();">tuple</b>(X, Y)<b style="color: red;">|</b>Z<b style="color: red;">|</b>;
 
-		<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>J<b style="color: red;">^</b>K(J in A <b style="color: red;">&</b> K in B <b style="color: red;">&</b> is_tuple(J, K, Z)){
+		<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>J<b style="color: red;">^</b>K(J in A <b style="color: red;">&</b> K in B <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(J, K, Z)){
 
 			<b style="color: blue;">choose</b> X, Y;
 
@@ -138,7 +138,7 @@
 
 		Z_in_T = T_cross(Z)(lemma);
 
-		<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>J<b style="color: red;">^</b>K(J in A <b style="color: red;">&</b> K in B <b style="color: red;">&</b> is_tuple(J, K, Z) <b style="color: red;">&</b> P(J, K)){
+		<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>J<b style="color: red;">^</b>K(J in A <b style="color: red;">&</b> K in B <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(J, K, Z) <b style="color: red;">&</b> P(J, K)){
 
 			<b style="color: blue;">choose</b> X, Y;
 
@@ -148,7 +148,7 @@
 
 		Z_in_C = C_specified(Z)(Z_in_T, lemma);
 
-		<b style="color: blue;">prove</b> related_def: <b style="color: red;">^</b>S(S in C <b style="color: red;">&</b> is_tuple(X, Y, S)){
+		<b style="color: blue;">prove</b> related_def: <b style="color: red;">^</b>S(S in C <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X, Y, S)){
 
 			<b style="color: blue;">choose</b> Z;
 
@@ -156,7 +156,7 @@
 
 		}
 
-		<b style="color: blue;">return</b> #are_related(X, Y, C)(related_def);
+		<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, C)(related_def);
 
 	}
 
@@ -168,25 +168,25 @@
 
 //Define when C is the equivalence class with respect to an equivalence relation R on A
 
-<b style="color: blue;">define</b> is_equivalence_class(R, A, C): <b style="color: red;">^</b>X(X in A <b style="color: red;">&</b> <b style="color: red;">*</b>Y(Y in C <b style="color: red;">&lt-&gt</b> Y in A <b style="color: red;">&</b> are_related(X, Y, R)));
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_class.html';" onmouseover="popup_window(this, 'is_equivalence_class | 02_relations');" onmouseout="close_popup();">is_equivalence_class</b>(R, A, C): <b style="color: red;">^</b>X(X in A <b style="color: red;">&</b> <b style="color: red;">*</b>Y(Y in C <b style="color: red;">&lt-&gt</b> Y in A <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, R)));
 
 
 
 //Define when C is the equivalence classes for R
 
-<b style="color: blue;">define</b> is_equivalence_classes(R, A, C): <b style="color: red;">*</b>Y(Y in C <b style="color: red;">&lt-&gt</b> is_equivalence_class(R, A, Y));
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_classes.html';" onmouseover="popup_window(this, 'is_equivalence_classes | 02_relations');" onmouseout="close_popup();">is_equivalence_classes</b>(R, A, C): <b style="color: red;">*</b>Y(Y in C <b style="color: red;">&lt-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_class.html';" onmouseover="popup_window(this, 'is_equivalence_class | 02_relations');" onmouseout="close_popup();">is_equivalence_class</b>(R, A, Y));
 
 
 
 //Define when two relations F <b style="color: green;">and</b> G are equal
 
-<b style="color: blue;">define</b> equal_relations(F, G): <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(are_related(X, Y, F) <b style="color: red;">&lt-&gt</b> are_related(X, Y, G));
+<b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/equal_relations.html';" onmouseover="popup_window(this, 'equal_relations | 02_relations');" onmouseout="close_popup();">equal_relations</b>(F, G): <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, F) <b style="color: red;">&lt-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, G));
 
 
 
 //Prove that equivalence classes exist for any equivalence relation
 
-<b style="color: blue;">prove</b> equivalence_classes: <b style="color: red;">*</b>A<b style="color: red;">*</b>R(is_equivalence_relation(R, A) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>C(is_equivalence_classes(R, A, C))){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/equivalence_classes.html';" onmouseover="popup_window(this, 'equivalence_classes | 02_relations');" onmouseout="close_popup();">equivalence_classes</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>R(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_relation.html';" onmouseover="popup_window(this, 'is_equivalence_relation | 02_relations');" onmouseout="close_popup();">is_equivalence_relation</b>(R, A) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>C(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_classes.html';" onmouseover="popup_window(this, 'is_equivalence_classes | 02_relations');" onmouseout="close_popup();">is_equivalence_classes</b>(R, A, C))){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, R<b style="color: red;">|</b>;
 
@@ -194,17 +194,17 @@
 
 	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(equiv_relation): reflexive, symmetric, transitive;
 
-	power_set_P = <b style="color: green;">expand</b>(power_set(A)<b style="color: red;">|</b>P<b style="color: red;">|</b>);
+	power_set_P = <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/power_set.html';" onmouseover="popup_window(this, 'power_set | 01_sets');" onmouseout="close_popup();">power_set</b>(A)<b style="color: red;">|</b>P<b style="color: red;">|</b>);
 
-	C_def = axiom_specify[&ltS: is_equivalence_class(R, A, S)&gt](P)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
+	C_def = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[&ltS: <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_class.html';" onmouseover="popup_window(this, 'is_equivalence_class | 02_relations');" onmouseout="close_popup();">is_equivalence_class</b>(R, A, S)&gt](P)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
 
 	<b style="color: blue;">choose</b> C;
 
-	<b style="color: blue;">prove</b> equiv_classes_def: <b style="color: red;">*</b>Y(Y in C <b style="color: red;">&lt-&gt</b> is_equivalence_class(R, A, Y)){
+	<b style="color: blue;">prove</b> equiv_classes_def: <b style="color: red;">*</b>Y(Y in C <b style="color: red;">&lt-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_class.html';" onmouseover="popup_window(this, 'is_equivalence_class | 02_relations');" onmouseout="close_popup();">is_equivalence_class</b>(R, A, Y)){
 
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>Y<b style="color: red;">|</b>;
 
-		<b style="color: blue;">prove</b> lemma0: Y in C <b style="color: red;">-&gt</b> is_equivalence_class(R, A, Y){
+		<b style="color: blue;">prove</b> lemma0: Y in C <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_class.html';" onmouseover="popup_window(this, 'is_equivalence_class | 02_relations');" onmouseout="close_popup();">is_equivalence_class</b>(R, A, Y){
 
 			<b style="color: blue;">implies</b> Y_in_C;
 
@@ -214,7 +214,7 @@
 
 		}
 
-		<b style="color: blue;">prove</b> lemma1: is_equivalence_class(R, A, Y) <b style="color: red;">-&gt</b> Y in C{
+		<b style="color: blue;">prove</b> lemma1: <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_class.html';" onmouseover="popup_window(this, 'is_equivalence_class | 02_relations');" onmouseout="close_popup();">is_equivalence_class</b>(R, A, Y) <b style="color: red;">-&gt</b> Y in C{
 
 			<b style="color: blue;">implies</b> equiv_class;
 
@@ -232,7 +232,7 @@
 
 			}
 
-			Y_subset_A = #is_subset(Y, A)(subset_def);
+			Y_subset_A = #<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_subset.html';" onmouseover="popup_window(this, 'is_subset | 00_zf');" onmouseout="close_popup();">is_subset</b>(Y, A)(subset_def);
 
 			Y_in_P = power_set_P(Y)(Y_subset_A);
 
@@ -244,7 +244,7 @@
 
 	}
 
-	<b style="color: blue;">return</b> #is_equivalence_classes(R, A, C)(equiv_classes_def);
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_classes.html';" onmouseover="popup_window(this, 'is_equivalence_classes | 02_relations');" onmouseout="close_popup();">is_equivalence_classes</b>(R, A, C)(equiv_classes_def);
 
 }
 
@@ -252,7 +252,7 @@
 
 //Prove that equivalence classes are disjoint
 
-<b style="color: blue;">prove</b> equivalence_classes_disjoint: <b style="color: red;">*</b>A<b style="color: red;">*</b>R<b style="color: red;">*</b>C(is_equivalence_relation(R, A) <b style="color: red;">&</b> is_equivalence_classes(R, A, C) <b style="color: red;">-&gt</b> <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(X in C <b style="color: red;">&</b> Y in C <b style="color: red;">&</b> <b style="color: red;">^</b>Z(Z in X <b style="color: red;">&</b> Z in Y) <b style="color: red;">-&gt</b> equal_sets(X, Y))){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/equivalence_classes_disjoint.html';" onmouseover="popup_window(this, 'equivalence_classes_disjoint | 02_relations');" onmouseout="close_popup();">equivalence_classes_disjoint</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>R<b style="color: red;">*</b>C(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_relation.html';" onmouseover="popup_window(this, 'is_equivalence_relation | 02_relations');" onmouseout="close_popup();">is_equivalence_relation</b>(R, A) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_classes.html';" onmouseover="popup_window(this, 'is_equivalence_classes | 02_relations');" onmouseout="close_popup();">is_equivalence_classes</b>(R, A, C) <b style="color: red;">-&gt</b> <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(X in C <b style="color: red;">&</b> Y in C <b style="color: red;">&</b> <b style="color: red;">^</b>Z(Z in X <b style="color: red;">&</b> Z in Y) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, Y))){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, R, C<b style="color: red;">|</b>;
 
@@ -316,7 +316,7 @@
 
 	}
 
-	<b style="color: blue;">return</b> #equal_sets(X, Y)(equal_def);
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, Y)(equal_def);
 
 }
 
@@ -324,7 +324,7 @@
 
 //Prove that every element of A has an equivalence class
 
-<b style="color: blue;">prove</b> equivalence_classes_class: <b style="color: red;">*</b>A<b style="color: red;">*</b>R<b style="color: red;">*</b>C(is_equivalence_relation(R, A) <b style="color: red;">&</b> is_equivalence_classes(R, A, C) <b style="color: red;">-&gt</b> <b style="color: red;">*</b>X(X in A <b style="color: red;">-&gt</b> <b style="color: red;">^</b>D(D in C <b style="color: red;">&</b> X in D))){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/equivalence_classes_class.html';" onmouseover="popup_window(this, 'equivalence_classes_class | 02_relations');" onmouseout="close_popup();">equivalence_classes_class</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>R<b style="color: red;">*</b>C(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_relation.html';" onmouseover="popup_window(this, 'is_equivalence_relation | 02_relations');" onmouseout="close_popup();">is_equivalence_relation</b>(R, A) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_classes.html';" onmouseover="popup_window(this, 'is_equivalence_classes | 02_relations');" onmouseout="close_popup();">is_equivalence_classes</b>(R, A, C) <b style="color: red;">-&gt</b> <b style="color: red;">*</b>X(X in A <b style="color: red;">-&gt</b> <b style="color: red;">^</b>D(D in C <b style="color: red;">&</b> X in D))){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, R, C<b style="color: red;">|</b>;
 
@@ -336,21 +336,21 @@
 
 	<b style="color: blue;">implies</b> X_in_A;
 
-	D_def = axiom_specify[&ltS: are_related(X, S, R)&gt](A)<b style="color: red;">|</b>D<b style="color: red;">|</b>;
+	D_def = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[&ltS: <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, S, R)&gt](A)<b style="color: red;">|</b>D<b style="color: red;">|</b>;
 
 	<b style="color: blue;">choose</b> D;
 
 	X_in_D = D_def(X)(X_in_A, <b style="color: green;">expand</b>(reflexive)(X)(X_in_A));
 
-	<b style="color: blue;">prove</b> equiv_class_def: <b style="color: red;">^</b>X(X in A <b style="color: red;">&</b> <b style="color: red;">*</b>Y(Y in D <b style="color: red;">&lt-&gt</b> Y in A <b style="color: red;">&</b> are_related(X, Y, R))){
+	<b style="color: blue;">prove</b> equiv_class_def: <b style="color: red;">^</b>X(X in A <b style="color: red;">&</b> <b style="color: red;">*</b>Y(Y in D <b style="color: red;">&lt-&gt</b> Y in A <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, R))){
 
 		<b style="color: blue;">choose</b> X;
 
-		<b style="color: blue;">prove</b> right_def: <b style="color: red;">*</b>Y(Y in D <b style="color: red;">&lt-&gt</b> Y in A <b style="color: red;">&</b> are_related(X, Y, R)){
+		<b style="color: blue;">prove</b> right_def: <b style="color: red;">*</b>Y(Y in D <b style="color: red;">&lt-&gt</b> Y in A <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, R)){
 
 			<b style="color: blue;">given</b> <b style="color: red;">|</b>Y<b style="color: red;">|</b>;
 
-			<b style="color: blue;">prove</b> lemma0: Y in D <b style="color: red;">-&gt</b> Y in A <b style="color: red;">&</b> are_related(X, Y, R){
+			<b style="color: blue;">prove</b> lemma0: Y in D <b style="color: red;">-&gt</b> Y in A <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, R){
 
 				<b style="color: blue;">implies</b> Y_in_D;
 
@@ -360,7 +360,7 @@
 
 			}
 
-			<b style="color: blue;">prove</b> lemma1: Y in A <b style="color: red;">&</b> are_related(X, Y, R) <b style="color: red;">-&gt</b> Y in D{
+			<b style="color: blue;">prove</b> lemma1: Y in A <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, R) <b style="color: red;">-&gt</b> Y in D{
 
 				<b style="color: blue;">implies</b> premises;
 
@@ -376,7 +376,7 @@
 
 	}
 
-	equiv_class = #is_equivalence_class(R, A, D)(equiv_class_def);
+	equiv_class = #<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_class.html';" onmouseover="popup_window(this, 'is_equivalence_class | 02_relations');" onmouseout="close_popup();">is_equivalence_class</b>(R, A, D)(equiv_class_def);
 
 	D_in_C = <b style="color: green;">expand</b>(equiv_classes)(D)(equiv_class);
 
@@ -388,7 +388,7 @@
 
 //Prove that equivalence classes, if they exist, are unique
 
-<b style="color: blue;">prove</b> equivalence_classes_unique: <b style="color: red;">*</b>A<b style="color: red;">*</b>R<b style="color: red;">*</b>C<b style="color: red;">*</b>D(is_equivalence_classes(R, A, C) <b style="color: red;">&</b> is_equivalence_classes(R, A, D) <b style="color: red;">-&gt</b> equal_sets(C, D)){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/equivalence_classes_unique.html';" onmouseover="popup_window(this, 'equivalence_classes_unique | 02_relations');" onmouseout="close_popup();">equivalence_classes_unique</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>R<b style="color: red;">*</b>C<b style="color: red;">*</b>D(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_classes.html';" onmouseover="popup_window(this, 'is_equivalence_classes | 02_relations');" onmouseout="close_popup();">is_equivalence_classes</b>(R, A, C) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_classes.html';" onmouseover="popup_window(this, 'is_equivalence_classes | 02_relations');" onmouseout="close_popup();">is_equivalence_classes</b>(R, A, D) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(C, D)){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, R, C, D<b style="color: red;">|</b>;
 
@@ -396,9 +396,24 @@
 
 	<b style="color: blue;">extract</b> both_equiv_classes: equiv_classes_C, equiv_classes_D;
 
-	<b style="color: blue;">return</b> definition_uniqueness_lemma[&ltS: is_equivalence_class(R, A, S)&gt](C, D)(<b style="color: green;">expand</b>(equiv_classes_C), <b style="color: green;">expand</b>(equiv_classes_D));
+	<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/definition_uniqueness_lemma.html';" onmouseover="popup_window(this, 'definition_uniqueness_lemma | 00_zf');" onmouseout="close_popup();">definition_uniqueness_lemma</b>[&ltS: <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_class.html';" onmouseover="popup_window(this, 'is_equivalence_class | 02_relations');" onmouseout="close_popup();">is_equivalence_class</b>(R, A, S)&gt](C, D)(<b style="color: green;">expand</b>(equiv_classes_C), <b style="color: green;">expand</b>(equiv_classes_D));
 
 }
 
 
-</code></div></body></html>
+ </code></div>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</body></html>

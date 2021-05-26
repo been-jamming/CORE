@@ -1,8 +1,22 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">NATURALS_predecessor_closure</div><div class="result_description">Description: We need to show that if the predecessor of a natural number exists, it is a natural number
-</div><code style="white-space: pre-wrap;">prove NATURALS_predecessor_closure: <b style="color: red;">*</b>N<b style="color: red;">*</b>M(N in NATURALS <b style="color: red;">&</b> is_successor(M, N) <b style="color: red;">-&gt</b> M in NATURALS){
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: NATURALS_predecessor_closure<br><b>Description</b>: We need to show that if the predecessor of a natural number exists, it is a natural number<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_predecessor_closure.html';" onmouseover="popup_window(this, 'NATURALS_predecessor_closure | 03_addition');" onmouseout="close_popup();">NATURALS_predecessor_closure</b>: <b style="color: red;">*</b>N<b style="color: red;">*</b>M(N in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(M, N) <b style="color: red;">-&gt</b> M in NATURALS){
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>N, M<b style="color: red;">|</b>;
 	<b style="color: blue;">implies</b> N_in_NATURALS, successor_N;
-	M_in_N = <b style="color: green;">expand</b>(successor_N)(M)(<b style="color: green;">or</b>(&lt:M in M&gt, equal_sets_reflexive(M)));
-	<b style="color: blue;">extract</b> NATURALS_interpretation(N)(N_in_NATURALS)(M)(M_in_N): M_in_NATURALS, M_less_than_strict;
+	M_in_N = <b style="color: green;">expand</b>(successor_N)(M)(<b style="color: green;">or</b>(&lt:M in M&gt, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(M)));
+	<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_interpretation.html';" onmouseover="popup_window(this, 'NATURALS_interpretation | 03_addition');" onmouseout="close_popup();">NATURALS_interpretation</b>(N)(N_in_NATURALS)(M)(M_in_N): M_in_NATURALS, M_less_than_strict;
 	<b style="color: blue;">return</b> M_in_NATURALS;
-}</code></body></html>
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

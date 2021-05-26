@@ -1316,8 +1316,7 @@ prove natural_sum_successor: *N*M(is_natural_sum(N, ONE, M) -> is_successor(N, M
 }
 
 //Proving that if a <= b then there exists some n <= b such that a + n = b
-prove natural_sum_less_than: *A*B(A in NATURALS & B in NATURALS & NATURAL_less_than(A, B) <-> ^N(is_natural_sum(A, N, B))){
-	extract expand(NATURALS_inductive): empty_in_NATURALS, closure_naturals;
+//prove natural_sum_less_than: *A*B(A in NATURALS & B in NATURALS & NATURAL_less_than(A, B) <-> ^N(is_natural_sum(A, N, B))){
+	//extract expand(NATURALS_inductive): empty_in_NATURALS, closure_naturals;
+//}
 
-
-}

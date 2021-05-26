@@ -1,18 +1,18 @@
-<!DOCTYPE html><html><head><title>file</title></head><body><div class="header">CORE Source</div><div class="CORE_source"><code style="white-space: pre-wrap;">//Next we <b style="color: blue;">prove</b> that the integers exist!
+<!DOCTYPE html><html><head><title>file</title></head><body><div class="header">CORE Source</div><div class="CORE_source"><code style="white-space: pre-wrap; cursor: default;"> //Next we <b style="color: blue;">prove</b> that the integers exist!
 
-//We construct them as equivalence classes of pairs of natural numbers
+//We construct them as equivalence classes of <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pairs.html';" onmouseover="popup_window(this, 'pairs | 01_sets');" onmouseout="close_popup();">pairs</b> of natural numbers
 
 //(A, B) is the representative for A - B
 
 
 
-NATURALS_X_NATURALS_definition = cross_product(NATURALS, NATURALS)<b style="color: red;">|</b>NATURALS_X_NATURALS<b style="color: red;">|</b>;
+NATURALS_X_NATURALS_definition = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/cross_product.html';" onmouseover="popup_window(this, 'cross_product | 01_sets');" onmouseout="close_popup();">cross_product</b>(NATURALS, NATURALS)<b style="color: red;">|</b>NATURALS_X_NATURALS<b style="color: red;">|</b>;
 
 
 
-<b style="color: blue;">prove</b> integer_def_relation_exists: <b style="color: red;">^</b>R<b style="color: red;">*</b>T0<b style="color: red;">*</b>T1(are_related(T0, T1, R) <b style="color: red;">&lt-&gt</b> T0 in NATURALS_X_NATURALS <b style="color: red;">&</b> T1 in NATURALS_X_NATURALS <b style="color: red;">&</b> <b style="color: red;">*</b>X0<b style="color: red;">*</b>Y0<b style="color: red;">*</b>X1<b style="color: red;">*</b>Y1(is_tuple(X0, Y0, T0) <b style="color: red;">&</b> is_tuple(X1, Y1, T1) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>S(is_natural_sum(X0, Y1, S) <b style="color: red;">&</b> is_natural_sum(X1, Y0, S)))){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_integers/integer_def_relation_exists.html';" onmouseover="popup_window(this, 'integer_def_relation_exists | 04_integers');" onmouseout="close_popup();">integer_def_relation_exists</b>: <b style="color: red;">^</b>R<b style="color: red;">*</b>T0<b style="color: red;">*</b>T1(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(T0, T1, R) <b style="color: red;">&lt-&gt</b> T0 in NATURALS_X_NATURALS <b style="color: red;">&</b> T1 in NATURALS_X_NATURALS <b style="color: red;">&</b> <b style="color: red;">*</b>X0<b style="color: red;">*</b>Y0<b style="color: red;">*</b>X1<b style="color: red;">*</b>Y1(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X0, Y0, T0) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X1, Y1, T1) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>S(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(X0, Y1, S) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(X1, Y0, S)))){
 
-	R_def = relation_existence_lemma[&ltT0, T1: <b style="color: red;">*</b>X0<b style="color: red;">*</b>Y0<b style="color: red;">*</b>X1<b style="color: red;">*</b>Y1(is_tuple(X0, Y0, T0) <b style="color: red;">&</b> is_tuple(X1, Y1, T1) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>S(is_natural_sum(X0, Y1, S) <b style="color: red;">&</b> is_natural_sum(X1, Y0, S)))&gt](NATURALS_X_NATURALS, NATURALS_X_NATURALS)<b style="color: red;">|</b>R<b style="color: red;">|</b>;
+	R_def = <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/relation_existence_lemma.html';" onmouseover="popup_window(this, 'relation_existence_lemma | 02_relations');" onmouseout="close_popup();">relation_existence_lemma</b>[&ltT0, T1: <b style="color: red;">*</b>X0<b style="color: red;">*</b>Y0<b style="color: red;">*</b>X1<b style="color: red;">*</b>Y1(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X0, Y0, T0) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X1, Y1, T1) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>S(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(X0, Y1, S) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(X1, Y0, S)))&gt](NATURALS_X_NATURALS, NATURALS_X_NATURALS)<b style="color: red;">|</b>R<b style="color: red;">|</b>;
 
 	<b style="color: blue;">choose</b> R;
 
@@ -24,41 +24,41 @@ NATURALS_X_NATURALS_definition = cross_product(NATURALS, NATURALS)<b style="colo
 
 
 
-integer_def_relation_def = integer_def_relation_exists<b style="color: red;">|</b>INTEGER_DEFINITION_RELATION<b style="color: red;">|</b>;
+integer_def_relation_def = <b style="cursor: pointer;" onclick="window.location.href = '../04_integers/integer_def_relation_exists.html';" onmouseover="popup_window(this, 'integer_def_relation_exists | 04_integers');" onmouseout="close_popup();">integer_def_relation_exists</b><b style="color: red;">|</b>INTEGER_DEFINITION_RELATION<b style="color: red;">|</b>;
 
 
 
-<b style="color: blue;">prove</b> integer_def_relation_reflexive: <b style="color: red;">*</b>T(T in NATURALS_X_NATURALS <b style="color: red;">-&gt</b> are_related(T, T, INTEGER_DEFINITION_RELATION)){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_integers/integer_def_relation_reflexive.html';" onmouseover="popup_window(this, 'integer_def_relation_reflexive | 04_integers');" onmouseout="close_popup();">integer_def_relation_reflexive</b>: <b style="color: red;">*</b>T(T in NATURALS_X_NATURALS <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(T, T, INTEGER_DEFINITION_RELATION)){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>T<b style="color: red;">|</b>;
 
 	<b style="color: blue;">implies</b> T_in_NATURALS_X_NATURALS;
 
-	<b style="color: blue;">prove</b> related_condition: <b style="color: red;">*</b>X0<b style="color: red;">*</b>Y0<b style="color: red;">*</b>X1<b style="color: red;">*</b>Y1(is_tuple(X0, Y0, T) <b style="color: red;">&</b> is_tuple(X1, Y1, T) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>S(is_natural_sum(X0, Y1, S) <b style="color: red;">&</b> is_natural_sum(X1, Y0, S))){
+	<b style="color: blue;">prove</b> related_condition: <b style="color: red;">*</b>X0<b style="color: red;">*</b>Y0<b style="color: red;">*</b>X1<b style="color: red;">*</b>Y1(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X0, Y0, T) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X1, Y1, T) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>S(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(X0, Y1, S) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(X1, Y0, S))){
 
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>X0, Y0, X1, Y1<b style="color: red;">|</b>;
 
 		<b style="color: blue;">implies</b> tuple0, tuple1;
 
-		<b style="color: blue;">extract</b> tuple_equal_condition(X0, Y0, X1, Y1, T, T)(tuple0, tuple1, equal_sets_reflexive(T)): equal_X, equal_Y;
+		<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/tuple_equal_condition.html';" onmouseover="popup_window(this, 'tuple_equal_condition | 01_sets');" onmouseout="close_popup();">tuple_equal_condition</b>(X0, Y0, X1, Y1, T, T)(tuple0, tuple1, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(T)): equal_X, equal_Y;
 
 		<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(NATURALS_X_NATURALS_definition)(T)(T_in_NATURALS_X_NATURALS)<b style="color: red;">|</b>X, Y<b style="color: red;">|</b>: X_in_NATURALS, Y_in_NATURALS, tuple_T;
 
-		<b style="color: blue;">extract</b> tuple_equal_condition(X0, Y0, X, Y, T, T)(tuple0, tuple_T, equal_sets_reflexive(T)): equal_X0, equal_Y0;
+		<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/tuple_equal_condition.html';" onmouseover="popup_window(this, 'tuple_equal_condition | 01_sets');" onmouseout="close_popup();">tuple_equal_condition</b>(X0, Y0, X, Y, T, T)(tuple0, tuple_T, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(T)): equal_X0, equal_Y0;
 
-		X0_in_NATURALS = equality_consistency[&ltQ: Q in NATURALS&gt](X0, X)(equal_X0)(X_in_NATURALS);
+		X0_in_NATURALS = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: Q in NATURALS&gt](X0, X)(equal_X0)(X_in_NATURALS);
 
-		<b style="color: blue;">extract</b> tuple_equal_condition(X1, Y1, X, Y, T, T)(tuple1, tuple_T, equal_sets_reflexive(T)): equal_X1, equal_Y1;
+		<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/tuple_equal_condition.html';" onmouseover="popup_window(this, 'tuple_equal_condition | 01_sets');" onmouseout="close_popup();">tuple_equal_condition</b>(X1, Y1, X, Y, T, T)(tuple1, tuple_T, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(T)): equal_X1, equal_Y1;
 
-		Y1_in_NATURALS = equality_consistency[&ltQ: Q in NATURALS&gt](Y1, Y)(equal_Y1)(Y_in_NATURALS);
+		Y1_in_NATURALS = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: Q in NATURALS&gt](Y1, Y)(equal_Y1)(Y_in_NATURALS);
 
-		<b style="color: blue;">extract</b> natural_sum(X0, Y1)(X0_in_NATURALS, Y1_in_NATURALS)<b style="color: red;">|</b>S<b style="color: red;">|</b>: S_in_NATURALS, sum_S;
+		<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum.html';" onmouseover="popup_window(this, 'natural_sum | 03_addition');" onmouseout="close_popup();">natural_sum</b>(X0, Y1)(X0_in_NATURALS, Y1_in_NATURALS)<b style="color: red;">|</b>S<b style="color: red;">|</b>: S_in_NATURALS, sum_S;
 
 		<b style="color: blue;">choose</b> S;
 
-		other_sum_S = equality_consistency[&ltQ: is_natural_sum(Q, Y1, S)&gt](X0, X1)(equal_X)(sum_S);
+		other_sum_S = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(Q, Y1, S)&gt](X0, X1)(equal_X)(sum_S);
 
-		other_sum_S = equality_consistency[&ltQ: is_natural_sum(X1, Q, S)&gt](Y0, Y1)(equal_Y)(other_sum_S);
+		other_sum_S = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(X1, Q, S)&gt](Y0, Y1)(equal_Y)(other_sum_S);
 
 		<b style="color: blue;">return</b> sum_S, other_sum_S;
 
@@ -70,11 +70,11 @@ integer_def_relation_def = integer_def_relation_exists<b style="color: red;">|</
 
 
 
-integer_def_relation_reflexive = #is_reflexive(INTEGER_DEFINITION_RELATION, NATURALS_X_NATURALS)(integer_def_relation_reflexive);
+<b style="cursor: pointer;" onclick="window.location.href = '../04_integers/integer_def_relation_reflexive.html';" onmouseover="popup_window(this, 'integer_def_relation_reflexive | 04_integers');" onmouseout="close_popup();">integer_def_relation_reflexive</b> = #<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_reflexive.html';" onmouseover="popup_window(this, 'is_reflexive | 02_relations');" onmouseout="close_popup();">is_reflexive</b>(INTEGER_DEFINITION_RELATION, NATURALS_X_NATURALS)(<b style="cursor: pointer;" onclick="window.location.href = '../04_integers/integer_def_relation_reflexive.html';" onmouseover="popup_window(this, 'integer_def_relation_reflexive | 04_integers');" onmouseout="close_popup();">integer_def_relation_reflexive</b>);
 
 
 
-<b style="color: blue;">prove</b> integer_def_relation_symmetric: <b style="color: red;">*</b>S<b style="color: red;">*</b>T(are_related(S, T, INTEGER_DEFINITION_RELATION) <b style="color: red;">-&gt</b> are_related(T, S, INTEGER_DEFINITION_RELATION)){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_integers/integer_def_relation_symmetric.html';" onmouseover="popup_window(this, 'integer_def_relation_symmetric | 04_integers');" onmouseout="close_popup();">integer_def_relation_symmetric</b>: <b style="color: red;">*</b>S<b style="color: red;">*</b>T(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(S, T, INTEGER_DEFINITION_RELATION) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(T, S, INTEGER_DEFINITION_RELATION)){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>S, T<b style="color: red;">|</b>;
 
@@ -82,7 +82,7 @@ integer_def_relation_reflexive = #is_reflexive(INTEGER_DEFINITION_RELATION, NATU
 
 	<b style="color: blue;">extract</b> integer_def_relation_def(S, T)(related_ST): S_in_NATURALS_X_NATURALS, T_in_NATURALS_X_NATURALS, condition_ST;
 
-	<b style="color: blue;">prove</b> condition_TS: <b style="color: red;">*</b>X0<b style="color: red;">*</b>Y0<b style="color: red;">*</b>X1<b style="color: red;">*</b>Y1(is_tuple(X0, Y0, T) <b style="color: red;">&</b> is_tuple(X1, Y1, S) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>SUM(is_natural_sum(X0, Y1, SUM) <b style="color: red;">&</b> is_natural_sum(X1, Y0, SUM))){
+	<b style="color: blue;">prove</b> condition_TS: <b style="color: red;">*</b>X0<b style="color: red;">*</b>Y0<b style="color: red;">*</b>X1<b style="color: red;">*</b>Y1(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X0, Y0, T) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X1, Y1, S) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>SUM(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(X0, Y1, SUM) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(X1, Y0, SUM))){
 
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>X0, Y0, X1, Y1<b style="color: red;">|</b>;
 
@@ -102,11 +102,11 @@ integer_def_relation_reflexive = #is_reflexive(INTEGER_DEFINITION_RELATION, NATU
 
 
 
-integer_def_relation_symmetric = #is_symmetric(INTEGER_DEFINITION_RELATION)(integer_def_relation_symmetric);
+<b style="cursor: pointer;" onclick="window.location.href = '../04_integers/integer_def_relation_symmetric.html';" onmouseover="popup_window(this, 'integer_def_relation_symmetric | 04_integers');" onmouseout="close_popup();">integer_def_relation_symmetric</b> = #<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_symmetric.html';" onmouseover="popup_window(this, 'is_symmetric | 02_relations');" onmouseout="close_popup();">is_symmetric</b>(INTEGER_DEFINITION_RELATION)(<b style="cursor: pointer;" onclick="window.location.href = '../04_integers/integer_def_relation_symmetric.html';" onmouseover="popup_window(this, 'integer_def_relation_symmetric | 04_integers');" onmouseout="close_popup();">integer_def_relation_symmetric</b>);
 
 
 
-<b style="color: blue;">prove</b> integer_def_relation_transitive: <b style="color: red;">*</b>R<b style="color: red;">*</b>S<b style="color: red;">*</b>T(are_related(R, S, INTEGER_DEFINITION_RELATION) <b style="color: red;">&</b> are_related(S, T, INTEGER_DEFINITION_RELATION) <b style="color: red;">-&gt</b> are_related(R, T, INTEGER_DEFINITION_RELATION)){
+<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_integers/integer_def_relation_transitive.html';" onmouseover="popup_window(this, 'integer_def_relation_transitive | 04_integers');" onmouseout="close_popup();">integer_def_relation_transitive</b>: <b style="color: red;">*</b>R<b style="color: red;">*</b>S<b style="color: red;">*</b>T(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(R, S, INTEGER_DEFINITION_RELATION) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(S, T, INTEGER_DEFINITION_RELATION) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(R, T, INTEGER_DEFINITION_RELATION)){
 
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>R, S, T<b style="color: red;">|</b>;
 
@@ -116,7 +116,7 @@ integer_def_relation_symmetric = #is_symmetric(INTEGER_DEFINITION_RELATION)(inte
 
 	<b style="color: blue;">extract</b> integer_def_relation_def(S, T)(related_ST): S_in_NATURALS_X_NATURALS, T_in_NATURALS_X_NATURALS, condition_ST;
 
-	<b style="color: blue;">prove</b> condition_RT: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>E<b style="color: red;">*</b>F(is_tuple(A, B, R) <b style="color: red;">&</b> is_tuple(E, F, T) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>SUM(is_natural_sum(A, F, SUM) <b style="color: red;">&</b> is_natural_sum(E, B, SUM))){
+	<b style="color: blue;">prove</b> condition_RT: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>E<b style="color: red;">*</b>F(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(A, B, R) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(E, F, T) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>SUM(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(A, F, SUM) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(E, B, SUM))){
 
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, E, F<b style="color: red;">|</b>;
 
@@ -128,9 +128,9 @@ integer_def_relation_symmetric = #is_symmetric(INTEGER_DEFINITION_RELATION)(inte
 
 		<b style="color: blue;">extract</b> condition_ST(C, D, E, F)(tuple_S, tuple_T)<b style="color: red;">|</b>SUM_CF_ED<b style="color: red;">|</b>: sum_CF, sum_ED;
 
-		sum_BC = natural_sum_commutative(C, B, SUM_AD_CB)(sum_CB);
+		sum_BC = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_commutative.html';" onmouseover="popup_window(this, 'natural_sum_commutative | 03_addition');" onmouseout="close_popup();">natural_sum_commutative</b>(C, B, SUM_AD_CB)(sum_CB);
 
-		sum_DE = natural_sum_commutative(E, D, SUM_CF_ED)(sum_ED);
+		sum_DE = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_commutative.html';" onmouseover="popup_window(this, 'natural_sum_commutative | 03_addition');" onmouseout="close_popup();">natural_sum_commutative</b>(E, D, SUM_CF_ED)(sum_ED);
 
 		<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(sum_AD): A_in_NATURALS, D_in_NATURALS, tuple_exists;
 
@@ -140,67 +140,67 @@ integer_def_relation_symmetric = #is_symmetric(INTEGER_DEFINITION_RELATION)(inte
 
 		<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(sum_ED): E_in_NATURALS, D_in_NATURALS, tuple_exists;
 
-		SUM_AD_CB_in_NATURALS = natural_sum_is_natural(A, D, SUM_AD_CB)(sum_AD);
+		SUM_AD_CB_in_NATURALS = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_is_natural.html';" onmouseover="popup_window(this, 'natural_sum_is_natural | 03_addition');" onmouseout="close_popup();">natural_sum_is_natural</b>(A, D, SUM_AD_CB)(sum_AD);
 
-		SUM_CF_ED_in_NATURALS = natural_sum_is_natural(C, F, SUM_CF_ED)(sum_CF);
+		SUM_CF_ED_in_NATURALS = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_is_natural.html';" onmouseover="popup_window(this, 'natural_sum_is_natural | 03_addition');" onmouseout="close_popup();">natural_sum_is_natural</b>(C, F, SUM_CF_ED)(sum_CF);
 
-		<b style="color: blue;">extract</b> natural_sum(SUM_AD_CB, SUM_CF_ED)(SUM_AD_CB_in_NATURALS, SUM_CF_ED_in_NATURALS)<b style="color: red;">|</b>NEW_SUM<b style="color: red;">|</b>: NEW_SUM_in_NATURALS, sum_NEW_SUM;
+		<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum.html';" onmouseover="popup_window(this, 'natural_sum | 03_addition');" onmouseout="close_popup();">natural_sum</b>(SUM_AD_CB, SUM_CF_ED)(SUM_AD_CB_in_NATURALS, SUM_CF_ED_in_NATURALS)<b style="color: red;">|</b>NEW_SUM<b style="color: red;">|</b>: NEW_SUM_in_NATURALS, sum_NEW_SUM;
 
 
 
-		<b style="color: blue;">extract</b> natural_sum(D, SUM_CF_ED)(D_in_NATURALS, SUM_CF_ED_in_NATURALS)<b style="color: red;">|</b>SUM_D_CF<b style="color: red;">|</b>: SUM_D_CF_in_NATURALS, sum_D_CF;
+		<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum.html';" onmouseover="popup_window(this, 'natural_sum | 03_addition');" onmouseout="close_popup();">natural_sum</b>(D, SUM_CF_ED)(D_in_NATURALS, SUM_CF_ED_in_NATURALS)<b style="color: red;">|</b>SUM_D_CF<b style="color: red;">|</b>: SUM_D_CF_in_NATURALS, sum_D_CF;
 
-		<b style="color: blue;">extract</b> natural_sum(D, C)(D_in_NATURALS, C_in_NATURALS)<b style="color: red;">|</b>SUM_DC<b style="color: red;">|</b>: SUM_DC_in_NATURALS, sum_DC;
+		<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum.html';" onmouseover="popup_window(this, 'natural_sum | 03_addition');" onmouseout="close_popup();">natural_sum</b>(D, C)(D_in_NATURALS, C_in_NATURALS)<b style="color: red;">|</b>SUM_DC<b style="color: red;">|</b>: SUM_DC_in_NATURALS, sum_DC;
 
-		<b style="color: blue;">extract</b> natural_sum(A, F)(A_in_NATURALS, F_in_NATURALS)<b style="color: red;">|</b>SUM_AF<b style="color: red;">|</b>: SUM_AF_in_NATURALS, sum_AF;
+		<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum.html';" onmouseover="popup_window(this, 'natural_sum | 03_addition');" onmouseout="close_popup();">natural_sum</b>(A, F)(A_in_NATURALS, F_in_NATURALS)<b style="color: red;">|</b>SUM_AF<b style="color: red;">|</b>: SUM_AF_in_NATURALS, sum_AF;
 
 		<b style="color: blue;">choose</b> SUM_AF;
 
-		sum_A_D_CF = natural_sum_associative(A, D, SUM_CF_ED, NEW_SUM, SUM_AD_CB, SUM_D_CF)(sum_AD, sum_NEW_SUM, sum_D_CF);
+		sum_A_D_CF = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_associative.html';" onmouseover="popup_window(this, 'natural_sum_associative | 03_addition');" onmouseout="close_popup();">natural_sum_associative</b>(A, D, SUM_CF_ED, NEW_SUM, SUM_AD_CB, SUM_D_CF)(sum_AD, sum_NEW_SUM, sum_D_CF);
 
-		sum_DC_F = natural_sum_associative2(D, C, F, SUM_D_CF, SUM_DC, SUM_CF_ED)(sum_CF, sum_D_CF, sum_DC);
+		sum_DC_F = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_associative2.html';" onmouseover="popup_window(this, 'natural_sum_associative2 | 03_addition');" onmouseout="close_popup();">natural_sum_associative2</b>(D, C, F, SUM_D_CF, SUM_DC, SUM_CF_ED)(sum_CF, sum_D_CF, sum_DC);
 
-		sum_F_DC = natural_sum_commutative(SUM_DC, F, SUM_D_CF)(sum_DC_F);
+		sum_F_DC = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_commutative.html';" onmouseover="popup_window(this, 'natural_sum_commutative | 03_addition');" onmouseout="close_popup();">natural_sum_commutative</b>(SUM_DC, F, SUM_D_CF)(sum_DC_F);
 
-		sum_AF_DC = natural_sum_associative2(A, F, SUM_DC, NEW_SUM, SUM_AF, SUM_D_CF)(sum_F_DC, sum_A_D_CF, sum_AF);
-
-
-
-		<b style="color: blue;">extract</b> natural_sum(C, SUM_CF_ED)(C_in_NATURALS, SUM_CF_ED_in_NATURALS)<b style="color: red;">|</b>SUM_C_ED<b style="color: red;">|</b>: SUM_C_ED_in_NATURALS, sum_C_ED;
-
-		<b style="color: blue;">extract</b> natural_sum(C, D)(C_in_NATURALS, D_in_NATURALS)<b style="color: red;">|</b>SUM_CD<b style="color: red;">|</b>: SUM_CD_in_NATURALS, sum_CD;
-
-		<b style="color: blue;">extract</b> natural_sum(B, E)(B_in_NATURALS, E_in_NATURALS)<b style="color: red;">|</b>SUM_BE<b style="color: red;">|</b>: SUM_BE_in_NATURALS, sum_BE;
-
-		sum_B_C_ED = natural_sum_associative(B, C, SUM_CF_ED, NEW_SUM, SUM_AD_CB, SUM_C_ED)(sum_BC, sum_NEW_SUM, sum_C_ED);
-
-		sum_CD_E = natural_sum_associative2(C, D, E, SUM_C_ED, SUM_CD, SUM_CF_ED)(sum_DE, sum_C_ED, sum_CD);
-
-		sum_E_CD = natural_sum_commutative(SUM_CD, E, SUM_C_ED)(sum_CD_E);
-
-		sum_BE_CD = natural_sum_associative2(B, E, SUM_CD, NEW_SUM, SUM_BE, SUM_C_ED)(sum_E_CD, sum_B_C_ED, sum_BE);
+		sum_AF_DC = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_associative2.html';" onmouseover="popup_window(this, 'natural_sum_associative2 | 03_addition');" onmouseout="close_popup();">natural_sum_associative2</b>(A, F, SUM_DC, NEW_SUM, SUM_AF, SUM_D_CF)(sum_F_DC, sum_A_D_CF, sum_AF);
 
 
 
-		other_sum_DC = natural_sum_commutative(C, D, SUM_CD)(sum_CD);
+		<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum.html';" onmouseover="popup_window(this, 'natural_sum | 03_addition');" onmouseout="close_popup();">natural_sum</b>(C, SUM_CF_ED)(C_in_NATURALS, SUM_CF_ED_in_NATURALS)<b style="color: red;">|</b>SUM_C_ED<b style="color: red;">|</b>: SUM_C_ED_in_NATURALS, sum_C_ED;
 
-		equal_DC = natural_sum_unique(D, C, SUM_DC, SUM_CD)(sum_DC, other_sum_DC);
+		<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum.html';" onmouseover="popup_window(this, 'natural_sum | 03_addition');" onmouseout="close_popup();">natural_sum</b>(C, D)(C_in_NATURALS, D_in_NATURALS)<b style="color: red;">|</b>SUM_CD<b style="color: red;">|</b>: SUM_CD_in_NATURALS, sum_CD;
 
-		sum_BE_DC = equality_consistency[&ltQ: is_natural_sum(SUM_BE, Q, NEW_SUM)&gt](SUM_DC, SUM_CD)(equal_DC)(sum_BE_CD);
+		<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum.html';" onmouseover="popup_window(this, 'natural_sum | 03_addition');" onmouseout="close_popup();">natural_sum</b>(B, E)(B_in_NATURALS, E_in_NATURALS)<b style="color: red;">|</b>SUM_BE<b style="color: red;">|</b>: SUM_BE_in_NATURALS, sum_BE;
+
+		sum_B_C_ED = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_associative.html';" onmouseover="popup_window(this, 'natural_sum_associative | 03_addition');" onmouseout="close_popup();">natural_sum_associative</b>(B, C, SUM_CF_ED, NEW_SUM, SUM_AD_CB, SUM_C_ED)(sum_BC, sum_NEW_SUM, sum_C_ED);
+
+		sum_CD_E = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_associative2.html';" onmouseover="popup_window(this, 'natural_sum_associative2 | 03_addition');" onmouseout="close_popup();">natural_sum_associative2</b>(C, D, E, SUM_C_ED, SUM_CD, SUM_CF_ED)(sum_DE, sum_C_ED, sum_CD);
+
+		sum_E_CD = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_commutative.html';" onmouseover="popup_window(this, 'natural_sum_commutative | 03_addition');" onmouseout="close_popup();">natural_sum_commutative</b>(SUM_CD, E, SUM_C_ED)(sum_CD_E);
+
+		sum_BE_CD = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_associative2.html';" onmouseover="popup_window(this, 'natural_sum_associative2 | 03_addition');" onmouseout="close_popup();">natural_sum_associative2</b>(B, E, SUM_CD, NEW_SUM, SUM_BE, SUM_C_ED)(sum_E_CD, sum_B_C_ED, sum_BE);
+
+
+
+		other_sum_DC = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_commutative.html';" onmouseover="popup_window(this, 'natural_sum_commutative | 03_addition');" onmouseout="close_popup();">natural_sum_commutative</b>(C, D, SUM_CD)(sum_CD);
+
+		equal_DC = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_unique.html';" onmouseover="popup_window(this, 'natural_sum_unique | 03_addition');" onmouseout="close_popup();">natural_sum_unique</b>(D, C, SUM_DC, SUM_CD)(sum_DC, other_sum_DC);
+
+		sum_BE_DC = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(SUM_BE, Q, NEW_SUM)&gt](SUM_DC, SUM_CD)(equal_DC)(sum_BE_CD);
 
 		
 
-		sum_DC_AF = natural_sum_commutative(SUM_AF, SUM_DC, NEW_SUM)(sum_AF_DC);
+		sum_DC_AF = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_commutative.html';" onmouseover="popup_window(this, 'natural_sum_commutative | 03_addition');" onmouseout="close_popup();">natural_sum_commutative</b>(SUM_AF, SUM_DC, NEW_SUM)(sum_AF_DC);
 
-		sum_DC_BE = natural_sum_commutative(SUM_BE, SUM_DC, NEW_SUM)(sum_BE_DC);
+		sum_DC_BE = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_commutative.html';" onmouseover="popup_window(this, 'natural_sum_commutative | 03_addition');" onmouseout="close_popup();">natural_sum_commutative</b>(SUM_BE, SUM_DC, NEW_SUM)(sum_BE_DC);
 
 
 
-		equal_AF_BE = natural_sum_cancellation(SUM_DC, SUM_AF, SUM_BE, NEW_SUM)(sum_DC_AF, sum_DC_BE);
+		equal_AF_BE = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_cancellation.html';" onmouseover="popup_window(this, 'natural_sum_cancellation | 03_addition');" onmouseout="close_popup();">natural_sum_cancellation</b>(SUM_DC, SUM_AF, SUM_BE, NEW_SUM)(sum_DC_AF, sum_DC_BE);
 
-		sum_EB = natural_sum_commutative(B, E, SUM_BE)(sum_BE);
+		sum_EB = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_commutative.html';" onmouseover="popup_window(this, 'natural_sum_commutative | 03_addition');" onmouseout="close_popup();">natural_sum_commutative</b>(B, E, SUM_BE)(sum_BE);
 
-		sum_EB = equality_consistency[&ltQ: is_natural_sum(E, B, Q)&gt](SUM_AF, SUM_BE)(equal_AF_BE)(sum_EB);
+		sum_EB = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(E, B, Q)&gt](SUM_AF, SUM_BE)(equal_AF_BE)(sum_EB);
 
 
 
@@ -216,19 +216,34 @@ integer_def_relation_symmetric = #is_symmetric(INTEGER_DEFINITION_RELATION)(inte
 
 
 
-integer_def_relation_transitive = #is_transitive(INTEGER_DEFINITION_RELATION)(integer_def_relation_transitive);
+<b style="cursor: pointer;" onclick="window.location.href = '../04_integers/integer_def_relation_transitive.html';" onmouseover="popup_window(this, 'integer_def_relation_transitive | 04_integers');" onmouseout="close_popup();">integer_def_relation_transitive</b> = #<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_transitive.html';" onmouseover="popup_window(this, 'is_transitive | 02_relations');" onmouseout="close_popup();">is_transitive</b>(INTEGER_DEFINITION_RELATION)(<b style="cursor: pointer;" onclick="window.location.href = '../04_integers/integer_def_relation_transitive.html';" onmouseover="popup_window(this, 'integer_def_relation_transitive | 04_integers');" onmouseout="close_popup();">integer_def_relation_transitive</b>);
 
 
 
 //And we've proven that the integer definition relation is an equivalence relation
 
-integer_def_relation_equivalence = #is_equivalence_relation(INTEGER_DEFINITION_RELATION, NATURALS_X_NATURALS)(integer_def_relation_reflexive, integer_def_relation_symmetric, integer_def_relation_transitive);
+integer_def_relation_equivalence = #<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_relation.html';" onmouseover="popup_window(this, 'is_equivalence_relation | 02_relations');" onmouseout="close_popup();">is_equivalence_relation</b>(INTEGER_DEFINITION_RELATION, NATURALS_X_NATURALS)(<b style="cursor: pointer;" onclick="window.location.href = '../04_integers/integer_def_relation_reflexive.html';" onmouseover="popup_window(this, 'integer_def_relation_reflexive | 04_integers');" onmouseout="close_popup();">integer_def_relation_reflexive</b>, <b style="cursor: pointer;" onclick="window.location.href = '../04_integers/integer_def_relation_symmetric.html';" onmouseover="popup_window(this, 'integer_def_relation_symmetric | 04_integers');" onmouseout="close_popup();">integer_def_relation_symmetric</b>, <b style="cursor: pointer;" onclick="window.location.href = '../04_integers/integer_def_relation_transitive.html';" onmouseover="popup_window(this, 'integer_def_relation_transitive | 04_integers');" onmouseout="close_popup();">integer_def_relation_transitive</b>);
 
 
 
 //WE DEFINE THE INTEGERS
 
-integers_definition = equivalence_classes(NATURALS_X_NATURALS, INTEGER_DEFINITION_RELATION)(integer_def_relation_equivalence)<b style="color: red;">|</b>INTEGERS<b style="color: red;">|</b>;
+integers_definition = <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/equivalence_classes.html';" onmouseover="popup_window(this, 'equivalence_classes | 02_relations');" onmouseout="close_popup();">equivalence_classes</b>(NATURALS_X_NATURALS, INTEGER_DEFINITION_RELATION)(integer_def_relation_equivalence)<b style="color: red;">|</b>INTEGERS<b style="color: red;">|</b>;
 
 
-</code></div></body></html>
+ </code></div>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</body></html>

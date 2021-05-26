@@ -1,3 +1,17 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">axiom</div><div class="result_name">axiom_choice</div><div class="result_description">Description: The axiom of choice!
-</div><code style="white-space: pre-wrap;">axiom axiom_choice: <b style="color: red;">*</b>C(<b style="color: red;">*</b>X(X in C <b style="color: red;">-&gt</b> not_empty(X)) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>F(is_function(F) <b style="color: red;">&</b> is_domain(F, C) <b style="color: red;">&</b> <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(are_related(X, Y, F) <b style="color: red;">-&gt</b> Y in X)));
-</code></body></html>
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: axiom<br><b>Result name</b>: axiom_choice<br><b>Description</b>: The axiom of choice!<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">axiom</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/axiom_choice.html';" onmouseover="popup_window(this, 'axiom_choice | 02_relations');" onmouseout="close_popup();">axiom_choice</b>: <b style="color: red;">*</b>C(<b style="color: red;">*</b>X(X in C <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/not_empty.html';" onmouseover="popup_window(this, 'not_empty | 00_zf');" onmouseout="close_popup();">not_empty</b>(X)) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>F(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_function.html';" onmouseover="popup_window(this, 'is_function | 02_relations');" onmouseout="close_popup();">is_function</b>(F) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_domain.html';" onmouseover="popup_window(this, 'is_domain | 02_relations');" onmouseout="close_popup();">is_domain</b>(F, C) <b style="color: red;">&</b> <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, F) <b style="color: red;">-&gt</b> Y in X)));
+</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

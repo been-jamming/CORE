@@ -1,10 +1,9 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">intersection</div><div class="result_description">Description: The intersection only exists when the set isn't empty!
-</div><code style="white-space: pre-wrap;">prove intersection: <b style="color: red;">*</b>A(not_empty(A) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>B(is_intersection(A, B))){
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: intersection<br><b>Description</b>: The intersection only exists when the set isn't empty!<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/intersection.html';" onmouseover="popup_window(this, 'intersection | 01_sets');" onmouseout="close_popup();">intersection</b>: <b style="color: red;">*</b>A(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/not_empty.html';" onmouseover="popup_window(this, 'not_empty | 00_zf');" onmouseout="close_popup();">not_empty</b>(A) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>B(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_intersection.html';" onmouseover="popup_window(this, 'is_intersection | 01_sets');" onmouseout="close_popup();">is_intersection</b>(A, B))){
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A<b style="color: red;">|</b>;
 	<b style="color: blue;">implies</b> contains;
 	S_in_A = <b style="color: green;">expand</b>(contains)<b style="color: red;">|</b>S<b style="color: red;">|</b>;
-	U_union = <b style="color: green;">expand</b>(union(A)<b style="color: red;">|</b>U<b style="color: red;">|</b>);
-	B_def = axiom_specify[&ltX: <b style="color: red;">*</b>Y(Y in A <b style="color: red;">-&gt</b> X in Y)&gt](U)<b style="color: red;">|</b>B<b style="color: red;">|</b>;
+	U_union = <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/union.html';" onmouseover="popup_window(this, 'union | 00_zf');" onmouseout="close_popup();">union</b>(A)<b style="color: red;">|</b>U<b style="color: red;">|</b>);
+	B_def = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[&ltX: <b style="color: red;">*</b>Y(Y in A <b style="color: red;">-&gt</b> X in Y)&gt](U)<b style="color: red;">|</b>B<b style="color: red;">|</b>;
 	<b style="color: blue;">choose</b> B;
 	<b style="color: blue;">prove</b> intersection_def: <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> <b style="color: red;">*</b>Y(Y in A <b style="color: red;">-&gt</b> X in Y)){
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
@@ -25,5 +24,20 @@
 		}
 		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
 	}
-	<b style="color: blue;">return</b> #is_intersection(A, B)(intersection_def);
-}</code></body></html>
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_intersection.html';" onmouseover="popup_window(this, 'is_intersection | 01_sets');" onmouseout="close_popup();">is_intersection</b>(A, B)(intersection_def);
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

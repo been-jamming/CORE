@@ -1,24 +1,23 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">predecessor_unique</div><div class="result_description">Description: When we have the axiom of regularity, even outside of the natural numbers, the "predecessor" of a set is unique if it exists
-</div><code style="white-space: pre-wrap;">prove predecessor_unique: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C(is_successor(A, C) <b style="color: red;">&</b> is_successor(B, C) <b style="color: red;">-&gt</b> equal_sets(A, B)){
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: predecessor_unique<br><b>Description</b>: When we have the axiom of regularity, even outside of the natural numbers, the "predecessor" of a set is unique if it exists<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/predecessor_unique.html';" onmouseover="popup_window(this, 'predecessor_unique | 01_sets');" onmouseout="close_popup();">predecessor_unique</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(A, C) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(B, C) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, B)){
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C<b style="color: red;">|</b>;
 	<b style="color: blue;">implies</b> predecessor_both;
 	<b style="color: blue;">extract</b> predecessor_both: predecessor_A, predecessor_B;
-	A_in_C = <b style="color: green;">expand</b>(predecessor_A)(A)(<b style="color: green;">or</b>(&lt:A in A&gt, equal_sets_reflexive(A)));
-	B_in_C = <b style="color: green;">expand</b>(predecessor_B)(B)(<b style="color: green;">or</b>(&lt:B in B&gt, equal_sets_reflexive(B)));
+	A_in_C = <b style="color: green;">expand</b>(predecessor_A)(A)(<b style="color: green;">or</b>(&lt:A in A&gt, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(A)));
+	B_in_C = <b style="color: green;">expand</b>(predecessor_B)(B)(<b style="color: green;">or</b>(&lt:B in B&gt, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(B)));
 	<b style="color: blue;">prove</b> equal_def: <b style="color: red;">*</b>X(X in A <b style="color: red;">&lt-&gt</b> X in B){
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
 		<b style="color: blue;">prove</b> lemma0: X in A <b style="color: red;">-&gt</b> X in B{
 			<b style="color: blue;">implies</b> X_in_A;
-			X_in_C = <b style="color: green;">expand</b>(predecessor_A)(X)(<b style="color: green;">or</b>(X_in_A, &lt:equal_sets(X, A)&gt));
+			X_in_C = <b style="color: green;">expand</b>(predecessor_A)(X)(<b style="color: green;">or</b>(X_in_A, &lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A)&gt));
 			<b style="color: blue;">return</b> <b style="color: green;">branch</b>(<b style="color: green;">expand</b>(predecessor_B)(X)(X_in_C), X_in_B, equal_X_B){
 				<b style="color: blue;">return</b> X_in_B;
 			} <b style="color: green;">or</b> {
-				B_in_A = equality_consistency[&ltQ: Q in A&gt](X, B)(equal_X_B)(X_in_A);
+				B_in_A = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: Q in A&gt](X, B)(equal_X_B)(X_in_A);
 				A_in_B = <b style="color: green;">branch</b>(<b style="color: green;">expand</b>(predecessor_B)(A)(A_in_C), A_in_B, equal_A_B){
 					<b style="color: blue;">return</b> A_in_B;
 				} <b style="color: green;">or</b> {
-					A_in_A = equality_consistency[&ltQ: Q in A&gt](A, B)(equal_A_B)(B_in_A);
-					<b style="color: blue;">return</b> equality_consistency[&ltQ: A in Q&gt](A, B)(equal_A_B)(A_in_A);
+					A_in_A = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: Q in A&gt](A, B)(equal_A_B)(B_in_A);
+					<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: A in Q&gt](A, B)(equal_A_B)(A_in_A);
 				};
 				<b style="color: blue;">prove</b> is_false: ~(~A in B <b style="color: red;">|</b> ~B in A){
 					not either;
@@ -28,22 +27,22 @@
 						<b style="color: blue;">return</b> not_B_in_A(B_in_A);
 					};
 				}
-				absurdity = is_false(no_pair_recursive_membership(A, B));
-				<b style="color: blue;">return</b> axiom_absurdity[goal](absurdity);
+				absurdity = is_false(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/no_pair_recursive_membership.html';" onmouseover="popup_window(this, 'no_pair_recursive_membership | 00_zf');" onmouseout="close_popup();">no_pair_recursive_membership</b>(A, B));
+				<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_absurdity.html';" onmouseover="popup_window(this, 'axiom_absurdity | 00_zf');" onmouseout="close_popup();">axiom_absurdity</b>[goal](absurdity);
 			};
 		}
 		<b style="color: blue;">prove</b> lemma1: X in B <b style="color: red;">-&gt</b> X in A{
 			<b style="color: blue;">implies</b> X_in_B;
-			X_in_C = <b style="color: green;">expand</b>(predecessor_B)(X)(<b style="color: green;">or</b>(X_in_B, &lt:equal_sets(X, B)&gt));
+			X_in_C = <b style="color: green;">expand</b>(predecessor_B)(X)(<b style="color: green;">or</b>(X_in_B, &lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, B)&gt));
 			<b style="color: blue;">return</b> <b style="color: green;">branch</b>(<b style="color: green;">expand</b>(predecessor_A)(X)(X_in_C), X_in_A, equal_X_A){
 				<b style="color: blue;">return</b> X_in_A;
 			} <b style="color: green;">or</b> {
-				A_in_B = equality_consistency[&ltQ: Q in B&gt](X, A)(equal_X_A)(X_in_B);
+				A_in_B = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: Q in B&gt](X, A)(equal_X_A)(X_in_B);
 				B_in_A = <b style="color: green;">branch</b>(<b style="color: green;">expand</b>(predecessor_A)(B)(B_in_C), B_in_A, equal_B_A){
 					<b style="color: blue;">return</b> B_in_A;
 				} <b style="color: green;">or</b> {
-					B_in_B = equality_consistency[&ltQ: Q in B&gt](B, A)(equal_B_A)(A_in_B);
-					<b style="color: blue;">return</b> equality_consistency[&ltQ: B in Q&gt](B, A)(equal_B_A)(B_in_B);
+					B_in_B = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: Q in B&gt](B, A)(equal_B_A)(A_in_B);
+					<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: B in Q&gt](B, A)(equal_B_A)(B_in_B);
 				};
 				<b style="color: blue;">prove</b> is_false: ~(~A in B <b style="color: red;">|</b> ~B in A){
 					not either;
@@ -53,11 +52,26 @@
 						<b style="color: blue;">return</b> not_B_in_A(B_in_A);
 					};
 				}
-				absurdity = is_false(no_pair_recursive_membership(A, B));
-				<b style="color: blue;">return</b> axiom_absurdity[goal](absurdity);
+				absurdity = is_false(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/no_pair_recursive_membership.html';" onmouseover="popup_window(this, 'no_pair_recursive_membership | 00_zf');" onmouseout="close_popup();">no_pair_recursive_membership</b>(A, B));
+				<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_absurdity.html';" onmouseover="popup_window(this, 'axiom_absurdity | 00_zf');" onmouseout="close_popup();">axiom_absurdity</b>[goal](absurdity);
 			};
 		}
 		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
 	}
-	<b style="color: blue;">return</b> #equal_sets(A, B)(equal_def);
-}</code></body></html>
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, B)(equal_def);
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

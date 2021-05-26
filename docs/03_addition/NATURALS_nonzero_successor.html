@@ -1,22 +1,37 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">NATURALS_nonzero_successor</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove NATURALS_nonzero_successor: <b style="color: red;">*</b>N(N in NATURALS <b style="color: red;">-&gt</b> equal_sets(N, ZERO) <b style="color: red;">|</b> <b style="color: red;">^</b>M(M in NATURALS <b style="color: red;">&</b> is_successor(M, N))){
-	S_def = axiom_specify[&ltN: equal_sets(N, ZERO) <b style="color: red;">|</b> <b style="color: red;">^</b>M(M in NATURALS <b style="color: red;">&</b> is_successor(M, N))&gt](NATURALS)<b style="color: red;">|</b>S<b style="color: red;">|</b>;
-	ZERO_in_S = S_def(ZERO)(zero_is_natural, <b style="color: green;">or</b>(equal_sets_reflexive(ZERO), &lt:<b style="color: red;">^</b>M(M in NATURALS <b style="color: red;">&</b> is_successor(M, ZERO))&gt));
-	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(NATURALS_inductive): contains_empty, NATURALS_closure;
-	<b style="color: blue;">prove</b> closure: <b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(Y in S <b style="color: red;">&</b> is_successor(Y, Z) <b style="color: red;">-&gt</b> Z in S){
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: NATURALS_nonzero_successor<br><b>Description</b>: None given<br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_nonzero_successor.html';" onmouseover="popup_window(this, 'NATURALS_nonzero_successor | 03_addition');" onmouseout="close_popup();">NATURALS_nonzero_successor</b>: <b style="color: red;">*</b>N(N in NATURALS <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(N, ZERO) <b style="color: red;">|</b> <b style="color: red;">^</b>M(M in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(M, N))){
+	S_def = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[&ltN: <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(N, ZERO) <b style="color: red;">|</b> <b style="color: red;">^</b>M(M in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(M, N))&gt](NATURALS)<b style="color: red;">|</b>S<b style="color: red;">|</b>;
+	ZERO_in_S = S_def(ZERO)(zero_is_natural, <b style="color: green;">or</b>(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(ZERO), &lt:<b style="color: red;">^</b>M(M in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(M, ZERO))&gt));
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_inductive.html';" onmouseover="popup_window(this, 'NATURALS_inductive | 03_addition');" onmouseout="close_popup();">NATURALS_inductive</b>): contains_empty, NATURALS_closure;
+	<b style="color: blue;">prove</b> closure: <b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(Y in S <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(Y, Z) <b style="color: red;">-&gt</b> Z in S){
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>Y, Z<b style="color: red;">|</b>;
 		<b style="color: blue;">implies</b> Y_in_S, successor_Y;
 		<b style="color: blue;">extract</b> S_def(Y)(Y_in_S): Y_in_NATURALS, condition;
 		Z_in_NATURALS = NATURALS_closure(Y, Z)(Y_in_NATURALS, successor_Y);
-		<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>M(M in NATURALS <b style="color: red;">&</b> is_successor(M, Z)){
+		<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>M(M in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(M, Z)){
 			<b style="color: blue;">choose</b> Y;
 			<b style="color: blue;">return</b> Y_in_NATURALS, successor_Y;
 		}
-		<b style="color: blue;">return</b> S_def(Z)(Z_in_NATURALS, <b style="color: green;">or</b>(&lt:equal_sets(Z, ZERO)&gt, lemma));
+		<b style="color: blue;">return</b> S_def(Z)(Z_in_NATURALS, <b style="color: green;">or</b>(&lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(Z, ZERO)&gt, lemma));
 	}
-	NATURALS_subset_S = NATURALS_induction(S)(ZERO_in_S, closure);
+	NATURALS_subset_S = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_induction.html';" onmouseover="popup_window(this, 'NATURALS_induction | 03_addition');" onmouseout="close_popup();">NATURALS_induction</b>(S)(ZERO_in_S, closure);
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>N<b style="color: red;">|</b>;
 	<b style="color: blue;">implies</b> N_in_NATURALS;
 	N_in_S = <b style="color: green;">expand</b>(NATURALS_subset_S)(N)(N_in_NATURALS);
 	<b style="color: blue;">extract</b> S_def(N)(N_in_S): N_in_NATURALS, result;
 	<b style="color: blue;">return</b> result;
-}</code></body></html>
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

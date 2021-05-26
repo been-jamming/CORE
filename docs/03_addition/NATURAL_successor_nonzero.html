@@ -1,10 +1,24 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">NATURAL_successor_nonzero</div><div class="result_description">Description: We want to show that if a number has a successor, that the number is not zero (for later purposes)
-</div><code style="white-space: pre-wrap;">prove NATURAL_successor_nonzero: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(is_successor(A, B) <b style="color: red;">-&gt</b> ~equal_sets(B, ZERO)){
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: NATURAL_successor_nonzero<br><b>Description</b>: We want to show that if a number has a successor, that the number is not zero (for later purposes)<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURAL_successor_nonzero.html';" onmouseover="popup_window(this, 'NATURAL_successor_nonzero | 03_addition');" onmouseout="close_popup();">NATURAL_successor_nonzero</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(A, B) <b style="color: red;">-&gt</b> ~<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(B, ZERO)){
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
 	<b style="color: blue;">implies</b> successor_B;
 	not equal_B_ZERO;
-	equal_B_EMPTY_SET = equality_consistency[&ltQ: equal_sets(B, Q)&gt](EMPTY_SET, ZERO)(zero_definition)(equal_B_ZERO);
-	A_in_B = <b style="color: green;">expand</b>(successor_B)(A)(<b style="color: green;">or</b>(&lt:A in A&gt, equal_sets_reflexive(A)));
-	A_in_EMPTY_SET = equality_consistency[&ltQ: A in Q&gt](B, EMPTY_SET)(equal_B_EMPTY_SET)(A_in_B);
+	equal_B_EMPTY_SET = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(B, Q)&gt](EMPTY_SET, ZERO)(zero_definition)(equal_B_ZERO);
+	A_in_B = <b style="color: green;">expand</b>(successor_B)(A)(<b style="color: green;">or</b>(&lt:A in A&gt, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(A)));
+	A_in_EMPTY_SET = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: A in Q&gt](B, EMPTY_SET)(equal_B_EMPTY_SET)(A_in_B);
 	<b style="color: blue;">return</b> empty_set_condition(A)(A_in_EMPTY_SET);
-}</code></body></html>
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

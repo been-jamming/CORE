@@ -1,4 +1,19 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">one_is_natural</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove one_is_natural: ONE in NATURALS{
-	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(NATURALS_inductive): empty_in_naturals, closure_naturals;
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: one_is_natural<br><b>Description</b>: None given<br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/one_is_natural.html';" onmouseover="popup_window(this, 'one_is_natural | 03_addition');" onmouseout="close_popup();">one_is_natural</b>: ONE in NATURALS{
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_inductive.html';" onmouseover="popup_window(this, 'NATURALS_inductive | 03_addition');" onmouseout="close_popup();">NATURALS_inductive</b>): empty_in_naturals, closure_naturals;
 	<b style="color: blue;">return</b> closure_naturals(ZERO, ONE)(zero_is_natural, one_definition);
-}</code></body></html>
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

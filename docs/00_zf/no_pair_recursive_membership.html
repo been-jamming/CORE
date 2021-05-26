@@ -1,30 +1,44 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">no_pair_recursive_membership</div><div class="result_description">Description: One of the rare moments when we use the axiom of regularity
-</div><code style="white-space: pre-wrap;">prove no_pair_recursive_membership: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(~A in B <b style="color: red;">|</b> ~B in A){
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: no_pair_recursive_membership<br><b>Description</b>: One of the rare moments when we use the axiom of regularity<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/no_pair_recursive_membership.html';" onmouseover="popup_window(this, 'no_pair_recursive_membership | 00_zf');" onmouseout="close_popup();">no_pair_recursive_membership</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(~A in B <b style="color: red;">|</b> ~B in A){
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
-	PAIR_AB_def = <b style="color: green;">expand</b>(pair(A, B)<b style="color: red;">|</b>PAIR_AB<b style="color: red;">|</b>);
+	PAIR_AB_def = <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/pair.html';" onmouseover="popup_window(this, 'pair | 00_zf');" onmouseout="close_popup();">pair</b>(A, B)<b style="color: red;">|</b>PAIR_AB<b style="color: red;">|</b>);
 	<b style="color: blue;">prove</b> PAIR_AB_not_empty: <b style="color: red;">^</b>A(A in PAIR_AB){
 		<b style="color: blue;">choose</b> A;
-		<b style="color: blue;">return</b> PAIR_AB_def(A)(<b style="color: green;">or</b>(equal_sets_reflexive(A), &lt:equal_sets(A, B)&gt));
+		<b style="color: blue;">return</b> PAIR_AB_def(A)(<b style="color: green;">or</b>(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(A), &lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, B)&gt));
 	}
-	PAIR_AB_not_empty = #not_empty(PAIR_AB)(PAIR_AB_not_empty);
-	<b style="color: blue;">extract</b> axiom_regularity(PAIR_AB)(PAIR_AB_not_empty)<b style="color: red;">|</b>D<b style="color: red;">|</b>: D_in_PAIR_AB, disjoint;
+	PAIR_AB_not_empty = #<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/not_empty.html';" onmouseover="popup_window(this, 'not_empty | 00_zf');" onmouseout="close_popup();">not_empty</b>(PAIR_AB)(PAIR_AB_not_empty);
+	<b style="color: blue;">extract</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_regularity.html';" onmouseover="popup_window(this, 'axiom_regularity | 00_zf');" onmouseout="close_popup();">axiom_regularity</b>(PAIR_AB)(PAIR_AB_not_empty)<b style="color: red;">|</b>D<b style="color: red;">|</b>: D_in_PAIR_AB, disjoint;
 	<b style="color: blue;">return</b> <b style="color: green;">branch</b>(PAIR_AB_def(D)(D_in_PAIR_AB), equal_D_A, equal_D_B){
 		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(disjoint(B), not_B_in_D, not_B_in_PAIR_AB){
-			not_B_in_A = equality_consistency[&ltQ: ~B in Q&gt](D, A)(equal_D_A)(not_B_in_D);
+			not_B_in_A = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: ~B in Q&gt](D, A)(equal_D_A)(not_B_in_D);
 			<b style="color: blue;">return</b> <b style="color: green;">or</b>(&lt:~A in B&gt, not_B_in_A);
 		} <b style="color: green;">or</b> {
-			B_in_PAIR_AB = PAIR_AB_def(B)(<b style="color: green;">or</b>(&lt:equal_sets(B, A)&gt, equal_sets_reflexive(B)));
+			B_in_PAIR_AB = PAIR_AB_def(B)(<b style="color: green;">or</b>(&lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(B, A)&gt, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(B)));
 			absurdity = not_B_in_PAIR_AB(B_in_PAIR_AB);
-			<b style="color: blue;">return</b> axiom_absurdity[goal](absurdity);
+			<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_absurdity.html';" onmouseover="popup_window(this, 'axiom_absurdity | 00_zf');" onmouseout="close_popup();">axiom_absurdity</b>[goal](absurdity);
 		};
 	} <b style="color: green;">or</b> {
 		<b style="color: blue;">return</b> <b style="color: green;">branch</b>(disjoint(A), not_A_in_D, not_A_in_PAIR_AB){
-			not_A_in_B = equality_consistency[&ltQ: ~A in Q&gt](D, B)(equal_D_B)(not_A_in_D);
+			not_A_in_B = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: ~A in Q&gt](D, B)(equal_D_B)(not_A_in_D);
 			<b style="color: blue;">return</b> <b style="color: green;">or</b>(not_A_in_B, &lt:~B in A&gt);
 		} <b style="color: green;">or</b> {
-			A_in_PAIR_AB = PAIR_AB_def(A)(<b style="color: green;">or</b>(equal_sets_reflexive(A), &lt:equal_sets(A, B)&gt));
+			A_in_PAIR_AB = PAIR_AB_def(A)(<b style="color: green;">or</b>(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(A), &lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, B)&gt));
 			absurdity = not_A_in_PAIR_AB(A_in_PAIR_AB);
-			<b style="color: blue;">return</b> axiom_absurdity[goal](absurdity);
+			<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_absurdity.html';" onmouseover="popup_window(this, 'axiom_absurdity | 00_zf');" onmouseout="close_popup();">axiom_absurdity</b>[goal](absurdity);
 		};
 	};
-}</code></body></html>
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

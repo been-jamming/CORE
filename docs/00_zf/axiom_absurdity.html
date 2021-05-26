@@ -1,2 +1,17 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">axiom</div><div class="result_name">axiom_absurdity</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">axiom axiom_absurdity[P]: false <b style="color: red;">-&gt</b> P;
-</code></body></html>
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: axiom<br><b>Result name</b>: axiom_absurdity<br><b>Description</b>: None given<br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">axiom</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_absurdity.html';" onmouseover="popup_window(this, 'axiom_absurdity | 00_zf');" onmouseout="close_popup();">axiom_absurdity</b>[P]: false <b style="color: red;">-&gt</b> P;
+</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

@@ -1,7 +1,22 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">NATURALS_contain_EMPTY_SET</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove NATURALS_contain_EMPTY_SET: EMPTY_SET in NATURALS{
-	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(NATURALS_inductive): empty_in_NATURALS, NATURALS_closure;
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: NATURALS_contain_EMPTY_SET<br><b>Description</b>: None given<br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_contain_EMPTY_SET.html';" onmouseover="popup_window(this, 'NATURALS_contain_EMPTY_SET | 03_addition');" onmouseout="close_popup();">NATURALS_contain_EMPTY_SET</b>: EMPTY_SET in NATURALS{
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_inductive.html';" onmouseover="popup_window(this, 'NATURALS_inductive | 03_addition');" onmouseout="close_popup();">NATURALS_inductive</b>): empty_in_NATURALS, NATURALS_closure;
 	<b style="color: blue;">extract</b> empty_in_NATURALS<b style="color: red;">|</b>EMPTY_OTHER<b style="color: red;">|</b>: EMPTY_OTHER_in_NATURALS, EMPTY_OTHER_def;
-	empty_EMPTY = #is_empty(EMPTY_SET)(empty_set_condition);
-	EMPTY_equal = empty_set_unique(EMPTY_OTHER, EMPTY_SET)(EMPTY_OTHER_def, empty_EMPTY);
-	<b style="color: blue;">return</b> equality_consistency[&ltS: S in NATURALS&gt](EMPTY_OTHER, EMPTY_SET)(EMPTY_equal)(EMPTY_OTHER_in_NATURALS);
-}</code></body></html>
+	empty_EMPTY = #<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_empty.html';" onmouseover="popup_window(this, 'is_empty | 00_zf');" onmouseout="close_popup();">is_empty</b>(EMPTY_SET)(empty_set_condition);
+	EMPTY_equal = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/empty_set_unique.html';" onmouseover="popup_window(this, 'empty_set_unique | 01_sets');" onmouseout="close_popup();">empty_set_unique</b>(EMPTY_OTHER, EMPTY_SET)(EMPTY_OTHER_def, empty_EMPTY);
+	<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltS: S in NATURALS&gt](EMPTY_OTHER, EMPTY_SET)(EMPTY_equal)(EMPTY_OTHER_in_NATURALS);
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

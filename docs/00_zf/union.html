@@ -1,7 +1,7 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">union</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove union: <b style="color: red;">*</b>A<b style="color: red;">^</b>B(is_union(A, B)){
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: union<br><b>Description</b>: None given<br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/union.html';" onmouseover="popup_window(this, 'union | 00_zf');" onmouseout="close_popup();">union</b>: <b style="color: red;">*</b>A<b style="color: red;">^</b>B(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_union.html';" onmouseover="popup_window(this, 'is_union | 00_zf');" onmouseout="close_popup();">is_union</b>(A, B)){
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A<b style="color: red;">|</b>;
-	implies_in_NEW = axiom_union(A)<b style="color: red;">|</b>NEW<b style="color: red;">|</b>;
-	specified = axiom_specify[&ltX: <b style="color: red;">^</b>Y(Y in A <b style="color: red;">&</b> X in Y)&gt](NEW)<b style="color: red;">|</b>B<b style="color: red;">|</b>;
+	implies_in_NEW = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_union.html';" onmouseover="popup_window(this, 'axiom_union | 00_zf');" onmouseout="close_popup();">axiom_union</b>(A)<b style="color: red;">|</b>NEW<b style="color: red;">|</b>;
+	specified = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[&ltX: <b style="color: red;">^</b>Y(Y in A <b style="color: red;">&</b> X in Y)&gt](NEW)<b style="color: red;">|</b>B<b style="color: red;">|</b>;
 	<b style="color: blue;">choose</b> B;
 	<b style="color: blue;">prove</b> union_def: <b style="color: red;">*</b>X(X in B <b style="color: red;">&lt-&gt</b> <b style="color: red;">^</b>Y(Y in A <b style="color: red;">&</b> X in Y)){
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
@@ -18,5 +18,20 @@
 		}
 		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
 	}
-	<b style="color: blue;">return</b> #is_union(A, B)(union_def);
-}</code></body></html>
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_union.html';" onmouseover="popup_window(this, 'is_union | 00_zf');" onmouseout="close_popup();">is_union</b>(A, B)(union_def);
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

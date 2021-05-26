@@ -1,3 +1,17 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">definition</div><div class="result_name">is_reflexive</div><div class="result_description">Description: Define when a relation R is reflexive with respect to A
-</div><code style="white-space: pre-wrap;">define is_reflexive(R, A): <b style="color: red;">*</b>X(X in A <b style="color: red;">-&gt</b> are_related(X, X, R));
-</code></body></html>
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: definition<br><b>Result name</b>: is_reflexive<br><b>Description</b>: Define when a relation R is reflexive with respect to A<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_reflexive.html';" onmouseover="popup_window(this, 'is_reflexive | 02_relations');" onmouseout="close_popup();">is_reflexive</b>(R, A): <b style="color: red;">*</b>X(X in A <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, X, R));
+</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

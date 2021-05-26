@@ -1,2 +1,17 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">axiom</div><div class="result_name">equality_consistency</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">axiom equality_consistency[P(1)]: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(equal_sets(X, Y) <b style="color: red;">-&gt</b> (P(X) <b style="color: red;">&lt-&gt</b> P(Y)));
-</code></body></html>
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: axiom<br><b>Result name</b>: equality_consistency<br><b>Description</b>: None given<br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">axiom</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[P(1)]: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, Y) <b style="color: red;">-&gt</b> (P(X) <b style="color: red;">&lt-&gt</b> P(Y)));
+</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

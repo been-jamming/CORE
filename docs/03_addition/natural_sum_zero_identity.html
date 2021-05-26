@@ -1,18 +1,33 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">natural_sum_zero_identity</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove natural_sum_zero_identity: <b style="color: red;">*</b>X(X in NATURALS <b style="color: red;">-&gt</b> is_natural_sum(ZERO, X, X)){
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: natural_sum_zero_identity<br><b>Description</b>: None given<br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_zero_identity.html';" onmouseover="popup_window(this, 'natural_sum_zero_identity | 03_addition');" onmouseout="close_popup();">natural_sum_zero_identity</b>: <b style="color: red;">*</b>X(X in NATURALS <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(ZERO, X, X)){
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
 	<b style="color: blue;">implies</b> X_in_NATURALS;
-	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(naturals_addition_function_definition): is_function, domain_exists, codomain_NATURALS, zero_identity, successor_recursion;
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(naturals_addition_function_definition): <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_function.html';" onmouseover="popup_window(this, 'is_function | 02_relations');" onmouseout="close_popup();">is_function</b>, domain_exists, codomain_NATURALS, zero_identity, successor_recursion;
 	<b style="color: blue;">extract</b> domain_exists<b style="color: red;">|</b>C<b style="color: red;">|</b>: cross_product_C, domain_C;
-	tuple_T = tuple(ZERO, X)<b style="color: red;">|</b>T<b style="color: red;">|</b>;
-	<b style="color: blue;">prove</b> T_in_C: <b style="color: red;">^</b>ZERO<b style="color: red;">^</b>X(ZERO in NATURALS <b style="color: red;">&</b> X in NATURALS <b style="color: red;">&</b> is_tuple(ZERO, X, T)){
+	tuple_T = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/tuple.html';" onmouseover="popup_window(this, 'tuple | 01_sets');" onmouseout="close_popup();">tuple</b>(ZERO, X)<b style="color: red;">|</b>T<b style="color: red;">|</b>;
+	<b style="color: blue;">prove</b> T_in_C: <b style="color: red;">^</b>ZERO<b style="color: red;">^</b>X(ZERO in NATURALS <b style="color: red;">&</b> X in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(ZERO, X, T)){
 		<b style="color: blue;">choose</b> ZERO, X;
 		<b style="color: blue;">return</b> zero_is_natural, X_in_NATURALS, tuple_T;
 	}
 	T_in_C = <b style="color: green;">expand</b>(cross_product_C)(T)(T_in_C);
 	related_TX = zero_identity(X, T)(X_in_NATURALS, tuple_T);
-	<b style="color: blue;">prove</b> natural_sum: <b style="color: red;">^</b>T(is_tuple(ZERO, X, T) <b style="color: red;">&</b> are_related(T, X, NATURALS_ADDITION_FUNCTION)){
+	<b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum.html';" onmouseover="popup_window(this, 'natural_sum | 03_addition');" onmouseout="close_popup();">natural_sum</b>: <b style="color: red;">^</b>T(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(ZERO, X, T) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(T, X, NATURALS_ADDITION_FUNCTION)){
 		<b style="color: blue;">choose</b> T;
 		<b style="color: blue;">return</b> tuple_T, related_TX;
 	}
-	<b style="color: blue;">return</b> #is_natural_sum(ZERO, X, X)(zero_is_natural, X_in_NATURALS, natural_sum);
-}</code></body></html>
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(ZERO, X, X)(zero_is_natural, X_in_NATURALS, <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum.html';" onmouseover="popup_window(this, 'natural_sum | 03_addition');" onmouseout="close_popup();">natural_sum</b>);
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

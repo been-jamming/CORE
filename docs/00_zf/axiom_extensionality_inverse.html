@@ -1,13 +1,27 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">axiom_extensionality_inverse</div><div class="result_description">Description: Finally, I want to show that the inverse of the axiom of extensionality can also be proven
-</div><code style="white-space: pre-wrap;">prove axiom_extensionality_inverse: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(<b style="color: red;">*</b>W(A in W <b style="color: red;">&lt-&gt</b> B in W) <b style="color: red;">-&gt</b> equal_sets(A, B)){
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: axiom_extensionality_inverse<br><b>Description</b>: Finally, I want to show that the inverse of the axiom of extensionality can also be proven<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_extensionality_inverse.html';" onmouseover="popup_window(this, 'axiom_extensionality_inverse | 00_zf');" onmouseout="close_popup();">axiom_extensionality_inverse</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(<b style="color: red;">*</b>W(A in W <b style="color: red;">&lt-&gt</b> B in W) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(A, B)){
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
 	<b style="color: blue;">implies</b> premise;
-	pair_U = <b style="color: green;">expand</b>(pair(B, B)<b style="color: red;">|</b>U<b style="color: red;">|</b>);
-	B_in_U = pair_U(B)(<b style="color: green;">or</b>(equal_sets_reflexive(B), equal_sets_reflexive(B)));
+	pair_U = <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/pair.html';" onmouseover="popup_window(this, 'pair | 00_zf');" onmouseout="close_popup();">pair</b>(B, B)<b style="color: red;">|</b>U<b style="color: red;">|</b>);
+	B_in_U = pair_U(B)(<b style="color: green;">or</b>(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(B), <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(B)));
 	A_in_U = premise(U)(B_in_U);
 	<b style="color: blue;">return</b> <b style="color: green;">branch</b>(pair_U(A)(A_in_U), equal_A_B, equal_A_B){
 		<b style="color: blue;">return</b> equal_A_B;
 	} <b style="color: green;">or</b> {
 		<b style="color: blue;">return</b> equal_A_B;
 	};
-}</code></body></html>
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

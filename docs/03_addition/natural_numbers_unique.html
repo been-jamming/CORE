@@ -1,6 +1,21 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">natural_numbers_unique</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove natural_numbers_unique: <b style="color: red;">*</b>N<b style="color: red;">*</b>M(is_natural_numbers(N) <b style="color: red;">&</b> is_natural_numbers(M) <b style="color: red;">-&gt</b> equal_sets(N, M)){
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: natural_numbers_unique<br><b>Description</b>: None given<br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_numbers_unique.html';" onmouseover="popup_window(this, 'natural_numbers_unique | 03_addition');" onmouseout="close_popup();">natural_numbers_unique</b>: <b style="color: red;">*</b>N<b style="color: red;">*</b>M(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_numbers.html';" onmouseover="popup_window(this, 'is_natural_numbers | 03_addition');" onmouseout="close_popup();">is_natural_numbers</b>(N) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_numbers.html';" onmouseover="popup_window(this, 'is_natural_numbers | 03_addition');" onmouseout="close_popup();">is_natural_numbers</b>(M) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(N, M)){
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>N, M<b style="color: red;">|</b>;
 	<b style="color: blue;">implies</b> both_natural_numbers;
 	<b style="color: blue;">extract</b> both_natural_numbers: natural_numbers_N, natural_numbers_M;
-	<b style="color: blue;">return</b> definition_uniqueness_lemma[&ltX: <b style="color: red;">*</b>I(is_inductive_set(I) <b style="color: red;">-&gt</b> X in I)&gt](N, M)(<b style="color: green;">expand</b>(natural_numbers_N), <b style="color: green;">expand</b>(natural_numbers_M));
-}</code></body></html>
+	<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/definition_uniqueness_lemma.html';" onmouseover="popup_window(this, 'definition_uniqueness_lemma | 00_zf');" onmouseout="close_popup();">definition_uniqueness_lemma</b>[&ltX: <b style="color: red;">*</b>I(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_inductive_set.html';" onmouseover="popup_window(this, 'is_inductive_set | 00_zf');" onmouseout="close_popup();">is_inductive_set</b>(I) <b style="color: red;">-&gt</b> X in I)&gt](N, M)(<b style="color: green;">expand</b>(natural_numbers_N), <b style="color: green;">expand</b>(natural_numbers_M));
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

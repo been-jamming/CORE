@@ -1,12 +1,27 @@
-<!DOCTYPE html><html><head><title>result</title></head><body><div class="result_type">proof</div><div class="result_name">NATURAL_less_than_weaken</div><div class="result_description">Description: </div><code style="white-space: pre-wrap;">prove NATURAL_less_than_weaken: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(NATURAL_less_than_strict(A, B) <b style="color: red;">-&gt</b> NATURAL_less_than(A, B)){
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: NATURAL_less_than_weaken<br><b>Description</b>: None given<br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURAL_less_than_weaken.html';" onmouseover="popup_window(this, 'NATURAL_less_than_weaken | 03_addition');" onmouseout="close_popup();">NATURAL_less_than_weaken</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURAL_less_than_strict.html';" onmouseover="popup_window(this, 'NATURAL_less_than_strict | 03_addition');" onmouseout="close_popup();">NATURAL_less_than_strict</b>(A, B) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURAL_less_than.html';" onmouseover="popup_window(this, 'NATURAL_less_than | 03_addition');" onmouseout="close_popup();">NATURAL_less_than</b>(A, B)){
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
 	<b style="color: blue;">implies</b> less_than_strict;
 	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(less_than_strict)<b style="color: red;">|</b>S<b style="color: red;">|</b>: successor_S, less_than;
 	<b style="color: blue;">prove</b> less_than_def: <b style="color: red;">*</b>X(X in A <b style="color: red;">-&gt</b> X in B){
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
 		<b style="color: blue;">implies</b> X_in_A;
-		X_in_S = <b style="color: green;">expand</b>(successor_S)(X)(<b style="color: green;">or</b>(X_in_A, &lt:equal_sets(X, A)&gt));
+		X_in_S = <b style="color: green;">expand</b>(successor_S)(X)(<b style="color: green;">or</b>(X_in_A, &lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A)&gt));
 		<b style="color: blue;">return</b> <b style="color: green;">expand</b>(less_than)(X)(X_in_S);
 	}
-	<b style="color: blue;">return</b> #NATURAL_less_than(A, B)(less_than_def);
-}</code></body></html>
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURAL_less_than.html';" onmouseover="popup_window(this, 'NATURAL_less_than | 03_addition');" onmouseout="close_popup();">NATURAL_less_than</b>(A, B)(less_than_def);
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>
