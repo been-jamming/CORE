@@ -143,131 +143,40 @@ prove NATURAL_successor_nonzero: *A*B(is_successor(A, B) -> ~equal_sets(B, ZERO)
 	return empty_set_condition(A)(A_in_EMPTY_SET);
 }
 
-//Define what it means for one natural number to be less than (or equal to) another
-//Note that the definition is the same as the definition of a subset
-define NATURAL_less_than(A, B): *X(X in A -> X in B);
-
-prove NATURAL_less_than_reflexive: *A(NATURAL_less_than(A, A)){
-	given |A|;
-	prove less_than_def: *X(X in A -> X in A){
-		given |X|;
-		implies X_in_A;
-		return X_in_A;
-	}
-	return #NATURAL_less_than(A, A)(less_than_def);
-}
-
-prove NATURAL_less_than_transitive: *X*Y*Z(NATURAL_less_than(X, Y) & NATURAL_less_than(Y, Z) -> NATURAL_less_than(X, Z)){
-	given |X, Y, Z|;
-	implies less_than_XY, less_than_YZ;
-	prove less_than_def: *S(S in X -> S in Z){
-		given |S|;
-		implies S_in_X;
-		S_in_Y = expand(less_than_XY)(S)(S_in_X);
-		return expand(less_than_YZ)(S)(S_in_Y);
-	}
-	return #NATURAL_less_than(X, Z)(less_than_def);
-}
-
-define NATURAL_less_than_strict(A, B): ^S(is_successor(A, S) & NATURAL_less_than(S, B));
-
-prove NATURAL_less_than_strict_successor: *A*B(is_successor(A, B) -> NATURAL_less_than_strict(A, B)){
-	given |A, B|;
-	implies successor_B;
-	prove less_than_strict_def: ^S(is_successor(A, S) & NATURAL_less_than(S, B)){
-		choose B;
-		return successor_B, NATURAL_less_than_reflexive(B);
-	}
-	return #NATURAL_less_than_strict(A, B)(less_than_strict_def);
-}
-
-prove NATURAL_less_than_weaken: *A*B(NATURAL_less_than_strict(A, B) -> NATURAL_less_than(A, B)){
-	given |A, B|;
-	implies less_than_strict;
-	extract expand(less_than_strict)|S|: successor_S, less_than;
-	prove less_than_def: *X(X in A -> X in B){
-		given |X|;
-		implies X_in_A;
-		X_in_S = expand(successor_S)(X)(or(X_in_A, <:equal_sets(X, A)>));
-		return expand(less_than)(X)(X_in_S);
-	}
-	return #NATURAL_less_than(A, B)(less_than_def);
-}
-
-//The natural numbers here have been defined such that N is the set {0, 1..., N - 1}
-//Here we formally prove this
-prove NATURALS_interpretation: *N(N in NATURALS -> *X(X in N <-> X in NATURALS & NATURAL_less_than_strict(X, N))){
-	//First we take the set of all natural numbers for which the statement is true
-	//Then we will apply induction
-	R_def = axiom_specify[<N: *X(X in N <-> X in NATURALS & NATURAL_less_than_strict(X, N))>](NATURALS)|R|;
-	prove ZERO_in_R: *X(X in ZERO <-> X in NATURALS & NATURAL_less_than_strict(X, ZERO)){
-		given |X|;
-		prove lemma0: X in ZERO -> X in NATURALS & NATURAL_less_than_strict(X, ZERO){
-			implies X_in_ZERO;
-			X_in_EMPTY_SET = equality_consistency[<S: X in S>](EMPTY_SET, ZERO)(zero_definition)(X_in_ZERO);
-			return axiom_absurdity[<:X in NATURALS & NATURAL_less_than_strict(X, ZERO)>](empty_set_condition(X)(X_in_EMPTY_SET));
-		}
-		prove lemma1: X in NATURALS & NATURAL_less_than_strict(X, ZERO) -> X in ZERO{
-			implies X_in_NATURALS, less_than_strict;
-			extract expand(less_than_strict)|S|: successor, less_than;
-			X_in_S = expand(successor)(X)(or(<:X in X>, equal_sets_reflexive(X)));
-			return expand(less_than)(X)(X_in_S);
-		}
-		return iff(lemma0, lemma1);
-	}
-	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
-	prove closure: *Y*Z(Y in R & is_successor(Y, Z) -> Z in R){
-		given |Y, Z|;
-		implies Y_in_R, successor_Z;
-		extract R_def(Y)(Y_in_R): Y_in_NATURALS, Y_cond;
-		extract expand(NATURALS_inductive): empty_exists, successor_closure;
-		Z_in_NATURALS = successor_closure(Y, Z)(Y_in_NATURALS, successor_Z);
-		prove Z_in_R: *X(X in Z <-> X in NATURALS & NATURAL_less_than_strict(X, Z)){
-			given |X|;
-			prove lemma0: X in Z -> X in NATURALS & NATURAL_less_than_strict(X, Z){
-				implies X_in_Z;
-				X_in_Y_or_equal_Z = expand(successor_Z)(X)(X_in_Z);
-				return branch(X_in_Y_or_equal_Z, X_in_Y, equal_Y){
-					extract Y_cond(X)(X_in_Y): X_in_NATURALS , X_less_than_strict;
-					extract expand(X_less_than_strict)|T|: successor_T, T_less_than_Y;
-					Y_less_than_Z = NATURAL_less_than_weaken(Y, Z)(NATURAL_less_than_strict_successor(Y, Z)(successor_Z));
-					prove less_than_strict_def: ^S(is_successor(X, S) & NATURAL_less_than(S, Z)){
-						choose T;
-						return successor_T, NATURAL_less_than_transitive(T, Y, Z)(T_less_than_Y, Y_less_than_Z);
-					}
-					return X_in_NATURALS, #NATURAL_less_than_strict(X, Z)(less_than_strict_def);
-				} or {
-					X_in_NATURALS = equality_consistency[<S: S in NATURALS>](X, Y)(equal_Y)(Y_in_NATURALS);
-					Y_less_than_strict_Z = NATURAL_less_than_strict_successor(Y, Z)(successor_Z);
-					return X_in_NATURALS, equality_consistency[<S: NATURAL_less_than_strict(S, Z)>](X, Y)(equal_Y)(Y_less_than_strict_Z);
-				};
-			}
-			prove lemma1: X in NATURALS & NATURAL_less_than_strict(X, Z) -> X in Z{
-				implies X_in_NATURALS, X_less_than_strict_Z;
-				extract expand(X_less_than_strict_Z)|T|: successor_T, T_less_than_Z;
-				X_in_T = expand(successor_T)(X)(or(<:X in X>, equal_sets_reflexive(X)));
-				return expand(T_less_than_Z)(X)(X_in_T);
-			}
-			return iff(lemma0, lemma1);
-		}
-		return R_def(Z)(Z_in_NATURALS, Z_in_R);
-	}
-	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure);
-	given |N|;
-	implies N_in_NATURALS;
-	N_in_R = expand(NATURALS_subset_R)(N)(N_in_NATURALS);
-	extract R_def(N)(N_in_R): N_in_NATURALS, result;
-	return result;
-}
-//Because of the proof above, I am now sure that I have defined the natural numbers correctly
-
 //We need to show that if the predecessor of a natural number exists, it is a natural number
 prove NATURALS_predecessor_closure: *N*M(N in NATURALS & is_successor(M, N) -> M in NATURALS){
+	extract expand(NATURALS_inductive): empty_in_naturals, closure_naturals;
+	//We induct on N
+	R_def = axiom_specify[<Q: *M(Q in NATURALS & is_successor(M, Q) -> M in NATURALS)>](NATURALS)|R|;
+	prove ZERO_in_R: *M(ZERO in NATURALS & is_successor(M, ZERO) -> M in NATURALS){
+		given |M|;
+		implies ZERO_in_NATURALS, successor_ZERO;
+		M_in_ZERO = expand(successor_ZERO)(M)(or(<: M in M>, equal_sets_reflexive(M)));
+		M_in_EMPTY_SET = equality_consistency[<Q: M in Q>](EMPTY_SET, ZERO)(zero_definition)(M_in_ZERO);
+		absurdity = empty_set_condition(M)(M_in_EMPTY_SET);
+		return axiom_absurdity[goal](absurdity);
+	}
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+	prove closure_R: *N*N1(N in R & is_successor(N, N1) -> N1 in R){
+		given |N, N1|;
+		implies N_in_R, successor_N1;
+		extract R_def(N)(N_in_R): N_in_NATURALS, N_cond;
+		N1_in_NATURALS = closure_naturals(N, N1)(N_in_NATURALS, successor_N1);
+		prove N1_cond: *M(N1 in NATURALS & is_successor(M, N1) -> M in NATURALS){
+			given |M|;
+			implies N1_in_NATURALS, other_successor_N1;
+			M_equal_N = predecessor_unique(M, N, N1)(other_successor_N1, successor_N1);
+			return equality_consistency[<Q: Q in NATURALS>](M, N)(M_equal_N)(N_in_NATURALS);
+		}
+		return R_def(N1)(N1_in_NATURALS, N1_cond);
+	}
+	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
 	given |N, M|;
 	implies N_in_NATURALS, successor_N;
-	M_in_N = expand(successor_N)(M)(or(<:M in M>, equal_sets_reflexive(M)));
-	extract NATURALS_interpretation(N)(N_in_NATURALS)(M)(M_in_N): M_in_NATURALS, M_less_than_strict;
-	return M_in_NATURALS;
+	N_in_R = expand(NATURALS_subset_R)(N)(N_in_NATURALS);
+	extract R_def(N)(N_in_R): N_in_NATURALS, result;
+	return result(M)(N_in_NATURALS, successor_N);
 }
 
 //Define an "addition function"
@@ -1315,8 +1224,60 @@ prove natural_sum_successor: *N*M(is_natural_sum(N, ONE, M) -> is_successor(N, M
 	return result(M)(sum_M);
 }
 
-//Proving that if a <= b then there exists some n <= b such that a + n = b
-//prove natural_sum_less_than: *A*B(A in NATURALS & B in NATURALS & NATURAL_less_than(A, B) <-> ^N(is_natural_sum(A, N, B))){
-	//extract expand(NATURALS_inductive): empty_in_NATURALS, closure_naturals;
+//Define when one natural number is (strictly) less than another
+//Note that A < B in this case is just that A in B
+//This is due to our construction of the naturals
+define natural_less_than(A, B): A in B;
+
+//A small lemma, for sure
+prove natural_less_than_successor: *A*A1(is_successor(A, A1) -> natural_less_than(A, A1)){
+	given |A, A1|;
+	implies successor_A1;
+	A_in_A1 = expand(successor_A1)(A)(or(<:A in A>, equal_sets_reflexive(A)));
+	return #natural_less_than(A, A1)(A_in_A1);
+}
+
+//Prove that every set either equals zero or is less than zero
+prove natural_zero_minimal: *N(N in NATURALS -> equal_sets(ZERO, N) | natural_less_than(ZERO, N)){
+	extract expand(NATURALS_inductive): empty_in_naturals, closure_naturals;
+	R_def = axiom_specify[<Q: Q in NATURALS -> equal_sets(ZERO, Q) | natural_less_than(ZERO, Q)>](NATURALS)|R|;
+	prove ZERO_in_R: ZERO in NATURALS -> equal_sets(ZERO, ZERO) | natural_less_than(ZERO, ZERO){
+		implies ZERO_in_NATURALS;
+		return or(equal_sets_reflexive(ZERO), <:natural_less_than(ZERO, ZERO)>);
+	}
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+	prove closure_R: *N*N1(N in R & is_successor(N, N1) -> N1 in R){
+		given |N, N1|;
+		implies N_in_R, successor_N1;
+		extract R_def(N)(N_in_R): N_in_NATURALS, N_cond;
+		N1_in_NATURALS = closure_naturals(N, N1)(N_in_NATURALS, successor_N1);
+		prove N1_cond: N1 in NATURALS -> equal_sets(ZERO, N1) | natural_less_than(ZERO, N1){
+			implies N1_in_NATURALS;
+			return branch(N_cond(N_in_NATURALS), equal_ZERO_N, ZERO_less_than_N){
+				N_less_than_N1 = natural_less_than_successor(N, N1)(successor_N1);
+				return or(<:equal_sets(ZERO, N1)>, equality_consistency[<Q: natural_less_than(Q, N1)>](ZERO, N)(equal_ZERO_N)(N_less_than_N1));
+			} or {
+				ZERO_in_N = expand(ZERO_less_than_N);
+				ZERO_in_N1 = expand(successor_N1)(ZERO)(or(ZERO_in_N, <:equal_sets(ZERO, N)>));
+				return or(<:equal_sets(ZERO, N1)>, #natural_less_than(ZERO, N1)(ZERO_in_N1));
+			};
+		}
+		return R_def(N1)(N1_in_NATURALS, N1_cond);
+	}
+	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+	given |N|;
+	implies N_in_NATURALS;
+	N_in_R = expand(NATURALS_subset_R)(N)(N_in_NATURALS);
+	extract R_def(N)(N_in_R): N_in_NATURALS, result;
+	return result(N_in_NATURALS);
+}
+
+//Proving that less than is transitive is a little more difficult due to our definition of less than
+//prove natural_less_than_transitive: *A*B*C(A in NATURALS & B in NATURALS & C in NATURALS & natural_less_than(A, B) & natural_less_than(B, C) -> natural_less_than(A, C)){
+//	//We induct on A
+//	R_def = axiom_specify[<Q: *B*C(Q in NATURALS & B in NATURALS & C in NATURALS & natural_less_than(Q, B) & natural_less_than(B, C) -> natural_less_than(Q, C))>](NATURALS)|R|;
+//	prove ZERO_in_R: *B*C(ZERO in NATURALS & B in NATURALS & C in NATURALS & natural_less_than(ZERO, B) & natural_less_than(B, C) -> natural_less_than(ZERO, C)){
+//
+//	}
 //}
 

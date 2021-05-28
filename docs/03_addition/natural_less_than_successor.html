@@ -1,0 +1,21 @@
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: natural_less_than_successor<br><b>Description</b>: A small lemma, for sure<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than_successor.html';" onmouseover="popup_window(this, 'natural_less_than_successor | 03_addition');" onmouseout="close_popup();">natural_less_than_successor</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>A1(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(A, A1) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than.html';" onmouseover="popup_window(this, 'natural_less_than | 03_addition');" onmouseout="close_popup();">natural_less_than</b>(A, A1)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, A1<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> successor_A1;
+	A_in_A1 = <b style="color: green;">expand</b>(successor_A1)(A)(<b style="color: green;">or</b>(&lt:A in A&gt, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(A)));
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than.html';" onmouseover="popup_window(this, 'natural_less_than | 03_addition');" onmouseout="close_popup();">natural_less_than</b>(A, A1)(A_in_A1);
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

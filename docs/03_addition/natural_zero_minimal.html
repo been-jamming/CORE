@@ -1,0 +1,48 @@
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: natural_zero_minimal<br><b>Description</b>: Prove that every set either equals zero or is less than zero<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_zero_minimal.html';" onmouseover="popup_window(this, 'natural_zero_minimal | 03_addition');" onmouseout="close_popup();">natural_zero_minimal</b>: <b style="color: red;">*</b>N(N in NATURALS <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(ZERO, N) <b style="color: red;">|</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than.html';" onmouseover="popup_window(this, 'natural_less_than | 03_addition');" onmouseout="close_popup();">natural_less_than</b>(ZERO, N)){
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_inductive.html';" onmouseover="popup_window(this, 'NATURALS_inductive | 03_addition');" onmouseout="close_popup();">NATURALS_inductive</b>): empty_in_naturals, closure_naturals;
+	R_def = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[&ltQ: Q in NATURALS <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(ZERO, Q) <b style="color: red;">|</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than.html';" onmouseover="popup_window(this, 'natural_less_than | 03_addition');" onmouseout="close_popup();">natural_less_than</b>(ZERO, Q)&gt](NATURALS)<b style="color: red;">|</b>R<b style="color: red;">|</b>;
+	<b style="color: blue;">prove</b> ZERO_in_R: ZERO in NATURALS <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(ZERO, ZERO) <b style="color: red;">|</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than.html';" onmouseover="popup_window(this, 'natural_less_than | 03_addition');" onmouseout="close_popup();">natural_less_than</b>(ZERO, ZERO){
+		<b style="color: blue;">implies</b> ZERO_in_NATURALS;
+		<b style="color: blue;">return</b> <b style="color: green;">or</b>(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(ZERO), &lt:<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than.html';" onmouseover="popup_window(this, 'natural_less_than | 03_addition');" onmouseout="close_popup();">natural_less_than</b>(ZERO, ZERO)&gt);
+	}
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+	<b style="color: blue;">prove</b> closure_R: <b style="color: red;">*</b>N<b style="color: red;">*</b>N1(N in R <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(N, N1) <b style="color: red;">-&gt</b> N1 in R){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>N, N1<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> N_in_R, successor_N1;
+		<b style="color: blue;">extract</b> R_def(N)(N_in_R): N_in_NATURALS, N_cond;
+		N1_in_NATURALS = closure_naturals(N, N1)(N_in_NATURALS, successor_N1);
+		<b style="color: blue;">prove</b> N1_cond: N1 in NATURALS <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(ZERO, N1) <b style="color: red;">|</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than.html';" onmouseover="popup_window(this, 'natural_less_than | 03_addition');" onmouseout="close_popup();">natural_less_than</b>(ZERO, N1){
+			<b style="color: blue;">implies</b> N1_in_NATURALS;
+			<b style="color: blue;">return</b> <b style="color: green;">branch</b>(N_cond(N_in_NATURALS), equal_ZERO_N, ZERO_less_than_N){
+				N_less_than_N1 = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than_successor.html';" onmouseover="popup_window(this, 'natural_less_than_successor | 03_addition');" onmouseout="close_popup();">natural_less_than_successor</b>(N, N1)(successor_N1);
+				<b style="color: blue;">return</b> <b style="color: green;">or</b>(&lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(ZERO, N1)&gt, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than.html';" onmouseover="popup_window(this, 'natural_less_than | 03_addition');" onmouseout="close_popup();">natural_less_than</b>(Q, N1)&gt](ZERO, N)(equal_ZERO_N)(N_less_than_N1));
+			} <b style="color: green;">or</b> {
+				ZERO_in_N = <b style="color: green;">expand</b>(ZERO_less_than_N);
+				ZERO_in_N1 = <b style="color: green;">expand</b>(successor_N1)(ZERO)(<b style="color: green;">or</b>(ZERO_in_N, &lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(ZERO, N)&gt));
+				<b style="color: blue;">return</b> <b style="color: green;">or</b>(&lt:<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(ZERO, N1)&gt, #<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than.html';" onmouseover="popup_window(this, 'natural_less_than | 03_addition');" onmouseout="close_popup();">natural_less_than</b>(ZERO, N1)(ZERO_in_N1));
+			};
+		}
+		<b style="color: blue;">return</b> R_def(N1)(N1_in_NATURALS, N1_cond);
+	}
+	NATURALS_subset_R = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_induction.html';" onmouseover="popup_window(this, 'NATURALS_induction | 03_addition');" onmouseout="close_popup();">NATURALS_induction</b>(R)(ZERO_in_R, closure_R);
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>N<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> N_in_NATURALS;
+	N_in_R = <b style="color: green;">expand</b>(NATURALS_subset_R)(N)(N_in_NATURALS);
+	<b style="color: blue;">extract</b> R_def(N)(N_in_R): N_in_NATURALS, result;
+	<b style="color: blue;">return</b> result(N_in_NATURALS);
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

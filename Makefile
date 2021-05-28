@@ -23,3 +23,8 @@ clean:
 	$(DEL) proposition.o
 	$(DEL) expression.o
 	$(DEL) core
+
+compile_proofs:
+	./core proofs/*
+	rm -rf docs/*
+	python generate_docs.py
