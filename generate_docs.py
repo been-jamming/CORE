@@ -2,6 +2,13 @@ from yattag import Doc
 import os
 import re
 
+#Copy "style.css" into docs
+with open("docs_templates/style.css", "r") as style_template:
+	with open("docs/style.css", "w") as style_file:
+		style_file.write(style_template.read())
+
+os.chdir("docs/")
+
 search_script = """
 <input id="search" onchange="update_search(this)"></input>
 <script type="text/javascript">
