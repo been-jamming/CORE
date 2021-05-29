@@ -6,25 +6,12 @@ import re
 with open("docs_templates/style.css", "r") as style_template:
 	with open("docs/style.css", "w") as style_file:
 		style_file.write(style_template.read())
+#Copy "index_script.js" into docs
+with open("docs_templates/index_script.js", "r") as index_script_template:
+	with open("docs/index_script.js", "w") as index_script:
+		index_script.write(index_script_template.read())
 
 os.chdir("docs/")
-
-search_script = """
-<input id="search" onchange="update_search(this)"></input>
-<script type="text/javascript">
-function update_search(dom){
-	search_value = dom.value;
-	search_results = [];
-	for(var i = 0; i < tags.length; i++){
-		if(tags[i][0].indexOf(search_value) === 0){
-			search_results.push(tags[i]);
-		}
-	}
-	for(i = 0; i < search_results.length && i <= 5; i++){
-		console.log(tags[i]);
-	}
-}
-"""
 
 popup_script = """
 <div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
@@ -210,14 +197,28 @@ with tag("html"):
 		with tag("h1", style = "font-size: 4vw"):
 			text("CORE library")
 		with tag("div", klass = "page_body"):
+			with tag("script", src = "index_script.js", type = "text/javascript"):
+				pass
 			with tag("div", klass = "card"):
-				text("Click on each result to see its proof")
-			with tag("div", klass = "card"):
+				with tag("p"):
+					text("Click on each result to see its proof")
+				with tag("p"):
+					text("Filter by type: ")
+					with tag("select", id = "filter", onchange = "update_filter();"):
+						with tag("option", value = "All"):
+							text("All")
+						with tag("option", value = "Definitions"):
+							text("Definitions")
+						with tag("option", value = "Axioms"):
+							text("Axioms")
+						with tag("option", value = "Proofs"):
+							text("Proofs")
+			with tag("div", klass = "card", id = "results"):
 				for result in results_index:
-					with tag("a", href = result[4] + "/" + result[1] + ".html"):
-						text(result[4] + ": " + result[1])
-					with tag("br"):
-						pass
+					with tag("p"):
+						text(result[0] + ": ")
+						with tag("a", href = result[4] + "/" + result[1] + ".html"):
+							text(result[4] + " " + result[1])
 os.chdir("../docs")
 with open("index.html", "w") as index:
 	index.write(doc.getvalue())
