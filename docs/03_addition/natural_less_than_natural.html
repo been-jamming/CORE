@@ -1,0 +1,54 @@
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: natural_less_than_natural<br><b>Description</b>: Prove that the only sets less than a natural number are natural numbers<br>By our definition of less than, this supports our interpretation of the naturals: it says that<br>n = {0, 1, 2, ..., n - 1}<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than_natural.html';" onmouseover="popup_window(this, 'natural_less_than_natural | 03_addition');" onmouseout="close_popup();">natural_less_than_natural</b>: <b style="color: red;">*</b>N<b style="color: red;">*</b>M(M in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than.html';" onmouseover="popup_window(this, 'natural_less_than | 03_addition');" onmouseout="close_popup();">natural_less_than</b>(N, M) <b style="color: red;">-&gt</b> N in NATURALS){
+	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_inductive.html';" onmouseover="popup_window(this, 'NATURALS_inductive | 03_addition');" onmouseout="close_popup();">NATURALS_inductive</b>): empty_in_NATURALS, closure_naturals;
+	R_def = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[&ltQ: <b style="color: red;">*</b>N(Q in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than.html';" onmouseover="popup_window(this, 'natural_less_than | 03_addition');" onmouseout="close_popup();">natural_less_than</b>(N, Q) <b style="color: red;">-&gt</b> N in NATURALS)&gt](NATURALS)<b style="color: red;">|</b>R<b style="color: red;">|</b>;
+
+	<b style="color: blue;">prove</b> ZERO_in_R: <b style="color: red;">*</b>N(ZERO in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than.html';" onmouseover="popup_window(this, 'natural_less_than | 03_addition');" onmouseout="close_popup();">natural_less_than</b>(N, ZERO) <b style="color: red;">-&gt</b> N in NATURALS){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>N<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> ZERO_in_NATURALS, N_less_than_ZERO;
+		N_in_ZERO = <b style="color: green;">expand</b>(N_less_than_ZERO);
+		N_in_EMPTY_SET = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: N in Q&gt](EMPTY_SET, ZERO)(zero_definition)(N_in_ZERO);
+		absurdity = empty_set_condition(N)(N_in_EMPTY_SET);
+		<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_absurdity.html';" onmouseover="popup_window(this, 'axiom_absurdity | 00_zf');" onmouseout="close_popup();">axiom_absurdity</b>[goal](absurdity);
+	}
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+	<b style="color: blue;">prove</b> closure_R: <b style="color: red;">*</b>N<b style="color: red;">*</b>M(N in R <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(N, M) <b style="color: red;">-&gt</b> M in R){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>N, M<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> N_in_R, successor_M;
+		<b style="color: blue;">extract</b> R_def(N)(N_in_R): N_in_NATURALS, N_cond;
+		M_in_NATURALS = closure_naturals(N, M)(N_in_NATURALS, successor_M);
+		<b style="color: blue;">prove</b> M_cond: <b style="color: red;">*</b>K(M in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than.html';" onmouseover="popup_window(this, 'natural_less_than | 03_addition');" onmouseout="close_popup();">natural_less_than</b>(K, M) <b style="color: red;">-&gt</b> K in NATURALS){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>K<b style="color: red;">|</b>;
+			<b style="color: blue;">implies</b> M_in_NATURALS, K_less_than_M;
+			K_in_M = <b style="color: green;">expand</b>(K_less_than_M);
+			<b style="color: blue;">return</b> <b style="color: green;">branch</b>(<b style="color: green;">expand</b>(successor_M)(K)(K_in_M), K_in_N, K_equal_N){
+				<b style="color: blue;">return</b> N_cond(K)(N_in_NATURALS, #<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than.html';" onmouseover="popup_window(this, 'natural_less_than | 03_addition');" onmouseout="close_popup();">natural_less_than</b>(K, N)(K_in_N));
+			} <b style="color: green;">or</b> {
+				<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: Q in NATURALS&gt](K, N)(K_equal_N)(N_in_NATURALS);
+			};
+		}
+		<b style="color: blue;">return</b> R_def(M)(M_in_NATURALS, M_cond);
+	}
+
+	NATURALS_subset_R = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_induction.html';" onmouseover="popup_window(this, 'NATURALS_induction | 03_addition');" onmouseout="close_popup();">NATURALS_induction</b>(R)(ZERO_in_R, closure_R);
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>N, M<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> M_in_NATURALS, N_less_than_M;
+	M_in_R = <b style="color: green;">expand</b>(NATURALS_subset_R)(M)(M_in_NATURALS);
+	<b style="color: blue;">extract</b> R_def(M)(M_in_R): M_in_NATURALS, result;
+	<b style="color: blue;">return</b> result(N)(M_in_NATURALS, N_less_than_M);
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

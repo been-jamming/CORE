@@ -1272,6 +1272,49 @@ prove natural_zero_minimal: *N(N in NATURALS -> equal_sets(ZERO, N) | natural_le
 	return result(N_in_NATURALS);
 }
 
+//Prove that the only sets less than a natural number are natural numbers
+//By our definition of less than, this supports our interpretation of the naturals: it says that
+//n = {0, 1, 2, ..., n - 1}
+prove natural_less_than_natural: *N*M(M in NATURALS & natural_less_than(N, M) -> N in NATURALS){
+	extract expand(NATURALS_inductive): empty_in_NATURALS, closure_naturals;
+	R_def = axiom_specify[<Q: *N(Q in NATURALS & natural_less_than(N, Q) -> N in NATURALS)>](NATURALS)|R|;
+
+	prove ZERO_in_R: *N(ZERO in NATURALS & natural_less_than(N, ZERO) -> N in NATURALS){
+		given |N|;
+		implies ZERO_in_NATURALS, N_less_than_ZERO;
+		N_in_ZERO = expand(N_less_than_ZERO);
+		N_in_EMPTY_SET = equality_consistency[<Q: N in Q>](EMPTY_SET, ZERO)(zero_definition)(N_in_ZERO);
+		absurdity = empty_set_condition(N)(N_in_EMPTY_SET);
+		return axiom_absurdity[goal](absurdity);
+	}
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+	prove closure_R: *N*M(N in R & is_successor(N, M) -> M in R){
+		given |N, M|;
+		implies N_in_R, successor_M;
+		extract R_def(N)(N_in_R): N_in_NATURALS, N_cond;
+		M_in_NATURALS = closure_naturals(N, M)(N_in_NATURALS, successor_M);
+		prove M_cond: *K(M in NATURALS & natural_less_than(K, M) -> K in NATURALS){
+			given |K|;
+			implies M_in_NATURALS, K_less_than_M;
+			K_in_M = expand(K_less_than_M);
+			return branch(expand(successor_M)(K)(K_in_M), K_in_N, K_equal_N){
+				return N_cond(K)(N_in_NATURALS, #natural_less_than(K, N)(K_in_N));
+			} or {
+				return equality_consistency[<Q: Q in NATURALS>](K, N)(K_equal_N)(N_in_NATURALS);
+			};
+		}
+		return R_def(M)(M_in_NATURALS, M_cond);
+	}
+
+	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+	given |N, M|;
+	implies M_in_NATURALS, N_less_than_M;
+	M_in_R = expand(NATURALS_subset_R)(M)(M_in_NATURALS);
+	extract R_def(M)(M_in_R): M_in_NATURALS, result;
+	return result(N)(M_in_NATURALS, N_less_than_M);
+}
+
 //Proving that less than is transitive is a little more difficult due to our definition of less than
 //prove natural_less_than_transitive: *A*B*C(A in NATURALS & B in NATURALS & C in NATURALS & natural_less_than(A, B) & natural_less_than(B, C) -> natural_less_than(A, C)){
 //	//We induct on A
