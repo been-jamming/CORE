@@ -7,7 +7,7 @@
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
 		<b style="color: blue;">prove</b> lemma0: X in B <b style="color: red;">-&gt</b> <b style="color: red;">^</b>Y(Y in A <b style="color: red;">&</b> X in Y){
 			<b style="color: blue;">implies</b> X_in_B;
-			<b style="color: blue;">extract</b> specified(X)(X_in_B): X_in_NEW, result;
+			X_in_NEW, result = specified(X)(X_in_B);
 			<b style="color: blue;">return</b> result;
 		}
 		<b style="color: blue;">prove</b> lemma1: <b style="color: red;">^</b>Y(Y in A <b style="color: red;">&</b> X in Y) <b style="color: red;">-&gt</b> X in B{

@@ -9,7 +9,7 @@ prove copy_set: *A^B(equal_sets(A, B)){
 prove predecessor_unique: *A*B*C(is_successor(A, C) & is_successor(B, C) -> equal_sets(A, B)){
 	given |A, B, C|;
 	implies predecessor_both;
-	extract predecessor_both: predecessor_A, predecessor_B;
+	predecessor_A, predecessor_B = predecessor_both;
 	A_in_C = expand(predecessor_A)(A)(or(<:A in A>, equal_sets_reflexive(A)));
 	B_in_C = expand(predecessor_B)(B)(or(<:B in B>, equal_sets_reflexive(B)));
 	prove equal_def: *X(X in A <-> X in B){
@@ -80,7 +80,7 @@ prove power_set: *A^B(is_power_set(A, B)){
 		given |X|;
 		prove lemma0: X in B -> is_subset(X, A){
 			implies X_in_B;
-			extract restricted(X)(X_in_B): X_in_B_BIG, result;
+			X_in_B_BIG, result = restricted(X)(X_in_B);
 			return result;
 		}
 		prove lemma1: is_subset(X, A) -> X in B{
@@ -96,14 +96,14 @@ prove power_set: *A^B(is_power_set(A, B)){
 prove power_set_unique: *A*B*C(is_power_set(A, B) & is_power_set(A, C) -> equal_sets(B, C)){
 	given |A, B, C|;
 	implies both_power_set;
-	extract both_power_set: power_set_B, power_set_C;
+	power_set_B, power_set_C = both_power_set;
 	return definition_uniqueness_lemma[<X: is_subset(X, A)>](B, C)(expand(power_set_B), expand(power_set_C));
 }
 
 prove empty_set_exists: ^E*X(~X in E){
 	inductive = expand(axiom_infinity|INDUCTIVE_SET|);
-	extract inductive: exists, closure;
-	extract exists|EMPTY|: member, empty;
+	exists, closure = inductive;
+	member, empty = exists|EMPTY|;
 	choose EMPTY;
 	return expand(empty);
 }
@@ -111,7 +111,7 @@ prove empty_set_exists: ^E*X(~X in E){
 prove empty_set_unique: *E*F(is_empty(E) & is_empty(F) -> equal_sets(E, F)){
 	given |E, F|;
 	implies both_empty;
-	extract both_empty: empty_E, empty_F;
+	empty_E, empty_F = both_empty;
 	empty_E = expand(empty_E);
 	empty_F = expand(empty_F);
 	prove equal_def: *X(X in E <-> X in F){
@@ -178,11 +178,11 @@ prove tuple: *A*B^C(is_tuple(A, B, C)){
 prove tuple_unique: *A*B*C*D(is_tuple(A, B, C) & is_tuple(A, B, D) -> equal_sets(C, D)){
 	given |A, B, C, D|;
 	implies both_tuples;
-	extract both_tuples: tuple_C, tuple_D;
+	tuple_C, tuple_D = both_tuples;
 	tuple_C_def = expand(tuple_C);
 	tuple_D_def = expand(tuple_D);
-	extract tuple_C_def|E_C, F_C|: pair_E_C, pair_F_C, pair_C;
-	extract tuple_D_def|E_D, F_D|: pair_E_D, pair_F_D, pair_D;
+	pair_E_C, pair_F_C, pair_C = tuple_C_def|E_C, F_C|;
+	pair_E_D, pair_F_D, pair_D = tuple_D_def|E_D, F_D|;
 	E_C_equal_E_D = pair_unique(A, A, E_C, E_D)(pair_E_C, pair_E_D);
 	F_C_equal_F_D = pair_unique(A, B, F_C, F_D)(pair_F_C, pair_F_D);
 	pair_C_next = equality_consistency[<X: is_pair(X, F_C, C)>](E_C, E_D)(E_C_equal_E_D)(pair_C);
@@ -196,8 +196,8 @@ prove tuple_equal_condition: *A*B*C*D*E*F(is_tuple(A, B, E) & is_tuple(C, D, F) 
 	equal_FE = equal_sets_symmetric(E, F)(equal_EF);
 	tuple_E = expand(tuple_E);
 	tuple_F = expand(tuple_F);
-	extract tuple_E|PAIR_AA, PAIR_AB|: pair_AA, pair_AB, pair_E;
-	extract tuple_F|PAIR_CC, PAIR_CD|: pair_CC, pair_CD, pair_F;
+	pair_AA, pair_AB, pair_E = tuple_E|PAIR_AA, PAIR_AB|;
+	pair_CC, pair_CD, pair_F = tuple_F|PAIR_CC, PAIR_CD|;
 	other_pair_E = pair_swap(PAIR_AA, PAIR_AB, E)(pair_E);
 	other_pair_F = pair_swap(PAIR_CC, PAIR_CD, F)(pair_F);
 	other_pair_AB = pair_swap(A, B, PAIR_AB)(pair_AB);
@@ -285,7 +285,7 @@ prove tuple_equal_condition: *A*B*C*D*E*F(is_tuple(A, B, E) & is_tuple(C, D, F) 
 prove subset_transitive: *A*B*C(is_subset(A, B) & is_subset(B, C) -> is_subset(A, C)){
 	given |A, B, C|;
 	implies subset_both;
-	extract subset_both: subset_B, subset_C;
+	subset_B, subset_C = subset_both;
 	subset_B = expand(subset_B);
 	subset_C = expand(subset_C);
 	prove subset_def: *X(X in A -> X in C){
@@ -299,7 +299,7 @@ prove subset_transitive: *A*B*C(is_subset(A, B) & is_subset(B, C) -> is_subset(A
 prove pair_subset: *A*X(^Y^Z(Y in A & Z in A & is_pair(Y, Z, X)) -> is_subset(X, A)){
 	given |A, X|;
 	implies YZ_exist;
-	extract YZ_exist|Y, Z|: Y_in_A, Z_in_A, pair_X;
+	Y_in_A, Z_in_A, pair_X = YZ_exist|Y, Z|;
 	pair_X = expand(pair_X);
 	prove subset_def: *W(W in X -> W in A){
 		given |W|;
@@ -318,7 +318,7 @@ define is_pairs(A, B, P): *X(X in P <-> ^Y^Z(Y in A & Z in B & is_pair(Y, Z, X))
 prove pairs: *A*B^C(is_pairs(A, B, C)){
 	given |A, B|;
 	Q_contains_both = axiom_pairing(A, B)|Q|;
-	extract Q_contains_both: Q_contains_A, Q_contains_B;
+	Q_contains_A, Q_contains_B = Q_contains_both;
 	U_union = axiom_union(Q)|U|;
 	P_power_set = axiom_power_set(U)|P|;
 	C_def = axiom_specify[<X: ^Y^Z(Y in A & Z in B & is_pair(Y, Z, X))>](P)|C|;
@@ -327,12 +327,12 @@ prove pairs: *A*B^C(is_pairs(A, B, C)){
 		given |X|;
 		prove lemma0: X in C -> ^Y^Z(Y in A & Z in B & is_pair(Y, Z, X)){
 			implies X_in_C;
-			extract C_def(X)(X_in_C): X_in_P, result;
+			X_in_P, result = C_def(X)(X_in_C);
 			return result;
 		}
 		prove lemma1: ^Y^Z(Y in A & Z in B & is_pair(Y, Z, X)) -> X in C{
 			implies premise;
-			extract premise|Y, Z|: Y_in_A, Z_in_B, pair_X;
+			Y_in_A, Z_in_B, pair_X = premise|Y, Z|;
 			Y_in_U = U_union(A, Y)(Q_contains_A, Y_in_A);
 			Z_in_U = U_union(B, Z)(Q_contains_B, Z_in_B);
 			prove lemma: ^Y^Z(Y in U & Z in U & is_pair(Y, Z, X)){
@@ -364,14 +364,14 @@ prove cross_product: *A*B^C(is_cross_product(A, B, C)){
 		given |X|;
 		prove lemma0: X in C -> ^D^E(D in A & E in B & is_tuple(D, E, X)){
 			implies X_in_C;
-			extract C_def(X)(X_in_C): X_in_CBIG, result;
+			X_in_CBIG, result = C_def(X)(X_in_C);
 			return result;
 		}
 		prove lemma1: ^D^E(D in A & E in B & is_tuple(D, E, X)) -> X in C{
 			implies DE_exist;
-			extract DE_exist|D, E|: D_in_A, E_in_B, tuple_X;
+			D_in_A, E_in_B, tuple_X = DE_exist|D, E|;
 			tuple_X = expand(tuple_X);
-			extract tuple_X|PAIR_DD, PAIR_DE|: pair_DD, pair_DE, pair_X;
+			pair_DD, pair_DE, pair_X = tuple_X|PAIR_DD, PAIR_DE|;
 			prove lemma: ^J^K(J in A & K in A & is_pair(J, K, PAIR_DD)){
 				choose D, D;
 				return D_in_A, D_in_A, pair_DD;
@@ -408,7 +408,7 @@ prove intersection: *A(not_empty(A) -> ^B(is_intersection(A, B))){
 		given |X|;
 		prove lemma0: X in B -> *Y(Y in A -> X in Y){
 			implies X_in_B;
-			extract B_def(X)(X_in_B): X_in_U, result;
+			X_in_U, result = B_def(X)(X_in_B);
 			return result;
 		}
 		prove lemma1: *Y(Y in A -> X in Y) -> X in B{
@@ -429,7 +429,7 @@ prove intersection: *A(not_empty(A) -> ^B(is_intersection(A, B))){
 prove intersection_unique: *A*B*C(is_intersection(A, B) & is_intersection(A, C) -> equal_sets(B, C)){
 	given |A, B, C|;
 	implies intersection_both;
-	extract intersection_both: intersection_B, intersection_C;
+	intersection_B, intersection_C = intersection_both;
 	return definition_uniqueness_lemma[<X: *Y(Y in A -> X in Y)>](B, C)(expand(intersection_B), expand(intersection_C));
 }
 

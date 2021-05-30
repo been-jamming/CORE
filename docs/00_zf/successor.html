@@ -8,7 +8,7 @@
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
 		<b style="color: blue;">prove</b> lemma0: X in B <b style="color: red;">-&gt</b> X in A <b style="color: red;">|</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A){
 			<b style="color: blue;">implies</b> X_in_B;
-			<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(union_B)(X)(X_in_B)<b style="color: red;">|</b>Y<b style="color: red;">|</b>: Y_in_D, X_in_Y;
+			Y_in_D, X_in_Y = <b style="color: green;">expand</b>(union_B)(X)(X_in_B)<b style="color: red;">|</b>Y<b style="color: red;">|</b>;
 			equal_A_or_C = <b style="color: green;">expand</b>(pair_AC)(Y)(Y_in_D);
 			<b style="color: blue;">return</b> <b style="color: green;">branch</b>(equal_A_or_C, equal_A, equal_C){
 				X_in_A = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltS: X in S&gt](Y, A)(equal_A)(X_in_Y);

@@ -1,7 +1,7 @@
 <!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: pairs<br><b>Description</b>: None given<br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pairs.html';" onmouseover="popup_window(this, 'pairs | 01_sets');" onmouseout="close_popup();">pairs</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">^</b>C(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_pairs.html';" onmouseover="popup_window(this, 'is_pairs | 01_sets');" onmouseout="close_popup();">is_pairs</b>(A, B, C)){
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
 	Q_contains_both = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_pairing.html';" onmouseover="popup_window(this, 'axiom_pairing | 00_zf');" onmouseout="close_popup();">axiom_pairing</b>(A, B)<b style="color: red;">|</b>Q<b style="color: red;">|</b>;
-	<b style="color: blue;">extract</b> Q_contains_both: Q_contains_A, Q_contains_B;
+	Q_contains_A, Q_contains_B = Q_contains_both;
 	U_union = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_union.html';" onmouseover="popup_window(this, 'axiom_union | 00_zf');" onmouseout="close_popup();">axiom_union</b>(Q)<b style="color: red;">|</b>U<b style="color: red;">|</b>;
 	P_power_set = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_power_set.html';" onmouseover="popup_window(this, 'axiom_power_set | 00_zf');" onmouseout="close_popup();">axiom_power_set</b>(U)<b style="color: red;">|</b>P<b style="color: red;">|</b>;
 	C_def = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[&ltX: <b style="color: red;">^</b>Y<b style="color: red;">^</b>Z(Y in A <b style="color: red;">&</b> Z in B <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_pair.html';" onmouseover="popup_window(this, 'is_pair | 00_zf');" onmouseout="close_popup();">is_pair</b>(Y, Z, X))&gt](P)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
@@ -10,12 +10,12 @@
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
 		<b style="color: blue;">prove</b> lemma0: X in C <b style="color: red;">-&gt</b> <b style="color: red;">^</b>Y<b style="color: red;">^</b>Z(Y in A <b style="color: red;">&</b> Z in B <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_pair.html';" onmouseover="popup_window(this, 'is_pair | 00_zf');" onmouseout="close_popup();">is_pair</b>(Y, Z, X)){
 			<b style="color: blue;">implies</b> X_in_C;
-			<b style="color: blue;">extract</b> C_def(X)(X_in_C): X_in_P, result;
+			X_in_P, result = C_def(X)(X_in_C);
 			<b style="color: blue;">return</b> result;
 		}
 		<b style="color: blue;">prove</b> lemma1: <b style="color: red;">^</b>Y<b style="color: red;">^</b>Z(Y in A <b style="color: red;">&</b> Z in B <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_pair.html';" onmouseover="popup_window(this, 'is_pair | 00_zf');" onmouseout="close_popup();">is_pair</b>(Y, Z, X)) <b style="color: red;">-&gt</b> X in C{
 			<b style="color: blue;">implies</b> premise;
-			<b style="color: blue;">extract</b> premise<b style="color: red;">|</b>Y, Z<b style="color: red;">|</b>: Y_in_A, Z_in_B, pair_X;
+			Y_in_A, Z_in_B, pair_X = premise<b style="color: red;">|</b>Y, Z<b style="color: red;">|</b>;
 			Y_in_U = U_union(A, Y)(Q_contains_A, Y_in_A);
 			Z_in_U = U_union(B, Z)(Q_contains_B, Z_in_B);
 			<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>Y<b style="color: red;">^</b>Z(Y in U <b style="color: red;">&</b> Z in U <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_pair.html';" onmouseover="popup_window(this, 'is_pair | 00_zf');" onmouseout="close_popup();">is_pair</b>(Y, Z, X)){

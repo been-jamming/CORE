@@ -12,14 +12,14 @@
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
 		<b style="color: blue;">prove</b> lemma0: X in C <b style="color: red;">-&gt</b> <b style="color: red;">^</b>D<b style="color: red;">^</b>E(D in A <b style="color: red;">&</b> E in B <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(D, E, X)){
 			<b style="color: blue;">implies</b> X_in_C;
-			<b style="color: blue;">extract</b> C_def(X)(X_in_C): X_in_CBIG, result;
+			X_in_CBIG, result = C_def(X)(X_in_C);
 			<b style="color: blue;">return</b> result;
 		}
 		<b style="color: blue;">prove</b> lemma1: <b style="color: red;">^</b>D<b style="color: red;">^</b>E(D in A <b style="color: red;">&</b> E in B <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(D, E, X)) <b style="color: red;">-&gt</b> X in C{
 			<b style="color: blue;">implies</b> DE_exist;
-			<b style="color: blue;">extract</b> DE_exist<b style="color: red;">|</b>D, E<b style="color: red;">|</b>: D_in_A, E_in_B, tuple_X;
+			D_in_A, E_in_B, tuple_X = DE_exist<b style="color: red;">|</b>D, E<b style="color: red;">|</b>;
 			tuple_X = <b style="color: green;">expand</b>(tuple_X);
-			<b style="color: blue;">extract</b> tuple_X<b style="color: red;">|</b>PAIR_DD, PAIR_DE<b style="color: red;">|</b>: pair_DD, pair_DE, pair_X;
+			pair_DD, pair_DE, pair_X = tuple_X<b style="color: red;">|</b>PAIR_DD, PAIR_DE<b style="color: red;">|</b>;
 			<b style="color: blue;">prove</b> lemma: <b style="color: red;">^</b>J<b style="color: red;">^</b>K(J in A <b style="color: red;">&</b> K in A <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_pair.html';" onmouseover="popup_window(this, 'is_pair | 00_zf');" onmouseout="close_popup();">is_pair</b>(J, K, PAIR_DD)){
 				<b style="color: blue;">choose</b> D, D;
 				<b style="color: blue;">return</b> D_in_A, D_in_A, pair_DD;

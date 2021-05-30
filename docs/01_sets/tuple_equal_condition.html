@@ -4,8 +4,8 @@
 	equal_FE = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_symmetric.html';" onmouseover="popup_window(this, 'equal_sets_symmetric | 00_zf');" onmouseout="close_popup();">equal_sets_symmetric</b>(E, F)(equal_EF);
 	tuple_E = <b style="color: green;">expand</b>(tuple_E);
 	tuple_F = <b style="color: green;">expand</b>(tuple_F);
-	<b style="color: blue;">extract</b> tuple_E<b style="color: red;">|</b>PAIR_AA, PAIR_AB<b style="color: red;">|</b>: pair_AA, pair_AB, pair_E;
-	<b style="color: blue;">extract</b> tuple_F<b style="color: red;">|</b>PAIR_CC, PAIR_CD<b style="color: red;">|</b>: pair_CC, pair_CD, pair_F;
+	pair_AA, pair_AB, pair_E = tuple_E<b style="color: red;">|</b>PAIR_AA, PAIR_AB<b style="color: red;">|</b>;
+	pair_CC, pair_CD, pair_F = tuple_F<b style="color: red;">|</b>PAIR_CC, PAIR_CD<b style="color: red;">|</b>;
 	other_pair_E = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_swap.html';" onmouseover="popup_window(this, 'pair_swap | 01_sets');" onmouseout="close_popup();">pair_swap</b>(PAIR_AA, PAIR_AB, E)(pair_E);
 	other_pair_F = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_swap.html';" onmouseover="popup_window(this, 'pair_swap | 01_sets');" onmouseout="close_popup();">pair_swap</b>(PAIR_CC, PAIR_CD, F)(pair_F);
 	other_pair_AB = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/pair_swap.html';" onmouseover="popup_window(this, 'pair_swap | 01_sets');" onmouseout="close_popup();">pair_swap</b>(A, B, PAIR_AB)(pair_AB);

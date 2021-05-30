@@ -12,6 +12,7 @@ struct cmalloc_node{
 	cmalloc_node *child1;
 	cmalloc_node *parent;
 	void *value;
+	size_t block_size;
 };
 
 static cmalloc_node *global_node = NULL;
@@ -83,6 +84,7 @@ void *custom_malloc(size_t size){
 	}
 	current_node->parent = parent_node;
 	current_node->value = output;
+	current_node->block_size = size;
 	current_node->child0 = NULL;
 	current_node->child1 = NULL;
 
@@ -107,7 +109,7 @@ void custom_free(void *pointer){
 
 	if(parent_node->value != pointer){
 #ifdef CMALLOC_PRINT_ERRORS
-		fprintf(stderr, "cmalloc error: pointer to free not found\n");
+		fprintf(stderr, "cmalloc error: pointer (%p) to free not found\n", pointer);
 #endif
 		return;
 	}
@@ -123,6 +125,47 @@ void custom_free(void *pointer){
 		free(parent_node);
 		parent_node = next_parent;
 	}
+}
+
+size_t custom_block_size(void *pointer){
+	uintptr_t ptr_num;
+	cmalloc_node *parent_node;
+
+	ptr_num = (uintptr_t) pointer;
+	parent_node = seek_parent(&ptr_num);
+	if(parent_node->value != pointer){
+#ifdef CMALLOC_PRINT_ERRORS
+		fprintf(stderr, "cmalloc error: pointer (%p) to free not found\n", pointer);
+#endif
+		return 0;
+	}
+	return parent_node->block_size;
+}
+
+void *custom_realloc(void *pointer, size_t size){
+	void *output;
+	uintptr_t ptr_num;
+	size_t size_before;
+	cmalloc_node *parent_node;
+
+	ptr_num = (uintptr_t) pointer;
+	parent_node = seek_parent(&ptr_num);
+	if(parent_node->value != pointer){
+#ifdef CMALLOC_PRINT_ERRORS
+		fprintf(stderr, "cmalloc error: pointer (%p) to free not found\n", pointer);
+#endif
+		return NULL;
+	}
+	size_before = parent_node->block_size;
+	output = custom_malloc(size);
+	if(size_before < size){
+		memcpy(output, pointer, size_before);
+	} else {
+		memcpy(output, pointer, size);
+	}
+	custom_free(pointer);
+
+	return output;
 }
 
 static void custom_malloc_abort_node(cmalloc_node *node){

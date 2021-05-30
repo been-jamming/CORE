@@ -39,7 +39,7 @@ prove equal_sets_symmetric: *A*B(equal_sets(A, B) -> equal_sets(B, A)){
 prove equal_sets_transitive: *A*B*C(equal_sets(A, B) & equal_sets(B, C) -> equal_sets(A, C)){
 	given |A, B, C|;
 	implies equals_both;
-	extract equals_both: equal_AB, equal_BC;
+	equal_AB, equal_BC = equals_both;
 	return equality_consistency[<X: equal_sets(X, C)>](B, A)(equal_sets_symmetric(A, B)(equal_AB))(equal_BC);
 }
 
@@ -66,7 +66,7 @@ define is_pair(A, B, C): *X(X in C <-> equal_sets(X, A) | equal_sets(X, B));
 prove definition_uniqueness_lemma[P(1)]: *A*B(*X(X in A <-> P(X)) & *X(X in B <-> P(X)) -> equal_sets(A, B)){
 	given |A, B|;
 	implies equality_condition;
-	extract equality_condition: membership_A, membership_B;
+	membership_A, membership_B = equality_condition;
 	prove equal_def: *X(X in A <-> X in B){
 		given |X|;
 		prove lemma0: X in A -> X in B{
@@ -84,14 +84,14 @@ prove definition_uniqueness_lemma[P(1)]: *A*B(*X(X in A <-> P(X)) & *X(X in B <-
 
 prove pair: *A*B^C(is_pair(A, B, C)){
 	given |A, B|;
-	extract axiom_pairing(A, B)|D|: A_in_D, B_in_D;
+	A_in_D, B_in_D = axiom_pairing(A, B)|D|;
 	C_specified = axiom_specify[<X: equal_sets(X, A) | equal_sets(X, B)>](D)|C|;
 	choose C;
 	prove pair_def: *X(X in C <-> equal_sets(X, A) | equal_sets(X, B)){
 		given |X|;
 		prove lemma0: X in C -> equal_sets(X, A) | equal_sets(X, B){
 			implies X_in_C;
-			extract C_specified(X)(X_in_C): X_in_D, result;
+			X_in_D, result = C_specified(X)(X_in_C);
 			return result;
 		}
 		prove lemma1: equal_sets(X, A) | equal_sets(X, B) -> X in C{
@@ -111,7 +111,7 @@ prove pair: *A*B^C(is_pair(A, B, C)){
 prove pair_unique: *A*B*C*D(is_pair(A, B, C) & is_pair(A, B, D) -> equal_sets(C, D)){
 	given |A, B, C, D|;
 	implies pairs_premise;
-	extract pairs_premise: pair_C, pair_D;
+	pair_C, pair_D = pairs_premise;
 	return definition_uniqueness_lemma[<X: equal_sets(X, A) | equal_sets(X, B)>](C, D)(expand(pair_C), expand(pair_D));
 }
 
@@ -126,7 +126,7 @@ prove union: *A^B(is_union(A, B)){
 		given |X|;
 		prove lemma0: X in B -> ^Y(Y in A & X in Y){
 			implies X_in_B;
-			extract specified(X)(X_in_B): X_in_NEW, result;
+			X_in_NEW, result = specified(X)(X_in_B);
 			return result;
 		}
 		prove lemma1: ^Y(Y in A & X in Y) -> X in B{
@@ -143,7 +143,7 @@ prove union: *A^B(is_union(A, B)){
 prove union_unique: *A*B*C(is_union(A, B) & is_union(A, C) -> equal_sets(B, C)){
 	given |A, B, C|;
 	implies union_both;
-	extract union_both: union_B, union_C;
+	union_B, union_C = union_both;
 	return definition_uniqueness_lemma[<X: ^Y(Y in A & X in Y)>](B, C)(expand(union_B), expand(union_C));
 }
 
@@ -159,7 +159,7 @@ prove successor: *A^B(is_successor(A, B)){
 		given |X|;
 		prove lemma0: X in B -> X in A | equal_sets(X, A){
 			implies X_in_B;
-			extract expand(union_B)(X)(X_in_B)|Y|: Y_in_D, X_in_Y;
+			Y_in_D, X_in_Y = expand(union_B)(X)(X_in_B)|Y|;
 			equal_A_or_C = expand(pair_AC)(Y)(Y_in_D);
 			return branch(equal_A_or_C, equal_A, equal_C){
 				X_in_A = equality_consistency[<S: X in S>](Y, A)(equal_A)(X_in_Y);
@@ -196,7 +196,7 @@ prove successor: *A^B(is_successor(A, B)){
 prove successor_unique: *A*B*C(is_successor(A, B) & is_successor(A, C) -> equal_sets(B, C)){
 	given |A, B, C|;
 	implies successor_both;
-	extract successor_both: successor_B, successor_C;
+	successor_B, successor_C = successor_both;
 	return definition_uniqueness_lemma[<X: X in A | equal_sets(X, A)>](B, C)(expand(successor_B), expand(successor_C));
 }
 
@@ -209,7 +209,7 @@ prove no_pair_recursive_membership: *A*B(~A in B | ~B in A){
 		return PAIR_AB_def(A)(or(equal_sets_reflexive(A), <:equal_sets(A, B)>));
 	}
 	PAIR_AB_not_empty = #not_empty(PAIR_AB)(PAIR_AB_not_empty);
-	extract axiom_regularity(PAIR_AB)(PAIR_AB_not_empty)|D|: D_in_PAIR_AB, disjoint;
+	D_in_PAIR_AB, disjoint = axiom_regularity(PAIR_AB)(PAIR_AB_not_empty)|D|;
 	return branch(PAIR_AB_def(D)(D_in_PAIR_AB), equal_D_A, equal_D_B){
 		return branch(disjoint(B), not_B_in_D, not_B_in_PAIR_AB){
 			not_B_in_A = equality_consistency[<Q: ~B in Q>](D, A)(equal_D_A)(not_B_in_D);

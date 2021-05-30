@@ -1,7 +1,7 @@
 <!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: equivalence_classes<br><b>Description</b>: Prove that equivalence classes exist for any equivalence relation<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/equivalence_classes.html';" onmouseover="popup_window(this, 'equivalence_classes | 02_relations');" onmouseout="close_popup();">equivalence_classes</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>R(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_relation.html';" onmouseover="popup_window(this, 'is_equivalence_relation | 02_relations');" onmouseout="close_popup();">is_equivalence_relation</b>(R, A) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>C(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_classes.html';" onmouseover="popup_window(this, 'is_equivalence_classes | 02_relations');" onmouseout="close_popup();">is_equivalence_classes</b>(R, A, C))){
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, R<b style="color: red;">|</b>;
 	<b style="color: blue;">implies</b> equiv_relation;
-	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(equiv_relation): reflexive, symmetric, transitive;
+	reflexive, symmetric, transitive = <b style="color: green;">expand</b>(equiv_relation);
 	power_set_P = <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/power_set.html';" onmouseover="popup_window(this, 'power_set | 01_sets');" onmouseout="close_popup();">power_set</b>(A)<b style="color: red;">|</b>P<b style="color: red;">|</b>);
 	C_def = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[&ltS: <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_class.html';" onmouseover="popup_window(this, 'is_equivalence_class | 02_relations');" onmouseout="close_popup();">is_equivalence_class</b>(R, A, S)&gt](P)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
 	<b style="color: blue;">choose</b> C;
@@ -9,16 +9,16 @@
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>Y<b style="color: red;">|</b>;
 		<b style="color: blue;">prove</b> lemma0: Y in C <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_class.html';" onmouseover="popup_window(this, 'is_equivalence_class | 02_relations');" onmouseout="close_popup();">is_equivalence_class</b>(R, A, Y){
 			<b style="color: blue;">implies</b> Y_in_C;
-			<b style="color: blue;">extract</b> C_def(Y)(Y_in_C): Y_in_P, result;
+			Y_in_P, result = C_def(Y)(Y_in_C);
 			<b style="color: blue;">return</b> result;
 		}
 		<b style="color: blue;">prove</b> lemma1: <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_equivalence_class.html';" onmouseover="popup_window(this, 'is_equivalence_class | 02_relations');" onmouseout="close_popup();">is_equivalence_class</b>(R, A, Y) <b style="color: red;">-&gt</b> Y in C{
 			<b style="color: blue;">implies</b> equiv_class;
-			<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(equiv_class)<b style="color: red;">|</b>Y_REP<b style="color: red;">|</b>: Y_REP_in_A, closure;
+			Y_REP_in_A, closure = <b style="color: green;">expand</b>(equiv_class)<b style="color: red;">|</b>Y_REP<b style="color: red;">|</b>;
 			<b style="color: blue;">prove</b> subset_def: <b style="color: red;">*</b>J(J in Y <b style="color: red;">-&gt</b> J in A){
 				<b style="color: blue;">given</b> <b style="color: red;">|</b>J<b style="color: red;">|</b>;
 				<b style="color: blue;">implies</b> J_in_Y;
-				<b style="color: blue;">extract</b> closure(J)(J_in_Y): J_in_A, related_Y_REP_J;
+				J_in_A, related_Y_REP_J = closure(J)(J_in_Y);
 				<b style="color: blue;">return</b> J_in_A;
 			}
 			Y_subset_A = #<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_subset.html';" onmouseover="popup_window(this, 'is_subset | 00_zf');" onmouseout="close_popup();">is_subset</b>(Y, A)(subset_def);

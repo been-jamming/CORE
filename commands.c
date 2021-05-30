@@ -331,6 +331,111 @@ variable *axiom_command(char **c){
 	return output;
 }
 
+static unsigned char get_assign_vars(char **c, char ***var_names, unsigned int *current_var_name){
+	unsigned int var_names_size = 16;
+	unsigned int i;
+
+	skip_whitespace(c);
+	if(**c == ','){
+		return 1;
+	}
+
+	*current_var_name = 0;
+	*var_names = malloc(sizeof(char *)*var_names_size);
+	
+	do{
+		if(**c == ','){
+			++*c;
+		}
+		skip_whitespace(c);
+		if(*current_var_name >= var_names_size){
+			var_names_size += 16;
+			*var_names = realloc(*var_names, sizeof(char *)*var_names_size);
+		}
+		(*var_names)[*current_var_name] = malloc(sizeof(char)*256);
+		get_identifier(c, (*var_names)[*current_var_name], 256);
+		(*var_names)[*current_var_name] = realloc((*var_names)[*current_var_name], sizeof(char)*(strlen((*var_names)[*current_var_name]) + 1));
+		skip_whitespace(c);
+		if(!(*var_names)[*current_var_name][0]){
+			for(i = 0; i <= *current_var_name; i++){
+				free((*var_names)[i]);
+			}
+			free(*var_names);
+			return 1;
+		}
+		(*current_var_name)++;
+	} while(**c == ',');
+
+	if(**c != '='){
+		for(i = 0; i < *current_var_name; i++){
+			free((*var_names)[i]);
+		}
+		free(*var_names);
+		return 1;
+	}
+
+	++*c;
+	skip_whitespace(c);
+
+	return 0;
+}
+
+int assign_command(char **c){
+	unsigned char is_verified;
+	char *beginning;
+	char **var_names;
+	unsigned int num_var_names;
+	unsigned int i;
+	statement *s;
+	statement *extracted;
+
+	beginning = *c;
+	if(get_assign_vars(c, &var_names, &num_var_names)){
+		*c = beginning;
+		return 0;
+	}
+
+	s = parse_statement_value(c, &is_verified);
+	if(!s){
+		fprintf(stderr, "Error: could not parse statement value\n");
+		error(1);
+	}
+	skip_whitespace(c);
+	if(**c != ';'){
+		fprintf(stderr, "Error: expected ';'\n");
+		error(1);
+	}
+	if(!is_verified){
+		fprintf(stderr, "Error: statement must be verified\n");
+		error(1);
+	}
+
+	++*c;
+
+	for(i = 0; i < num_var_names - 1; i++){
+		if(!s){
+			fprintf(stderr, "Error: not enough values to unpack\n");
+			error(1);
+		}
+		extracted = peel_and_left(&s);
+		extracted->parent = NULL;
+		create_statement_var(var_names[i], extracted);
+	}
+	if(!s){
+		fprintf(stderr, "Error: not enough values to unpack\n");
+		error(1);
+	}
+	create_statement_var(var_names[num_var_names - 1], s);
+
+	for(i = 0; i < num_var_names; i++){
+		free(var_names[i]);
+	}
+	free(var_names);
+
+	return 1;
+}
+
+/*
 variable *assign_command(char **c){
 	char name_buffer[256];
 	unsigned char is_verified;
@@ -376,6 +481,7 @@ variable *assign_command(char **c){
 	
 	return output;
 }
+*/
 
 statement *return_command(char **c){
 	unsigned char is_verified = 1;
@@ -1181,7 +1287,6 @@ statement *verify_command(char **c, unsigned char allow_proof_value, statement *
 	proposition *other_def;
 	variable *axiom;
 	variable *other_proof;
-	variable *var;
 	variable *proof;
 	statement *return_value;
 
@@ -1207,8 +1312,6 @@ statement *verify_command(char **c, unsigned char allow_proof_value, statement *
 		write_dictionary(variables + current_depth, axiom->name, axiom, 0);
 	} else if(print_command(c)){
 		//Pass
-	} else if((var = assign_command(c))){
-		//Pass
 	} else if((return_value = return_command(c))){
 		return return_value;
 	} else if((proof = prove_command(c))){
@@ -1233,6 +1336,8 @@ statement *verify_command(char **c, unsigned char allow_proof_value, statement *
 		//pass
 	} else if(extract_command(c)){
 		//pass
+	} else if(assign_command(c)){
+		//Pass
 	} else if(evaluate_command(c)){
 		//Pass
 	} else {
