@@ -1313,11 +1313,183 @@ prove natural_less_than_natural: *N*M(M in NATURALS & natural_less_than(N, M) ->
 }
 
 //Proving that less than is transitive is a little more difficult due to our definition of less than
-//prove natural_less_than_transitive: *A*B*C(A in NATURALS & B in NATURALS & C in NATURALS & natural_less_than(A, B) & natural_less_than(B, C) -> natural_less_than(A, C)){
-//	//We induct on A
-//	R_def = axiom_specify[<Q: *B*C(Q in NATURALS & B in NATURALS & C in NATURALS & natural_less_than(Q, B) & natural_less_than(B, C) -> natural_less_than(Q, C))>](NATURALS)|R|;
-//	prove ZERO_in_R: *B*C(ZERO in NATURALS & B in NATURALS & C in NATURALS & natural_less_than(ZERO, B) & natural_less_than(B, C) -> natural_less_than(ZERO, C)){
-//
-//	}
-//}
+//We need this lemma
+prove natural_less_than_successor_weaken: *N*N1*M(N in NATURALS & is_successor(N, N1) & M in NATURALS -> (natural_less_than(N, M) <-> equal_sets(N1, M) | natural_less_than(N1, M))){
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
+
+	given |N, N1, M|;
+	implies N_in_NATURALS, successor_N1, M_in_NATURALS;
+	N_in_N1 = expand(successor_N1)(N)(or(<:N in N>, equal_sets_reflexive(N)));
+	prove lemma0: natural_less_than(N, M) -> equal_sets(N1, M) | natural_less_than(N1, M){
+		//induct on M
+		R_def = axiom_specify[<Q: natural_less_than(N, Q) -> equal_sets(N1, Q) | natural_less_than(N1, Q)>](NATURALS)|R|;
+		prove ZERO_in_R: natural_less_than(N, ZERO) -> equal_sets(N1, ZERO) | natural_less_than(N1, ZERO){
+			implies N_less_than_ZERO;
+			N_in_ZERO = expand(N_less_than_ZERO);
+			N_in_EMPTY_SET = equality_consistency[<Q: N in Q>](EMPTY_SET, ZERO)(zero_definition)(N_in_ZERO);
+			absurdity = empty_set_condition(N)(N_in_EMPTY_SET);
+			return axiom_absurdity[goal](absurdity);
+		}
+		ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+		prove closure_R: *K*K1(K in R & is_successor(K, K1) -> K1 in R){
+			given |K, K1|;
+			implies K_in_R, successor_K1;
+			K_in_NATURALS, K_cond = R_def(K)(K_in_R);
+			K1_in_NATURALS = closure_naturals(K, K1)(K_in_NATURALS, successor_K1);
+			prove K1_in_R: natural_less_than(N, K1) -> equal_sets(N1, K1) | natural_less_than(N1, K1){
+				implies N_less_than_K1;
+				N_in_K1 = expand(N_less_than_K1);
+				N_in_K_or_N_equal_K = expand(successor_K1)(N)(N_in_K1);
+				return branch(N_in_K_or_N_equal_K, N_in_K, N_equal_K){
+					N_less_than_K = #natural_less_than(N, K)(N_in_K);
+					N1_equal_K_or_N1_less_than_K = K_cond(N_less_than_K);
+					return branch(N1_equal_K_or_N1_less_than_K, N1_equal_K, N1_less_than_K){
+						N1_in_K1 = expand(successor_K1)(N1)(or(<:N1 in K>, N1_equal_K));
+						N1_less_than_K1 = #natural_less_than(N1, K1)(N1_in_K1);
+						return or(<:equal_sets(N1, K1)>, N1_less_than_K1);
+					} or {
+						N1_in_K = expand(N1_less_than_K);
+						N1_in_K1 = expand(successor_K1)(N1)(or(N1_in_K, <:equal_sets(N1, K)>));
+						N1_less_than_K1 = #natural_less_than(N1, K1)(N1_in_K1);
+						return or(<:equal_sets(N1, K1)>, N1_less_than_K1);
+					};
+				} or {
+					other_successor_K1 = equality_consistency[<Q: is_successor(Q, K1)>](N, K)(N_equal_K)(successor_K1);
+					N1_equal_K1 = successor_unique(N, N1, K1)(successor_N1, other_successor_K1);
+					return or(N1_equal_K1, <:natural_less_than(N1, K1)>);
+				};
+			}
+			return R_def(K1)(K1_in_NATURALS, K1_in_R);
+		}
+
+		NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+		M_in_R = expand(NATURALS_subset_R)(M)(M_in_NATURALS);
+		M_in_NATURALS, result = R_def(M)(M_in_R);
+		return result;
+	}
+
+	prove M_lemma: *M(M in NATURALS & natural_less_than(N1, M) -> natural_less_than(N, M)){
+		//Induct on M
+		R_def = axiom_specify[<Q: Q in NATURALS & natural_less_than(N1, Q) -> natural_less_than(N, Q)>](NATURALS)|R|;
+		prove ZERO_in_R: ZERO in NATURALS & natural_less_than(N1, ZERO) -> natural_less_than(N, ZERO){
+			implies ZERO_in_NATURALS, N1_less_than_ZERO;
+			N1_in_ZERO = expand(N1_less_than_ZERO);
+			N1_in_EMPTY_SET = equality_consistency[<Q: N1 in Q>](EMPTY_SET, ZERO)(zero_definition)(N1_in_ZERO);
+			absurdity = empty_set_condition(N1)(N1_in_EMPTY_SET);
+			return axiom_absurdity[goal](absurdity);
+		}
+		ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+		prove closure_R: *M*M1(M in R & is_successor(M, M1) -> M1 in R){
+			given |M, M1|;
+			implies M_in_R, successor_M1;
+			M_in_NATURALS, M_cond = R_def(M)(M_in_R);
+			M1_in_NATURALS = closure_naturals(M, M1)(M_in_NATURALS, successor_M1);
+			prove M1_cond: M1 in NATURALS & natural_less_than(N1, M1) -> natural_less_than(N, M1){
+				implies M1_in_NATURALS, N1_less_than_M1;
+				N1_in_M1 = expand(N1_less_than_M1);
+				N_in_M = branch(expand(successor_M1)(N1)(N1_in_M1), N1_in_M, N1_equal_M){
+					N1_less_than_M = #natural_less_than(N1, M)(N1_in_M);
+					N_less_than_M = M_cond(M_in_NATURALS, N1_less_than_M);
+					return expand(N_less_than_M);
+				} or {
+					return equality_consistency[<Q: N in Q>](N1, M)(N1_equal_M)(N_in_N1);
+				};
+				N_in_M1 = expand(successor_M1)(N)(or(N_in_M, <:equal_sets(N, M)>));
+				return #natural_less_than(N, M1)(N_in_M1);
+			}
+			return R_def(M1)(M1_in_NATURALS, M1_cond);
+		}
+
+		NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+		given |M|;
+		implies M_in_NATURALS, N1_less_than_M;
+		M_in_R = expand(NATURALS_subset_R)(M)(M_in_NATURALS);
+		M_in_NATURALS, result = R_def(M)(M_in_R);
+
+		return result(M_in_NATURALS, N1_less_than_M);
+	}
+
+	prove lemma1: equal_sets(N1, M) | natural_less_than(N1, M) -> natural_less_than(N, M){
+		implies either_premise;
+		return branch(either_premise, N1_equal_M, N1_less_than_M){
+			N_in_M = equality_consistency[<Q: N in Q>](N1, M)(N1_equal_M)(N_in_N1);
+			return #natural_less_than(N, M)(N_in_M);
+		} or {
+			return M_lemma(M)(M_in_NATURALS, N1_less_than_M);
+		};
+	}
+
+	return iff(lemma0, lemma1);
+}
+
+//Proving that less than is transitive is a little more difficult due to our definition of less than
+prove natural_less_than_transitive: *A*B*C(A in NATURALS & B in NATURALS & C in NATURALS & natural_less_than(A, B) & natural_less_than(B, C) -> natural_less_than(A, C)){
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
+	//We induct on A
+	R_def = axiom_specify[<Q: *B*C(Q in NATURALS & B in NATURALS & C in NATURALS & natural_less_than(Q, B) & natural_less_than(B, C) -> natural_less_than(Q, C))>](NATURALS)|R|;
+	prove ZERO_in_R: *B*C(ZERO in NATURALS & B in NATURALS & C in NATURALS & natural_less_than(ZERO, B) & natural_less_than(B, C) -> natural_less_than(ZERO, C)){
+		given |B, C|;
+		implies ZERO_in_NATURALS, B_in_NATURALS, C_in_NATURALS, ZERO_less_than_B, B_less_than_C;
+		B_in_C = expand(B_less_than_C);
+		prove not_empty_C: ^B(B in C){
+			choose B;
+			return B_in_C;
+		}
+		prove not_zero_C: ~equal_sets(ZERO, C){
+			not equal_ZERO_C;
+			B_in_ZERO = expand(equal_ZERO_C)(B)(B_in_C);
+			B_in_EMPTY_SET = equality_consistency[<Q: B in Q>](EMPTY_SET, ZERO)(zero_definition)(B_in_ZERO);
+			return empty_set_condition(B)(B_in_EMPTY_SET);
+		}
+		return branch(natural_zero_minimal(C)(C_in_NATURALS), zero_C, result){
+			return axiom_absurdity[goal](not_zero_C(zero_C));
+		} or {
+			return result;
+		};
+	}
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+	
+	prove closure_R: *N*N1(N in R & is_successor(N, N1) -> N1 in R){
+		given |N, N1|;
+		implies N_in_R, successor_N1;
+		N_in_NATURALS, N_cond = R_def(N)(N_in_R);
+		N1_in_NATURALS = closure_naturals(N, N1)(N_in_NATURALS, successor_N1);
+		N_in_N1 = expand(successor_N1)(N)(or(<:N in N>, equal_sets_reflexive(N)));
+		N_less_than_N1 = #natural_less_than(N, N1)(N_in_N1);
+		prove N1_cond: *B*C(N1 in NATURALS & B in NATURALS & C in NATURALS & natural_less_than(N1, B) & natural_less_than(B, C) -> natural_less_than(N1, C)){
+			given |B, C|;
+			implies N1_in_NATURALS, B_in_NATURALS, C_in_NATURALS, N1_less_than_B, B_less_than_C;
+			N_less_than_B = N_cond(N1, B)(N_in_NATURALS, N1_in_NATURALS, B_in_NATURALS, N_less_than_N1, N1_less_than_B);
+			N_less_than_C = N_cond(B, C)(N_in_NATURALS, B_in_NATURALS, C_in_NATURALS, N_less_than_B, B_less_than_C);
+			prove N1_not_equal_C: ~equal_sets(N1, C){
+				not N1_equal_C;
+				N1_in_B = expand(N1_less_than_B);
+				B_in_C = expand(B_less_than_C);
+				B_in_N1 = equality_consistency[<Q: B in Q>](N1, C)(N1_equal_C)(B_in_C);
+				return branch(no_pair_recursive_membership(N1, B), not_N1_in_B, not_B_in_N1){
+					return not_N1_in_B(N1_in_B);
+				} or {
+					return not_B_in_N1(B_in_N1);
+				};
+			}
+			equal_or_less_than = natural_less_than_successor_weaken(N, N1, C)(N_in_NATURALS, successor_N1, C_in_NATURALS)(N_less_than_C);
+			return branch(equal_or_less_than, equal, less_than){
+				absurdity = N1_not_equal_C(equal);
+				return axiom_absurdity[goal](absurdity);
+			} or {
+				return less_than;
+			};
+		}
+		return R_def(N1)(N1_in_NATURALS, N1_cond);
+	}
+
+	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+	given |A, B, C|;
+	implies A_in_NATURALS, rest_of_premises;
+	A_in_R = expand(NATURALS_subset_R)(A)(A_in_NATURALS);
+	A_in_NATURALS, result = R_def(A)(A_in_R);
+	return result(B, C)(A_in_NATURALS, rest_of_premises);
+}
 
