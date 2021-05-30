@@ -6,7 +6,7 @@
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
 		<b style="color: blue;">prove</b> lemma0: X in N <b style="color: red;">-&gt</b> <b style="color: red;">*</b>I(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_inductive_set.html';" onmouseover="popup_window(this, 'is_inductive_set | 00_zf');" onmouseout="close_popup();">is_inductive_set</b>(I) <b style="color: red;">-&gt</b> X in I){
 			<b style="color: blue;">implies</b> X_in_N;
-			<b style="color: blue;">extract</b> specified(X)(X_in_N): X_in_INDUCTIVE_SET, result;
+			X_in_INDUCTIVE_SET, result = specified(X)(X_in_N);
 			<b style="color: blue;">return</b> result;
 		}
 		<b style="color: blue;">prove</b> lemma1: <b style="color: red;">*</b>I(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_inductive_set.html';" onmouseover="popup_window(this, 'is_inductive_set | 00_zf');" onmouseout="close_popup();">is_inductive_set</b>(I) <b style="color: red;">-&gt</b> X in I) <b style="color: red;">-&gt</b> X in N{

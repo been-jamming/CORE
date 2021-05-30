@@ -19,7 +19,7 @@
 					A_in_A = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: Q in A&gt](A, B)(equal_A_B)(B_in_A);
 					<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: A in Q&gt](A, B)(equal_A_B)(A_in_A);
 				};
-				<b style="color: blue;">prove</b> is_false: ~(~A in B <b style="color: red;">|</b> ~B in A){
+				<b style="color: blue;">prove</b> is_false: <b style="color: red;">~</b>(<b style="color: red;">~</b>A in B <b style="color: red;">|</b> <b style="color: red;">~</b>B in A){
 					not either;
 					<b style="color: blue;">return</b> <b style="color: green;">branch</b>(either, not_A_in_B, not_B_in_A){
 						<b style="color: blue;">return</b> not_A_in_B(A_in_B);
@@ -44,7 +44,7 @@
 					B_in_B = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: Q in B&gt](B, A)(equal_B_A)(A_in_B);
 					<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: B in Q&gt](B, A)(equal_B_A)(B_in_B);
 				};
-				<b style="color: blue;">prove</b> is_false: ~(~A in B <b style="color: red;">|</b> ~B in A){
+				<b style="color: blue;">prove</b> is_false: <b style="color: red;">~</b>(<b style="color: red;">~</b>A in B <b style="color: red;">|</b> <b style="color: red;">~</b>B in A){
 					not either;
 					<b style="color: blue;">return</b> <b style="color: green;">branch</b>(either, not_A_in_B, not_B_in_A){
 						<b style="color: blue;">return</b> not_A_in_B(A_in_B);

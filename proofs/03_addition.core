@@ -8,7 +8,7 @@ prove natural_numbers_exist: ^N(is_natural_numbers(N)){
 		given |X|;
 		prove lemma0: X in N -> *I(is_inductive_set(I) -> X in I){
 			implies X_in_N;
-			extract specified(X)(X_in_N): X_in_INDUCTIVE_SET, result;
+			X_in_INDUCTIVE_SET, result = specified(X)(X_in_N);
 			return result;
 		}
 		prove lemma1: *I(is_inductive_set(I) -> X in I) -> X in N{
@@ -23,8 +23,7 @@ prove natural_numbers_exist: ^N(is_natural_numbers(N)){
 
 prove natural_numbers_unique: *N*M(is_natural_numbers(N) & is_natural_numbers(M) -> equal_sets(N, M)){
 	given |N, M|;
-	implies both_natural_numbers;
-	extract both_natural_numbers: natural_numbers_N, natural_numbers_M;
+	implies natural_numbers_N, natural_numbers_M;
 	return definition_uniqueness_lemma[<X: *I(is_inductive_set(I) -> X in I)>](N, M)(expand(natural_numbers_N), expand(natural_numbers_M));
 }
 
@@ -37,8 +36,8 @@ prove NATURALS_inductive: is_inductive_set(NATURALS){
 		prove lemma: *I(is_inductive_set(I) -> EMPTY_SET in I){
 			given |I|;
 			implies is_inductive;
-			extract expand(is_inductive): empty_condition, closure;
-			extract empty_condition|EMPTY_OTHER|: empty_in, is_empty_other;
+			empty_condition, closure = expand(is_inductive);
+			empty_in, is_empty_other = empty_condition|EMPTY_OTHER|;
 			empty_equal = empty_set_unique(EMPTY_OTHER, EMPTY_SET)(is_empty_other, empty);
 			return equality_consistency[<X: X in I>](EMPTY_OTHER, EMPTY_SET)(empty_equal)(empty_in);
 		}
@@ -46,12 +45,11 @@ prove NATURALS_inductive: is_inductive_set(NATURALS){
 	}
 	prove lemma1: *Y*Z(Y in NATURALS & is_successor(Y, Z) -> Z in NATURALS){
 		given |Y, Z|;
-		implies both;
-		extract both: Y_in_NATURALS, Z_successor;
+		implies Y_in_NATURALS, Z_successor;
 		prove lemma: *I(is_inductive_set(I) -> Z in I){
 			given |I|;
 			implies is_inductive;
-			extract expand(is_inductive): empty_condition, closure;
+			empty_condition, closure = expand(is_inductive);
 			Y_in_I = naturals_definition(Y)(Y_in_NATURALS)(I)(is_inductive);
 			return closure(Y, Z)(Y_in_I, Z_successor);
 		}
@@ -61,8 +59,8 @@ prove NATURALS_inductive: is_inductive_set(NATURALS){
 }
 
 prove NATURALS_contain_EMPTY_SET: EMPTY_SET in NATURALS{
-	extract expand(NATURALS_inductive): empty_in_NATURALS, NATURALS_closure;
-	extract empty_in_NATURALS|EMPTY_OTHER|: EMPTY_OTHER_in_NATURALS, EMPTY_OTHER_def;
+	empty_in_NATURALS, NATURALS_closure = expand(NATURALS_inductive);
+	EMPTY_OTHER_in_NATURALS, EMPTY_OTHER_def = empty_in_NATURALS|EMPTY_OTHER|;
 	empty_EMPTY = #is_empty(EMPTY_SET)(empty_set_condition);
 	EMPTY_equal = empty_set_unique(EMPTY_OTHER, EMPTY_SET)(EMPTY_OTHER_def, empty_EMPTY);
 	return equality_consistency[<S: S in NATURALS>](EMPTY_OTHER, EMPTY_SET)(EMPTY_equal)(EMPTY_OTHER_in_NATURALS);
@@ -72,29 +70,28 @@ zero_definition = copy_set(EMPTY_SET)|ZERO|;
 zero_is_natural = equality_consistency[<S: S in NATURALS>](EMPTY_SET, ZERO)(zero_definition)(NATURALS_contain_EMPTY_SET);
 one_definition = successor(ZERO)|ONE|;
 prove one_is_natural: ONE in NATURALS{
-	extract expand(NATURALS_inductive): empty_in_naturals, closure_naturals;
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
 	return closure_naturals(ZERO, ONE)(zero_is_natural, one_definition);
 }
 two_definition = successor(ONE)|TWO|;
 prove two_is_natural: TWO in NATURALS{
-	extract expand(NATURALS_inductive): empty_in_naturals, closure_naturals;
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
 	return closure_naturals(ONE, TWO)(one_is_natural, two_definition);
 }
 three_definition = successor(TWO)|THREE|;
 prove three_is_natural: THREE in NATURALS{
-	extract expand(NATURALS_inductive): empty_in_naturals, closure_naturals;
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
 	return closure_naturals(TWO, THREE)(two_is_natural, three_definition);
 }
 four_definition = successor(THREE)|FOUR|;
 prove four_is_natural: FOUR in NATURALS{
-	extract expand(NATURALS_inductive): empty_in_naturals, closure_naturals;
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
 	return closure_naturals(THREE, FOUR)(three_is_natural, four_definition);
 }
 
 prove NATURALS_induction: *S(ZERO in S & *Y*Z(Y in S & is_successor(Y, Z) -> Z in S) -> is_subset(NATURALS, S)){
 	given |S|;
-	implies premise;
-	extract premise: ZERO_in_S, closure;
+	implies ZERO_in_S, closure;
 	prove lemma: ^E(E in S & is_empty(E)){
 		choose EMPTY_SET;
 		EMPTY_SET_in_S = equality_consistency[<X: X in S>](EMPTY_SET, ZERO)(zero_definition)(ZERO_in_S);
@@ -112,11 +109,11 @@ prove NATURALS_induction: *S(ZERO in S & *Y*Z(Y in S & is_successor(Y, Z) -> Z i
 prove NATURALS_nonzero_successor: *N(N in NATURALS -> equal_sets(N, ZERO) | ^M(M in NATURALS & is_successor(M, N))){
 	S_def = axiom_specify[<N: equal_sets(N, ZERO) | ^M(M in NATURALS & is_successor(M, N))>](NATURALS)|S|;
 	ZERO_in_S = S_def(ZERO)(zero_is_natural, or(equal_sets_reflexive(ZERO), <:^M(M in NATURALS & is_successor(M, ZERO))>));
-	extract expand(NATURALS_inductive): contains_empty, NATURALS_closure;
+	contains_empty, NATURALS_closure = expand(NATURALS_inductive);
 	prove closure: *Y*Z(Y in S & is_successor(Y, Z) -> Z in S){
 		given |Y, Z|;
 		implies Y_in_S, successor_Y;
-		extract S_def(Y)(Y_in_S): Y_in_NATURALS, condition;
+		Y_in_NATURALS, condition = S_def(Y)(Y_in_S);
 		Z_in_NATURALS = NATURALS_closure(Y, Z)(Y_in_NATURALS, successor_Y);
 		prove lemma: ^M(M in NATURALS & is_successor(M, Z)){
 			choose Y;
@@ -128,7 +125,7 @@ prove NATURALS_nonzero_successor: *N(N in NATURALS -> equal_sets(N, ZERO) | ^M(M
 	given |N|;
 	implies N_in_NATURALS;
 	N_in_S = expand(NATURALS_subset_S)(N)(N_in_NATURALS);
-	extract S_def(N)(N_in_S): N_in_NATURALS, result;
+	N_in_NATURALS, result = S_def(N)(N_in_S);
 	return result;
 }
 
@@ -145,7 +142,7 @@ prove NATURAL_successor_nonzero: *A*B(is_successor(A, B) -> ~equal_sets(B, ZERO)
 
 //We need to show that if the predecessor of a natural number exists, it is a natural number
 prove NATURALS_predecessor_closure: *N*M(N in NATURALS & is_successor(M, N) -> M in NATURALS){
-	extract expand(NATURALS_inductive): empty_in_naturals, closure_naturals;
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
 	//We induct on N
 	R_def = axiom_specify[<Q: *M(Q in NATURALS & is_successor(M, Q) -> M in NATURALS)>](NATURALS)|R|;
 	prove ZERO_in_R: *M(ZERO in NATURALS & is_successor(M, ZERO) -> M in NATURALS){
@@ -161,7 +158,7 @@ prove NATURALS_predecessor_closure: *N*M(N in NATURALS & is_successor(M, N) -> M
 	prove closure_R: *N*N1(N in R & is_successor(N, N1) -> N1 in R){
 		given |N, N1|;
 		implies N_in_R, successor_N1;
-		extract R_def(N)(N_in_R): N_in_NATURALS, N_cond;
+		N_in_NATURALS, N_cond = R_def(N)(N_in_R);
 		N1_in_NATURALS = closure_naturals(N, N1)(N_in_NATURALS, successor_N1);
 		prove N1_cond: *M(N1 in NATURALS & is_successor(M, N1) -> M in NATURALS){
 			given |M|;
@@ -175,7 +172,7 @@ prove NATURALS_predecessor_closure: *N*M(N in NATURALS & is_successor(M, N) -> M
 	given |N, M|;
 	implies N_in_NATURALS, successor_N;
 	N_in_R = expand(NATURALS_subset_R)(N)(N_in_NATURALS);
-	extract R_def(N)(N_in_R): N_in_NATURALS, result;
+	N_in_NATURALS, result = R_def(N)(N_in_R);
 	return result(M)(N_in_NATURALS, successor_N);
 }
 
@@ -191,7 +188,7 @@ define is_addition_function(F): is_function(F) & ^T(is_cross_product(NATURALS, N
 prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION_FUNCTION)){
 	C_cross_product = cross_product(NATURALS, NATURALS)|C|;
 	C_def = expand(C_cross_product);
-	extract expand(NATURALS_inductive): empty_in_naturals, closure_naturals;
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
 	
 	//We define an "addition class" to be the inverse image of the addition function for some N.
 	//However, we construct it in an alternative way, which allows us to define addition
@@ -212,16 +209,16 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 				given |B|;
 				prove lemma0: B in A -> ^C^D(is_tuple(C, D, B) & ((equal_sets(C, ZERO) & equal_sets(D, ZERO)) | ^P^S^T(is_successor(P, C) & is_successor(D, S) & is_tuple(P, S, T) & T in A))){
 					implies B_in_A;
-					extract A_def(B)(B_in_A): B_in_C, B_tuple_ZERO_ZERO;
+					B_in_C, B_tuple_ZERO_ZERO = A_def(B)(B_in_A);
 					choose ZERO, ZERO;
 					condition = or(and(equal_sets_reflexive(ZERO), equal_sets_reflexive(ZERO)), <:^P^S^T(is_successor(P, ZERO) & is_successor(ZERO, S) & is_tuple(P, S, T) & T in A)>);
 					return B_tuple_ZERO_ZERO, condition;
 				}
 				prove lemma1: ^C^D(is_tuple(C, D, B) & ((equal_sets(C, ZERO) & equal_sets(D, ZERO)) | ^P^S^T(is_successor(P, C) & is_successor(D, S) & is_tuple(P, S, T) & T in A))) -> B in A{
 					implies premise;
-					extract premise|C, D|: tuple_B, either_condition;
+					tuple_B, either_condition = premise|C, D|;
 					return branch(either_condition, equal_ZERO, predecessor){
-						extract equal_ZERO: C_equal_ZERO, D_equal_ZERO;
+						C_equal_ZERO, D_equal_ZERO = equal_ZERO;
 						B_tuple_ZERO_D = equality_consistency[<S: is_tuple(S, D, B)>](C, ZERO)(C_equal_ZERO)(tuple_B);
 						B_tuple_ZERO_ZERO = equality_consistency[<S: is_tuple(ZERO, S, B)>](D, ZERO)(D_equal_ZERO)(B_tuple_ZERO_D);
 						prove cross_product_condition: ^E^F(E in NATURALS & F in NATURALS & is_tuple(E, F, B)){
@@ -231,11 +228,11 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 						B_in_C = C_def(B)(cross_product_condition);
 						return A_def(B)(B_in_C, B_tuple_ZERO_ZERO);
 					} or {
-						extract predecessor|P, S, T|: predecessor_P, successor_S, tuple_T, T_in_A;
+						predecessor_P, successor_S, tuple_T, T_in_A = predecessor|P, S, T|;
 						D_in_S = expand(successor_S)(D)(or(<:D in D>, equal_sets_reflexive(D)));
-						extract A_def(T)(T_in_A): T_in_C, tuple_ZERO_ZERO;
+						T_in_C, tuple_ZERO_ZERO = A_def(T)(T_in_A);
 						T_equal_T = equal_sets_reflexive(T);
-						extract tuple_equal_condition(P, S, ZERO, ZERO, T, T)(tuple_T, tuple_ZERO_ZERO, T_equal_T): equal_P_ZERO, equal_S_ZERO;
+						equal_P_ZERO, equal_S_ZERO = tuple_equal_condition(P, S, ZERO, ZERO, T, T)(tuple_T, tuple_ZERO_ZERO, T_equal_T);
 						equal_S_EMPTY_SET = equal_sets_transitive(S, ZERO, EMPTY_SET)(equal_S_ZERO, equal_sets_symmetric(EMPTY_SET, ZERO)(zero_definition));
 						D_in_EMPTY_SET = equality_consistency[<U: D in U>](S, EMPTY_SET)(equal_S_EMPTY_SET)(D_in_S);
 						absurdity = empty_set_condition(D)(D_in_EMPTY_SET);
@@ -248,7 +245,7 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 			prove subset_def: *X(X in A -> X in C){
 				given |X|;
 				implies X_in_A;
-				extract A_def(X)(X_in_A): X_in_C, tuple_X;
+				X_in_C, tuple_X = A_def(X)(X_in_A);
 				return X_in_C;
 			}
 			A_subset_C = #is_subset(A, C)(subset_def);
@@ -259,32 +256,32 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 		prove closure_R: *Y*Z(Y in R & is_successor(Y, Z) -> Z in R){
 			given |Y, Y_1|;
 			implies Y_in_R, successor_Y_1;
-			extract R_def(Y)(Y_in_R): Y_in_NATURALS, both;
+			Y_in_NATURALS, both = R_def(Y)(Y_in_R);
 			Y_1_in_NATURALS = closure_naturals(Y, Y_1)(Y_in_NATURALS, successor_Y_1);
-			extract both|F|: addition_class, F_subset_C;
+			addition_class, F_subset_C = both|F|;
 			F_addition_class = expand(addition_class);
 			G_def = axiom_specify[<Q: ^C^D(is_tuple(C, D, Q) & ((equal_sets(C, ZERO) & equal_sets(D, Y_1)) | ^C_NEG1^T(is_successor(C_NEG1, C) & is_tuple(C_NEG1, D, T) & T in F)))>](C)|G|;
 			prove G_addition_class: *B(B in G <-> ^C^D(is_tuple(C, D, B) & ((equal_sets(C, ZERO) & equal_sets(D, Y_1)) | ^C_NEG1^D_1^T(is_successor(C_NEG1, C) & is_successor(D, D_1) & is_tuple(C_NEG1, D_1, T) & T in G)))){
 				given |B|;
 				prove lemma0: B in G -> ^C^D(is_tuple(C, D, B) & ((equal_sets(C, ZERO) & equal_sets(D, Y_1)) | ^C_NEG1^D_1^T(is_successor(C_NEG1, C) & is_successor(D, D_1) & is_tuple(C_NEG1, D_1, T) & T in G))){
 					implies B_in_G;
-					extract G_def(B)(B_in_G): B_in_C, B_condition;
-					extract B_condition|C, D|: tuple_B, either_B;
-					extract C_def(B)(B_in_C)|C_OTHER, D_OTHER|: C_OTHER_in_NATURALS, D_OTHER_in_NATURALS, tuple_B_other;
-					extract tuple_equal_condition(C, D, C_OTHER, D_OTHER, B, B)(tuple_B, tuple_B_other, equal_sets_reflexive(B)): C_equal, D_equal;
+					B_in_C, B_condition = G_def(B)(B_in_G);
+					tuple_B, either_B = B_condition|C, D|;
+					C_OTHER_in_NATURALS, D_OTHER_in_NATURALS, tuple_B_other = C_def(B)(B_in_C)|C_OTHER, D_OTHER|;
+					C_equal, D_equal = tuple_equal_condition(C, D, C_OTHER, D_OTHER, B, B)(tuple_B, tuple_B_other, equal_sets_reflexive(B));
 					C_in_NATURALS = equality_consistency[<Q: Q in NATURALS>](C, C_OTHER)(C_equal)(C_OTHER_in_NATURALS);
 					D_in_NATURALS = equality_consistency[<Q: Q in NATURALS>](D, D_OTHER)(D_equal)(D_OTHER_in_NATURALS);
 					choose C, D;
 					return branch(either_B, equal_initial, predecessor_exists){
 						return tuple_B, or(equal_initial, <:^C_NEG1^D_1^T(is_successor(C_NEG1, C) & is_successor(D, D_1) & is_tuple(C_NEG1, D_1, T) & T in G)>);
 					} or {
-						extract predecessor_exists|C_NEG1, T0|: predecessor_C_NEG1, tuple_T0, T0_in_F;
-						extract F_addition_class(T0)(T0_in_F)|C_NEG1_OTHER, D_OTHER|: tuple_T0_other, either_T0;
-						extract tuple_equal_condition(C_NEG1, D, C_NEG1_OTHER, D_OTHER, T0, T0)(tuple_T0, tuple_T0_other, equal_sets_reflexive(T0)): equal_C_NEG1, equal_D;
+						predecessor_C_NEG1, tuple_T0, T0_in_F = predecessor_exists|C_NEG1, T0|;
+						tuple_T0_other, either_T0 = F_addition_class(T0)(T0_in_F)|C_NEG1_OTHER, D_OTHER|;
+						equal_C_NEG1, equal_D = tuple_equal_condition(C_NEG1, D, C_NEG1_OTHER, D_OTHER, T0, T0)(tuple_T0, tuple_T0_other, equal_sets_reflexive(T0));
 						//D_OTHER is a different object, so I overwrite this variable in this scope because I use it later
 						D_OTHER_in_NATURALS = equality_consistency[<Q: Q in NATURALS>](D, D_OTHER)(equal_D)(D_in_NATURALS);
 						return branch(either_T0, equal_initial, predecessor_exists){
-							extract equal_initial: equal_C_NEG1_OTHER_ZERO, equal_D_OTHER_Y;
+							equal_C_NEG1_OTHER_ZERO, equal_D_OTHER_Y = equal_initial;
 							equal_C_NEG1_ZERO = equal_sets_transitive(C_NEG1, C_NEG1_OTHER, ZERO)(equal_C_NEG1, equal_C_NEG1_OTHER_ZERO);
 							equal_D_Y = equal_sets_transitive(D, D_OTHER, Y)(equal_D, equal_D_OTHER_Y);
 							successor_D_1 = successor(D)|D_1|;
@@ -309,7 +306,7 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 							}
 							return tuple_B, or(<:equal_sets(C, ZERO) & equal_sets(D, Y_1)>, condition);
 						} or {
-							extract predecessor_exists|C_NEG2, D_1, T1|: predecessor_C_NEG2, successor_D_1, tuple_T1, T1_in_F;
+							predecessor_C_NEG2, successor_D_1, tuple_T1, T1_in_F = predecessor_exists|C_NEG2, D_1, T1|;
 							predecessor_C_NEG2 = equality_consistency[<Q: is_successor(C_NEG2, Q)>](C_NEG1, C_NEG1_OTHER)(equal_C_NEG1)(predecessor_C_NEG2);
 							tuple_T2 = tuple(C_NEG1, D_1)|T2|;
 							D_1_in_NATURALS = closure_naturals(D_OTHER, D_1)(D_OTHER_in_NATURALS, successor_D_1);
@@ -339,9 +336,9 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 				}
 				prove lemma1: ^C^D(is_tuple(C, D, B) & ((equal_sets(C, ZERO) & equal_sets(D, Y_1)) | ^C_NEG1^D_1^T(is_successor(C_NEG1, C) & is_successor(D, D_1) & is_tuple(C_NEG1, D_1, T) & T in G))) -> B in G{
 					implies premise;
-					extract premise|C, D|: tuple_B, either_B;
+					tuple_B, either_B = premise|C, D|;
 					return branch(either_B, equal_both, G_condition){
-						extract equal_both: equal_C_ZERO, equal_D_Y_1;
+						equal_C_ZERO, equal_D_Y_1 = equal_both;
 						prove condition: ^C^D(is_tuple(C, D, B) & ((equal_sets(C, ZERO) & equal_sets(D, Y_1)) | ^C_NEG1^T(is_successor(C_NEG1, C) & is_tuple(C_NEG1, D, T) & T in F))){
 							choose C, D;
 							return tuple_B, or(equal_both, <:^C_NEG1^T(is_successor(C_NEG1, C) & is_tuple(C_NEG1, D, T) & T in F)>);
@@ -355,12 +352,12 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 						B_in_C = C_def(B)(B_in_C);
 						return G_def(B)(B_in_C, condition);
 					} or {
-						extract G_condition|C_NEG1, D_1, T|: predecessor_C_NEG1, successor_D_1, tuple_T, T_in_G;
-						extract G_def(T)(T_in_G): T_in_C, T_condition;
-						extract T_condition|C_NEG1_OTHER, D_1_OTHER|: tuple_T_other, either_T;
-						extract tuple_equal_condition(C_NEG1, D_1, C_NEG1_OTHER, D_1_OTHER, T, T)(tuple_T, tuple_T_other, equal_sets_reflexive(T)): equal_C_NEG1, equal_D_1;
+						predecessor_C_NEG1, successor_D_1, tuple_T, T_in_G = G_condition|C_NEG1, D_1, T|;
+						T_in_C, T_condition = G_def(T)(T_in_G);
+						tuple_T_other, either_T = T_condition|C_NEG1_OTHER, D_1_OTHER|;
+						equal_C_NEG1, equal_D_1 = tuple_equal_condition(C_NEG1, D_1, C_NEG1_OTHER, D_1_OTHER, T, T)(tuple_T, tuple_T_other, equal_sets_reflexive(T));
 						return branch(either_T, equal_initial, F_condition){
-							extract equal_initial: equal_C_NEG1_ZERO, equal_D_1_Y_1;
+							equal_C_NEG1_ZERO, equal_D_1_Y_1 = equal_initial;
 							equal_C_NEG1_ZERO = equality_consistency[<Q: equal_sets(Q, ZERO)>](C_NEG1, C_NEG1_OTHER)(equal_C_NEG1)(equal_C_NEG1_ZERO);
 							equal_D_1_Y_1 = equality_consistency[<Q: equal_sets(Q, Y_1)>](D_1, D_1_OTHER)(equal_D_1)(equal_D_1_Y_1);
 							successor_D_1_Y = equality_consistency[<Q: is_successor(Y, Q)>](D_1, Y_1)(equal_D_1_Y_1)(successor_Y_1);
@@ -389,7 +386,7 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 							B_in_C = C_def(B)(B_in_C);
 							return G_def(B)(B_in_C, condition);
 						} or {
-							extract F_condition|C_NEG2, T0|: predecessor_C_NEG2, tuple_T0, T0_in_F;
+							predecessor_C_NEG2, tuple_T0, T0_in_F = F_condition|C_NEG2, T0|;
 							predecessor_C_NEG2 = equality_consistency[<Q: is_successor(C_NEG2, Q)>](C_NEG1, C_NEG1_OTHER)(equal_C_NEG1)(predecessor_C_NEG2);
 							tuple_T0 = equality_consistency[<Q: is_tuple(C_NEG2, Q, T0)>](D_1, D_1_OTHER)(equal_D_1)(tuple_T0);
 							tuple_T1 = tuple(C_NEG1, D)|T1|;
@@ -404,8 +401,8 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 							T1_in_F = F_addition_class(T1)(T1_in_F);
 							//Here is where we use the stronger condition
 							T1_in_C = expand(F_subset_C)(T1)(T1_in_F);
-							extract C_def(T1)(T1_in_C)|C_NEG1_OTHER, D_OTHER|: C_NEG1_OTHER_in_NATURALS, D_OTHER_in_NATURALS, tuple_T1_other;
-							extract tuple_equal_condition(C_NEG1, D, C_NEG1_OTHER, D_OTHER, T1, T1)(tuple_T1, tuple_T1_other, equal_sets_reflexive(T1)): equal_C_NEG1, equal_D;
+							C_NEG1_OTHER_in_NATURALS, D_OTHER_in_NATURALS, tuple_T1_other = C_def(T1)(T1_in_C)|C_NEG1_OTHER, D_OTHER|;
+							equal_C_NEG1, equal_D = tuple_equal_condition(C_NEG1, D, C_NEG1_OTHER, D_OTHER, T1, T1)(tuple_T1, tuple_T1_other, equal_sets_reflexive(T1));
 							C_NEG1_in_NATURALS = equality_consistency[<Q: Q in NATURALS>](C_NEG1, C_NEG1_OTHER)(equal_C_NEG1)(C_NEG1_OTHER_in_NATURALS);
 							D_in_NATURALS = equality_consistency[<Q: Q in NATURALS>](D, D_OTHER)(equal_D)(D_OTHER_in_NATURALS);
 							C_in_NATURALS = closure_naturals(C_NEG1, C)(C_NEG1_in_NATURALS, predecessor_C_NEG1);
@@ -432,7 +429,7 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 			prove subset_def: *X(X in G -> X in C){
 				given |X|;
 				implies X_in_G;
-				extract G_def(X)(X_in_G): X_in_C, G_condition;
+				X_in_C, G_condition = G_def(X)(X_in_G);
 				return X_in_C;
 			}
 			G_subset_C = #is_subset(G, C)(subset_def);
@@ -446,7 +443,7 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 		given |N|;
 		implies N_in_NATURALS;
 		N_in_R = NATURALS_subset_R(N)(N_in_NATURALS);
-		extract R_def(N)(N_in_R): N_in_NATURALS, addition_class_exists;
+		N_in_NATURALS, addition_class_exists = R_def(N)(N_in_R);
 		result = addition_class_exists|A|;
 		choose A;
 		return result;
@@ -460,13 +457,13 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 		implies addition_class_F, tuple_T;
 		prove lemma0: T in F -> equal_sets(A, N){
 			implies T_in_F;
-			extract expand(addition_class_F)(T)(T_in_F)|OTHER_ZERO, OTHER_A|: tuple_T_other, either;
-			extract tuple_equal_condition(ZERO, A, OTHER_ZERO, OTHER_A, T, T)(tuple_T, tuple_T_other, equal_sets_reflexive(T)): equal_ZERO, equal_A;
+			tuple_T_other, either = expand(addition_class_F)(T)(T_in_F)|OTHER_ZERO, OTHER_A|;
+			equal_ZERO, equal_A = tuple_equal_condition(ZERO, A, OTHER_ZERO, OTHER_A, T, T)(tuple_T, tuple_T_other, equal_sets_reflexive(T));
 			return branch(either, equal_both, predecessors){
-				extract equal_both: equal_ZERO, equal_OTHER_A_N;
+				equal_ZERO, equal_OTHER_A_N = equal_both;
 				return equal_sets_transitive(A, OTHER_A, N)(equal_A, equal_OTHER_A_N);
 			} or {
-				extract predecessors|C, D, T0|: predecessor_C, successor_D, tuple_T0, T0_in_F;
+				predecessor_C, successor_D, tuple_T0, T0_in_F = predecessors|C, D, T0|;
 				not_zero = NATURAL_successor_nonzero(C, OTHER_ZERO)(predecessor_C);
 				equal_OTHER_ZERO_ZERO = equal_sets_symmetric(ZERO, OTHER_ZERO)(equal_ZERO);
 				absurdity = not_zero(equal_OTHER_ZERO_ZERO);
@@ -497,7 +494,7 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 			successor_N1 = successor(N)|N1|;
 			N1_in_NATURALS = closure_naturals(N, N1)(N_in_NATURALS, successor_N1);
 			tuple_T0 = tuple(ZERO, N1)|T0|;
-			extract addition_classes_exist(N1)(N1_in_NATURALS)|F1|: addition_class_F1, F1_subset_C;
+			addition_class_F1, F1_subset_C = addition_classes_exist(N1)(N1_in_NATURALS)|F1|;
 			T0_in_F1 = addition_class_initial_unique(N1, T0, F1, N1)(addition_class_F1, tuple_T0)(equal_sets_reflexive(N1));
 			tuple_T1 = tuple(ONE, N)|T1|;
 			prove T1_in_F1: ^ONE^N(is_tuple(ONE, N, T1) & ((equal_sets(ONE, ZERO) & equal_sets(N, N1)) | ^ZERO^N1^T0(is_successor(ZERO, ONE) & is_successor(N, N1) & is_tuple(ZERO, N1, T0) & T0 in F1))){
@@ -519,24 +516,24 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 			given |Y, Y1|;
 			implies Y_in_R, successor_Y1;
 			Y1_not_ZERO = NATURAL_successor_nonzero(Y, Y1)(successor_Y1);
-			extract R_def(Y)(Y_in_R): Y_in_NATURALS, Y_condition;
+			Y_in_NATURALS, Y_condition = R_def(Y)(Y_in_R);
 			successor_Y2 = successor(Y1)|Y2|;
 			Y2_not_ZERO = NATURAL_successor_nonzero(Y1, Y2)(successor_Y2);
 			Y1_in_NATURALS = closure_naturals(Y, Y1)(Y_in_NATURALS, successor_Y1);
 			prove Y1_in_R: *B*T*F*N(N in NATURALS & is_addition_class(N, F) & is_tuple(Y1, B, T) & T in F -> ^Y2^T1^N1^F1(is_successor(Y1, Y2) & is_successor(N, N1) & is_addition_class(N1, F1) & is_tuple(Y2, B, T1) & T1 in F1)){
 				given |B, T, F, N|;
 				implies N_in_NATURALS, addition_class_F, tuple_T, T_in_F;
-				extract expand(addition_class_F)(T)(T_in_F)|OTHER_Y1, OTHER_B|: other_tuple_T, either_T;
-				extract tuple_equal_condition(Y1, B, OTHER_Y1, OTHER_B, T, T)(tuple_T, other_tuple_T, equal_sets_reflexive(T)): equal_Y1, equal_B;
+				other_tuple_T, either_T = expand(addition_class_F)(T)(T_in_F)|OTHER_Y1, OTHER_B|;
+				equal_Y1, equal_B = tuple_equal_condition(Y1, B, OTHER_Y1, OTHER_B, T, T)(tuple_T, other_tuple_T, equal_sets_reflexive(T));
 				predecessor_exists_T = branch(either_T, equal_initial_T, predecessor_exists_T){
-					extract equal_initial_T: equal_OTHER_Y1_ZERO, equal_OTHER_B_N;
+					equal_OTHER_Y1_ZERO, equal_OTHER_B_N = equal_initial_T;
 					equal_Y1_ZERO = equality_consistency[<S: equal_sets(S, ZERO)>](Y1, OTHER_Y1)(equal_Y1)(equal_OTHER_Y1_ZERO);
 					absurdity = Y1_not_ZERO(equal_Y1_ZERO);
 					return axiom_absurdity[<:^Y^B1^T0(is_successor(Y, OTHER_Y1) & is_successor(OTHER_B, B1) & is_tuple(Y, B1, T0) & T0 in F)>](absurdity);
 				} or {
 					return predecessor_exists_T;
 				};
-				extract predecessor_exists_T|OTHER_Y, B1, T0|: successor_OTHER_Y1, successor_B1, tuple_T0, T0_in_F;
+				successor_OTHER_Y1, successor_B1, tuple_T0, T0_in_F = predecessor_exists_T|OTHER_Y, B1, T0|;
 				successor_Y1_OTHER_Y = equality_consistency[<S: is_successor(OTHER_Y, S)>](Y1, OTHER_Y1)(equal_Y1)(successor_OTHER_Y1);
 				equal_Y = predecessor_unique(Y, OTHER_Y, Y1)(successor_Y1, successor_Y1_OTHER_Y);
 				tuple_T0 = equality_consistency[<S: is_tuple(S, B1, T0)>](Y, OTHER_Y)(equal_Y)(tuple_T0);
@@ -550,7 +547,7 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 				predecessor_exists_T = axiom_true;
 				successor_OTHER_Y1 = axiom_true;
 
-				extract existence_in_F1|OTHER_Y1, T1_PRED, N1, F1|: successor_OTHER_Y1, successor_N1, addition_class_F1, tuple_T1_PRED, T1_PRED_in_F1;
+				successor_OTHER_Y1, successor_N1, addition_class_F1, tuple_T1_PRED, T1_PRED_in_F1 = existence_in_F1|OTHER_Y1, T1_PRED, N1, F1|;
 				equal_Y1 = successor_unique(Y, Y1, OTHER_Y1)(successor_Y1, successor_OTHER_Y1);
 				successor_B1 = equality_consistency[<S: is_successor(S, B1)>](B, OTHER_B)(equal_B)(successor_B1);
 				tuple_T1_PRED = equality_consistency[<S: is_tuple(S, B1, T1_PRED)>](Y1, OTHER_Y1)(equal_Y1)(tuple_T1_PRED);
@@ -574,7 +571,7 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 		given |A|;
 		implies A_in_NATURALS;
 		A_in_R = expand(NATURALS_subset_R)(A)(A_in_NATURALS);
-		extract R_def(A)(A_in_R): A_in_NATURALS, result;
+		A_in_NATURALS, result = R_def(A)(A_in_R);
 
 		return result;
 	}
@@ -586,7 +583,7 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 		R_def = axiom_specify[<S: ^T^N^F(is_tuple(S, A, T) & N in NATURALS & is_addition_class(N, F) & T in F)>](NATURALS)|R|;
 		prove ZERO_in_R: ^T^N^F(is_tuple(ZERO, A, T) & N in NATURALS & is_addition_class(N, F) & T in F){
 			tuple_T = tuple(ZERO, A)|T|;
-			extract addition_classes_exist(A)(A_in_NATURALS)|F|: addition_class_F, F_subset_C;
+			addition_class_F, F_subset_C = addition_classes_exist(A)(A_in_NATURALS)|F|;
 			T_in_F = addition_class_initial_unique(A, T, F, A)(addition_class_F, tuple_T)(equal_sets_reflexive(A));
 			choose T, A, F;
 			return tuple_T, A_in_NATURALS, addition_class_F, T_in_F;
@@ -595,10 +592,10 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 		prove closure_R: *Y*Y1(Y in R & is_successor(Y, Y1) -> Y1 in R){
 			given |Y, Y1|;
 			implies Y_in_R, successor_Y1;
-			extract R_def(Y)(Y_in_R): Y_in_NATURALS, Y_condition;
-			extract Y_condition|T, N, F|: tuple_T, N_in_NATURALS, addition_class_F, T_in_F;
+			Y_in_NATURALS, Y_condition = R_def(Y)(Y_in_R);
+			tuple_T, N_in_NATURALS, addition_class_F, T_in_F = Y_condition|T, N, F|;
 			next_exists = addition_classes_cover_lemma(Y)(Y_in_NATURALS)(A, T, F, N)(N_in_NATURALS, addition_class_F, tuple_T, T_in_F);
-			extract next_exists|OTHER_Y1, T1, N1, F1|: successor_OTHER_Y1, successor_N1, addition_class_F1, tuple_T1, T1_in_F1;
+			successor_OTHER_Y1, successor_N1, addition_class_F1, tuple_T1, T1_in_F1 = next_exists|OTHER_Y1, T1, N1, F1|;
 			equal_Y1 = successor_unique(Y, Y1, OTHER_Y1)(successor_Y1, successor_OTHER_Y1);
 			tuple_T1 = equality_consistency[<S: is_tuple(S, A, T1)>](Y1, OTHER_Y1)(equal_Y1)(tuple_T1);
 			N1_in_NATURALS = closure_naturals(N, N1)(N_in_NATURALS, successor_N1);
@@ -611,7 +608,7 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 		}
 		NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
 		B_in_R = expand(NATURALS_subset_R)(B)(B_in_NATURALS);
-		extract R_def(B)(B_in_R): B_in_NATURALS, result;
+		B_in_NATURALS, result = R_def(B)(B_in_R);
 		
 		return result;
 	}
@@ -622,7 +619,7 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 		prove ZERO_in_R: *B*N*M*FN*FM(ZERO in NATURALS & B in NATURALS & is_addition_class(N, FN) & is_addition_class(M, FM) & ^T(is_tuple(ZERO, B, T) & T in FN & T in FM) -> equal_sets(N, M)){
 			given |B, N, M, FN, FM|;
 			implies ZERO_in_NATURALS, B_in_NATURALS, addition_class_FN, addition_class_FM, T_exists;
-			extract T_exists|T|: tuple_T, T_in_FN, T_in_FM;
+			tuple_T, T_in_FN, T_in_FM = T_exists|T|;
 			equal_B_N = addition_class_initial_unique(B, T, FN, N)(addition_class_FN, tuple_T)(T_in_FN);
 			equal_B_M = addition_class_initial_unique(B, T, FM, M)(addition_class_FM, tuple_T)(T_in_FM);
 			return equality_consistency[<S: equal_sets(S, M)>](B, N)(equal_B_N)(equal_B_M);
@@ -631,18 +628,18 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 		prove closure_R: *Y*Y1(Y in R & is_successor(Y, Y1) -> Y1 in R){
 			given |Y, Y1|;
 			implies Y_in_R, successor_Y1;
-			extract R_def(Y)(Y_in_R): Y_in_NATURALS, Y_condition;
+			Y_in_NATURALS, Y_condition = R_def(Y)(Y_in_R);
 			Y1_in_NATURALS = closure_naturals(Y, Y1)(Y_in_NATURALS, successor_Y1);
 			prove Y1_in_R: *B*N*M*FN*FM(Y1 in NATURALS & B in NATURALS & is_addition_class(N, FN) & is_addition_class(M, FM) & ^T(is_tuple(Y1, B, T) & T in FN & T in FM) -> equal_sets(N, M)){
 				given |B, N, M, FN, FM|;
 				implies Y1_in_NATURALS, B_in_NATURALS, addition_class_FN, addition_class_FM, T_exists;
-				extract T_exists|T|: tuple_T, T_in_FN, T_in_FM;
+				tuple_T, T_in_FN, T_in_FM = T_exists|T|;
 				
 				//First for FN
-				extract expand(addition_class_FN)(T)(T_in_FN)|OTHER_Y1, OTHER_B|: other_tuple_T, either_T;
-				extract tuple_equal_condition(Y1, B, OTHER_Y1, OTHER_B, T, T)(tuple_T, other_tuple_T, equal_sets_reflexive(T)): equal_Y1, equal_B;
+				other_tuple_T, either_T = expand(addition_class_FN)(T)(T_in_FN)|OTHER_Y1, OTHER_B|;
+				equal_Y1, equal_B = tuple_equal_condition(Y1, B, OTHER_Y1, OTHER_B, T, T)(tuple_T, other_tuple_T, equal_sets_reflexive(T));
 				T_PRED_exists = branch(either_T, initial_T, T_PRED_exists){
-					extract initial_T: equal_OTHER_Y1_ZERO, equal_B_N;
+					equal_OTHER_Y1_ZERO, equal_B_N = initial_T;
 					equal_Y1_ZERO = equality_consistency[<S: equal_sets(S, ZERO)>](Y1, OTHER_Y1)(equal_Y1)(equal_OTHER_Y1_ZERO);
 					not_equal_Y1_ZERO = NATURAL_successor_nonzero(Y, Y1)(successor_Y1);
 					absurdity = not_equal_Y1_ZERO(equal_Y1_ZERO);
@@ -650,17 +647,17 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 				} or {
 					return T_PRED_exists;
 				};
-				extract T_PRED_exists|OTHER_Y, B1, T1|: other_successor_Y1, successor_B1, tuple_T1, T1_in_FN;
+				other_successor_Y1, successor_B1, tuple_T1, T1_in_FN = T_PRED_exists|OTHER_Y, B1, T1|;
 				other_successor_Y1 = equality_consistency[<S: is_successor(OTHER_Y, S)>](Y1, OTHER_Y1)(equal_Y1)(other_successor_Y1);
 				equal_Y = predecessor_unique(Y, OTHER_Y, Y1)(successor_Y1, other_successor_Y1);
 				tuple_T1 = equality_consistency[<S: is_tuple(S, B1, T1)>](Y, OTHER_Y)(equal_Y)(tuple_T1);
 				successor_B1 = equality_consistency[<S: is_successor(S, B1)>](B, OTHER_B)(equal_B)(successor_B1);
 
 				//Now the same for FM
-				extract expand(addition_class_FM)(T)(T_in_FM)|M_OTHER_Y1, M_OTHER_B|: other_tuple_T, either_T;
-				extract tuple_equal_condition(Y1, B, M_OTHER_Y1, M_OTHER_B, T, T)(tuple_T, other_tuple_T, equal_sets_reflexive(T)): equal_Y1, equal_B;
+				other_tuple_T, either_T = expand(addition_class_FM)(T)(T_in_FM)|M_OTHER_Y1, M_OTHER_B|;
+				equal_Y1, equal_B = tuple_equal_condition(Y1, B, M_OTHER_Y1, M_OTHER_B, T, T)(tuple_T, other_tuple_T, equal_sets_reflexive(T));
 				T_PRED_exists = branch(either_T, initial_T, T_PRED_exists){
-					extract initial_T: equal_M_OTHER_Y1_ZERO, equal_B_N;
+					equal_M_OTHER_Y1_ZERO, equal_B_N = initial_T;
 					equal_Y1_ZERO = equality_consistency[<S: equal_sets(S, ZERO)>](Y1, M_OTHER_Y1)(equal_Y1)(equal_M_OTHER_Y1_ZERO);
 					not_equal_Y1_ZERO = NATURAL_successor_nonzero(Y, Y1)(successor_Y1);
 					absurdity = not_equal_Y1_ZERO(equal_Y1_ZERO);
@@ -668,7 +665,7 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 				} or {
 					return T_PRED_exists;
 				};
-				extract T_PRED_exists|M_OTHER_Y, M_B1, M_T1|: other_successor_Y1, M_successor_B1, tuple_M_T1, M_T1_in_FM;
+				other_successor_Y1, M_successor_B1, tuple_M_T1, M_T1_in_FM = T_PRED_exists|M_OTHER_Y, M_B1, M_T1|;
 				other_successor_Y1 = equality_consistency[<S: is_successor(M_OTHER_Y, S)>](Y1, M_OTHER_Y1)(equal_Y1)(other_successor_Y1);
 				equal_Y = predecessor_unique(Y, M_OTHER_Y, Y1)(successor_Y1, other_successor_Y1);
 				tuple_M_T1 = equality_consistency[<S: is_tuple(S, M_B1, M_T1)>](Y, M_OTHER_Y)(equal_Y)(tuple_M_T1);
@@ -691,9 +688,9 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 		NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
 		given |A, B, N, M, FN, FM|;
 		implies premises;
-		extract premises: A_in_NATURALS, rest_of_premises;
+		A_in_NATURALS, rest_of_premises = premises;
 		A_in_R = expand(NATURALS_subset_R)(A)(A_in_NATURALS);
-		extract R_def(A)(A_in_R): A_in_NATURALS, A_result;
+		A_in_NATURALS, A_result = R_def(A)(A_in_R);
 		return A_result(B, N, M, FN, FM)(premises);
 	}
 
@@ -707,13 +704,13 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 		given |X, Y, Z|;
 		implies related_XY, related_XZ;
 
-		extract addition_function_definition(X, Y)(related_XY): X_in_C, Y_in_NATURALS, F0_exists;
-		extract F0_exists|F0|: addition_class_F0, X_in_F0;
+		X_in_C, Y_in_NATURALS, F0_exists = addition_function_definition(X, Y)(related_XY);
+		addition_class_F0, X_in_F0 = F0_exists|F0|;
 
-		extract addition_function_definition(X, Z)(related_XZ): X_in_C, Z_in_NATURALS, F1_exists;
-		extract F1_exists|F1|: addition_class_F1, X_in_F1;
+		X_in_C, Z_in_NATURALS, F1_exists = addition_function_definition(X, Z)(related_XZ);
+		addition_class_F1, X_in_F1 = F1_exists|F1|;
 
-		extract C_def(X)(X_in_C)|X0, X1|: X0_in_NATURALS, X1_in_NATURALS, tuple_X;
+		X0_in_NATURALS, X1_in_NATURALS, tuple_X = C_def(X)(X_in_C)|X0, X1|;
 		prove condition: ^X(is_tuple(X0, X1, X) & X in F0 & X in F1){
 			choose X;
 			return tuple_X, X_in_F0, X_in_F1;
@@ -727,8 +724,8 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 	prove domain_C: *X(X in C -> ^Y(are_related(X, Y, ADDITION_FUNCTION))){
 		given |X|;
 		implies X_in_C;
-		extract C_def(X)(X_in_C)|X0, X1|: X0_in_NATURALS, X1_in_NATURALS, tuple_X;
-		extract addition_classes_cover(X1, X0)(X1_in_NATURALS, X0_in_NATURALS)|OTHER_X, Y, F|: tuple_OTHER_X, Y_in_NATURALS, addition_class_F, OTHER_X_in_F;
+		X0_in_NATURALS, X1_in_NATURALS, tuple_X = C_def(X)(X_in_C)|X0, X1|;
+		tuple_OTHER_X, Y_in_NATURALS, addition_class_F, OTHER_X_in_F = addition_classes_cover(X1, X0)(X1_in_NATURALS, X0_in_NATURALS)|OTHER_X, Y, F|;
 		choose Y;
 		equal_X = tuple_unique(X0, X1, X, OTHER_X)(tuple_X, tuple_OTHER_X);
 		X_in_F = equality_consistency[<S: S in F>](X, OTHER_X)(equal_X)(OTHER_X_in_F);
@@ -749,7 +746,7 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 	prove codomain_NATURALS: *X*Y(are_related(X, Y, ADDITION_FUNCTION) -> Y in NATURALS){
 		given |X, Y|;
 		implies related_XY;
-		extract addition_function_definition(X, Y)(related_XY): X_in_C, Y_in_NATURALS, addition_class_exists;
+		X_in_C, Y_in_NATURALS, addition_class_exists = addition_function_definition(X, Y)(related_XY);
 		return Y_in_NATURALS;
 	}
 
@@ -758,7 +755,7 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 	prove zero_identity: *X*Z(X in NATURALS & is_tuple(ZERO, X, Z) -> are_related(Z, X, ADDITION_FUNCTION)){
 		given |X, Z|;
 		implies X_in_NATURALS, tuple_Z;
-		extract addition_classes_exist(X)(X_in_NATURALS)|F|: addition_class_F, F_subset_C;
+		addition_class_F, F_subset_C = addition_classes_exist(X)(X_in_NATURALS)|F|;
 		Z_in_F = addition_class_initial_unique(X, Z, F, X)(addition_class_F, tuple_Z)(equal_sets_reflexive(X));
 		prove related_ZX: ^F(is_addition_class(X, F) & Z in F){
 			choose F;
@@ -771,13 +768,13 @@ prove addition_function_exists: ^ADDITION_FUNCTION(is_addition_function(ADDITION
 	prove successor_recursion: *X*Y*T0*Z0(is_tuple(X, Y, T0) & are_related(T0, Z0, ADDITION_FUNCTION) -> ^SX^T1^Z1(is_successor(X, SX) & is_tuple(SX, Y, T1) & are_related(T1, Z1, ADDITION_FUNCTION) & is_successor(Z0, Z1))){
 		given |X, Y, T0, Z0|;
 		implies tuple_T0, related_T0Z0;
-		extract addition_function_definition(T0, Z0)(related_T0Z0): T0_in_C, Z0_in_NATURALS, addition_class_exists;
-		extract addition_class_exists|F0|: addition_class_F0, T0_in_F0;
-		extract C_def(T0)(T0_in_C)|OTHER_X, OTHER_Y|: OTHER_X_in_NATURALS, OTHER_Y_in_NATURALS, other_tuple_T0;
-		extract tuple_equal_condition(X, Y, OTHER_X, OTHER_Y, T0, T0)(tuple_T0, other_tuple_T0, equal_sets_reflexive(T0)): equal_X, equal_Y;
+		T0_in_C, Z0_in_NATURALS, addition_class_exists = addition_function_definition(T0, Z0)(related_T0Z0);
+		addition_class_F0, T0_in_F0 = addition_class_exists|F0|;
+		OTHER_X_in_NATURALS, OTHER_Y_in_NATURALS, other_tuple_T0 = C_def(T0)(T0_in_C)|OTHER_X, OTHER_Y|;
+		equal_X, equal_Y = tuple_equal_condition(X, Y, OTHER_X, OTHER_Y, T0, T0)(tuple_T0, other_tuple_T0, equal_sets_reflexive(T0));
 		X_in_NATURALS = equality_consistency[<S: S in NATURALS>](X, OTHER_X)(equal_X)(OTHER_X_in_NATURALS);
 		Y_in_NATURALS = equality_consistency[<S: S in NATURALS>](Y, OTHER_Y)(equal_Y)(OTHER_Y_in_NATURALS);
-		extract addition_classes_cover_lemma(X)(X_in_NATURALS)(Y, T0, F0, Z0)(Z0_in_NATURALS, addition_class_F0, tuple_T0, T0_in_F0)|SX, T1, Z1, F1|: successor_SX, successor_Z1, addition_class_F1, tuple_T1, T1_in_F1;
+		successor_SX, successor_Z1, addition_class_F1, tuple_T1, T1_in_F1 = addition_classes_cover_lemma(X)(X_in_NATURALS)(Y, T0, F0, Z0)(Z0_in_NATURALS, addition_class_F0, tuple_T0, T0_in_F0)|SX, T1, Z1, F1|;
 		choose SX, T1, Z1;
 		SX_in_NATURALS = closure_naturals(X, SX)(X_in_NATURALS, successor_SX);
 		prove T1_in_C: ^SX^Y(SX in NATURALS & Y in NATURALS & is_tuple(SX, Y, T1)){
@@ -805,8 +802,8 @@ define is_natural_sum(X, Y, Z): X in NATURALS & Y in NATURALS & ^T(is_tuple(X, Y
 prove natural_sum_zero_identity: *X(X in NATURALS -> is_natural_sum(ZERO, X, X)){
 	given |X|;
 	implies X_in_NATURALS;
-	extract expand(naturals_addition_function_definition): is_function, domain_exists, codomain_NATURALS, zero_identity, successor_recursion;
-	extract domain_exists|C|: cross_product_C, domain_C;
+	is_function, domain_exists, codomain_NATURALS, zero_identity, successor_recursion = expand(naturals_addition_function_definition);
+	cross_product_C, domain_C = domain_exists|C|;
 	tuple_T = tuple(ZERO, X)|T|;
 	prove T_in_C: ^ZERO^X(ZERO in NATURALS & X in NATURALS & is_tuple(ZERO, X, T)){
 		choose ZERO, X;
@@ -824,11 +821,11 @@ prove natural_sum_zero_identity: *X(X in NATURALS -> is_natural_sum(ZERO, X, X))
 prove natural_sum_successor_recursion: *X*Y*Z(is_natural_sum(X, Y, Z) -> ^X1^Z1(is_successor(X, X1) & is_successor(Z, Z1) & is_natural_sum(X1, Y, Z1))){
 	given |X, Y, Z|;
 	implies Z_natural_sum;
-	extract expand(NATURALS_inductive): empty_in_naturals, closure_naturals;
-	extract expand(Z_natural_sum): X_in_NATURALS, Y_in_NATURALS, T_exists;
-	extract T_exists|T|: tuple_T, related_TZ;
-	extract expand(naturals_addition_function_definition): is_function, domain_exists, codomain_NATURALS, zero_identity, successor_recursion;
-	extract successor_recursion(X, Y, T, Z)(tuple_T, related_TZ)|X1, T1, Z1|: successor_X1, tuple_T1, related_T1Z1, successor_Z1;
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
+	X_in_NATURALS, Y_in_NATURALS, T_exists = expand(Z_natural_sum);
+	tuple_T, related_TZ = T_exists|T|;
+	is_function, domain_exists, codomain_NATURALS, zero_identity, successor_recursion = expand(naturals_addition_function_definition);
+	successor_X1, tuple_T1, related_T1Z1, successor_Z1 = successor_recursion(X, Y, T, Z)(tuple_T, related_TZ)|X1, T1, Z1|;
 	choose X1, Z1;
 	prove natural_sum: ^T1(is_tuple(X1, Y, T1) & are_related(T1, Z1, NATURALS_ADDITION_FUNCTION)){
 		choose T1;
@@ -846,14 +843,14 @@ prove natural_sum_successor_recursion: *X*Y*Z(is_natural_sum(X, Y, Z) -> ^X1^Z1(
 prove TWO_plus_TWO_is_FOUR: is_natural_sum(TWO, TWO, FOUR){
 	ZERO_plus_TWO = natural_sum_zero_identity(TWO)(two_is_natural);
 	exists = natural_sum_successor_recursion(ZERO, TWO, TWO)(ZERO_plus_TWO);
-	extract exists|OTHER_ONE, OTHER_THREE|: successor_OTHER_ONE, successor_OTHER_THREE, natural_sum;
+	successor_OTHER_ONE, successor_OTHER_THREE, natural_sum = exists|OTHER_ONE, OTHER_THREE|;
 	equal_ONE = successor_unique(ZERO, ONE, OTHER_ONE)(one_definition, successor_OTHER_ONE);
 	equal_THREE = successor_unique(TWO, THREE, OTHER_THREE)(three_definition, successor_OTHER_THREE);
 	natural_sum = equality_consistency[<S: is_natural_sum(OTHER_ONE, TWO, S)>](THREE, OTHER_THREE)(equal_THREE)(natural_sum);
 	natural_sum = equality_consistency[<S: is_natural_sum(S, TWO, THREE)>](ONE, OTHER_ONE)(equal_ONE)(natural_sum);
 
 	exists = natural_sum_successor_recursion(ONE, TWO, THREE)(natural_sum);
-	extract exists|OTHER_TWO, OTHER_FOUR|: successor_OTHER_TWO, successor_OTHER_FOUR, natural_sum;
+	successor_OTHER_TWO, successor_OTHER_FOUR, natural_sum = exists|OTHER_TWO, OTHER_FOUR|;
 	equal_TWO = successor_unique(ONE, TWO, OTHER_TWO)(two_definition, successor_OTHER_TWO);
 	equal_FOUR = successor_unique(THREE, FOUR, OTHER_FOUR)(four_definition, successor_OTHER_FOUR);
 	natural_sum = equality_consistency[<S: is_natural_sum(OTHER_TWO, TWO, S)>](FOUR, OTHER_FOUR)(equal_FOUR)(natural_sum);
@@ -864,8 +861,8 @@ prove TWO_plus_TWO_is_FOUR: is_natural_sum(TWO, TWO, FOUR){
 prove natural_sum: *X*Y(X in NATURALS & Y in NATURALS -> ^Z(Z in NATURALS & is_natural_sum(X, Y, Z))){
 	given |X, Y|;
 	implies X_in_NATURALS, Y_in_NATURALS;
-	extract expand(naturals_addition_function_definition): is_function, domain_exists, codomain_NATURALS, zero_identity, successor_recursion;
-	extract domain_exists|C|: cross_product_C, domain_C;
+	is_function, domain_exists, codomain_NATURALS, zero_identity, successor_recursion = expand(naturals_addition_function_definition);
+	cross_product_C, domain_C = domain_exists|C|;
 	tuple_T = tuple(X, Y)|T|;
 	prove T_in_C: ^X^Y(X in NATURALS & Y in NATURALS & is_tuple(X, Y, T)){
 		choose X, Y;
@@ -886,11 +883,11 @@ prove natural_sum: *X*Y(X in NATURALS & Y in NATURALS -> ^Z(Z in NATURALS & is_n
 prove natural_sum_unique: *X*Y*Z0*Z1(is_natural_sum(X, Y, Z0) & is_natural_sum(X, Y, Z1) -> equal_sets(Z0, Z1)){
 	given |X, Y, Z0, Z1|;
 	implies natural_sum_Z0, natural_sum_Z1;
-	extract expand(naturals_addition_function_definition): is_function, domain_exists, codomain_NATURALS, zero_identity, successor_recursion;
-	extract expand(natural_sum_Z0): X_in_NATURALS, Y_in_NATURALS, T0_exists;
-	extract expand(natural_sum_Z1): X_in_NATURALS, Y_in_NATURALS, T1_exists;
-	extract T0_exists|T0|: tuple_T0, related_T0_Z0;
-	extract T1_exists|T1|: tuple_T1, related_T1_Z1;
+	is_function, domain_exists, codomain_NATURALS, zero_identity, successor_recursion = expand(naturals_addition_function_definition);
+	X_in_NATURALS, Y_in_NATURALS, T0_exists = expand(natural_sum_Z0);
+	X_in_NATURALS, Y_in_NATURALS, T1_exists = expand(natural_sum_Z1);
+	tuple_T0, related_T0_Z0 = T0_exists|T0|;
+	tuple_T1, related_T1_Z1 = T1_exists|T1|;
 	equal_T = tuple_unique(X, Y, T0, T1)(tuple_T0, tuple_T1);
 	related_T0_Z1 = equality_consistency[<S: are_related(S, Z1, NATURALS_ADDITION_FUNCTION)>](T0, T1)(equal_T)(related_T1_Z1);
 	return expand(is_function)(T0, Z0, Z1)(related_T0_Z0, related_T0_Z1);
@@ -900,8 +897,8 @@ prove natural_sum_unique: *X*Y*Z0*Z1(is_natural_sum(X, Y, Z0) & is_natural_sum(X
 prove natural_sum_is_natural: *X*Y*Z(is_natural_sum(X, Y, Z) -> Z in NATURALS){
 	given |X, Y, Z|;
 	implies sum_Z;
-	extract expand(sum_Z): X_in_NATURALS, Y_in_NATURALS, tuple_exists;
-	extract natural_sum(X, Y)(X_in_NATURALS, Y_in_NATURALS)|OTHER_Z|: OTHER_Z_in_NATURALS, other_sum_Z;
+	X_in_NATURALS, Y_in_NATURALS, tuple_exists = expand(sum_Z);
+	OTHER_Z_in_NATURALS, other_sum_Z = natural_sum(X, Y)(X_in_NATURALS, Y_in_NATURALS)|OTHER_Z|;
 	equal_Z = natural_sum_unique(X, Y, Z, OTHER_Z)(sum_Z, other_sum_Z);
 	return equality_consistency[<Q: Q in NATURALS>](Z, OTHER_Z)(equal_Z)(OTHER_Z_in_NATURALS);
 }
@@ -909,7 +906,7 @@ prove natural_sum_is_natural: *X*Y*Z(is_natural_sum(X, Y, Z) -> Z in NATURALS){
 //Prove that addition commutes
 //This is also a big theorem
 prove natural_sum_commutative: *X*Y*Z(is_natural_sum(X, Y, Z) -> is_natural_sum(Y, X, Z)){
-	extract expand(NATURALS_inductive): empty_in_naturals, closure_naturals;
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
 
 	//First we have to prove that ZERO is a right identity
 	prove identity_lemma: *X(X in NATURALS -> is_natural_sum(X, ZERO, X)){
@@ -920,9 +917,9 @@ prove natural_sum_commutative: *X*Y*Z(is_natural_sum(X, Y, Z) -> is_natural_sum(
 		prove closure_R: *Y*Z(Y in R & is_successor(Y, Z) -> Z in R){
 			given |Y, Z|;
 			implies Y_in_R, successor_Z;
-			extract R_def(Y)(Y_in_R): Y_in_NATURALS, sum_Y_ZERO;
+			Y_in_NATURALS, sum_Y_ZERO = R_def(Y)(Y_in_R);
 			Z_in_NATURALS = closure_naturals(Y, Z)(Y_in_NATURALS, successor_Z);
-			extract natural_sum_successor_recursion(Y, ZERO, Y)(sum_Y_ZERO)|OTHER_Z0, OTHER_Z1|: successor_OTHER_Z0, successor_OTHER_Z1, sum_Z_ZERO;
+			successor_OTHER_Z0, successor_OTHER_Z1, sum_Z_ZERO = natural_sum_successor_recursion(Y, ZERO, Y)(sum_Y_ZERO)|OTHER_Z0, OTHER_Z1|;
 			Z0_equal_Z1 = successor_unique(Y, OTHER_Z0, OTHER_Z1)(successor_OTHER_Z0, successor_OTHER_Z1);
 			Z_equal_Z0 = successor_unique(Y, Z, OTHER_Z0)(successor_Z, successor_OTHER_Z0);
 			sum_Z_ZERO = equality_consistency[<S: is_natural_sum(OTHER_Z0, ZERO, S)>](OTHER_Z0, OTHER_Z1)(Z0_equal_Z1)(sum_Z_ZERO);
@@ -933,7 +930,7 @@ prove natural_sum_commutative: *X*Y*Z(is_natural_sum(X, Y, Z) -> is_natural_sum(
 		given |X|;
 		implies X_in_NATURALS;
 		X_in_R = expand(NATURALS_subset_R)(X)(X_in_NATURALS);
-		extract R_def(X)(X_in_R): X_in_NATURALS, result;
+		X_in_NATURALS, result = R_def(X)(X_in_R);
 		return result;
 	}
 
@@ -943,7 +940,7 @@ prove natural_sum_commutative: *X*Y*Z(is_natural_sum(X, Y, Z) -> is_natural_sum(
 		prove ZERO_in_R: *Y*Z*SZ(is_natural_sum(ZERO, Y, Z) & is_successor(Z, SZ) -> ^SY(is_natural_sum(ZERO, SY, SZ) & is_successor(Y, SY))){
 			given |Y, Z, SZ|;
 			implies sum_Z, successor_SZ;
-			extract expand(sum_Z): ZERO_in_NATURALS, Y_in_NATURALS, tuple_exists;
+			ZERO_in_NATURALS, Y_in_NATURALS, tuple_exists = expand(sum_Z);
 			sum_Y = natural_sum_zero_identity(Y)(Y_in_NATURALS);
 			equal_Y_Z = natural_sum_unique(ZERO, Y, Y, Z)(sum_Y, sum_Z);
 			successor_SY = successor(Y)|SY|;
@@ -959,22 +956,22 @@ prove natural_sum_commutative: *X*Y*Z(is_natural_sum(X, Y, Z) -> is_natural_sum(
 		prove closure_R: *X*SX(X in R & is_successor(X, SX) -> SX in R){
 			given |X, SX|;
 			implies X_in_R, successor_SX;
-			extract R_def(X)(X_in_R): X_in_NATURALS, X_condition;
+			X_in_NATURALS, X_condition = R_def(X)(X_in_R);
 			SX_in_NATURALS = closure_naturals(X, SX)(X_in_NATURALS, successor_SX);
 			prove SX_in_R: *Y*Z*SZ(is_natural_sum(SX, Y, Z) & is_successor(Z, SZ) -> ^SY(is_natural_sum(SX, SY, SZ) & is_successor(Y, SY))){
 				given |Y, Z, SZ|;
 				implies sum_Z, successor_SZ;
-				extract expand(sum_Z): SX_in_NATURALS, Y_in_NATURALS, exists_tuple;
-				extract natural_sum(X, Y)(X_in_NATURALS, Y_in_NATURALS)|PZ|: PZ_in_NATURALS, sum_PZ;
-				extract natural_sum_successor_recursion(X, Y, PZ)(sum_PZ)|OTHER_SX, OTHER_Z|: other_successor_SX, other_successor_Z, other_sum_Z;
+				SX_in_NATURALS, Y_in_NATURALS, exists_tuple = expand(sum_Z);
+				PZ_in_NATURALS, sum_PZ = natural_sum(X, Y)(X_in_NATURALS, Y_in_NATURALS)|PZ|;
+				other_successor_SX, other_successor_Z, other_sum_Z = natural_sum_successor_recursion(X, Y, PZ)(sum_PZ)|OTHER_SX, OTHER_Z|;
 				equal_SX = successor_unique(X, SX, OTHER_SX)(successor_SX, other_successor_SX);
 				other_sum_Z = equality_consistency[<S: is_natural_sum(S, Y, OTHER_Z)>](SX, OTHER_SX)(equal_SX)(other_sum_Z);
 				equal_Z = natural_sum_unique(SX, Y, Z, OTHER_Z)(sum_Z, other_sum_Z);
 				successor_Z = equality_consistency[<S: is_successor(PZ, S)>](Z, OTHER_Z)(equal_Z)(other_successor_Z);
-				extract X_condition(Y, PZ, Z)(sum_PZ, successor_Z)|SY|: sum_X_SY, successor_SY;
+				sum_X_SY, successor_SY = X_condition(Y, PZ, Z)(sum_PZ, successor_Z)|SY|;
 				choose SY;
 
-				extract natural_sum_successor_recursion(X, SY, Z)(sum_X_SY)|OTHER_SX_2, OTHER_SZ|: successor_OTHER_SX_2, successor_OTHER_SZ, other_sum_SZ;
+				successor_OTHER_SX_2, successor_OTHER_SZ, other_sum_SZ = natural_sum_successor_recursion(X, SY, Z)(sum_X_SY)|OTHER_SX_2, OTHER_SZ|;
 				equal_SX = successor_unique(X, SX, OTHER_SX_2)(successor_SX, successor_OTHER_SX_2);
 				other_sum_SZ = equality_consistency[<S: is_natural_sum(S, SY, OTHER_SZ)>](SX, OTHER_SX_2)(equal_SX)(other_sum_SZ);
 				equal_SZ = successor_unique(Z, SZ, OTHER_SZ)(successor_SZ, successor_OTHER_SZ);
@@ -985,9 +982,9 @@ prove natural_sum_commutative: *X*Y*Z(is_natural_sum(X, Y, Z) -> is_natural_sum(
 		NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
 		given |X, Y, Z, SZ|;
 		implies sum_Z, successor_SZ;
-		extract expand(sum_Z): X_in_NATURALS, Y_in_NATURALS, tuple_exists;
+		X_in_NATURALS, Y_in_NATURALS, tuple_exists = expand(sum_Z);
 		X_in_R = expand(NATURALS_subset_R)(X)(X_in_NATURALS);
-		extract R_def(X)(X_in_R): X_in_NATURALS, result;
+		X_in_NATURALS, result = R_def(X)(X_in_R);
 		return result(Y, Z, SZ)(sum_Z, successor_SZ);
 	}
 
@@ -996,7 +993,7 @@ prove natural_sum_commutative: *X*Y*Z(is_natural_sum(X, Y, Z) -> is_natural_sum(
 	prove ZERO_in_R: *Y*Z(is_natural_sum(ZERO, Y, Z) -> is_natural_sum(Y, ZERO, Z)){
 		given |Y, Z|;
 		implies sum_Z;
-		extract expand(sum_Z): ZERO_in_NATURALS, Y_in_NATURALS, tuple_exists;
+		ZERO_in_NATURALS, Y_in_NATURALS, tuple_exists = expand(sum_Z);
 		sum_Y = natural_sum_zero_identity(Y)(Y_in_NATURALS);
 		equal_Y_Z = natural_sum_unique(ZERO, Y, Y, Z)(sum_Y, sum_Z);
 		sum_Y = identity_lemma(Y)(Y_in_NATURALS);
@@ -1007,19 +1004,19 @@ prove natural_sum_commutative: *X*Y*Z(is_natural_sum(X, Y, Z) -> is_natural_sum(
 	prove closure_R: *Y*Y1(Y in R & is_successor(Y, Y1) -> Y1 in R){
 		given |Y, Y1|;
 		implies Y_in_R, successor_Y1;
-		extract R_def(Y)(Y_in_R): Y_in_NATURALS, Y_condition;
+		Y_in_NATURALS, Y_condition = R_def(Y)(Y_in_R);
 		Y1_in_NATURALS = closure_naturals(Y, Y1)(Y_in_NATURALS, successor_Y1);
 		prove Y1_in_R: *R*S(is_natural_sum(Y1, R, S) -> is_natural_sum(R, Y1, S)){
 			given |R, S|;
 			implies sum_S;
-			extract expand(sum_S): Y1_in_NATURALS, R_in_NATURALS, tuple_exists;
-			extract natural_sum(Y, R)(Y_in_NATURALS, R_in_NATURALS)|PS|: PS_in_NATURALS, old_sum_PS;
+			Y1_in_NATURALS, R_in_NATURALS, tuple_exists = expand(sum_S);
+			PS_in_NATURALS, old_sum_PS = natural_sum(Y, R)(Y_in_NATURALS, R_in_NATURALS)|PS|;
 			sum_PS = Y_condition(R, PS)(old_sum_PS);
 			successor_OTHER_S = successor(PS)|OTHER_S|;
-			extract commutative_lemma(R, Y, PS, OTHER_S)(sum_PS, successor_OTHER_S)|OTHER_Y1|: sum_OTHER_S, other_successor_Y1;
+			sum_OTHER_S, other_successor_Y1 = commutative_lemma(R, Y, PS, OTHER_S)(sum_PS, successor_OTHER_S)|OTHER_Y1|;
 			equal_Y1 = successor_unique(Y, Y1, OTHER_Y1)(successor_Y1, other_successor_Y1);
 			sum_OTHER_S = equality_consistency[<Q: is_natural_sum(R, Q, OTHER_S)>](Y1, OTHER_Y1)(equal_Y1)(sum_OTHER_S);
-			extract natural_sum_successor_recursion(Y, R, PS)(old_sum_PS)|OTHER_Y1_2, OTHER_S_2|: successor_OTHER_Y1_2, successor_OTHER_S_2, sum_OTHER_S_2;
+			successor_OTHER_Y1_2, successor_OTHER_S_2, sum_OTHER_S_2 = natural_sum_successor_recursion(Y, R, PS)(old_sum_PS)|OTHER_Y1_2, OTHER_S_2|;
 			equal_Y1_2 = successor_unique(Y, Y1, OTHER_Y1_2)(successor_Y1, successor_OTHER_Y1_2);
 			equal_others_S = successor_unique(PS, OTHER_S, OTHER_S_2)(successor_OTHER_S, successor_OTHER_S_2);
 			other_sum = equality_consistency[<Q: is_natural_sum(Q, R, OTHER_S_2)>](Y1, OTHER_Y1_2)(equal_Y1_2)(sum_OTHER_S_2);
@@ -1033,28 +1030,28 @@ prove natural_sum_commutative: *X*Y*Z(is_natural_sum(X, Y, Z) -> is_natural_sum(
 	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
 	given |X, Y, Z|;
 	implies sum_Z;
-	extract expand(sum_Z): X_in_NATURALS, Y_in_NATURALS, tuple_exists;
+	X_in_NATURALS, Y_in_NATURALS, tuple_exists = expand(sum_Z);
 	X_in_R = expand(NATURALS_subset_R)(X)(X_in_NATURALS);
-	extract R_def(X)(X_in_R): X_in_NATURALS, result;
+	X_in_NATURALS, result = R_def(X)(X_in_R);
 	return result(Y, Z)(sum_Z);
 }
 
 //Prove that addition is associative
 prove natural_sum_associative: *X*Y*Z*S*SXY*SYZ(is_natural_sum(X, Y, SXY) & is_natural_sum(SXY, Z, S) & is_natural_sum(Y, Z, SYZ) -> is_natural_sum(X, SYZ, S)){
-	extract expand(NATURALS_inductive): empty_in_NATURALS, closure_naturals;
+	empty_in_NATURALS, closure_naturals = expand(NATURALS_inductive);
 	//By induction
 	R_def = axiom_specify[<Q: *Y*Z*S*SXY*SYZ(is_natural_sum(Q, Y, SXY) & is_natural_sum(SXY, Z, S) & is_natural_sum(Y, Z, SYZ) -> is_natural_sum(Q, SYZ, S))>](NATURALS)|R|;
 	prove ZERO_in_R: *Y*Z*S*SXY*SYZ(is_natural_sum(ZERO, Y, SXY) & is_natural_sum(SXY, Z, S) & is_natural_sum(Y, Z, SYZ) -> is_natural_sum(ZERO, SYZ, S)){
 		given |Y, Z, S, SXY, SYZ|;
 		implies sum_SXY, sum_S, sum_SYZ;
-		extract expand(sum_SXY): ZERO_in_NATURALS, Y_in_NATURALS, tuple_exists;
-		extract expand(sum_S): SXY_in_NATURALS, Z_in_NATURALS, tuple_exists;
+		ZERO_in_NATURALS, Y_in_NATURALS, tuple_exists = expand(sum_SXY);
+		SXY_in_NATURALS, Z_in_NATURALS, tuple_exists = expand(sum_S);
 		other_sum_SXY = natural_sum_zero_identity(Y)(Y_in_NATURALS);
 		equal_Y_SXY = natural_sum_unique(ZERO, Y, Y, SXY)(other_sum_SXY, sum_SXY);
 		sum_S = equality_consistency[<Q: is_natural_sum(Q, Z, S)>](Y, SXY)(equal_Y_SXY)(sum_S);
 		equal_S_SYZ = natural_sum_unique(Y, Z, S, SYZ)(sum_S, sum_SYZ);
 		
-		extract natural_sum(Y, Z)(Y_in_NATURALS, Z_in_NATURALS)|OTHER_S|: OTHER_S_in_NATURALS, other_sum_S;
+		OTHER_S_in_NATURALS, other_sum_S = natural_sum(Y, Z)(Y_in_NATURALS, Z_in_NATURALS)|OTHER_S|;
 		equal_S = natural_sum_unique(Y, Z, S, OTHER_S)(sum_S, other_sum_S);
 		S_in_NATURALS = equality_consistency[<Q: Q in NATURALS>](S, OTHER_S)(equal_S)(OTHER_S_in_NATURALS);
 
@@ -1065,21 +1062,21 @@ prove natural_sum_associative: *X*Y*Z*S*SXY*SYZ(is_natural_sum(X, Y, SXY) & is_n
 	prove closure_R: *K*K1(K in R & is_successor(K, K1) -> K1 in R){
 		given |K, K1|;
 		implies K_in_R, successor_K1;
-		extract R_def(K)(K_in_R): K_in_NATURALS, K_condition;
+		K_in_NATURALS, K_condition = R_def(K)(K_in_R);
 		K1_in_NATURALS = closure_naturals(K, K1)(K_in_NATURALS, successor_K1);
 		prove K1_in_R: *Y*Z*S*SXY*SYZ(is_natural_sum(K1, Y, SXY) & is_natural_sum(SXY, Z, S) & is_natural_sum(Y, Z, SYZ) -> is_natural_sum(K1, SYZ, S)){
 			given |Y, Z, S, SXY, SYZ|;
 			implies sum_SXY, sum_S, sum_SYZ;
-			extract expand(sum_SYZ): Y_in_NATURALS, Z_in_NATURALS, tuple_exists;
-			extract natural_sum(K, Y)(K_in_NATURALS, Y_in_NATURALS)|P_SXY|: P_SXY_in_NATURALS, sum_P_SXY;
-			extract natural_sum_successor_recursion(K, Y, P_SXY)(sum_P_SXY)|OTHER_K1, OTHER_SXY|: other_successor_K1, other_successor_SXY, other_sum_SXY;
+			Y_in_NATURALS, Z_in_NATURALS, tuple_exists = expand(sum_SYZ);
+			P_SXY_in_NATURALS, sum_P_SXY = natural_sum(K, Y)(K_in_NATURALS, Y_in_NATURALS)|P_SXY|;
+			other_successor_K1, other_successor_SXY, other_sum_SXY = natural_sum_successor_recursion(K, Y, P_SXY)(sum_P_SXY)|OTHER_K1, OTHER_SXY|;
 			equal_K1 = successor_unique(K, K1, OTHER_K1)(successor_K1, other_successor_K1);
 			other_sum_SXY = equality_consistency[<Q: is_natural_sum(Q, Y, OTHER_SXY)>](K1, OTHER_K1)(equal_K1)(other_sum_SXY);
 			equal_SXY = natural_sum_unique(K1, Y, SXY, OTHER_SXY)(sum_SXY, other_sum_SXY);
 			successor_SXY = equality_consistency[<Q: is_successor(P_SXY, Q)>](SXY, OTHER_SXY)(equal_SXY)(other_successor_SXY);
 
-			extract natural_sum(P_SXY, Z)(P_SXY_in_NATURALS, Z_in_NATURALS)|P_S|: P_S_in_NATURALS, sum_P_S;
-			extract natural_sum_successor_recursion(P_SXY, Z, P_S)(sum_P_S)|OTHER_SXY_2, OTHER_S|: other_successor_SXY, other_successor_S, other_sum_S;
+			P_S_in_NATURALS, sum_P_S = natural_sum(P_SXY, Z)(P_SXY_in_NATURALS, Z_in_NATURALS)|P_S|;
+			other_successor_SXY, other_successor_S, other_sum_S = natural_sum_successor_recursion(P_SXY, Z, P_S)(sum_P_S)|OTHER_SXY_2, OTHER_S|;
 			equal_SXY = successor_unique(P_SXY, SXY, OTHER_SXY_2)(successor_SXY, other_successor_SXY);
 			other_sum_S = equality_consistency[<Q: is_natural_sum(Q, Z, OTHER_S)>](SXY, OTHER_SXY_2)(equal_SXY)(other_sum_S);
 			equal_S = natural_sum_unique(SXY, Z, S, OTHER_S)(sum_S, other_sum_S);
@@ -1087,7 +1084,7 @@ prove natural_sum_associative: *X*Y*Z*S*SXY*SYZ(is_natural_sum(X, Y, SXY) & is_n
 
 			sum_P_S = K_condition(Y, Z, P_S, P_SXY, SYZ)(sum_P_SXY, sum_P_S, sum_SYZ);
 
-			extract natural_sum_successor_recursion(K, SYZ, P_S)(sum_P_S)|OTHER_K1_2, OTHER_S_2|: other_successor_K1, other_successor_S, other_sum_S;
+			other_successor_K1, other_successor_S, other_sum_S = natural_sum_successor_recursion(K, SYZ, P_S)(sum_P_S)|OTHER_K1_2, OTHER_S_2|;
 			equal_K1 = successor_unique(K, K1, OTHER_K1_2)(successor_K1, other_successor_K1);
 			other_sum_S = equality_consistency[<Q: is_natural_sum(Q, SYZ, OTHER_S_2)>](K1, OTHER_K1_2)(equal_K1)(other_sum_S);
 			equal_S = successor_unique(P_S, S, OTHER_S_2)(successor_S, other_successor_S);
@@ -1098,9 +1095,9 @@ prove natural_sum_associative: *X*Y*Z*S*SXY*SYZ(is_natural_sum(X, Y, SXY) & is_n
 	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
 	given |X, Y, Z, S, SXY, SYZ|;
 	implies sum_SXY, sum_S, sum_SYZ;
-	extract expand(sum_SXY): X_in_NATURALS, Y_in_NATURALS, tuple_exists;
+	X_in_NATURALS, Y_in_NATURALS, tuple_exists = expand(sum_SXY);
 	X_in_R = expand(NATURALS_subset_R)(X)(X_in_NATURALS);
-	extract R_def(X)(X_in_R): X_in_NATURALS, result;
+	X_in_NATURALS, result = R_def(X)(X_in_R);
 	return result(Y, Z, S, SXY, SYZ)(sum_SXY, sum_S, sum_SYZ);
 }
 
@@ -1119,15 +1116,15 @@ prove natural_sum_associative2: *X*Y*Z*S*SXY*SYZ(is_natural_sum(Y, Z, SYZ) & is_
 //Prove the cancellation property of addition
 //This is exciting!
 prove natural_sum_cancellation: *X*Y*Z*S(is_natural_sum(X, Y, S) & is_natural_sum(X, Z, S) -> equal_sets(Y, Z)){
-	extract expand(NATURALS_inductive): empty_in_NATURALS, closure_naturals;
+	empty_in_NATURALS, closure_naturals = expand(NATURALS_inductive);
 	//We use induction here :)
 	R_def = axiom_specify[<Q: *Y*Z*S(is_natural_sum(Q, Y, S) & is_natural_sum(Q, Z, S) -> equal_sets(Y, Z))>](NATURALS)|R|;
 
 	prove ZERO_in_R: *Y*Z*S(is_natural_sum(ZERO, Y, S) & is_natural_sum(ZERO, Z, S) -> equal_sets(Y, Z)){
 		given |Y, Z, S|;
 		implies sum0, sum1;
-		extract expand(sum0): ZERO_in_NATURALS, Y_in_NATURALS, tuple_exists;
-		extract expand(sum1): ZERO_in_NATURALS, Z_in_NATURALS, tuple_exists;
+		ZERO_in_NATURALS, Y_in_NATURALS, tuple_exists = expand(sum0);
+		ZERO_in_NATURALS, Z_in_NATURALS, tuple_exists = expand(sum1);
 		sum_Y = natural_sum_zero_identity(Y)(Y_in_NATURALS);
 		equal_YS = natural_sum_unique(ZERO, Y, Y, S)(sum_Y, sum0);
 		sum_Z = natural_sum_zero_identity(Z)(Z_in_NATURALS);
@@ -1140,23 +1137,23 @@ prove natural_sum_cancellation: *X*Y*Z*S(is_natural_sum(X, Y, S) & is_natural_su
 	prove closure_R: *S*S1(S in R & is_successor(S, S1) -> S1 in R){
 		given |S, S1|;
 		implies S_in_R, successor_S1;
-		extract R_def(S)(S_in_R): S_in_NATURALS, S_condition;
+		S_in_NATURALS, S_condition = R_def(S)(S_in_R);
 		S1_in_NATURALS = closure_naturals(S, S1)(S_in_NATURALS, successor_S1);
 		prove S1_condition: *Y*Z*SUM(is_natural_sum(S1, Y, SUM) & is_natural_sum(S1, Z, SUM) -> equal_sets(Y, Z)){
 			given |Y, Z, SUM|;
 			implies sum_S1_Y, sum_S1_Z;
-			extract expand(sum_S1_Y): S1_in_NATURALS, Y_in_NATURALS, tuple_exists;
-			extract expand(sum_S1_Z): S1_in_NATURALS, Z_in_NATURALS, tuple_exists;
-			extract natural_sum(S, Y)(S_in_NATURALS, Y_in_NATURALS)|P_SUM_Y|: P_SUM_Y_in_NATURALS, sum_P_Y;
-			extract natural_sum(S, Z)(S_in_NATURALS, Z_in_NATURALS)|P_SUM_Z|: P_SUM_Z_in_NATURALS, sum_P_Z;
+			S1_in_NATURALS, Y_in_NATURALS, tuple_exists = expand(sum_S1_Y);
+			S1_in_NATURALS, Z_in_NATURALS, tuple_exists = expand(sum_S1_Z);
+			P_SUM_Y_in_NATURALS, sum_P_Y = natural_sum(S, Y)(S_in_NATURALS, Y_in_NATURALS)|P_SUM_Y|;
+			P_SUM_Z_in_NATURALS, sum_P_Z = natural_sum(S, Z)(S_in_NATURALS, Z_in_NATURALS)|P_SUM_Z|;
 
-			extract natural_sum_successor_recursion(S, Y, P_SUM_Y)(sum_P_Y)|OTHER_S1, SUM_Y|: other_successor_S1, predecessor_P_SUM_Y, other_sum_S1_Y;
+			other_successor_S1, predecessor_P_SUM_Y, other_sum_S1_Y = natural_sum_successor_recursion(S, Y, P_SUM_Y)(sum_P_Y)|OTHER_S1, SUM_Y|;
 			equal_S1 = successor_unique(S, S1, OTHER_S1)(successor_S1, other_successor_S1);
 			other_sum_S1_Y = equality_consistency[<Q: is_natural_sum(Q, Y, SUM_Y)>](S1, OTHER_S1)(equal_S1)(other_sum_S1_Y);
 			equal_SUM_Y = natural_sum_unique(S1, Y, SUM, SUM_Y)(sum_S1_Y, other_sum_S1_Y);
 			predecessor_P_SUM_Y = equality_consistency[<Q: is_successor(P_SUM_Y, Q)>](SUM, SUM_Y)(equal_SUM_Y)(predecessor_P_SUM_Y);
 
-			extract natural_sum_successor_recursion(S, Z, P_SUM_Z)(sum_P_Z)|OTHER_S1_2, SUM_Z|: other_successor_S1, predecessor_P_SUM_Z, other_sum_S1_Z;
+			other_successor_S1, predecessor_P_SUM_Z, other_sum_S1_Z = natural_sum_successor_recursion(S, Z, P_SUM_Z)(sum_P_Z)|OTHER_S1_2, SUM_Z|;
 			equal_S1 = successor_unique(S, S1, OTHER_S1_2)(successor_S1, other_successor_S1);
 			other_sum_S1_Z = equality_consistency[<Q: is_natural_sum(Q, Z, SUM_Z)>](S1, OTHER_S1_2)(equal_S1)(other_sum_S1_Z);
 			equal_SUM_Z = natural_sum_unique(S1, Z, SUM, SUM_Z)(sum_S1_Z, other_sum_S1_Z);
@@ -1172,15 +1169,15 @@ prove natural_sum_cancellation: *X*Y*Z*S(is_natural_sum(X, Y, S) & is_natural_su
 	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
 	given |X, Y, Z, S|;
 	implies sum0, sum1;
-	extract expand(sum0): X_in_NATURALS, Y_in_NATURALS, tuple_exists;
+	X_in_NATURALS, Y_in_NATURALS, tuple_exists = expand(sum0);
 	X_in_R = expand(NATURALS_subset_R)(X)(X_in_NATURALS);
-	extract R_def(X)(X_in_R): X_in_NATURALS, result;
+	X_in_NATURALS, result = R_def(X)(X_in_R);
 	return result(Y, Z, S)(sum0, sum1);
 }
 
 //Prove that 1+n = S(n)
 prove natural_sum_successor: *N*M(is_natural_sum(N, ONE, M) -> is_successor(N, M)){
-	extract expand(NATURALS_inductive): empty_in_NATURALS, closure_naturals;
+	empty_in_NATURALS, closure_naturals = expand(NATURALS_inductive);
 	R_def = axiom_specify[<Q: *M(is_natural_sum(Q, ONE, M) -> is_successor(Q, M))>](NATURALS)|R|;
 
 	prove ZERO_in_R: *M(is_natural_sum(ZERO, ONE, M) -> is_successor(ZERO, M)){
@@ -1196,13 +1193,13 @@ prove natural_sum_successor: *N*M(is_natural_sum(N, ONE, M) -> is_successor(N, M
 	prove closure_R: *K*N(K in R & is_successor(K, N) -> N in R){
 		given |K, N|;
 		implies K_in_R, successor_N;
-		extract R_def(K)(K_in_R): K_in_NATURALS, K_cond;
+		K_in_NATURALS, K_cond = R_def(K)(K_in_R);
 		N_in_NATURALS = closure_naturals(K, N)(K_in_NATURALS, successor_N);
-		extract natural_sum(K, ONE)(K_in_NATURALS, one_is_natural)|OTHER_N|: OTHER_N_in_NATURALS, sum_OTHER_N;
+		OTHER_N_in_NATURALS, sum_OTHER_N = natural_sum(K, ONE)(K_in_NATURALS, one_is_natural)|OTHER_N|;
 		successor_other_N = K_cond(OTHER_N)(sum_OTHER_N);
 		equal_N = successor_unique(K, N, OTHER_N)(successor_N, successor_other_N);
 		sum_N = equality_consistency[<Q: is_natural_sum(K, ONE, Q)>](N, OTHER_N)(equal_N)(sum_OTHER_N);
-		extract natural_sum_successor_recursion(K, ONE, N)(sum_N)|OTHER_N2, M|: successor_other_N2, successor_M, sum_M;
+		successor_other_N2, successor_M, sum_M = natural_sum_successor_recursion(K, ONE, N)(sum_N)|OTHER_N2, M|;
 		equal_N = successor_unique(K, N, OTHER_N2)(successor_N, successor_other_N2);
 		sum_M = equality_consistency[<Q: is_natural_sum(Q, ONE, M)>](N, OTHER_N2)(equal_N)(sum_M);
 		prove N_cond: *M_OTHER(is_natural_sum(N, ONE, M_OTHER) -> is_successor(N, M_OTHER)){
@@ -1217,9 +1214,9 @@ prove natural_sum_successor: *N*M(is_natural_sum(N, ONE, M) -> is_successor(N, M
 
 	given |N, M|;
 	implies sum_M;
-	extract expand(sum_M): N_in_NATURALS, ONE_in_NATURALS, tuple_exists;
+	N_in_NATURALS, ONE_in_NATURALS, tuple_exists = expand(sum_M);
 	N_in_R = expand(NATURALS_subset_R)(N)(N_in_NATURALS);
-	extract R_def(N)(N_in_R): N_in_NATURALS, result;
+	N_in_NATURALS, result = R_def(N)(N_in_R);
 
 	return result(M)(sum_M);
 }
@@ -1237,9 +1234,9 @@ prove natural_less_than_successor: *A*A1(is_successor(A, A1) -> natural_less_tha
 	return #natural_less_than(A, A1)(A_in_A1);
 }
 
-//Prove that every set either equals zero or is less than zero
+//Prove that every set either equals zero or is greater than zero
 prove natural_zero_minimal: *N(N in NATURALS -> equal_sets(ZERO, N) | natural_less_than(ZERO, N)){
-	extract expand(NATURALS_inductive): empty_in_naturals, closure_naturals;
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
 	R_def = axiom_specify[<Q: Q in NATURALS -> equal_sets(ZERO, Q) | natural_less_than(ZERO, Q)>](NATURALS)|R|;
 	prove ZERO_in_R: ZERO in NATURALS -> equal_sets(ZERO, ZERO) | natural_less_than(ZERO, ZERO){
 		implies ZERO_in_NATURALS;
@@ -1249,7 +1246,7 @@ prove natural_zero_minimal: *N(N in NATURALS -> equal_sets(ZERO, N) | natural_le
 	prove closure_R: *N*N1(N in R & is_successor(N, N1) -> N1 in R){
 		given |N, N1|;
 		implies N_in_R, successor_N1;
-		extract R_def(N)(N_in_R): N_in_NATURALS, N_cond;
+		N_in_NATURALS, N_cond = R_def(N)(N_in_R);
 		N1_in_NATURALS = closure_naturals(N, N1)(N_in_NATURALS, successor_N1);
 		prove N1_cond: N1 in NATURALS -> equal_sets(ZERO, N1) | natural_less_than(ZERO, N1){
 			implies N1_in_NATURALS;
@@ -1268,7 +1265,7 @@ prove natural_zero_minimal: *N(N in NATURALS -> equal_sets(ZERO, N) | natural_le
 	given |N|;
 	implies N_in_NATURALS;
 	N_in_R = expand(NATURALS_subset_R)(N)(N_in_NATURALS);
-	extract R_def(N)(N_in_R): N_in_NATURALS, result;
+	N_in_NATURALS, result = R_def(N)(N_in_R);
 	return result(N_in_NATURALS);
 }
 
@@ -1276,7 +1273,7 @@ prove natural_zero_minimal: *N(N in NATURALS -> equal_sets(ZERO, N) | natural_le
 //By our definition of less than, this supports our interpretation of the naturals: it says that
 //n = {0, 1, 2, ..., n - 1}
 prove natural_less_than_natural: *N*M(M in NATURALS & natural_less_than(N, M) -> N in NATURALS){
-	extract expand(NATURALS_inductive): empty_in_NATURALS, closure_naturals;
+	empty_in_NATURALS, closure_naturals = expand(NATURALS_inductive);
 	R_def = axiom_specify[<Q: *N(Q in NATURALS & natural_less_than(N, Q) -> N in NATURALS)>](NATURALS)|R|;
 
 	prove ZERO_in_R: *N(ZERO in NATURALS & natural_less_than(N, ZERO) -> N in NATURALS){
@@ -1292,7 +1289,7 @@ prove natural_less_than_natural: *N*M(M in NATURALS & natural_less_than(N, M) ->
 	prove closure_R: *N*M(N in R & is_successor(N, M) -> M in R){
 		given |N, M|;
 		implies N_in_R, successor_M;
-		extract R_def(N)(N_in_R): N_in_NATURALS, N_cond;
+		N_in_NATURALS, N_cond = R_def(N)(N_in_R);
 		M_in_NATURALS = closure_naturals(N, M)(N_in_NATURALS, successor_M);
 		prove M_cond: *K(M in NATURALS & natural_less_than(K, M) -> K in NATURALS){
 			given |K|;
@@ -1311,7 +1308,7 @@ prove natural_less_than_natural: *N*M(M in NATURALS & natural_less_than(N, M) ->
 	given |N, M|;
 	implies M_in_NATURALS, N_less_than_M;
 	M_in_R = expand(NATURALS_subset_R)(M)(M_in_NATURALS);
-	extract R_def(M)(M_in_R): M_in_NATURALS, result;
+	M_in_NATURALS, result = R_def(M)(M_in_R);
 	return result(N)(M_in_NATURALS, N_less_than_M);
 }
 

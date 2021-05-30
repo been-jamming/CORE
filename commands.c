@@ -642,65 +642,6 @@ int debug_command(char **c, statement *goal){
 	return 1;
 }
 
-int extract_command(char **c){
-	unsigned char is_verified;
-	char var_name[256];
-	statement *all;
-	statement *extracted;
-
-	skip_whitespace(c);
-	if(strncmp(*c, "extract", 7) || is_alphanumeric((*c)[7])){
-		return 0;
-	}
-
-	*c += 7;
-	skip_whitespace(c);
-	all = parse_statement_value(c, &is_verified);
-	if(!all){
-		fprintf(stderr, "Error: could not parse statement value\n");
-		error(1);
-	}
-	if(!is_verified){
-		fprintf(stderr, "Error: statement must be verified\n");
-		error(1);
-	}
-
-	skip_whitespace(c);
-	if(**c != ':'){
-		fprintf(stderr, "Error: expected ':'\n");
-		error(1);
-	}
-
-	do{
-		++*c;
-		skip_whitespace(c);
-		get_identifier(c, var_name, 256);
-		skip_whitespace(c);
-
-		if(var_name[0] == '\0'){
-			fprintf(stderr, "Error: expected identifier\n");
-			error(1);
-		}
-		if(!all){
-			fprintf(stderr, "Error: not enough values to unpack\n");
-			error(1);
-		}
-
-		if(**c != ',' && **c != ';'){
-			fprintf(stderr, "Error: expected ',' or ';'\n");
-			error(1);
-		} else if(**c == ';'){
-			create_statement_var(var_name, all);
-		} else {
-			extracted = peel_and_left(&all);
-			create_statement_var(var_name, extracted);
-		}
-	} while(**c == ',');
-
-	++*c;
-	return 1;
-}
-
 variable *prove_command(char **c){
 	int num_bound_props = 0;
 	int num_args;
@@ -1333,8 +1274,6 @@ statement *verify_command(char **c, unsigned char allow_proof_value, statement *
 	} else if(allow_proof_value && (return_value = not_command(c, goal))){
 		return return_value;
 	} else if(debug_command(c, goal)){
-		//pass
-	} else if(extract_command(c)){
 		//pass
 	} else if(assign_command(c)){
 		//Pass

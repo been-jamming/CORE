@@ -1,5 +1,5 @@
 <!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: NATURALS_predecessor_closure<br><b>Description</b>: We need to show that if the predecessor of a natural number exists, it is a natural number<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_predecessor_closure.html';" onmouseover="popup_window(this, 'NATURALS_predecessor_closure | 03_addition');" onmouseout="close_popup();">NATURALS_predecessor_closure</b>: <b style="color: red;">*</b>N<b style="color: red;">*</b>M(N in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(M, N) <b style="color: red;">-&gt</b> M in NATURALS){
-	<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_inductive.html';" onmouseover="popup_window(this, 'NATURALS_inductive | 03_addition');" onmouseout="close_popup();">NATURALS_inductive</b>): empty_in_naturals, closure_naturals;
+	empty_in_naturals, closure_naturals = <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_inductive.html';" onmouseover="popup_window(this, 'NATURALS_inductive | 03_addition');" onmouseout="close_popup();">NATURALS_inductive</b>);
 	//We induct on N
 	R_def = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[&ltQ: <b style="color: red;">*</b>M(Q in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(M, Q) <b style="color: red;">-&gt</b> M in NATURALS)&gt](NATURALS)<b style="color: red;">|</b>R<b style="color: red;">|</b>;
 	<b style="color: blue;">prove</b> ZERO_in_R: <b style="color: red;">*</b>M(ZERO in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(M, ZERO) <b style="color: red;">-&gt</b> M in NATURALS){
@@ -15,7 +15,7 @@
 	<b style="color: blue;">prove</b> closure_R: <b style="color: red;">*</b>N<b style="color: red;">*</b>N1(N in R <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(N, N1) <b style="color: red;">-&gt</b> N1 in R){
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>N, N1<b style="color: red;">|</b>;
 		<b style="color: blue;">implies</b> N_in_R, successor_N1;
-		<b style="color: blue;">extract</b> R_def(N)(N_in_R): N_in_NATURALS, N_cond;
+		N_in_NATURALS, N_cond = R_def(N)(N_in_R);
 		N1_in_NATURALS = closure_naturals(N, N1)(N_in_NATURALS, successor_N1);
 		<b style="color: blue;">prove</b> N1_cond: <b style="color: red;">*</b>M(N1 in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(M, N1) <b style="color: red;">-&gt</b> M in NATURALS){
 			<b style="color: blue;">given</b> <b style="color: red;">|</b>M<b style="color: red;">|</b>;
@@ -29,7 +29,7 @@
 	<b style="color: blue;">given</b> <b style="color: red;">|</b>N, M<b style="color: red;">|</b>;
 	<b style="color: blue;">implies</b> N_in_NATURALS, successor_N;
 	N_in_R = <b style="color: green;">expand</b>(NATURALS_subset_R)(N)(N_in_NATURALS);
-	<b style="color: blue;">extract</b> R_def(N)(N_in_R): N_in_NATURALS, result;
+	N_in_NATURALS, result = R_def(N)(N_in_R);
 	<b style="color: blue;">return</b> result(M)(N_in_NATURALS, successor_N);
 }</code></div></div></body>
 <div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>

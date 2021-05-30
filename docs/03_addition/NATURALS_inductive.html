@@ -5,8 +5,8 @@
 		<b style="color: blue;">prove</b> lemma: <b style="color: red;">*</b>I(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_inductive_set.html';" onmouseover="popup_window(this, 'is_inductive_set | 00_zf');" onmouseout="close_popup();">is_inductive_set</b>(I) <b style="color: red;">-&gt</b> EMPTY_SET in I){
 			<b style="color: blue;">given</b> <b style="color: red;">|</b>I<b style="color: red;">|</b>;
 			<b style="color: blue;">implies</b> is_inductive;
-			<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(is_inductive): empty_condition, closure;
-			<b style="color: blue;">extract</b> empty_condition<b style="color: red;">|</b>EMPTY_OTHER<b style="color: red;">|</b>: empty_in, is_empty_other;
+			empty_condition, closure = <b style="color: green;">expand</b>(is_inductive);
+			empty_in, is_empty_other = empty_condition<b style="color: red;">|</b>EMPTY_OTHER<b style="color: red;">|</b>;
 			empty_equal = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/empty_set_unique.html';" onmouseover="popup_window(this, 'empty_set_unique | 01_sets');" onmouseout="close_popup();">empty_set_unique</b>(EMPTY_OTHER, EMPTY_SET)(is_empty_other, empty);
 			<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltX: X in I&gt](EMPTY_OTHER, EMPTY_SET)(empty_equal)(empty_in);
 		}
@@ -14,12 +14,11 @@
 	}
 	<b style="color: blue;">prove</b> lemma1: <b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(Y in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(Y, Z) <b style="color: red;">-&gt</b> Z in NATURALS){
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>Y, Z<b style="color: red;">|</b>;
-		<b style="color: blue;">implies</b> both;
-		<b style="color: blue;">extract</b> both: Y_in_NATURALS, Z_successor;
+		<b style="color: blue;">implies</b> Y_in_NATURALS, Z_successor;
 		<b style="color: blue;">prove</b> lemma: <b style="color: red;">*</b>I(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_inductive_set.html';" onmouseover="popup_window(this, 'is_inductive_set | 00_zf');" onmouseout="close_popup();">is_inductive_set</b>(I) <b style="color: red;">-&gt</b> Z in I){
 			<b style="color: blue;">given</b> <b style="color: red;">|</b>I<b style="color: red;">|</b>;
 			<b style="color: blue;">implies</b> is_inductive;
-			<b style="color: blue;">extract</b> <b style="color: green;">expand</b>(is_inductive): empty_condition, closure;
+			empty_condition, closure = <b style="color: green;">expand</b>(is_inductive);
 			Y_in_I = naturals_definition(Y)(Y_in_NATURALS)(I)(is_inductive);
 			<b style="color: blue;">return</b> closure(Y, Z)(Y_in_I, Z_successor);
 		}
