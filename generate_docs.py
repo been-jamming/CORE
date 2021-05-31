@@ -127,6 +127,7 @@ def highlight_source(text, relative_head):
 		text = re.sub(r"\W" + result[1] + r"\W", lambda match: source_replace(match, "<b style=\"cursor: pointer;\" onclick=\"window.location.href = '" + relative_head + result[4] + "/" + result[1] + ".html';\" onmouseover=\"popup_window(this, '" + result[1] + " | " + result[4] + "');\" onmouseout=\"close_popup();\">" + result[1] + "</b>"), text)
 	return text[1:-1]
 
+#she was trying to sabatoge my typing
 def write_results(results, name):
 	os.chdir("../docs")
 	if not os.path.exists(name):
@@ -204,7 +205,7 @@ with tag("html"):
 					text("Click on each result to see its proof")
 				with tag("p"):
 					text("Filter by type: ")
-					with tag("select", id = "filter", onchange = "update_filter();"):
+					with tag("select", id = "filter_type", onchange = "update_filter();"):
 						with tag("option", value = "All"):
 							text("All")
 						with tag("option", value = "Definitions"):
@@ -213,6 +214,9 @@ with tag("html"):
 							text("Axioms")
 						with tag("option", value = "Proofs"):
 							text("Proofs")
+					text(" Filter by name: ")
+					with tag("input", id = "filter_name", onchange = "update_filter();"):
+						pass;
 			with tag("div", klass = "card", id = "results"):
 				for result in results_index:
 					with tag("p"):
