@@ -1,0 +1,33 @@
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: singleton<br><b>Description</b>: None given<br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/singleton.html';" onmouseover="popup_window(this, 'singleton | 01_sets');" onmouseout="close_popup();">singleton</b>: <b style="color: red;">*</b>A<b style="color: red;">^</b>S(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_singleton.html';" onmouseover="popup_window(this, 'is_singleton | 01_sets');" onmouseout="close_popup();">is_singleton</b>(A, S)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A<b style="color: red;">|</b>;
+	pair_S = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/pair.html';" onmouseover="popup_window(this, 'pair | 00_zf');" onmouseout="close_popup();">pair</b>(A, A)<b style="color: red;">|</b>S<b style="color: red;">|</b>;
+	<b style="color: blue;">choose</b> S;
+	<b style="color: blue;">prove</b> singleton_S: <b style="color: red;">*</b>X(X in S <b style="color: red;">&lt-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">prove</b> lemma0: X in S <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A){
+			<b style="color: blue;">implies</b> X_in_S;
+			<b style="color: blue;">return</b> <b style="color: green;">branch</b>(<b style="color: green;">expand</b>(pair_S)(X)(X_in_S), X_equal_A, X_equal_A){<b style="color: blue;">return</b> X_equal_A;} <b style="color: green;">or</b> {<b style="color: blue;">return</b> X_equal_A;};
+		}
+		<b style="color: blue;">prove</b> lemma1: <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A) <b style="color: red;">-&gt</b> X in S{
+			<b style="color: blue;">implies</b> X_equal_A;
+			<b style="color: blue;">return</b> <b style="color: green;">expand</b>(pair_S)(X)(<b style="color: green;">or</b>(X_equal_A, X_equal_A));
+		}
+		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
+	}
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_singleton.html';" onmouseover="popup_window(this, 'is_singleton | 01_sets');" onmouseout="close_popup();">is_singleton</b>(A, S)(singleton_S);
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

@@ -1493,3 +1493,424 @@ prove natural_less_than_transitive: *A*B*C(A in NATURALS & B in NATURALS & C in 
 	return result(B, C)(A_in_NATURALS, rest_of_premises);
 }
 
+//Define when a function F is recursively defined on the naturals such that G: T -> T, A in T, F: NATURALS -> T, F(0) = A, and F(N + 1) = G(F(N))
+define is_recursively_defined_naturals(T, A, G, F): is_function(F) & is_domain(F, NATURALS) & is_codomain(F, T) & are_related(ZERO, A, F) & *N*N1*U*V(N in NATURALS & is_successor(N, N1) & are_related(N, U, F) & are_related(N1, V, F) -> are_related(U, V, G));
+
+//We want to prove that functions can be recursively constructed
+//I think I will replace the current construction of addition with a new proof
+//Since this proof is more general.
+//This result will also be used to define multiplication! It could be used, for instance, to define the fibonacci numbers.
+//It's pretty important.
+prove naturals_recursion_theorem: *T*A*G(A in T & is_function(G) & is_domain(G, T) & is_codomain(G, T) -> ^F(is_recursively_defined_naturals(T, A, G, F))){
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
+
+	given |T, A, G|;
+	implies A_in_T, function_G, G_domain_T, G_codomain_T;
+	//Define a recursive part to be a subset of what will be F
+	//An element of P is either (0, A) or a successor of something else in P
+	define is_recursive_part(P): *T(T in P -> ^X^Y(is_tuple(X, Y, T) & ((equal_sets(ZERO, X) & equal_sets(A, Y)) | ^PX^PY(is_successor(PX, X) & are_related(PY, Y, G) & are_related(PX, PY, P)))));
+
+	//The plan is to take the union of all subsets of NxT which are recursive parts!
+	//To do so, we need the set NxT which we call NT
+	cross_product_NT = cross_product(NATURALS, T)|NT|;
+	//We now need the power set of NT, which we call PNT
+	power_set_PNT = power_set(NT)|PNT|;
+
+	//We call the set of all subsets of PNT which are recursive parts U
+	U_def = axiom_specify[<Q: is_recursive_part(Q)>](PNT)|U|;
+
+	//And we finally define F
+	F_def = expand(union(U)|F|);
+	choose F;
+
+	prove ZERO_related_A: are_related(ZERO, A, F){
+		tuple_J = tuple(ZERO, A)|J|;
+		P_def = expand(singleton(J)|P|);
+		prove P_recursive_part: *K(K in P -> ^X^Y(is_tuple(X, Y, K) & ((equal_sets(ZERO, X) & equal_sets(A, Y)) | ^PX^PY(is_successor(PX, X) & are_related(PY, Y, G) & are_related(PX, PY, P))))){
+			given |K|;
+			implies K_in_P;
+			K_equal_J = P_def(K)(K_in_P);
+			choose ZERO, A;
+			tuple_K = equality_consistency[<Q: is_tuple(ZERO, A, Q)>](K, J)(K_equal_J)(tuple_J);
+			return tuple_K, or(and(equal_sets_reflexive(ZERO), equal_sets_reflexive(A)), <:^PX^PY(is_successor(PX, ZERO) & are_related(PY, A, G) & are_related(PX, PY, P))>);
+		}
+		P_recursive_part = #is_recursive_part(P)(P_recursive_part);
+		prove J_in_NT: ^ZERO^A(ZERO in NATURALS & A in T & is_tuple(ZERO, A, J)){
+			choose ZERO, A;
+			return zero_is_natural, A_in_T, tuple_J;
+		}
+		J_in_NT = expand(cross_product_NT)(J)(J_in_NT);
+		prove P_subset_NT: *K(K in P -> K in NT){
+			given |K|;
+			implies K_in_P;
+			K_equal_J = P_def(K)(K_in_P);
+			return equality_consistency[<Q: Q in NT>](K, J)(K_equal_J)(J_in_NT);
+		}
+		P_subset_NT = #is_subset(P, NT)(P_subset_NT);
+		P_in_PNT = expand(power_set_PNT)(P)(P_subset_NT);
+		P_in_U = U_def(P)(P_in_PNT, P_recursive_part);
+		prove J_in_F: ^P(P in U & J in P){
+			choose P;
+			return P_in_U, P_def(J)(equal_sets_reflexive(J));
+		}
+		J_in_F = F_def(J)(J_in_F);
+		prove ZERO_related_A: ^J(J in F & is_tuple(ZERO, A, J)){
+			choose J;
+			return J_in_F, tuple_J;
+		}
+		return #are_related(ZERO, A, F)(ZERO_related_A);
+	}
+
+	//We need to show that for every natural number N, there exists Y in T such that (N, Y) is in F.
+	//It's easy to see that {(0, A)} is a recursive part.
+	//For any recursive part P containing (N, Y), we can construct P U {(N + 1, G(Y))}, which is a recursive part covering N + 1
+	//So that's the plan
+	prove covers_NATURALS: *N(N in NATURALS -> ^Y(are_related(N, Y, F))){
+		//We induct on N
+		R_def = axiom_specify[<N: ^Y(are_related(N, Y, F))>](NATURALS)|R|;
+
+		prove ZERO_in_R: ^A(are_related(ZERO, A, F)){
+			choose A;
+
+			return ZERO_related_A;
+		}
+		ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+		prove closure_R: *N*N1(N in R & is_successor(N, N1) -> N1 in R){
+			given |N, N1|;
+			implies N_in_R, successor_N1;
+			N_in_NATURALS, N_cond = R_def(N)(N_in_R);
+			N1_in_NATURALS = closure_naturals(N, N1)(N_in_NATURALS, successor_N1);
+			PJ_in_F, tuple_PJ = expand(N_cond|PY|)|PJ|;
+			PP_in_U, PJ_in_PP = F_def(PJ)(PJ_in_F)|PP|;
+			PP_in_PNT, PP_recursive_part = U_def(PP)(PP_in_U);
+			PP_subset_NT = expand(power_set_PNT)(PP)(PP_in_PNT);
+			PJ_in_NT = expand(PP_subset_NT)(PJ)(PJ_in_PP);
+			OTHER_N_in_NATURALS, OTHER_PY_in_T, other_tuple_PJ = expand(cross_product_NT)(PJ)(PJ_in_NT)|OTHER_N, OTHER_PY|;
+			equal_N, equal_PY = tuple_equal_condition(N, PY, OTHER_N, OTHER_PY, PJ, PJ)(tuple_PJ, other_tuple_PJ, equal_sets_reflexive(PJ));
+			PY_in_T = equality_consistency[<Q: Q in T>](PY, OTHER_PY)(equal_PY)(OTHER_PY_in_T);
+			PY_related_Y = expand(G_domain_T)(PY)(PY_in_T)|Y|;
+			Y_in_T = expand(G_codomain_T)(PY, Y)(PY_related_Y);
+			tuple_J = tuple(N1, Y)|J|;
+			prove J_in_NT: ^N1^Y(N1 in NATURALS & Y in T & is_tuple(N1, Y, J)){
+				choose N1, Y;
+				return N1_in_NATURALS, Y_in_T, tuple_J;
+			}
+			J_in_NT = expand(cross_product_NT)(J)(J_in_NT);
+			K_def = expand(singleton(J)|K|);
+			PAIR_def = expand(pair(PP, K)|PAIR|);
+			P_def = expand(union(PAIR)|P|);
+			prove P_def: *M(M in P <-> M in PP | equal_sets(M, J)){
+				given |M|;
+				prove lemma0: M in P -> M in PP | equal_sets(M, J){
+					implies M_in_P;
+					L_in_PAIR, M_in_L = P_def(M)(M_in_P)|L|;
+					return branch(PAIR_def(L)(L_in_PAIR), L_equal_PP, L_equal_K){
+						return or(equality_consistency[<Q: M in Q>](L, PP)(L_equal_PP)(M_in_L), <:equal_sets(M, J)>);
+					} or {
+						M_in_K = equality_consistency[<Q: M in Q>](L, K)(L_equal_K)(M_in_L);
+						return or(<:M in PP>, K_def(M)(M_in_K));
+					};
+				}
+				prove lemma1: M in PP | equal_sets(M, J) -> M in P{
+					implies either_premise;
+					return branch(either_premise, M_in_PP, M_equal_J){
+						prove M_in_P: ^L(L in PAIR & M in L){
+							choose PP;
+							return PAIR_def(PP)(or(equal_sets_reflexive(PP), <:equal_sets(PP, K)>)), M_in_PP;
+						}
+						return P_def(M)(M_in_P);
+					} or {
+						prove M_in_P: ^L(L in PAIR & M in L){
+							choose K;
+							return PAIR_def(K)(or(<:equal_sets(K, PP)>, equal_sets_reflexive(K))), K_def(M)(M_equal_J);
+						}
+						return P_def(M)(M_in_P);
+					};
+				}
+				return iff(lemma0, lemma1);
+			}
+			prove P_subset_NT: *X(X in P -> X in NT){
+				given |X|;
+				implies X_in_P;
+				return branch(P_def(X)(X_in_P), X_in_PP, X_equal_J){
+					return expand(PP_subset_NT)(X)(X_in_PP);
+				} or {
+					return equality_consistency[<Q: Q in NT>](X, J)(X_equal_J)(J_in_NT);
+				};
+			}
+			P_subset_NT = #is_subset(P, NT)(P_subset_NT);
+			P_in_PNT = expand(power_set_PNT)(P)(P_subset_NT);
+			prove P_recursive_part: *K(K in P -> ^X^Y(is_tuple(X, Y, K) & ((equal_sets(ZERO, X) & equal_sets(A, Y)) | ^PX^PY(is_successor(PX, X) & are_related(PY, Y, G) & are_related(PX, PY, P))))){
+				given |K|;
+				implies K_in_P;
+				return branch(P_def(K)(K_in_P), K_in_PP, K_equal_J){
+					tuple_K, either_K = expand(PP_recursive_part)(K)(K_in_PP)|KX, KY|;
+					prove rest_goal: ^X^Y(is_tuple(X, Y, K) & ((equal_sets(ZERO, X) & equal_sets(A, Y)) | ^PX^PY(is_successor(PX, X) & are_related(PY, Y, G) & are_related(PX, PY, P)))){
+						choose KX, KY;
+						return branch(either_K, K_initial, K_predecessors){
+							return tuple_K, or(K_initial, <:^PX^PY(is_successor(PX, KX) & are_related(PY, KY, G) & are_related(PX, PY, P))>);
+						} or {
+							predecessor_PKX, predecessor_PKY, related_PP = K_predecessors|PKX, PKY|;
+							L_in_PP, tuple_L = expand(related_PP)|L|;
+							L_in_P = P_def(L)(or(L_in_PP, <:equal_sets(L, J)>));
+							prove related_P: ^L(L in P & is_tuple(PKX, PKY, L)){
+								choose L;
+								return L_in_P, tuple_L;
+							}
+							related_P = #are_related(PKX, PKY, P)(related_P);
+							prove K_predecessors_P: ^PKX^PKY(is_successor(PKX, KX) & are_related(PKY, KY, G) & are_related(PKX, PKY, P)){
+								choose PKX, PKY;
+								return predecessor_PKX, predecessor_PKY, related_P;
+							}
+							return tuple_K, or(<:equal_sets(ZERO, KX) & equal_sets(A, KY)>, K_predecessors_P);
+						};
+					}
+					return rest_goal;
+				} or {
+					prove K_predecessors_P: ^N^PY(is_successor(N, N1) & are_related(PY, Y, G) & are_related(N, PY, P)){
+						choose N, PY;
+						PJ_in_P = P_def(PJ)(or(PJ_in_PP, <:equal_sets(PJ, J)>));
+						prove related_P: ^PJ(PJ in P & is_tuple(N, PY, PJ)){
+							choose PJ;
+							return PJ_in_P, tuple_PJ;
+						}
+						related_P = #are_related(N, PY, P)(related_P);
+						return successor_N1, PY_related_Y, related_P;
+					}
+					prove rest_goal: ^X^Y(is_tuple(X, Y, K) & ((equal_sets(ZERO, X) & equal_sets(A, Y)) | ^PX^PY(is_successor(PX, X) & are_related(PY, Y, G) & are_related(PX, PY, P)))){
+						choose N1, Y;
+						tuple_K = equality_consistency[<Q: is_tuple(N1, Y, Q)>](K, J)(K_equal_J)(tuple_J);
+						return tuple_K, or(<:equal_sets(ZERO, N1) & equal_sets(A, Y)>, K_predecessors_P);
+					}
+					return rest_goal;
+				};
+			}
+			P_recursive_part = #is_recursive_part(P)(P_recursive_part);
+			P_in_U = U_def(P)(P_in_PNT, P_recursive_part);
+			J_in_P = P_def(J)(or(<:J in PP>, equal_sets_reflexive(J)));
+			prove J_in_F: ^P(P in U & J in P){
+				choose P;
+				return P_in_U, J_in_P;
+			}
+			J_in_F = F_def(J)(J_in_F);
+			prove N1_related_Y: ^J(J in F & is_tuple(N1, Y, J)){
+				choose J;
+				return J_in_F, tuple_J;
+			}
+			N1_related_Y = #are_related(N1, Y, F)(N1_related_Y);
+			prove R_cond: ^Y(are_related(N1, Y, F)){
+				choose Y;
+				return N1_related_Y;
+			}
+			return R_def(N1)(N1_in_NATURALS, R_cond);
+		}
+
+		NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+		given |N|;
+		implies N_in_NATURALS;
+		N_in_R = expand(NATURALS_subset_R)(N)(N_in_NATURALS);
+		N_in_NATURALS, result = R_def(N)(N_in_R);
+
+		return result;
+	}
+
+	domain_NATURALS = #is_domain(F, NATURALS)(covers_NATURALS);
+	
+	prove F_recursive_part: *J(J in F -> ^X^Y(is_tuple(X, Y, J) & ((equal_sets(ZERO, X) & equal_sets(A, Y)) | ^PX^PY(is_successor(PX, X) & are_related(PY, Y, G) & are_related(PX, PY, F))))){
+		given |J|;
+		implies J_in_F;
+		P_in_U, J_in_P = F_def(J)(J_in_F)|P|;
+		P_in_PNT, P_recursive_part = U_def(P)(P_in_U);
+		tuple_J, either_P = expand(P_recursive_part)(J)(J_in_P)|X, Y|;
+		choose X, Y;
+		return tuple_J, branch(either_P, J_initial, J_predecessor_P){
+			return or(J_initial, <:^PX^PY(is_successor(PX, X) & are_related(PY, Y, G) & are_related(PX, PY, F))>);
+		} or {
+			predecessor_PX, predecessor_PY, related_P = J_predecessor_P|PX, PY|;
+			PJ_in_P, tuple_PJ = expand(related_P)|PJ|;
+			prove PJ_in_F: ^P(P in U & PJ in P){
+				choose P;
+				return P_in_U, PJ_in_P;
+			}
+			PJ_in_F = F_def(PJ)(PJ_in_F);
+			prove related_F: ^PJ(PJ in F & is_tuple(PX, PY, PJ)){
+				choose PJ;
+				return PJ_in_F, tuple_PJ;
+			}
+			related_F = #are_related(PX, PY, F)(related_F);
+			prove J_predecessor_F: ^PX^PY(is_successor(PX, X) & are_related(PY, Y, G) & are_related(PX, PY, F)){
+				choose PX, PY;
+				return predecessor_PX, predecessor_PY, related_F;
+			}
+			return or(<:equal_sets(ZERO, X) & equal_sets(A, Y)>, J_predecessor_F);
+		};
+	}
+	F_recursive_part = #is_recursive_part(F)(F_recursive_part);
+
+	prove recursive_part_is_function: *P(is_recursive_part(P) -> *X(X in NATURALS -> *Y0*Y1(are_related(X, Y0, P) & are_related(X, Y1, P) -> equal_sets(Y0, Y1)))){
+		given |P|;
+		implies recursive_part_P;
+
+		//We induct on X
+		R_def = axiom_specify[<X: *Y0*Y1(are_related(X, Y0, P) & are_related(X, Y1, P) -> equal_sets(Y0, Y1))>](NATURALS)|R|;
+
+		prove ZERO_in_R: *Y0*Y1(are_related(ZERO, Y0, P) & are_related(ZERO, Y1, P) -> equal_sets(Y0, Y1)){
+			given |Y0, Y1|;
+			implies ZERO_related_Y0, ZERO_related_Y1;
+			J0_in_P, tuple_J0 = expand(ZERO_related_Y0)|J0|;
+			J1_in_P, tuple_J1 = expand(ZERO_related_Y1)|J1|;
+
+			other_tuple_J0, either_J0 = expand(recursive_part_P)(J0)(J0_in_P)|OTHER_ZERO, OTHER_Y0|;
+			equal_ZERO, equal_Y0 = tuple_equal_condition(ZERO, Y0, OTHER_ZERO, OTHER_Y0, J0, J0)(tuple_J0, other_tuple_J0, equal_sets_reflexive(J0));
+			either_J0 = equality_consistency[<Q: (equal_sets(ZERO, Q) & equal_sets(A, OTHER_Y0)) | ^PX^PY(is_successor(PX, Q) & are_related(PY, OTHER_Y0, G) & are_related(PX, PY, P))>](ZERO, OTHER_ZERO)(equal_ZERO)(either_J0);
+			either_J0 = equality_consistency[<Q: (equal_sets(ZERO, ZERO) & equal_sets(A, Q)) | ^PX^PY(is_successor(PX, ZERO) & are_related(PY, Q, G) & are_related(PX, PY, P))>](Y0, OTHER_Y0)(equal_Y0)(either_J0);
+			A_equal_Y0 = branch(either_J0, equal_initial, predecessor_exists){
+				ZERO_equal_ZERO, A_equal_Y0 = equal_initial;
+				return A_equal_Y0;
+			} or {
+				predecessor_PX, PY_related_Y, PX_related_PY = predecessor_exists|PX, PY|;
+				PX_in_ZERO = expand(predecessor_PX)(PX)(or(<:PX in PX>, equal_sets_reflexive(PX)));
+				PX_in_EMPTY_SET = equality_consistency[<Q: PX in Q>](EMPTY_SET, ZERO)(zero_definition)(PX_in_ZERO);
+				absurdity = empty_set_condition(PX)(PX_in_EMPTY_SET);
+				return axiom_absurdity[<:equal_sets(A, Y0)>](absurdity);
+			};
+
+			other_tuple_J1, either_J1 = expand(recursive_part_P)(J1)(J1_in_P)|OTHER_ZERO_2, OTHER_Y1|;
+			equal_ZERO, equal_Y1 = tuple_equal_condition(ZERO, Y1, OTHER_ZERO_2, OTHER_Y1, J1, J1)(tuple_J1, other_tuple_J1, equal_sets_reflexive(J1));
+			either_J1 = equality_consistency[<Q: (equal_sets(ZERO, Q) & equal_sets(A, OTHER_Y1)) | ^PX^PY(is_successor(PX, Q) & are_related(PY, OTHER_Y1, G) & are_related(PX, PY, P))>](ZERO, OTHER_ZERO_2)(equal_ZERO)(either_J1);
+			either_J1 = equality_consistency[<Q: (equal_sets(ZERO, ZERO) & equal_sets(A, Q)) | ^PX^PY(is_successor(PX, ZERO) & are_related(PY, Q, G) & are_related(PX, PY, P))>](Y1, OTHER_Y1)(equal_Y1)(either_J1);
+			A_equal_Y1 = branch(either_J1, equal_initial, predecessor_exists){
+				ZERO_equal_ZERO, A_equal_Y1 = equal_initial;
+				return A_equal_Y1;
+			} or {
+				predecessor_PX, PY_related_Y, PX_related_PY = predecessor_exists|PX, PY|;
+				PX_in_ZERO = expand(predecessor_PX)(PX)(or(<:PX in PX>, equal_sets_reflexive(PX)));
+				PX_in_EMPTY_SET = equality_consistency[<Q: PX in Q>](EMPTY_SET, ZERO)(zero_definition)(PX_in_ZERO);
+				absurdity = empty_set_condition(PX)(PX_in_EMPTY_SET);
+				return axiom_absurdity[<:equal_sets(A, Y1)>](absurdity);
+			};
+
+			return equal_sets_transitive(Y0, A, Y1)(equal_sets_symmetric(A, Y0)(A_equal_Y0), A_equal_Y1);
+		}
+		ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+		prove closure_R: *N*N1(N in R & is_successor(N, N1) -> N1 in R){
+			given |N, N1|;
+			implies N_in_R, successor_N1;
+			N_in_NATURALS, N_cond = R_def(N)(N_in_R);
+			N1_in_NATURALS = closure_naturals(N, N1)(N_in_NATURALS, successor_N1);
+			N_in_N1 = expand(successor_N1)(N)(or(<:N in N>, equal_sets_reflexive(N)));
+			prove N1_cond: *Y0*Y1(are_related(N1, Y0, P) & are_related(N1, Y1, P) -> equal_sets(Y0, Y1)){
+				given |Y0, Y1|;
+				implies N1_related_Y0, N1_related_Y1;
+				J0_in_P, tuple_J0 = expand(N1_related_Y0)|J0|;
+				J1_in_P, tuple_J1 = expand(N1_related_Y1)|J1|;
+
+				other_tuple_J0, either_J0 = expand(recursive_part_P)(J0)(J0_in_P)|OTHER_N1, OTHER_Y0|;
+				equal_N1, equal_Y0 = tuple_equal_condition(N1, Y0, OTHER_N1, OTHER_Y0, J0, J0)(tuple_J0, other_tuple_J0, equal_sets_reflexive(J0));
+				either_J0 = equality_consistency[<Q: (equal_sets(ZERO, Q) & equal_sets(A, OTHER_Y0)) | ^PX^PY(is_successor(PX, Q) & are_related(PY, OTHER_Y0, G) & are_related(PX, PY, P))>](N1, OTHER_N1)(equal_N1)(either_J0);
+				either_J0 = equality_consistency[<Q: (equal_sets(ZERO, N1) & equal_sets(A, Q)) | ^PX^PY(is_successor(PX, N1) & are_related(PY, Q, G) & are_related(PX, PY, P))>](Y0, OTHER_Y0)(equal_Y0)(either_J0);
+				predecessor_J0 = branch(either_J0, J0_initial, predecessor_J0){
+					ZERO_equal_N1, A_equal_Y0 = J0_initial;
+					N_in_ZERO = equality_consistency[<Q: N in Q>](ZERO, N1)(ZERO_equal_N1)(N_in_N1);
+					N_in_EMPTY_SET = equality_consistency[<Q: N in Q>](EMPTY_SET, ZERO)(zero_definition)(N_in_ZERO);
+					absurdity = empty_set_condition(N)(N_in_EMPTY_SET);
+					return axiom_absurdity[right(either_J0)](absurdity);
+				} or {
+					return predecessor_J0;
+				};
+
+				other_tuple_J1, either_J1 = expand(recursive_part_P)(J1)(J1_in_P)|OTHER_N1_2, OTHER_Y1|;
+				equal_N1, equal_Y1 = tuple_equal_condition(N1, Y1, OTHER_N1_2, OTHER_Y1, J1, J1)(tuple_J1, other_tuple_J1, equal_sets_reflexive(J1));
+				either_J1 = equality_consistency[<Q: (equal_sets(ZERO, Q) & equal_sets(A, OTHER_Y1)) | ^PX^PY(is_successor(PX, Q) & are_related(PY, OTHER_Y1, G) & are_related(PX, PY, P))>](N1, OTHER_N1_2)(equal_N1)(either_J1);
+				either_J1 = equality_consistency[<Q: (equal_sets(ZERO, N1) & equal_sets(A, Q)) | ^PX^PY(is_successor(PX, N1) & are_related(PY, Q, G) & are_related(PX, PY, P))>](Y1, OTHER_Y1)(equal_Y1)(either_J1);
+				predecessor_J1 = branch(either_J1, J1_initial, predecessor_J1){
+					ZERO_equal_N1, A_equal_Y1 = J1_initial;
+					N_in_ZERO = equality_consistency[<Q: N in Q>](ZERO, N1)(ZERO_equal_N1)(N_in_N1);
+					N_in_EMPTY_SET = equality_consistency[<Q: N in Q>](EMPTY_SET, ZERO)(zero_definition)(N_in_ZERO);
+					absurdity = empty_set_condition(N)(N_in_EMPTY_SET);
+					return axiom_absurdity[right(either_J1)](absurdity);
+				} or {
+					return predecessor_J1;
+				};
+
+				predecessor_PX0, predecessor_PY0, PX0_related_PY0 = predecessor_J0|PX0, PY0|;
+				predecessor_PX1, predecessor_PY1, PX1_related_PY1 = predecessor_J1|PX1, PY1|;
+				PX0_equal_N = predecessor_unique(PX0, N, N1)(predecessor_PX0, successor_N1);
+				PX1_equal_N = predecessor_unique(PX1, N, N1)(predecessor_PX1, successor_N1);
+				N_related_PY0 = equality_consistency[<Q: are_related(Q, PY0, P)>](PX0, N)(PX0_equal_N)(PX0_related_PY0);
+				N_related_PY1 = equality_consistency[<Q: are_related(Q, PY1, P)>](PX1, N)(PX1_equal_N)(PX1_related_PY1);
+				PY0_equal_PY1 = N_cond(PY0, PY1)(N_related_PY0, N_related_PY1);
+				other_predecessor_PY1 = equality_consistency[<Q: are_related(Q, Y1, G)>](PY0, PY1)(PY0_equal_PY1)(predecessor_PY1);
+				return expand(function_G)(PY0, Y0, Y1)(predecessor_PY0, other_predecessor_PY1);
+			}
+			return R_def(N1)(N1_in_NATURALS, N1_cond);
+		}
+
+		NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+		given |X|;
+		implies X_in_NATURALS;
+		X_in_R = expand(NATURALS_subset_R)(X)(X_in_NATURALS);
+		X_in_NATURALS, result = R_def(X)(X_in_R);
+		return result;
+	}
+
+	prove F_is_function: *X*Y0*Y1(are_related(X, Y0, F) & are_related(X, Y1, F) -> equal_sets(Y0, Y1)){
+		given |X, Y0, Y1|;
+		implies X_related_Y0, X_related_Y1;
+		J_in_F, tuple_J = expand(X_related_Y0)|J|;
+		P_in_U, J_in_P = F_def(J)(J_in_F)|P|;
+		P_in_PNT, P_recursive = U_def(P)(P_in_U);
+		P_subset_NT = expand(power_set_PNT)(P)(P_in_PNT);
+		J_in_NT = expand(P_subset_NT)(J)(J_in_P);
+		OTHER_X_in_NATURALS, OTHER_Y0_in_T, other_tuple_J = expand(cross_product_NT)(J)(J_in_NT)|OTHER_X, OTHER_Y0|;
+		equal_X, equal_Y0 = tuple_equal_condition(X, Y0, OTHER_X, OTHER_Y0, J, J)(tuple_J, other_tuple_J, equal_sets_reflexive(J));
+		X_in_NATURALS = equality_consistency[<Q: Q in NATURALS>](X, OTHER_X)(equal_X)(OTHER_X_in_NATURALS);
+		return recursive_part_is_function(F)(F_recursive_part)(X)(X_in_NATURALS)(Y0, Y1)(X_related_Y0, X_related_Y1);
+	}
+	F_is_function = #is_function(F)(F_is_function);
+
+	prove F_recursive: *N*N1*U*V(N in NATURALS & is_successor(N, N1) & are_related(N, U, F) & are_related(N1, V, F) -> are_related(U, V, G)){
+		given |N, N1, U, V|;
+		implies N_in_NATURALS, successor_N1, N_related_U, N1_related_V;
+		N_in_N1 = expand(successor_N1)(N)(or(<:N in N>, equal_sets_reflexive(N)));
+		J1_in_F, tuple_J1 = expand(N1_related_V)|J1|;
+		other_tuple_J1, either_J1 = expand(F_recursive_part)(J1)(J1_in_F)|OTHER_N1, OTHER_V|;
+		equal_N1, equal_V = tuple_equal_condition(N1, V, OTHER_N1, OTHER_V, J1, J1)(tuple_J1, other_tuple_J1, equal_sets_reflexive(J1));
+		either_J1 = equality_consistency[<Q: (equal_sets(ZERO, Q) & equal_sets(A, OTHER_V)) | ^PN^PV(is_successor(PN, Q) & are_related(PV, OTHER_V, G) & are_related(PN, PV, F))>](N1, OTHER_N1)(equal_N1)(either_J1);
+		either_J1 = equality_consistency[<Q: (equal_sets(ZERO, N1) & equal_sets(A, Q)) | ^PN^PV(is_successor(PN, N1) & are_related(PV, Q, G) & are_related(PN, PV, F))>](V, OTHER_V)(equal_V)(either_J1);
+		predecessor_J1 = branch(either_J1, initial_J1, predecessor_J1){
+			ZERO_equal_N1, A_equal_V = initial_J1;
+			N_in_ZERO = equality_consistency[<Q: N in Q>](ZERO, N1)(ZERO_equal_N1)(N_in_N1);
+			N_in_EMPTY_SET = equality_consistency[<Q: N in Q>](EMPTY_SET, ZERO)(zero_definition)(N_in_ZERO);
+			absurdity = empty_set_condition(N)(N_in_EMPTY_SET);
+			return axiom_absurdity[right(either_J1)](absurdity);
+		} or {
+			return predecessor_J1;
+		};
+
+		predecessor_PN1, predecessor_PV, PN1_related_PV = predecessor_J1|PN1, PV|;
+		PN1_equal_N = predecessor_unique(PN1, N, N1)(predecessor_PN1, successor_N1);
+		N_related_PV = equality_consistency[<Q: are_related(Q, PV, F)>](PN1, N)(PN1_equal_N)(PN1_related_PV);
+		U_equal_PV = expand(F_is_function)(N, U, PV)(N_related_U, N_related_PV);
+		return equality_consistency[<Q: are_related(Q, V, G)>](U, PV)(U_equal_PV)(predecessor_PV);
+	}
+
+	prove codomain_T: *X*Y(are_related(X, Y, F) -> Y in T){
+		given |X, Y|;
+		implies X_related_Y;
+		J_in_F, tuple_J = expand(X_related_Y)|J|;
+		P_in_U, J_in_P = F_def(J)(J_in_F)|P|;
+		P_in_PNT, P_recursive = U_def(P)(P_in_U);
+		P_subset_NT = expand(power_set_PNT)(P)(P_in_PNT);
+		J_in_NT = expand(P_subset_NT)(J)(J_in_P);
+		OTHER_X_in_NATURALS, OTHER_Y_in_T, other_tuple_J = expand(cross_product_NT)(J)(J_in_NT)|OTHER_X, OTHER_Y|;
+		equal_X, equal_Y = tuple_equal_condition(X, Y, OTHER_X, OTHER_Y, J, J)(tuple_J, other_tuple_J, equal_sets_reflexive(J));
+		return equality_consistency[<Q: Q in T>](Y, OTHER_Y)(equal_Y)(OTHER_Y_in_T);
+	}
+	codomain_T = #is_codomain(F, T)(codomain_T);
+
+	return #is_recursively_defined_naturals(T, A, G, F)(F_is_function, domain_NATURALS, codomain_T, ZERO_related_A, F_recursive);
+}
+

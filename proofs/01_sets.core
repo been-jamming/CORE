@@ -5,6 +5,34 @@ prove copy_set: *A^B(equal_sets(A, B)){
 	return equal_sets_reflexive(A);
 }
 
+//Define when S is the set {A}
+define is_singleton(A, S): *X(X in S <-> equal_sets(X, A));
+
+prove singleton: *A^S(is_singleton(A, S)){
+	given |A|;
+	pair_S = pair(A, A)|S|;
+	choose S;
+	prove singleton_S: *X(X in S <-> equal_sets(X, A)){
+		given |X|;
+		prove lemma0: X in S -> equal_sets(X, A){
+			implies X_in_S;
+			return branch(expand(pair_S)(X)(X_in_S), X_equal_A, X_equal_A){return X_equal_A;} or {return X_equal_A;};
+		}
+		prove lemma1: equal_sets(X, A) -> X in S{
+			implies X_equal_A;
+			return expand(pair_S)(X)(or(X_equal_A, X_equal_A));
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #is_singleton(A, S)(singleton_S);
+}
+
+prove singleton_unique: *A*S*T(is_singleton(A, S) & is_singleton(A, T) -> equal_sets(S, T)){
+	given |A, S, T|;
+	implies singleton_S, singleton_T;
+	return definition_uniqueness_lemma[<X: equal_sets(X, A)>](S, T)(expand(singleton_S), expand(singleton_T));
+}
+
 //When we have the axiom of regularity, even outside of the natural numbers, the "predecessor" of a set is unique if it exists
 prove predecessor_unique: *A*B*C(is_successor(A, C) & is_successor(B, C) -> equal_sets(A, B)){
 	given |A, B, C|;
