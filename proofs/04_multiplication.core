@@ -1,6 +1,10 @@
+//CORE multiplication file
+//06/01/2021
+//Ben Jones
+
 //I don't require that F is a function this time because the fact follows from the two rules used to define the product
 //I will instead prove this is a function using the peano axioms which define this object
-define is_multiplication_function(F): *X*Z(X in NATURALS & is_tuple(X, ZERO, Z) -> are_related(Z, ZERO, F)) & *X*Y*SY*T0*T1*P0*P1(X in NATURALS & Y in NATURALS & is_successor(Y, SY) & is_tuple(X, Y, T0) & are_related(T0, P0, F) & is_tuple(X, SY, T1) & are_related(T1, P1, F) -> is_natural_sum(P0, X, P1));
+define is_multiplication_function(F): *X*Y*T(X in NATURALS & Y in NATURALS & is_tuple(X, Y, T) -> ^Z(Z in NATURALS & are_related(T, Z, F))) & *X*Z(X in NATURALS & is_tuple(X, ZERO, Z) -> are_related(Z, ZERO, F)) & *X*Y*SY*T0*T1*P0*P1(X in NATURALS & Y in NATURALS & is_successor(Y, SY) & is_tuple(X, Y, T0) & are_related(T0, P0, F) & is_tuple(X, SY, T1) & are_related(T1, P1, F) -> is_natural_sum(P0, X, P1));
 
 prove multiplication_function_exists: ^F(is_multiplication_function(F)){
 	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
@@ -149,6 +153,26 @@ prove multiplication_function_exists: ^F(is_multiplication_function(F)){
 	PRODUCT_FUNCTION_definition = relation_existence_lemma[<T, Z: *X*Y(is_tuple(X, Y, T) -> is_product(X, Y, Z))>](C, NATURALS)|PRODUCT_FUNCTION|;
 	choose PRODUCT_FUNCTION;
 
+	prove product_exists: *X*Y*T(X in NATURALS & Y in NATURALS & is_tuple(X, Y, T) -> ^Z(Z in NATURALS & are_related(T, Z, PRODUCT_FUNCTION))){
+		given |X, Y, T|;
+		implies X_in_NATURALS, Y_in_NATURALS, tuple_T;
+		prove T_in_C: ^X^Y(X in NATURALS & Y in NATURALS & is_tuple(X, Y, T)){
+			choose X, Y;
+			return X_in_NATURALS, Y_in_NATURALS, tuple_T;
+		}
+		T_in_C = expand(cross_product_C)(T)(T_in_C);
+		Z_in_NATURALS, product_Z = product(X, Y)(X_in_NATURALS, Y_in_NATURALS)|Z|;
+		choose Z;
+		prove product_condition: *OTHER_X*OTHER_Y(is_tuple(OTHER_X, OTHER_Y, T) -> is_product(OTHER_X, OTHER_Y, Z)){
+			given |OTHER_X, OTHER_Y|;
+			implies other_tuple_T;
+			equal_X, equal_Y = tuple_equal_condition(X, Y, OTHER_X, OTHER_Y, T, T)(tuple_T, other_tuple_T, equal_sets_reflexive(T));
+			product_Z = equality_consistency[<Q: is_product(Q, Y, Z)>](X, OTHER_X)(equal_X)(product_Z);
+			return equality_consistency[<Q: is_product(OTHER_X, Q, Z)>](Y, OTHER_Y)(equal_Y)(product_Z);
+		}
+		return Z_in_NATURALS, PRODUCT_FUNCTION_definition(T, Z)(T_in_C, Z_in_NATURALS, product_condition);
+	}
+
 	prove zero_identity: *X*Z(X in NATURALS & is_tuple(X, ZERO, Z) -> are_related(Z, ZERO, PRODUCT_FUNCTION)){
 		given |X, Z|;
 		implies X_in_NATURALS, tuple_Z;
@@ -178,8 +202,76 @@ prove multiplication_function_exists: ^F(is_multiplication_function(F)){
 		return product_recursion(X, Y, SY, P0, P1)(X_in_NATURALS, Y_in_NATURALS, successor_SY, X_product_Y_P0, X_product_SY_P1);
 	}
 
-	return #is_multiplication_function(PRODUCT_FUNCTION)(zero_identity, recursion_identity);
+	return #is_multiplication_function(PRODUCT_FUNCTION)(product_exists, zero_identity, recursion_identity);
 }
 
 naturals_product_function_definition = multiplication_function_exists|NATURALS_MULTIPLICATION_FUNCTION|;
+
+//Define the product of two natural numbers using NATURALS_MULTIPLICATION_FUNCTION
+define is_natural_product(X, Y, Z): X in NATURALS & Y in NATURALS & *T(is_tuple(X, Y, T) -> are_related(T, Z, NATURALS_MULTIPLICATION_FUNCTION));
+
+//Proving (easily) that X*0 = 0 for all natural numbers X
+prove natural_product_zero_identity: *X(X in NATURALS -> is_natural_product(X, ZERO, ZERO)){
+	product_exists, zero_identity, product_recursion = expand(naturals_product_function_definition);
+
+	given |X|;
+	implies X_in_NATURALS;
+	prove X_product_ZERO_ZERO: *T(is_tuple(X, ZERO, T) -> are_related(T, ZERO, NATURALS_MULTIPLICATION_FUNCTION)){
+		given |T|;
+		implies tuple_T;
+		return zero_identity(X, T)(X_in_NATURALS, tuple_T);
+	}
+
+	return #is_natural_product(X, ZERO, ZERO)(X_in_NATURALS, zero_is_natural, X_product_ZERO_ZERO);
+}
+
+//Proving (easily) that X*(Y + 1) = X*Y + X for natural numbers X and Y
+prove natural_product_successor_recursion: *X*Y*SY*P0*P1(is_successor(Y, SY) & is_natural_product(X, Y, P0) & is_natural_product(X, SY, P1) -> is_natural_sum(P0, X, P1)){
+	product_exists, zero_identity, product_recursion = expand(naturals_product_function_definition);
+
+	given |X, Y, SY, P0, P1|;
+	implies successor_SY, product_P0, product_P1;
+	X_in_NATURALS, Y_in_NATURALS, tuples_P0 = expand(product_P0);
+	X_in_NATURALS, SY_in_NATURALS, tuples_P1 = expand(product_P1);
+	tuple_T0 = tuple(X, Y)|T0|;
+	tuple_T1 = tuple(X, SY)|T1|;
+	T0_related_P0 = tuples_P0(T0)(tuple_T0);
+	T1_related_P1 = tuples_P1(T1)(tuple_T1);
+
+	return product_recursion(X, Y, SY, T0, T1, P0, P1)(X_in_NATURALS, Y_in_NATURALS, successor_SY, tuple_T0, T0_related_P0, tuple_T1, T1_related_P1);
+}
+
+//Proving that the product of two natural numbers always exists. After this, we won't need NATURALS_MULTIPLICATION_FUNCTION anymore
+prove natural_product: *X*Y(X in NATURALS & Y in NATURALS -> ^Z(Z in NATURALS & is_natural_product(X, Y, Z))){
+	product_exists, zero_identity, product_recursion = expand(naturals_product_function_definition);
+
+	given |X, Y|;
+	implies X_in_NATURALS, Y_in_NATURALS;
+	tuple_T = tuple(X, Y)|T|;
+	Z_in_NATURALS, Z_related_T = product_exists(X, Y, T)(X_in_NATURALS, Y_in_NATURALS, tuple_T)|Z|;
+	choose Z;
+	prove product_Z: *OTHER_T(is_tuple(X, Y, OTHER_T) -> are_related(OTHER_T, Z, NATURALS_MULTIPLICATION_FUNCTION)){
+		given |OTHER_T|;
+		implies tuple_OTHER_T;
+		equal_T = tuple_unique(X, Y, T, OTHER_T)(tuple_T, tuple_OTHER_T);
+		return equality_consistency[<Q: are_related(Q, Z, NATURALS_MULTIPLICATION_FUNCTION)>](T, OTHER_T)(equal_T)(Z_related_T);
+	}
+
+	return Z_in_NATURALS, #is_natural_product(X, Y, Z)(X_in_NATURALS, Y_in_NATURALS, product_Z);
+}
+
+//Proving that 2*2 = 4
+prove TWO_times_TWO_is_FOUR: is_natural_product(TWO, TWO, FOUR){
+	TWO_times_ZERO_is_ZERO = natural_product_zero_identity(TWO)(two_is_natural);
+	OTHER_TWO_in_NATURALS, product_OTHER_TWO = natural_product(TWO, ONE)(two_is_natural, one_is_natural)|OTHER_TWO|;
+	sum_OTHER_TWO = natural_product_successor_recursion(TWO, ZERO, ONE, ZERO, OTHER_TWO)(one_definition, TWO_times_ZERO_is_ZERO, product_OTHER_TWO);
+	equal_TWO = natural_sum_unique(ZERO, TWO, TWO, OTHER_TWO)(natural_sum_zero_identity(TWO)(two_is_natural), sum_OTHER_TWO);
+
+	TWO_times_ONE_is_TWO = equality_consistency[<Q: is_natural_product(TWO, ONE, Q)>](TWO, OTHER_TWO)(equal_TWO)(product_OTHER_TWO);
+	OTHER_FOUR_in_NATURALS, product_OTHER_FOUR = natural_product(TWO, TWO)(two_is_natural, two_is_natural)|OTHER_FOUR|;
+	sum_OTHER_FOUR = natural_product_successor_recursion(TWO, ONE, TWO, TWO, OTHER_FOUR)(two_definition, TWO_times_ONE_is_TWO, product_OTHER_FOUR);
+	equal_FOUR = natural_sum_unique(TWO, TWO, FOUR, OTHER_FOUR)(TWO_plus_TWO_is_FOUR, sum_OTHER_FOUR);
+
+	return equality_consistency[<Q: is_natural_product(TWO, TWO, Q)>](FOUR, OTHER_FOUR)(equal_FOUR)(product_OTHER_FOUR);
+}
 
