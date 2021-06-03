@@ -1,0 +1,185 @@
+//I don't require that F is a function this time because the fact follows from the two rules used to define the product
+//I will instead prove this is a function using the peano axioms which define this object
+define is_multiplication_function(F): *X*Z(X in NATURALS & is_tuple(X, ZERO, Z) -> are_related(Z, ZERO, F)) & *X*Y*SY*T0*T1*P0*P1(X in NATURALS & Y in NATURALS & is_successor(Y, SY) & is_tuple(X, Y, T0) & are_related(T0, P0, F) & is_tuple(X, SY, T1) & are_related(T1, P1, F) -> is_natural_sum(P0, X, P1));
+
+prove multiplication_function_exists: ^F(is_multiplication_function(F)){
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
+
+	define is_multiples_function(X, M): is_function(M) & is_domain(M, NATURALS) & is_codomain(M, NATURALS) & *N*S(is_natural_sum(X, N, S) -> are_related(N, S, M));
+	define is_product(X, Y, Z): ^M^K(is_multiples_function(X, M) & is_recursively_defined_naturals(NATURALS, ZERO, M, K) & are_related(Y, Z, K));
+
+	cross_product_C = cross_product(NATURALS, NATURALS)|C|;
+
+	//Prove that multiples functions exist for all natural numbers N
+	prove multiples_functions_exist: *N(N in NATURALS -> ^M(is_multiples_function(N, M))){
+		given |N|;
+		implies N_in_NATURALS;
+		M_def = relation_existence_lemma[<X, Y: is_natural_sum(N, X, Y)>](NATURALS, NATURALS)|M|;
+		choose M;
+
+		prove M_is_function: *X*Y0*Y1(are_related(X, Y0, M) & are_related(X, Y1, M) -> equal_sets(Y0, Y1)){
+			given |X, Y0, Y1|;
+			implies X_related_Y0, X_related_Y1;
+			X_in_NATURALS, Y0_in_NATURALS, N_X_sum_Y0 = M_def(X, Y0)(X_related_Y0);
+			X_in_NATURALS, Y1_in_NATURALS, N_X_sum_Y1 = M_def(X, Y1)(X_related_Y1);
+			return natural_sum_unique(N, X, Y0, Y1)(N_X_sum_Y0, N_X_sum_Y1);
+		}
+		M_is_function = #is_function(M)(M_is_function);
+
+		prove M_domain_NATURALS: *X(X in NATURALS -> ^Y(are_related(X, Y, M))){
+			given |X|;
+			implies X_in_NATURALS;
+			Y_in_NATURALS, N_X_sum_Y = natural_sum(N, X)(N_in_NATURALS, X_in_NATURALS)|Y|;
+			choose Y;
+			return M_def(X, Y)(X_in_NATURALS, Y_in_NATURALS, N_X_sum_Y);
+		}
+		M_domain_NATURALS = #is_domain(M, NATURALS)(M_domain_NATURALS);
+
+		prove M_codomain_NATURALS: *X*Y(are_related(X, Y, M) -> Y in NATURALS){
+			given |X, Y|;
+			implies X_related_Y;
+			X_in_NATURALS, Y_in_NATURALS, N_X_sum_Y = M_def(X, Y)(X_related_Y);
+			return Y_in_NATURALS;
+		}
+		M_codomain_NATURALS = #is_codomain(M, NATURALS)(M_codomain_NATURALS);
+
+		prove M_property: *J*S(is_natural_sum(N, J, S) -> are_related(J, S, M)){
+			given |J, S|;
+			implies N_J_sum_S;
+			N_in_NATURALS, J_in_NATURALS, tuple_exists = expand(N_J_sum_S);
+			S_in_NATURALS = natural_sum_is_natural(N, J, S)(N_J_sum_S);
+			return M_def(J, S)(J_in_NATURALS, S_in_NATURALS, N_J_sum_S);
+		}
+
+		return #is_multiples_function(N, M)(M_is_function, M_domain_NATURALS, M_codomain_NATURALS, M_property);
+	}
+
+	//Prove that "multiples functions" are unique
+	prove multiples_functions_unique: *N(N in NATURALS -> *K*L(is_multiples_function(N, K) & is_multiples_function(N, L) -> equal_relations(NATURALS, NATURALS, K, L))){
+		given |N|;
+		implies N_in_NATURALS;
+		given |K, L|;
+		implies K_multiples_function, L_multiples_function;
+		function_K, K_domain_NATURALS, K_codomain_NATURALS, K_recursion = expand(K_multiples_function);
+		function_L, L_domain_NATURALS, L_codomain_NATURALS, L_recursion = expand(L_multiples_function);
+
+		prove K_equal_L: *X*Y(X in NATURALS & Y in NATURALS -> (are_related(X, Y, K) <-> are_related(X, Y, L))){
+			given |X, Y|;
+			implies X_in_NATURALS, Y_in_NATURALS;
+			OTHER_Y_in_NATURALS, N_X_sum_OTHER_Y = natural_sum(N, X)(N_in_NATURALS, X_in_NATURALS)|OTHER_Y|;
+			prove lemma0: are_related(X, Y, K) -> are_related(X, Y, L){
+				implies X_related_Y_K;
+				X_related_OTHER_Y_K = K_recursion(X, OTHER_Y)(N_X_sum_OTHER_Y);
+				equal_Y = expand(function_K)(X, Y, OTHER_Y)(X_related_Y_K, X_related_OTHER_Y_K);
+				N_X_sum_Y = equality_consistency[<Q: is_natural_sum(N, X, Q)>](Y, OTHER_Y)(equal_Y)(N_X_sum_OTHER_Y);
+				return L_recursion(X, Y)(N_X_sum_Y);
+			}
+			prove lemma1: are_related(X, Y, L) -> are_related(X, Y, K){
+				implies X_related_Y_L;
+				X_related_OTHER_Y_L = L_recursion(X, OTHER_Y)(N_X_sum_OTHER_Y);
+				equal_Y = expand(function_L)(X, Y, OTHER_Y)(X_related_Y_L, X_related_OTHER_Y_L);
+				N_X_sum_Y = equality_consistency[<Q: is_natural_sum(N, X, Q)>](Y, OTHER_Y)(equal_Y)(N_X_sum_OTHER_Y);
+				return K_recursion(X, Y)(N_X_sum_Y);
+			}
+			return iff(lemma0, lemma1);
+		}
+
+		return #equal_relations(NATURALS, NATURALS, K, L)(K_equal_L);
+	}
+
+	//Prove that the product of two natural numbers always exists
+	prove product: *X*Y(X in NATURALS & Y in NATURALS -> ^Z(Z in NATURALS & is_product(X, Y, Z))){
+		given |X, Y|;
+		implies X_in_NATURALS, Y_in_NATURALS;
+		M_multiples_function = multiples_functions_exist(X)(X_in_NATURALS)|M|;
+		M_function, M_domain_NATURALS, M_codomain_NATURALS, M_property = expand(M_multiples_function);
+		K_recursively_defined = naturals_recursion_theorem(NATURALS, ZERO, M)(zero_is_natural, M_function, M_domain_NATURALS, M_codomain_NATURALS)|K|;
+		K_function, K_domain_NATURALS, K_codomain_NATURALS, ZERO_related_ZERO, K_recursion = expand(K_recursively_defined);
+		Y_related_Z = expand(K_domain_NATURALS)(Y)(Y_in_NATURALS)|Z|;
+		choose Z;
+		Z_in_NATURALS = expand(K_codomain_NATURALS)(Y, Z)(Y_related_Z);
+		prove X_Y_product_Z: ^M^K(is_multiples_function(X, M) & is_recursively_defined_naturals(NATURALS, ZERO, M, K) & are_related(Y, Z, K)){
+			choose M, K;
+			return M_multiples_function, K_recursively_defined, Y_related_Z;
+		}
+		return Z_in_NATURALS, #is_product(X, Y, Z)(X_Y_product_Z);
+	}
+
+	//Prove that X*0 = 0 for all natural numbers X
+	prove product_zero_identity: *X(X in NATURALS -> is_product(X, ZERO, ZERO)){
+		given |X|;
+		implies X_in_NATURALS;
+		prove X_product_ZERO: ^M^K(is_multiples_function(X, M) & is_recursively_defined_naturals(NATURALS, ZERO, M, K) & are_related(ZERO, ZERO, K)){
+			M_multiples_function = multiples_functions_exist(X)(X_in_NATURALS)|M|;
+			M_function, M_domain_NATURALS, M_codomain_NATURALS, M_property = expand(M_multiples_function);
+			K_recursively_defined = naturals_recursion_theorem(NATURALS, ZERO, M)(zero_is_natural, M_function, M_domain_NATURALS, M_codomain_NATURALS)|K|;
+			choose M, K;
+			K_function, K_domain_NATURALS, K_codomain_NATURALS, ZERO_related_ZERO_K, K_recursion = expand(K_recursively_defined);
+			return M_multiples_function, K_recursively_defined, ZERO_related_ZERO_K;
+		}
+		return #is_product(X, ZERO, ZERO)(X_product_ZERO);
+	}
+
+	//Prove the product recursion formula
+	prove product_recursion: *X*Y*SY*P0*P1(X in NATURALS & Y in NATURALS & is_successor(Y, SY) & is_product(X, Y, P0) & is_product(X, SY, P1) -> is_natural_sum(P0, X, P1)){
+		given |X, Y, SY, P0, P1|;
+		implies X_in_NATURALS, Y_in_NATURALS, successor_SY, X_product_Y_P0, X_product_SY_P1;
+		M_multiples_X, K_recursively_defined, Y_related_P0_K = expand(X_product_Y_P0)|M, K|;
+		K_function, K_domain_NATURALS, K_codomain_NATURALS, K_ZERO_identity, K_recursion = expand(K_recursively_defined);
+		M_is_function, M_domain_NATURALS, M_codomain_NATURALS, M_def = expand(M_multiples_X);
+		M_OTHER_multiples_X, K_OTHER_recursively_defined, SY_related_P1_K_OTHER = expand(X_product_SY_P1)|M_OTHER, K_OTHER|;
+		K_OTHER_function, K_OTHER_domain_NATURALS, K_OTHER_codomain_NATURALS, K_OTHER_def = expand(K_OTHER_recursively_defined);
+		M_equal = multiples_functions_unique(X)(X_in_NATURALS)(M_OTHER, M)(M_OTHER_multiples_X, M_multiples_X);
+		K_OTHER_recursively_defined = naturals_recursively_defined_replace(NATURALS, ZERO, M_OTHER, M, K_OTHER)(M_equal, K_OTHER_recursively_defined);
+		K_equal = naturals_recursively_defined_unique(NATURALS, ZERO, M)(zero_is_natural, M_is_function, M_domain_NATURALS, M_codomain_NATURALS)(K, K_OTHER)(K_recursively_defined, K_OTHER_recursively_defined);
+
+		SY_in_NATURALS = closure_naturals(Y, SY)(Y_in_NATURALS, successor_SY);
+		P0_in_NATURALS = expand(K_codomain_NATURALS)(Y, P0)(Y_related_P0_K);
+		P1_in_NATURALS = expand(K_OTHER_codomain_NATURALS)(SY, P1)(SY_related_P1_K_OTHER);
+		SY_related_P1_K = expand(K_equal)(SY, P1)(SY_in_NATURALS, P1_in_NATURALS)(SY_related_P1_K_OTHER);
+		
+		P0_related_P1_M = K_recursion(Y, SY, P0, P1)(Y_in_NATURALS, successor_SY, Y_related_P0_K, SY_related_P1_K);
+		OTHER_P1_in_NATURALS, X_sum_P0_OTHER_P1 = natural_sum(X, P0)(X_in_NATURALS, P0_in_NATURALS)|OTHER_P1|;
+		P0_related_OTHER_P1_M = M_def(P0, OTHER_P1)(X_sum_P0_OTHER_P1);
+		equal_P1 = expand(M_is_function)(P0, P1, OTHER_P1)(P0_related_P1_M, P0_related_OTHER_P1_M);
+		X_sum_P0_P1 = equality_consistency[<Q: is_natural_sum(X, P0, Q)>](P1, OTHER_P1)(equal_P1)(X_sum_P0_OTHER_P1);
+		return natural_sum_commutative(X, P0, P1)(X_sum_P0_P1);
+	}
+
+	PRODUCT_FUNCTION_definition = relation_existence_lemma[<T, Z: *X*Y(is_tuple(X, Y, T) -> is_product(X, Y, Z))>](C, NATURALS)|PRODUCT_FUNCTION|;
+	choose PRODUCT_FUNCTION;
+
+	prove zero_identity: *X*Z(X in NATURALS & is_tuple(X, ZERO, Z) -> are_related(Z, ZERO, PRODUCT_FUNCTION)){
+		given |X, Z|;
+		implies X_in_NATURALS, tuple_Z;
+		product_zero = product_zero_identity(X)(X_in_NATURALS);
+		prove Z_in_C: ^X^ZERO(X in NATURALS & ZERO in NATURALS & is_tuple(X, ZERO, Z)){
+			choose X, ZERO;
+			return X_in_NATURALS, zero_is_natural, tuple_Z;
+		}
+		Z_in_C = expand(cross_product_C)(Z)(Z_in_C);
+		prove condition: *A*B(is_tuple(A, B, Z) -> is_product(A, B, ZERO)){
+			given |OTHER_X, OTHER_ZERO|;
+			implies other_tuple_Z;
+			equal_X, equal_ZERO = tuple_equal_condition(X, ZERO, OTHER_X, OTHER_ZERO, Z, Z)(tuple_Z, other_tuple_Z, equal_sets_reflexive(Z));
+			product_zero = equality_consistency[<Q: is_product(Q, ZERO, ZERO)>](X, OTHER_X)(equal_X)(product_zero);
+			return equality_consistency[<Q: is_product(OTHER_X, Q, ZERO)>](ZERO, OTHER_ZERO)(equal_ZERO)(product_zero);
+		}
+		return PRODUCT_FUNCTION_definition(Z, ZERO)(Z_in_C, zero_is_natural, condition);
+	}
+
+	prove recursion_identity: *X*Y*SY*T0*T1*P0*P1(X in NATURALS & Y in NATURALS & is_successor(Y, SY) & is_tuple(X, Y, T0) & are_related(T0, P0, PRODUCT_FUNCTION) & is_tuple(X, SY, T1) & are_related(T1, P1, PRODUCT_FUNCTION) -> is_natural_sum(P0, X, P1)){
+		given |X, Y, SY, T0, T1, P0, P1|;
+		implies X_in_NATURALS, Y_in_NATURALS, successor_SY, tuple_T0, T0_related_P0_PRODUCT, tuple_T1, T1_related_P1_PRODUCT;
+		T0_in_C, P0_in_NATURALS, P0_condition = PRODUCT_FUNCTION_definition(T0, P0)(T0_related_P0_PRODUCT);
+		T1_in_C, P1_in_NATURALS, P1_condition = PRODUCT_FUNCTION_definition(T1, P1)(T1_related_P1_PRODUCT);
+		X_product_Y_P0 = P0_condition(X, Y)(tuple_T0);
+		X_product_SY_P1 = P1_condition(X, SY)(tuple_T1);
+		return product_recursion(X, Y, SY, P0, P1)(X_in_NATURALS, Y_in_NATURALS, successor_SY, X_product_Y_P0, X_product_SY_P1);
+	}
+
+	return #is_multiplication_function(PRODUCT_FUNCTION)(zero_identity, recursion_identity);
+}
+
+naturals_product_function_definition = multiplication_function_exists|NATURALS_MULTIPLICATION_FUNCTION|;
+

@@ -1,0 +1,29 @@
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: naturals_recursively_defined_replace<br><b>Description</b>: We want to prove that the definition of a recursive function only depends on the function equivalence class of G<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/naturals_recursively_defined_replace.html';" onmouseover="popup_window(this, 'naturals_recursively_defined_replace | 03_addition');" onmouseout="close_popup();">naturals_recursively_defined_replace</b>: <b style="color: red;">*</b>T<b style="color: red;">*</b>A<b style="color: red;">*</b>G0<b style="color: red;">*</b>G1<b style="color: red;">*</b>F(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/equal_relations.html';" onmouseover="popup_window(this, 'equal_relations | 02_relations');" onmouseout="close_popup();">equal_relations</b>(T, T, G0, G1) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_recursively_defined_naturals.html';" onmouseover="popup_window(this, 'is_recursively_defined_naturals | 03_addition');" onmouseout="close_popup();">is_recursively_defined_naturals</b>(T, A, G0, F) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_recursively_defined_naturals.html';" onmouseover="popup_window(this, 'is_recursively_defined_naturals | 03_addition');" onmouseout="close_popup();">is_recursively_defined_naturals</b>(T, A, G1, F)){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>T, A, G0, G1, F<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> G0_equal_G1, F_recursively_defined;
+	function_F, F_domain_NATURALS, F_codomain_T, ZERO_related_A_F, F_recursion = <b style="color: green;">expand</b>(F_recursively_defined);
+	<b style="color: blue;">prove</b> F_recursion_other: <b style="color: red;">*</b>N<b style="color: red;">*</b>N1<b style="color: red;">*</b>U<b style="color: red;">*</b>V(N in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(N, N1) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(N, U, F) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(N1, V, F) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(U, V, G1)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>N, N1, U, V<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> N_in_NATURALS, successor_N1, N_related_U_F, N1_related_V_F;
+		U_related_V_G0 = F_recursion(N, N1, U, V)(N_in_NATURALS, successor_N1, N_related_U_F, N1_related_V_F);
+		U_in_T = <b style="color: green;">expand</b>(F_codomain_T)(N, U)(N_related_U_F);
+		V_in_T = <b style="color: green;">expand</b>(F_codomain_T)(N1, V)(N1_related_V_F);
+		<b style="color: blue;">return</b> <b style="color: green;">expand</b>(G0_equal_G1)(U, V)(U_in_T, V_in_T)(U_related_V_G0);
+	}
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_recursively_defined_naturals.html';" onmouseover="popup_window(this, 'is_recursively_defined_naturals | 03_addition');" onmouseout="close_popup();">is_recursively_defined_naturals</b>(T, A, G1, F)(function_F, F_domain_NATURALS, F_codomain_T, ZERO_related_A_F, F_recursion_other);
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

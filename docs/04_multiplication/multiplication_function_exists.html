@@ -1,0 +1,193 @@
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: multiplication_function_exists<br><b>Description</b>: None given<br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/multiplication_function_exists.html';" onmouseover="popup_window(this, 'multiplication_function_exists | 04_multiplication');" onmouseout="close_popup();">multiplication_function_exists</b>: <b style="color: red;">^</b>F(<b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_multiplication_function.html';" onmouseover="popup_window(this, 'is_multiplication_function | 04_multiplication');" onmouseout="close_popup();">is_multiplication_function</b>(F)){
+	empty_in_naturals, closure_naturals = <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_inductive.html';" onmouseover="popup_window(this, 'NATURALS_inductive | 03_addition');" onmouseout="close_popup();">NATURALS_inductive</b>);
+
+	<b style="color: blue;">define</b> is_multiples_function(X, M): <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_function.html';" onmouseover="popup_window(this, 'is_function | 02_relations');" onmouseout="close_popup();">is_function</b>(M) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_domain.html';" onmouseover="popup_window(this, 'is_domain | 02_relations');" onmouseout="close_popup();">is_domain</b>(M, NATURALS) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_codomain.html';" onmouseover="popup_window(this, 'is_codomain | 02_relations');" onmouseout="close_popup();">is_codomain</b>(M, NATURALS) <b style="color: red;">&</b> <b style="color: red;">*</b>N<b style="color: red;">*</b>S(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(X, N, S) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(N, S, M));
+	<b style="color: blue;">define</b> is_product(X, Y, Z): <b style="color: red;">^</b>M<b style="color: red;">^</b>K(is_multiples_function(X, M) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_recursively_defined_naturals.html';" onmouseover="popup_window(this, 'is_recursively_defined_naturals | 03_addition');" onmouseout="close_popup();">is_recursively_defined_naturals</b>(NATURALS, ZERO, M, K) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(Y, Z, K));
+
+	cross_product_C = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/cross_product.html';" onmouseover="popup_window(this, 'cross_product | 01_sets');" onmouseout="close_popup();">cross_product</b>(NATURALS, NATURALS)<b style="color: red;">|</b>C<b style="color: red;">|</b>;
+
+	//Prove that multiples functions exist for all natural numbers N
+	<b style="color: blue;">prove</b> multiples_functions_exist: <b style="color: red;">*</b>N(N in NATURALS <b style="color: red;">-&gt</b> <b style="color: red;">^</b>M(is_multiples_function(N, M))){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>N<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> N_in_NATURALS;
+		M_def = <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/relation_existence_lemma.html';" onmouseover="popup_window(this, 'relation_existence_lemma | 02_relations');" onmouseout="close_popup();">relation_existence_lemma</b>[&ltX, Y: <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(N, X, Y)&gt](NATURALS, NATURALS)<b style="color: red;">|</b>M<b style="color: red;">|</b>;
+		<b style="color: blue;">choose</b> M;
+
+		<b style="color: blue;">prove</b> M_is_function: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y0<b style="color: red;">*</b>Y1(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y0, M) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y1, M) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(Y0, Y1)){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Y0, Y1<b style="color: red;">|</b>;
+			<b style="color: blue;">implies</b> X_related_Y0, X_related_Y1;
+			X_in_NATURALS, Y0_in_NATURALS, N_X_sum_Y0 = M_def(X, Y0)(X_related_Y0);
+			X_in_NATURALS, Y1_in_NATURALS, N_X_sum_Y1 = M_def(X, Y1)(X_related_Y1);
+			<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_unique.html';" onmouseover="popup_window(this, 'natural_sum_unique | 03_addition');" onmouseout="close_popup();">natural_sum_unique</b>(N, X, Y0, Y1)(N_X_sum_Y0, N_X_sum_Y1);
+		}
+		M_is_function = #<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_function.html';" onmouseover="popup_window(this, 'is_function | 02_relations');" onmouseout="close_popup();">is_function</b>(M)(M_is_function);
+
+		<b style="color: blue;">prove</b> M_domain_NATURALS: <b style="color: red;">*</b>X(X in NATURALS <b style="color: red;">-&gt</b> <b style="color: red;">^</b>Y(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, M))){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+			<b style="color: blue;">implies</b> X_in_NATURALS;
+			Y_in_NATURALS, N_X_sum_Y = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum.html';" onmouseover="popup_window(this, 'natural_sum | 03_addition');" onmouseout="close_popup();">natural_sum</b>(N, X)(N_in_NATURALS, X_in_NATURALS)<b style="color: red;">|</b>Y<b style="color: red;">|</b>;
+			<b style="color: blue;">choose</b> Y;
+			<b style="color: blue;">return</b> M_def(X, Y)(X_in_NATURALS, Y_in_NATURALS, N_X_sum_Y);
+		}
+		M_domain_NATURALS = #<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_domain.html';" onmouseover="popup_window(this, 'is_domain | 02_relations');" onmouseout="close_popup();">is_domain</b>(M, NATURALS)(M_domain_NATURALS);
+
+		<b style="color: blue;">prove</b> M_codomain_NATURALS: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, M) <b style="color: red;">-&gt</b> Y in NATURALS){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Y<b style="color: red;">|</b>;
+			<b style="color: blue;">implies</b> X_related_Y;
+			X_in_NATURALS, Y_in_NATURALS, N_X_sum_Y = M_def(X, Y)(X_related_Y);
+			<b style="color: blue;">return</b> Y_in_NATURALS;
+		}
+		M_codomain_NATURALS = #<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/is_codomain.html';" onmouseover="popup_window(this, 'is_codomain | 02_relations');" onmouseout="close_popup();">is_codomain</b>(M, NATURALS)(M_codomain_NATURALS);
+
+		<b style="color: blue;">prove</b> M_property: <b style="color: red;">*</b>J<b style="color: red;">*</b>S(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(N, J, S) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(J, S, M)){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>J, S<b style="color: red;">|</b>;
+			<b style="color: blue;">implies</b> N_J_sum_S;
+			N_in_NATURALS, J_in_NATURALS, tuple_exists = <b style="color: green;">expand</b>(N_J_sum_S);
+			S_in_NATURALS = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_is_natural.html';" onmouseover="popup_window(this, 'natural_sum_is_natural | 03_addition');" onmouseout="close_popup();">natural_sum_is_natural</b>(N, J, S)(N_J_sum_S);
+			<b style="color: blue;">return</b> M_def(J, S)(J_in_NATURALS, S_in_NATURALS, N_J_sum_S);
+		}
+
+		<b style="color: blue;">return</b> #is_multiples_function(N, M)(M_is_function, M_domain_NATURALS, M_codomain_NATURALS, M_property);
+	}
+
+	//Prove that "multiples functions" are unique
+	<b style="color: blue;">prove</b> multiples_functions_unique: <b style="color: red;">*</b>N(N in NATURALS <b style="color: red;">-&gt</b> <b style="color: red;">*</b>K<b style="color: red;">*</b>L(is_multiples_function(N, K) <b style="color: red;">&</b> is_multiples_function(N, L) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/equal_relations.html';" onmouseover="popup_window(this, 'equal_relations | 02_relations');" onmouseout="close_popup();">equal_relations</b>(NATURALS, NATURALS, K, L))){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>N<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> N_in_NATURALS;
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>K, L<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> K_multiples_function, L_multiples_function;
+		function_K, K_domain_NATURALS, K_codomain_NATURALS, K_recursion = <b style="color: green;">expand</b>(K_multiples_function);
+		function_L, L_domain_NATURALS, L_codomain_NATURALS, L_recursion = <b style="color: green;">expand</b>(L_multiples_function);
+
+		<b style="color: blue;">prove</b> K_equal_L: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(X in NATURALS <b style="color: red;">&</b> Y in NATURALS <b style="color: red;">-&gt</b> (<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, K) <b style="color: red;">&lt-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, L))){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Y<b style="color: red;">|</b>;
+			<b style="color: blue;">implies</b> X_in_NATURALS, Y_in_NATURALS;
+			OTHER_Y_in_NATURALS, N_X_sum_OTHER_Y = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum.html';" onmouseover="popup_window(this, 'natural_sum | 03_addition');" onmouseout="close_popup();">natural_sum</b>(N, X)(N_in_NATURALS, X_in_NATURALS)<b style="color: red;">|</b>OTHER_Y<b style="color: red;">|</b>;
+			<b style="color: blue;">prove</b> lemma0: <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, K) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, L){
+				<b style="color: blue;">implies</b> X_related_Y_K;
+				X_related_OTHER_Y_K = K_recursion(X, OTHER_Y)(N_X_sum_OTHER_Y);
+				equal_Y = <b style="color: green;">expand</b>(function_K)(X, Y, OTHER_Y)(X_related_Y_K, X_related_OTHER_Y_K);
+				N_X_sum_Y = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(N, X, Q)&gt](Y, OTHER_Y)(equal_Y)(N_X_sum_OTHER_Y);
+				<b style="color: blue;">return</b> L_recursion(X, Y)(N_X_sum_Y);
+			}
+			<b style="color: blue;">prove</b> lemma1: <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, L) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(X, Y, K){
+				<b style="color: blue;">implies</b> X_related_Y_L;
+				X_related_OTHER_Y_L = L_recursion(X, OTHER_Y)(N_X_sum_OTHER_Y);
+				equal_Y = <b style="color: green;">expand</b>(function_L)(X, Y, OTHER_Y)(X_related_Y_L, X_related_OTHER_Y_L);
+				N_X_sum_Y = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(N, X, Q)&gt](Y, OTHER_Y)(equal_Y)(N_X_sum_OTHER_Y);
+				<b style="color: blue;">return</b> K_recursion(X, Y)(N_X_sum_Y);
+			}
+			<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
+		}
+
+		<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../02_relations/equal_relations.html';" onmouseover="popup_window(this, 'equal_relations | 02_relations');" onmouseout="close_popup();">equal_relations</b>(NATURALS, NATURALS, K, L)(K_equal_L);
+	}
+
+	//Prove that the product of two natural numbers always exists
+	<b style="color: blue;">prove</b> product: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(X in NATURALS <b style="color: red;">&</b> Y in NATURALS <b style="color: red;">-&gt</b> <b style="color: red;">^</b>Z(Z in NATURALS <b style="color: red;">&</b> is_product(X, Y, Z))){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Y<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> X_in_NATURALS, Y_in_NATURALS;
+		M_multiples_function = multiples_functions_exist(X)(X_in_NATURALS)<b style="color: red;">|</b>M<b style="color: red;">|</b>;
+		M_function, M_domain_NATURALS, M_codomain_NATURALS, M_property = <b style="color: green;">expand</b>(M_multiples_function);
+		K_recursively_defined = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/naturals_recursion_theorem.html';" onmouseover="popup_window(this, 'naturals_recursion_theorem | 03_addition');" onmouseout="close_popup();">naturals_recursion_theorem</b>(NATURALS, ZERO, M)(zero_is_natural, M_function, M_domain_NATURALS, M_codomain_NATURALS)<b style="color: red;">|</b>K<b style="color: red;">|</b>;
+		K_function, K_domain_NATURALS, K_codomain_NATURALS, ZERO_related_ZERO, K_recursion = <b style="color: green;">expand</b>(K_recursively_defined);
+		Y_related_Z = <b style="color: green;">expand</b>(K_domain_NATURALS)(Y)(Y_in_NATURALS)<b style="color: red;">|</b>Z<b style="color: red;">|</b>;
+		<b style="color: blue;">choose</b> Z;
+		Z_in_NATURALS = <b style="color: green;">expand</b>(K_codomain_NATURALS)(Y, Z)(Y_related_Z);
+		<b style="color: blue;">prove</b> X_Y_product_Z: <b style="color: red;">^</b>M<b style="color: red;">^</b>K(is_multiples_function(X, M) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_recursively_defined_naturals.html';" onmouseover="popup_window(this, 'is_recursively_defined_naturals | 03_addition');" onmouseout="close_popup();">is_recursively_defined_naturals</b>(NATURALS, ZERO, M, K) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(Y, Z, K)){
+			<b style="color: blue;">choose</b> M, K;
+			<b style="color: blue;">return</b> M_multiples_function, K_recursively_defined, Y_related_Z;
+		}
+		<b style="color: blue;">return</b> Z_in_NATURALS, #is_product(X, Y, Z)(X_Y_product_Z);
+	}
+
+	//Prove that X<b style="color: red;">*</b>0 = 0 for all natural numbers X
+	<b style="color: blue;">prove</b> product_zero_identity: <b style="color: red;">*</b>X(X in NATURALS <b style="color: red;">-&gt</b> is_product(X, ZERO, ZERO)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> X_in_NATURALS;
+		<b style="color: blue;">prove</b> X_product_ZERO: <b style="color: red;">^</b>M<b style="color: red;">^</b>K(is_multiples_function(X, M) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_recursively_defined_naturals.html';" onmouseover="popup_window(this, 'is_recursively_defined_naturals | 03_addition');" onmouseout="close_popup();">is_recursively_defined_naturals</b>(NATURALS, ZERO, M, K) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(ZERO, ZERO, K)){
+			M_multiples_function = multiples_functions_exist(X)(X_in_NATURALS)<b style="color: red;">|</b>M<b style="color: red;">|</b>;
+			M_function, M_domain_NATURALS, M_codomain_NATURALS, M_property = <b style="color: green;">expand</b>(M_multiples_function);
+			K_recursively_defined = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/naturals_recursion_theorem.html';" onmouseover="popup_window(this, 'naturals_recursion_theorem | 03_addition');" onmouseout="close_popup();">naturals_recursion_theorem</b>(NATURALS, ZERO, M)(zero_is_natural, M_function, M_domain_NATURALS, M_codomain_NATURALS)<b style="color: red;">|</b>K<b style="color: red;">|</b>;
+			<b style="color: blue;">choose</b> M, K;
+			K_function, K_domain_NATURALS, K_codomain_NATURALS, ZERO_related_ZERO_K, K_recursion = <b style="color: green;">expand</b>(K_recursively_defined);
+			<b style="color: blue;">return</b> M_multiples_function, K_recursively_defined, ZERO_related_ZERO_K;
+		}
+		<b style="color: blue;">return</b> #is_product(X, ZERO, ZERO)(X_product_ZERO);
+	}
+
+	//Prove the product recursion formula
+	<b style="color: blue;">prove</b> product_recursion: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y<b style="color: red;">*</b>SY<b style="color: red;">*</b>P0<b style="color: red;">*</b>P1(X in NATURALS <b style="color: red;">&</b> Y in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(Y, SY) <b style="color: red;">&</b> is_product(X, Y, P0) <b style="color: red;">&</b> is_product(X, SY, P1) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(P0, X, P1)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Y, SY, P0, P1<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> X_in_NATURALS, Y_in_NATURALS, successor_SY, X_product_Y_P0, X_product_SY_P1;
+		M_multiples_X, K_recursively_defined, Y_related_P0_K = <b style="color: green;">expand</b>(X_product_Y_P0)<b style="color: red;">|</b>M, K<b style="color: red;">|</b>;
+		K_function, K_domain_NATURALS, K_codomain_NATURALS, K_ZERO_identity, K_recursion = <b style="color: green;">expand</b>(K_recursively_defined);
+		M_is_function, M_domain_NATURALS, M_codomain_NATURALS, M_def = <b style="color: green;">expand</b>(M_multiples_X);
+		M_OTHER_multiples_X, K_OTHER_recursively_defined, SY_related_P1_K_OTHER = <b style="color: green;">expand</b>(X_product_SY_P1)<b style="color: red;">|</b>M_OTHER, K_OTHER<b style="color: red;">|</b>;
+		K_OTHER_function, K_OTHER_domain_NATURALS, K_OTHER_codomain_NATURALS, K_OTHER_def = <b style="color: green;">expand</b>(K_OTHER_recursively_defined);
+		M_equal = multiples_functions_unique(X)(X_in_NATURALS)(M_OTHER, M)(M_OTHER_multiples_X, M_multiples_X);
+		K_OTHER_recursively_defined = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/naturals_recursively_defined_replace.html';" onmouseover="popup_window(this, 'naturals_recursively_defined_replace | 03_addition');" onmouseout="close_popup();">naturals_recursively_defined_replace</b>(NATURALS, ZERO, M_OTHER, M, K_OTHER)(M_equal, K_OTHER_recursively_defined);
+		K_equal = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/naturals_recursively_defined_unique.html';" onmouseover="popup_window(this, 'naturals_recursively_defined_unique | 03_addition');" onmouseout="close_popup();">naturals_recursively_defined_unique</b>(NATURALS, ZERO, M)(zero_is_natural, M_is_function, M_domain_NATURALS, M_codomain_NATURALS)(K, K_OTHER)(K_recursively_defined, K_OTHER_recursively_defined);
+
+		SY_in_NATURALS = closure_naturals(Y, SY)(Y_in_NATURALS, successor_SY);
+		P0_in_NATURALS = <b style="color: green;">expand</b>(K_codomain_NATURALS)(Y, P0)(Y_related_P0_K);
+		P1_in_NATURALS = <b style="color: green;">expand</b>(K_OTHER_codomain_NATURALS)(SY, P1)(SY_related_P1_K_OTHER);
+		SY_related_P1_K = <b style="color: green;">expand</b>(K_equal)(SY, P1)(SY_in_NATURALS, P1_in_NATURALS)(SY_related_P1_K_OTHER);
+		
+		P0_related_P1_M = K_recursion(Y, SY, P0, P1)(Y_in_NATURALS, successor_SY, Y_related_P0_K, SY_related_P1_K);
+		OTHER_P1_in_NATURALS, X_sum_P0_OTHER_P1 = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum.html';" onmouseover="popup_window(this, 'natural_sum | 03_addition');" onmouseout="close_popup();">natural_sum</b>(X, P0)(X_in_NATURALS, P0_in_NATURALS)<b style="color: red;">|</b>OTHER_P1<b style="color: red;">|</b>;
+		P0_related_OTHER_P1_M = M_def(P0, OTHER_P1)(X_sum_P0_OTHER_P1);
+		equal_P1 = <b style="color: green;">expand</b>(M_is_function)(P0, P1, OTHER_P1)(P0_related_P1_M, P0_related_OTHER_P1_M);
+		X_sum_P0_P1 = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(X, P0, Q)&gt](P1, OTHER_P1)(equal_P1)(X_sum_P0_OTHER_P1);
+		<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_commutative.html';" onmouseover="popup_window(this, 'natural_sum_commutative | 03_addition');" onmouseout="close_popup();">natural_sum_commutative</b>(X, P0, P1)(X_sum_P0_P1);
+	}
+
+	PRODUCT_FUNCTION_definition = <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/relation_existence_lemma.html';" onmouseover="popup_window(this, 'relation_existence_lemma | 02_relations');" onmouseout="close_popup();">relation_existence_lemma</b>[&ltT, Z: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X, Y, T) <b style="color: red;">-&gt</b> is_product(X, Y, Z))&gt](C, NATURALS)<b style="color: red;">|</b>PRODUCT_FUNCTION<b style="color: red;">|</b>;
+	<b style="color: blue;">choose</b> PRODUCT_FUNCTION;
+
+	<b style="color: blue;">prove</b> zero_identity: <b style="color: red;">*</b>X<b style="color: red;">*</b>Z(X in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X, ZERO, Z) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(Z, ZERO, PRODUCT_FUNCTION)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Z<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> X_in_NATURALS, tuple_Z;
+		product_zero = product_zero_identity(X)(X_in_NATURALS);
+		<b style="color: blue;">prove</b> Z_in_C: <b style="color: red;">^</b>X<b style="color: red;">^</b>ZERO(X in NATURALS <b style="color: red;">&</b> ZERO in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X, ZERO, Z)){
+			<b style="color: blue;">choose</b> X, ZERO;
+			<b style="color: blue;">return</b> X_in_NATURALS, zero_is_natural, tuple_Z;
+		}
+		Z_in_C = <b style="color: green;">expand</b>(cross_product_C)(Z)(Z_in_C);
+		<b style="color: blue;">prove</b> condition: <b style="color: red;">*</b>A<b style="color: red;">*</b>B(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(A, B, Z) <b style="color: red;">-&gt</b> is_product(A, B, ZERO)){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>OTHER_X, OTHER_ZERO<b style="color: red;">|</b>;
+			<b style="color: blue;">implies</b> other_tuple_Z;
+			equal_X, equal_ZERO = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/tuple_equal_condition.html';" onmouseover="popup_window(this, 'tuple_equal_condition | 01_sets');" onmouseout="close_popup();">tuple_equal_condition</b>(X, ZERO, OTHER_X, OTHER_ZERO, Z, Z)(tuple_Z, other_tuple_Z, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(Z));
+			product_zero = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: is_product(Q, ZERO, ZERO)&gt](X, OTHER_X)(equal_X)(product_zero);
+			<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: is_product(OTHER_X, Q, ZERO)&gt](ZERO, OTHER_ZERO)(equal_ZERO)(product_zero);
+		}
+		<b style="color: blue;">return</b> PRODUCT_FUNCTION_definition(Z, ZERO)(Z_in_C, zero_is_natural, condition);
+	}
+
+	<b style="color: blue;">prove</b> recursion_identity: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y<b style="color: red;">*</b>SY<b style="color: red;">*</b>T0<b style="color: red;">*</b>T1<b style="color: red;">*</b>P0<b style="color: red;">*</b>P1(X in NATURALS <b style="color: red;">&</b> Y in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(Y, SY) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X, Y, T0) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(T0, P0, PRODUCT_FUNCTION) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X, SY, T1) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(T1, P1, PRODUCT_FUNCTION) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(P0, X, P1)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Y, SY, T0, T1, P0, P1<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> X_in_NATURALS, Y_in_NATURALS, successor_SY, tuple_T0, T0_related_P0_PRODUCT, tuple_T1, T1_related_P1_PRODUCT;
+		T0_in_C, P0_in_NATURALS, P0_condition = PRODUCT_FUNCTION_definition(T0, P0)(T0_related_P0_PRODUCT);
+		T1_in_C, P1_in_NATURALS, P1_condition = PRODUCT_FUNCTION_definition(T1, P1)(T1_related_P1_PRODUCT);
+		X_product_Y_P0 = P0_condition(X, Y)(tuple_T0);
+		X_product_SY_P1 = P1_condition(X, SY)(tuple_T1);
+		<b style="color: blue;">return</b> product_recursion(X, Y, SY, P0, P1)(X_in_NATURALS, Y_in_NATURALS, successor_SY, X_product_Y_P0, X_product_SY_P1);
+	}
+
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_multiplication_function.html';" onmouseover="popup_window(this, 'is_multiplication_function | 04_multiplication');" onmouseout="close_popup();">is_multiplication_function</b>(PRODUCT_FUNCTION)(zero_identity, recursion_identity);
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>
