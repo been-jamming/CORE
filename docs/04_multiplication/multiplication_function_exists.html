@@ -145,6 +145,26 @@
 	PRODUCT_FUNCTION_definition = <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/relation_existence_lemma.html';" onmouseover="popup_window(this, 'relation_existence_lemma | 02_relations');" onmouseout="close_popup();">relation_existence_lemma</b>[&ltT, Z: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X, Y, T) <b style="color: red;">-&gt</b> is_product(X, Y, Z))&gt](C, NATURALS)<b style="color: red;">|</b>PRODUCT_FUNCTION<b style="color: red;">|</b>;
 	<b style="color: blue;">choose</b> PRODUCT_FUNCTION;
 
+	<b style="color: blue;">prove</b> product_exists: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y<b style="color: red;">*</b>T(X in NATURALS <b style="color: red;">&</b> Y in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X, Y, T) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>Z(Z in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(T, Z, PRODUCT_FUNCTION))){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Y, T<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> X_in_NATURALS, Y_in_NATURALS, tuple_T;
+		<b style="color: blue;">prove</b> T_in_C: <b style="color: red;">^</b>X<b style="color: red;">^</b>Y(X in NATURALS <b style="color: red;">&</b> Y in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X, Y, T)){
+			<b style="color: blue;">choose</b> X, Y;
+			<b style="color: blue;">return</b> X_in_NATURALS, Y_in_NATURALS, tuple_T;
+		}
+		T_in_C = <b style="color: green;">expand</b>(cross_product_C)(T)(T_in_C);
+		Z_in_NATURALS, product_Z = product(X, Y)(X_in_NATURALS, Y_in_NATURALS)<b style="color: red;">|</b>Z<b style="color: red;">|</b>;
+		<b style="color: blue;">choose</b> Z;
+		<b style="color: blue;">prove</b> product_condition: <b style="color: red;">*</b>OTHER_X<b style="color: red;">*</b>OTHER_Y(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(OTHER_X, OTHER_Y, T) <b style="color: red;">-&gt</b> is_product(OTHER_X, OTHER_Y, Z)){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>OTHER_X, OTHER_Y<b style="color: red;">|</b>;
+			<b style="color: blue;">implies</b> other_tuple_T;
+			equal_X, equal_Y = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/tuple_equal_condition.html';" onmouseover="popup_window(this, 'tuple_equal_condition | 01_sets');" onmouseout="close_popup();">tuple_equal_condition</b>(X, Y, OTHER_X, OTHER_Y, T, T)(tuple_T, other_tuple_T, <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_reflexive.html';" onmouseover="popup_window(this, 'equal_sets_reflexive | 00_zf');" onmouseout="close_popup();">equal_sets_reflexive</b>(T));
+			product_Z = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: is_product(Q, Y, Z)&gt](X, OTHER_X)(equal_X)(product_Z);
+			<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: is_product(OTHER_X, Q, Z)&gt](Y, OTHER_Y)(equal_Y)(product_Z);
+		}
+		<b style="color: blue;">return</b> Z_in_NATURALS, PRODUCT_FUNCTION_definition(T, Z)(T_in_C, Z_in_NATURALS, product_condition);
+	}
+
 	<b style="color: blue;">prove</b> zero_identity: <b style="color: red;">*</b>X<b style="color: red;">*</b>Z(X in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(X, ZERO, Z) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../02_relations/are_related.html';" onmouseover="popup_window(this, 'are_related | 02_relations');" onmouseout="close_popup();">are_related</b>(Z, ZERO, PRODUCT_FUNCTION)){
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Z<b style="color: red;">|</b>;
 		<b style="color: blue;">implies</b> X_in_NATURALS, tuple_Z;
@@ -174,7 +194,7 @@
 		<b style="color: blue;">return</b> product_recursion(X, Y, SY, P0, P1)(X_in_NATURALS, Y_in_NATURALS, successor_SY, X_product_Y_P0, X_product_SY_P1);
 	}
 
-	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_multiplication_function.html';" onmouseover="popup_window(this, 'is_multiplication_function | 04_multiplication');" onmouseout="close_popup();">is_multiplication_function</b>(PRODUCT_FUNCTION)(zero_identity, recursion_identity);
+	<b style="color: blue;">return</b> #<b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_multiplication_function.html';" onmouseover="popup_window(this, 'is_multiplication_function | 04_multiplication');" onmouseout="close_popup();">is_multiplication_function</b>(PRODUCT_FUNCTION)(product_exists, zero_identity, recursion_identity);
 }</code></div></div></body>
 <div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
 <script type="text/javascript">
