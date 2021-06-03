@@ -1,6 +1,9 @@
 //Define when X and Y are related under R
 define are_related(X, Y, R): ^T(T in R & is_tuple(X, Y, T));
 
+//Define when two relations between sets A and B are equivalent
+define equal_relations(A, B, R0, R1): *X*Y(X in A & Y in B -> (are_related(X, Y, R0) <-> are_related(X, Y, R1)));
+
 //Define when a relation R is reflexive with respect to A
 define is_reflexive(R, A): *X(X in A -> are_related(X, X, R));
 
@@ -87,9 +90,6 @@ define is_equivalence_class(R, A, C): ^X(X in A & *Y(Y in C <-> Y in A & are_rel
 
 //Define when C is the equivalence classes for R
 define is_equivalence_classes(R, A, C): *Y(Y in C <-> is_equivalence_class(R, A, Y));
-
-//Define when two relations F and G are equal
-define equal_relations(F, G): *X*Y(are_related(X, Y, F) <-> are_related(X, Y, G));
 
 //Prove that equivalence classes exist for any equivalence relation
 prove equivalence_classes: *A*R(is_equivalence_relation(R, A) -> ^C(is_equivalence_classes(R, A, C))){

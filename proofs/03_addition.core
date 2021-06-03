@@ -1914,3 +1914,80 @@ prove naturals_recursion_theorem: *T*A*G(A in T & is_function(G) & is_domain(G, 
 	return #is_recursively_defined_naturals(T, A, G, F)(F_is_function, domain_NATURALS, codomain_T, ZERO_related_A, F_recursive);
 }
 
+//We want to prove that any recursive function is unique with respect to the function used to define it
+prove naturals_recursively_defined_unique: *T*A*G(A in T & is_function(G) & is_domain(G, T) & is_codomain(G, T) -> *F0*F1(is_recursively_defined_naturals(T, A, G, F0) & is_recursively_defined_naturals(T, A, G, F1) -> equal_relations(NATURALS, T, F0, F1))){
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
+
+	given |T, A, G|;
+	implies A_in_T, function_G, G_domain_T, G_codomain_T;
+	given |F0, F1|;
+	implies F0_recursively_defined, F1_recursively_defined;
+	function_F0, F0_domain_NATURALS, F0_codomain_T, ZERO_related_A_F0, F0_recursion = expand(F0_recursively_defined);
+	function_F1, F1_domain_NATURALS, F1_codomain_T, ZERO_related_A_F1, F1_recursion = expand(F1_recursively_defined);
+
+	prove F0_equal_F1: *X*Y(X in NATURALS & Y in T -> (are_related(X, Y, F0) <-> are_related(X, Y, F1))){
+		//We must induct on X
+		R_def = axiom_specify[<Q: *Y(Y in T -> (are_related(Q, Y, F0) <-> are_related(Q, Y, F1)))>](NATURALS)|R|;
+
+		prove ZERO_in_R: *Y(Y in T -> (are_related(ZERO, Y, F0) <-> are_related(ZERO, Y, F1))){
+			given |Y|;
+			implies Y_in_T;
+			prove lemma0: are_related(ZERO, Y, F0) -> are_related(ZERO, Y, F1){
+				implies ZERO_related_Y_F0;
+				Y_equal_A = expand(function_F0)(ZERO, Y, A)(ZERO_related_Y_F0, ZERO_related_A_F0);
+				return equality_consistency[<Q: are_related(ZERO, Q, F1)>](Y, A)(Y_equal_A)(ZERO_related_A_F1);
+			}
+			prove lemma1: are_related(ZERO, Y, F1) -> are_related(ZERO, Y, F0){
+				implies ZERO_related_Y_F1;
+				Y_equal_A = expand(function_F1)(ZERO, Y, A)(ZERO_related_Y_F1, ZERO_related_A_F1);
+				return equality_consistency[<Q: are_related(ZERO, Q, F0)>](Y, A)(Y_equal_A)(ZERO_related_A_F0);
+			}
+			return iff(lemma0, lemma1);
+		}
+		ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+		prove closure_R: *N*N1(N in R & is_successor(N, N1) -> N1 in R){
+			given |N, N1|;
+			implies N_in_R, successor_N1;
+			N_in_NATURALS, N_cond = R_def(N)(N_in_R);
+			N1_in_NATURALS = closure_naturals(N, N1)(N_in_NATURALS, successor_N1);
+			prove N1_cond: *Y(Y in T -> (are_related(N1, Y, F0) <-> are_related(N1, Y, F1))){
+				given |Y|;
+				implies Y_in_T;
+				prove lemma0: are_related(N1, Y, F0) -> are_related(N1, Y, F1){
+					implies N1_related_Y_F0;
+					N_related_PY_F0 = expand(F0_domain_NATURALS)(N)(N_in_NATURALS)|PY|;
+					PY_in_T = expand(F0_codomain_T)(N, PY)(N_related_PY_F0);
+					N_related_PY_F1 = N_cond(PY)(PY_in_T)(N_related_PY_F0);
+					N1_related_OTHER_Y_F1 = expand(F1_domain_NATURALS)(N1)(N1_in_NATURALS)|OTHER_Y|;
+					PY_related_Y_G = F0_recursion(N, N1, PY, Y)(N_in_NATURALS, successor_N1, N_related_PY_F0, N1_related_Y_F0);
+					PY_related_OTHER_Y_G = F1_recursion(N, N1, PY, OTHER_Y)(N_in_NATURALS, successor_N1, N_related_PY_F1, N1_related_OTHER_Y_F1);
+					equal_Y = expand(function_G)(PY, Y, OTHER_Y)(PY_related_Y_G, PY_related_OTHER_Y_G);
+					return equality_consistency[<Q: are_related(N1, Q, F1)>](Y, OTHER_Y)(equal_Y)(N1_related_OTHER_Y_F1);
+				}
+				prove lemma1: are_related(N1, Y, F1) -> are_related(N1, Y, F0){
+					implies N1_related_Y_F1;
+					N_related_PY_F1 = expand(F1_domain_NATURALS)(N)(N_in_NATURALS)|PY|;
+					PY_in_T = expand(F1_codomain_T)(N, PY)(N_related_PY_F1);
+					N_related_PY_F0 = N_cond(PY)(PY_in_T)(N_related_PY_F1);
+					N1_related_OTHER_Y_F0 = expand(F0_domain_NATURALS)(N1)(N1_in_NATURALS)|OTHER_Y|;
+					PY_related_Y_G = F1_recursion(N, N1, PY, Y)(N_in_NATURALS, successor_N1, N_related_PY_F1, N1_related_Y_F1);
+					PY_related_OTHER_Y_G = F0_recursion(N, N1, PY, OTHER_Y)(N_in_NATURALS, successor_N1, N_related_PY_F0, N1_related_OTHER_Y_F0);
+					equal_Y = expand(function_G)(PY, Y, OTHER_Y)(PY_related_Y_G, PY_related_OTHER_Y_G);
+					return equality_consistency[<Q: are_related(N1, Q, F0)>](Y, OTHER_Y)(equal_Y)(N1_related_OTHER_Y_F0);
+				}
+				return iff(lemma0, lemma1);
+			}
+			return R_def(N1)(N1_in_NATURALS, N1_cond);
+		}
+		
+		NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+		given |X, Y|;
+		implies X_in_NATURALS, Y_in_T;
+		X_in_R = expand(NATURALS_subset_R)(X)(X_in_NATURALS);
+		X_in_NATURALS, result = R_def(X)(X_in_R);
+		return result(Y)(Y_in_T);
+	}
+
+	return #equal_relations(NATURALS, T, F0, F1)(F0_equal_F1);
+}
