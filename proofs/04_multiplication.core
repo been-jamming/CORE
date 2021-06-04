@@ -355,3 +355,71 @@ prove natural_product_zero_identity2: *X(X in NATURALS -> is_natural_product(ZER
 	return result;
 }
 
+//Prove the symmetric version of the product recursion identity
+prove natural_product_successor_recursion2: *X*Y*SX*P0*P1(is_successor(X, SX) & is_natural_product(X, Y, P0) & is_natural_product(SX, Y, P1) -> is_natural_sum(P0, Y, P1)){
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
+
+	//W induct on Y
+	R_def = axiom_specify[<Y: *X*SX*P0*P1(is_successor(X, SX) & is_natural_product(X, Y, P0) & is_natural_product(SX, Y, P1) -> is_natural_sum(P0, Y, P1))>](NATURALS)|R|;
+
+	prove ZERO_in_R: *X*SX*P0*P1(is_successor(X, SX) & is_natural_product(X, ZERO, P0) & is_natural_product(SX, ZERO, P1) -> is_natural_sum(P0, ZERO, P1)){
+		given |X, SX, P0, P1|;
+		implies successor_SX, product_P0, product_P1;
+		X_in_NATURALS, ZERO_in_NATURALS, tuple_condition = expand(product_P0);
+		SX_in_NATURALS, ZERO_in_NATURALS, tuple_condition = expand(product_P1);
+		other_product_P0 = natural_product_zero_identity(X)(X_in_NATURALS);
+		other_product_P1 = natural_product_zero_identity(SX)(SX_in_NATURALS);
+		P0_equal_ZERO = natural_product_unique(X, ZERO, P0, ZERO)(product_P0, other_product_P0);
+		P1_equal_ZERO = natural_product_unique(SX, ZERO, P1, ZERO)(product_P1, other_product_P1);
+		ZERO_sum_ZERO = natural_sum_zero_identity(ZERO)(zero_is_natural);
+		P0_sum_ZERO = equality_consistency[<Q: is_natural_sum(Q, ZERO, ZERO)>](P0, ZERO)(P0_equal_ZERO)(ZERO_sum_ZERO);
+		return equality_consistency[<Q: is_natural_sum(P0, ZERO, Q)>](P1, ZERO)(P1_equal_ZERO)(P0_sum_ZERO);
+	}
+
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+	prove closure_R: *N*N1(N in R & is_successor(N, N1) -> N1 in R){
+		given |N, N1|;
+		implies N_in_R, successor_N1;
+		N_in_NATURALS, N_cond = R_def(N)(N_in_R);
+		N1_in_NATURALS = closure_naturals(N, N1)(N_in_NATURALS, successor_N1);
+		prove N1_cond: *X*SX*P0*P1(is_successor(X, SX) & is_natural_product(X, N1, P0) & is_natural_product(SX, N1, P1) -> is_natural_sum(P0, N1, P1)){
+			given |X, SX, P0, P1|;
+			implies successor_SX, product_P0, product_P1;
+			X_in_NATURALS, N1_in_NATURALS, tuple_condition = expand(product_P0);
+			SX_in_NATURALS, N1_in_NATURALS, tuple_condition = expand(product_P1);
+			X_N_in_NATURALS, product_X_N = natural_product(X, N)(X_in_NATURALS, N_in_NATURALS)|X_N|;
+			SX_N_in_NATURALS, product_SX_N = natural_product(SX, N)(SX_in_NATURALS, N_in_NATURALS)|SX_N|;
+			X_N_sum_X = natural_product_successor_recursion(X, N, N1, X_N, P0)(successor_N1, product_X_N, product_P0);
+			SX_N_sum_SX = natural_product_successor_recursion(SX, N, N1, SX_N, P1)(successor_N1, product_SX_N, product_P1);
+			X_N_sum_N = N_cond(X, SX, X_N, SX_N)(successor_SX, product_X_N, product_SX_N);
+			OTHER_SX_in_NATURALS, X_sum_ONE = natural_sum(X, ONE)(X_in_NATURALS, one_is_natural)|OTHER_SX|;
+			successor_OTHER_SX = natural_sum_successor(X, OTHER_SX)(X_sum_ONE);
+			equal_SX = successor_unique(X, SX, OTHER_SX)(successor_SX, successor_OTHER_SX);
+			X_sum_ONE = equality_consistency[<Q: is_natural_sum(X, ONE, Q)>](SX, OTHER_SX)(equal_SX)(X_sum_ONE);
+			SX_N_PLUS_X_in_NATURALS, SX_N_sum_X = natural_sum(SX_N, X)(SX_N_in_NATURALS, X_in_NATURALS)|SX_N_PLUS_X|;
+			other_sum_P1 = natural_sum_associative2(SX_N, X, ONE, P1, SX_N_PLUS_X, SX)(X_sum_ONE, SX_N_sum_SX, SX_N_sum_X);
+			N_PLUS_X_in_NATURALS, N_sum_X = natural_sum(N, X)(N_in_NATURALS, X_in_NATURALS)|N_PLUS_X|;
+			other_sum_SX_N_PLUS_X = natural_sum_associative(X_N, N, X, SX_N_PLUS_X, SX_N, N_PLUS_X)(X_N_sum_N, SX_N_sum_X, N_sum_X);
+			X_sum_N = natural_sum_commutative(N, X, N_PLUS_X)(N_sum_X);
+			P0_sum_N = natural_sum_associative2(X_N, X, N, SX_N_PLUS_X, P0, N_PLUS_X)(X_sum_N, other_sum_SX_N_PLUS_X, X_N_sum_X);
+			OTHER_N1_in_NATURALS, sum_OTHER_N1 = natural_sum(N, ONE)(N_in_NATURALS, one_is_natural)|OTHER_N1|;
+			successor_OTHER_N1 = natural_sum_successor(N, OTHER_N1)(sum_OTHER_N1);
+			equal_N1 = successor_unique(N, N1, OTHER_N1)(successor_N1, successor_OTHER_N1);
+			N_sum_ONE = equality_consistency[<Q: is_natural_sum(N, ONE, Q)>](N1, OTHER_N1)(equal_N1)(sum_OTHER_N1);
+			return natural_sum_associative(P0, N, ONE, P1, SX_N_PLUS_X, N1)(P0_sum_N, other_sum_P1, N_sum_ONE);
+		}
+
+		return R_def(N1)(N1_in_NATURALS, N1_cond);
+	}
+
+	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+	given |X, Y, SX, P0, P1|;
+	implies successor_SX, product_P0, product_P1;
+	X_in_NATURALS, Y_in_NATURALS, tuple_condition = expand(product_P0);
+	Y_in_R = expand(NATURALS_subset_R)(Y)(Y_in_NATURALS);
+	Y_in_NATURALS, result = R_def(Y)(Y_in_R);
+
+	return result(X, SX, P0, P1)(successor_SX, product_P0, product_P1);
+}
+
