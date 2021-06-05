@@ -423,3 +423,49 @@ prove natural_product_successor_recursion2: *X*Y*SX*P0*P1(is_successor(X, SX) & 
 	return result(X, SX, P0, P1)(successor_SX, product_P0, product_P1);
 }
 
+//Prove that the natural product is commutative
+prove natural_product_commutative: *X*Y*Z(is_natural_product(X, Y, Z) -> is_natural_product(Y, X, Z)){
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
+
+	//We induct on X
+	R_def = axiom_specify[<Q: *Y*Z(is_natural_product(Q, Y, Z) -> is_natural_product(Y, Q, Z))>](NATURALS)|R|;
+	prove ZERO_in_R: *Y*Z(is_natural_product(ZERO, Y, Z) -> is_natural_product(Y, ZERO, Z)){
+		given |Y, Z|;
+		implies ZERO_product_Y;
+		ZERO_in_NATURALS, Y_in_NATURALS, tuple_condition = expand(ZERO_product_Y);
+		other_product = natural_product_zero_identity2(Y)(Y_in_NATURALS);
+		Z_equal_ZERO = natural_product_unique(ZERO, Y, Z, ZERO)(ZERO_product_Y, other_product);
+		Y_product_ZERO = natural_product_zero_identity(Y)(Y_in_NATURALS);
+		return equality_consistency[<Q: is_natural_product(Y, ZERO, Q)>](Z, ZERO)(Z_equal_ZERO)(Y_product_ZERO);
+	}
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+	prove closure_R: *N*N1(N in R & is_successor(N, N1) -> N1 in R){
+		given |N, N1|;
+		implies N_in_R, successor_N1;
+		N_in_NATURALS, N_cond = R_def(N)(N_in_R);
+		N1_in_NATURALS = closure_naturals(N, N1)(N_in_NATURALS, successor_N1);
+		prove N1_cond: *Y*Z(is_natural_product(N1, Y, Z) -> is_natural_product(Y, N1, Z)){
+			given |Y, Z|;
+			implies N1_product_Y;
+			N1_in_NATURALS, Y_in_NATURALS, tuple_condition = expand(N1_product_Y);
+			PZ_in_NATURALS, product_PZ = natural_product(N, Y)(N_in_NATURALS, Y_in_NATURALS)|PZ|;
+			PZ_sum_Y = natural_product_successor_recursion2(N, Y, N1, PZ, Z)(successor_N1, product_PZ, N1_product_Y);
+			OTHER_Z_in_NATURALS, product_OTHER_Z = natural_product(Y, N1)(Y_in_NATURALS, N1_in_NATURALS)|OTHER_Z|;
+			other_product_PZ = N_cond(Y, PZ)(product_PZ);
+			other_sum_Z = natural_product_successor_recursion(Y, N, N1, PZ, OTHER_Z)(successor_N1, other_product_PZ, product_OTHER_Z);
+			equal_Z = natural_sum_unique(PZ, Y, Z, OTHER_Z)(PZ_sum_Y, other_sum_Z);
+			return equality_consistency[<Q: is_natural_product(Y, N1, Q)>](Z, OTHER_Z)(equal_Z)(product_OTHER_Z);
+		}
+		return R_def(N1)(N1_in_NATURALS, N1_cond);
+	}
+
+	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+	given |X, Y, Z|;
+	implies X_product_Y;
+	X_in_NATURALS, Y_in_NATURALS, tuple_condition = expand(X_product_Y);
+	X_in_R = expand(NATURALS_subset_R)(X)(X_in_NATURALS);
+	X_in_NATURALS, result = R_def(X)(X_in_R);
+	return result(Y, Z)(X_product_Y);
+}
+

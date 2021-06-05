@@ -1,0 +1,59 @@
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: natural_product_commutative<br><b>Description</b>: Prove that the natural product is commutative<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_commutative.html';" onmouseover="popup_window(this, 'natural_product_commutative | 04_multiplication');" onmouseout="close_popup();">natural_product_commutative</b>: <b style="color: red;">*</b>X<b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(<b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(X, Y, Z) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(Y, X, Z)){
+	empty_in_naturals, closure_naturals = <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_inductive.html';" onmouseover="popup_window(this, 'NATURALS_inductive | 03_addition');" onmouseout="close_popup();">NATURALS_inductive</b>);
+
+	//We induct on X
+	R_def = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[&ltQ: <b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(<b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(Q, Y, Z) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(Y, Q, Z))&gt](NATURALS)<b style="color: red;">|</b>R<b style="color: red;">|</b>;
+	<b style="color: blue;">prove</b> ZERO_in_R: <b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(<b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(ZERO, Y, Z) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(Y, ZERO, Z)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>Y, Z<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> ZERO_product_Y;
+		ZERO_in_NATURALS, Y_in_NATURALS, tuple_condition = <b style="color: green;">expand</b>(ZERO_product_Y);
+		other_product = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_zero_identity2.html';" onmouseover="popup_window(this, 'natural_product_zero_identity2 | 04_multiplication');" onmouseout="close_popup();">natural_product_zero_identity2</b>(Y)(Y_in_NATURALS);
+		Z_equal_ZERO = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_unique.html';" onmouseover="popup_window(this, 'natural_product_unique | 04_multiplication');" onmouseout="close_popup();">natural_product_unique</b>(ZERO, Y, Z, ZERO)(ZERO_product_Y, other_product);
+		Y_product_ZERO = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_zero_identity.html';" onmouseover="popup_window(this, 'natural_product_zero_identity | 04_multiplication');" onmouseout="close_popup();">natural_product_zero_identity</b>(Y)(Y_in_NATURALS);
+		<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(Y, ZERO, Q)&gt](Z, ZERO)(Z_equal_ZERO)(Y_product_ZERO);
+	}
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+	<b style="color: blue;">prove</b> closure_R: <b style="color: red;">*</b>N<b style="color: red;">*</b>N1(N in R <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(N, N1) <b style="color: red;">-&gt</b> N1 in R){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>N, N1<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> N_in_R, successor_N1;
+		N_in_NATURALS, N_cond = R_def(N)(N_in_R);
+		N1_in_NATURALS = closure_naturals(N, N1)(N_in_NATURALS, successor_N1);
+		<b style="color: blue;">prove</b> N1_cond: <b style="color: red;">*</b>Y<b style="color: red;">*</b>Z(<b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(N1, Y, Z) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(Y, N1, Z)){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>Y, Z<b style="color: red;">|</b>;
+			<b style="color: blue;">implies</b> N1_product_Y;
+			N1_in_NATURALS, Y_in_NATURALS, tuple_condition = <b style="color: green;">expand</b>(N1_product_Y);
+			PZ_in_NATURALS, product_PZ = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product.html';" onmouseover="popup_window(this, 'natural_product | 04_multiplication');" onmouseout="close_popup();">natural_product</b>(N, Y)(N_in_NATURALS, Y_in_NATURALS)<b style="color: red;">|</b>PZ<b style="color: red;">|</b>;
+			PZ_sum_Y = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_successor_recursion2.html';" onmouseover="popup_window(this, 'natural_product_successor_recursion2 | 04_multiplication');" onmouseout="close_popup();">natural_product_successor_recursion2</b>(N, Y, N1, PZ, Z)(successor_N1, product_PZ, N1_product_Y);
+			OTHER_Z_in_NATURALS, product_OTHER_Z = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product.html';" onmouseover="popup_window(this, 'natural_product | 04_multiplication');" onmouseout="close_popup();">natural_product</b>(Y, N1)(Y_in_NATURALS, N1_in_NATURALS)<b style="color: red;">|</b>OTHER_Z<b style="color: red;">|</b>;
+			other_product_PZ = N_cond(Y, PZ)(product_PZ);
+			other_sum_Z = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_successor_recursion.html';" onmouseover="popup_window(this, 'natural_product_successor_recursion | 04_multiplication');" onmouseout="close_popup();">natural_product_successor_recursion</b>(Y, N, N1, PZ, OTHER_Z)(successor_N1, other_product_PZ, product_OTHER_Z);
+			equal_Z = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_unique.html';" onmouseover="popup_window(this, 'natural_sum_unique | 03_addition');" onmouseout="close_popup();">natural_sum_unique</b>(PZ, Y, Z, OTHER_Z)(PZ_sum_Y, other_sum_Z);
+			<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(Y, N1, Q)&gt](Z, OTHER_Z)(equal_Z)(product_OTHER_Z);
+		}
+		<b style="color: blue;">return</b> R_def(N1)(N1_in_NATURALS, N1_cond);
+	}
+
+	NATURALS_subset_R = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_induction.html';" onmouseover="popup_window(this, 'NATURALS_induction | 03_addition');" onmouseout="close_popup();">NATURALS_induction</b>(R)(ZERO_in_R, closure_R);
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>X, Y, Z<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> X_product_Y;
+	X_in_NATURALS, Y_in_NATURALS, tuple_condition = <b style="color: green;">expand</b>(X_product_Y);
+	X_in_R = <b style="color: green;">expand</b>(NATURALS_subset_R)(X)(X_in_NATURALS);
+	X_in_NATURALS, result = R_def(X)(X_in_R);
+	<b style="color: blue;">return</b> result(Y, Z)(X_product_Y);
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>
