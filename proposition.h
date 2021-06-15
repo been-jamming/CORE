@@ -109,6 +109,7 @@ int is_digit(char c);
 int is_alpha(char c);
 int is_alphanumeric(char c);
 void skip_whitespace(char **c);
+void set_error(char *error_message);
 void error(int error_code);
 void get_identifier(char **c, char *buffer, size_t buffer_length);
 statement *create_statement(statement_type type, int num_bound_vars, int num_bound_props);

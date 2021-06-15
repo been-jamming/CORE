@@ -16,6 +16,7 @@ unsigned int line_number;
 char *global_file_name;
 char **global_program_pointer;
 char *global_program_start;
+char *global_error_message;
 
 int order_of_operations[4] = {3, 2, 1, 0};
 
@@ -46,12 +47,28 @@ void skip_whitespace(char **c){
 	}
 }
 
+void set_error(char *error_message){
+	global_error_message = error_message;
+}
+
+static int num_digits_uint(unsigned int i){
+	int output = 0;
+
+	do{
+		i /= 10;
+		output++;
+	} while(i);
+
+	return output;
+}
+
 void error(int error_code){
 	char *error_place;
 	char *line_start;
 	char *place;
 
-	fprintf(stderr, "Line %d of '%s'\n", line_number, global_file_name);
+	fprintf(stderr, "\033[31;1mError\033[0;1m: %s\033[0m\n", global_error_message);
+	fprintf(stderr, "in '%s'\n%d ", global_file_name, line_number);
 	error_place = *global_program_pointer;
 	line_start = error_place;
 	while(line_start != global_program_start && line_start[-1] != '\n'){
@@ -61,7 +78,7 @@ void error(int error_code){
 	for(place = line_start; *place && *place != '\n'; place++){
 		fputc(*place, stderr);
 	}
-	fprintf(stderr, "\n%*c^\n", (int) (error_place - line_start), ' ');
+	fprintf(stderr, "\n%*c^\n", (int) (error_place - line_start + num_digits_uint(line_number) + 1), ' ');
 
 #ifdef USE_CUSTOM_ALLOC
 	custom_malloc_abort();
@@ -259,7 +276,7 @@ statement *parse_proposition(char **c, int num_bound_vars, int num_bound_props){
 			skip_whitespace(c);
 			args = NULL;
 			if(**c != ')'){
-				fprintf(stderr, "Error: argument count mismatch\n");
+				set_error("argument count mismatch");
 				*c = beginning;
 				return NULL;
 			}
@@ -270,7 +287,7 @@ statement *parse_proposition(char **c, int num_bound_vars, int num_bound_props){
 				skip_whitespace(c);
 				get_identifier(c, var_name, 256);
 				if(var_name[0] == '\0'){
-					fprintf(stderr, "Error: expected argument identifier\n");
+					set_error("expected argument identifier");
 					*c = beginning;
 					free(args);
 					return NULL;
@@ -292,7 +309,7 @@ statement *parse_proposition(char **c, int num_bound_vars, int num_bound_props){
 					args[counted_args].var = var;
 					args[counted_args].var->num_references++;
 				} else {
-					fprintf(stderr, "Error: unknown variable '%s'\n", var_name);
+					set_error("unknown variable");
 					*c = beginning;
 					free(args);
 					return NULL;
@@ -302,12 +319,12 @@ statement *parse_proposition(char **c, int num_bound_vars, int num_bound_props){
 				if(**c == ',' && counted_args < num_args){
 					++*c;
 				} else if(**c == ','){
-					fprintf(stderr, "Error: excess arguments in proposition\n");
+					set_error("excess arguments in proposition");
 					*c = beginning;
 					free(args);
 					return NULL;
 				} else if(**c != ')'){
-					fprintf(stderr, "Error: expected ',' or ')'\n");
+					set_error("expected ',' or ')'");
 					*c = beginning;
 					free(args);
 					return NULL;
@@ -315,7 +332,7 @@ statement *parse_proposition(char **c, int num_bound_vars, int num_bound_props){
 			}
 			++*c;
 			if(counted_args < num_args){
-				fprintf(stderr, "Error: not enough arguments in proposition\n");
+				set_error("not enough arguments in proposition");
 				*c = beginning;
 				free(args);
 				return NULL;
@@ -324,7 +341,7 @@ statement *parse_proposition(char **c, int num_bound_vars, int num_bound_props){
 	} else if(num_args == 0){
 		args = NULL;
 	} else {
-		fprintf(stderr, "Error: expected arguments for proposition\n");
+		set_error("expected arguments for proposition");
 		*c = beginning;
 		return NULL;
 	}
@@ -454,7 +471,7 @@ statement *parse_parentheses(char **c, int num_bound_vars, int num_bound_props){
 	output = parse_statement(c, num_bound_vars, num_bound_props);
 
 	if(**c != ')'){
-		fprintf(stderr, "Error: expected ')'\n");
+		set_error("expected ')'");
 		error(1);
 	}
 	++*c;
@@ -480,7 +497,7 @@ statement *parse_value(char **c, int num_bound_vars, int num_bound_props){
 	} else if((output = parse_parentheses(c, num_bound_vars, num_bound_props))){
 		return output;
 	} else {
-		fprintf(stderr, "Error: could not parse statement value\n");
+		set_error("could not parse statement value");
 		error(1);
 	}
 
