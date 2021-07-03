@@ -535,10 +535,10 @@ void substitute_proposition(statement *s, statement *child){
 	}
 }
 
-variable *create_object_var(char *var_name){
+variable *create_object_var(char *var_name, unsigned int depth){
 	variable *v;
 
-	v = read_dictionary(variables[current_depth], var_name, 0);
+	v = read_dictionary(variables[depth], var_name, 0);
 	if(v && !v->num_references){
 		free_variable(v);
 	} else if(v){
@@ -553,12 +553,12 @@ variable *create_object_var(char *var_name){
 	strcpy(v->name, var_name);
 	v->depth = current_depth;
 
-	write_dictionary(variables + current_depth, var_name, v, 0);
+	write_dictionary(variables + depth, var_name, v, 0);
 
 	return v;
 }
 
-variable *get_object_var(char *var_name){
+variable *get_object_var(char *var_name, unsigned int *depth){
 	variable *v;
 	int i;
 
@@ -570,6 +570,10 @@ variable *get_object_var(char *var_name){
 		if(v){
 			break;
 		}
+	}
+
+	if(v && depth){
+		*depth = i;
 	}
 
 	return v;
@@ -1174,7 +1178,7 @@ statement *parse_statement_value_pipe(char **c, statement *output, unsigned char
 			error(1);
 		}
 		skip_whitespace(c);
-		var = create_object_var(var_name);
+		var = create_object_var(var_name, current_depth);
 		if(!var){
 			set_error("failed to create variable");
 			error(1);
@@ -1264,15 +1268,15 @@ statement *parse_statement_value_parentheses(char **c, statement *output, unsign
 				error(1);
 			}
 			skip_whitespace(c);
-			var = get_object_var(var_name);
+			var = get_object_var(var_name, NULL);
 			if(!var){
-				set_error("failed to find variable'");
+				set_error("failed to find object");
 				error(1);
 			}
 			next_output = output->child0;
 			free(output);
 			if(!substitute_variable(next_output, 0, var)){
-				set_error("failed to substitute variable");
+				set_error("failed to substitute object");
 				error(1);
 			}
 			output = next_output;

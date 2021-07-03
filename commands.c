@@ -912,7 +912,7 @@ statement *given_command(char **c, statement *goal){
 			next_goal = malloc(sizeof(statement));
 			copy_statement(next_goal, goal->child0);
 		}
-		new_var = create_object_var(name_buffer);
+		new_var = create_object_var(name_buffer, current_depth);
 		if(!substitute_variable(next_goal, 0, new_var)){
 			set_error("cannot substitute variable");
 			error(1);
@@ -1012,13 +1012,13 @@ statement *choose_command(char **c, statement *goal){
 			next_goal = malloc(sizeof(statement));
 			copy_statement(next_goal, goal->child0);
 		}
-		var = get_object_var(name_buffer);
+		var = get_object_var(name_buffer, NULL);
 		if(!var){
-			set_error("unknown variable\n");
+			set_error("unknown object\n");
 			error(1);
 		}
 		if(!substitute_variable(next_goal, 0, var)){
-			set_error("cannot substitute variable");
+			set_error("cannot substitute object");
 			error(1);
 		}
 		add_bound_variables(next_goal, -1);
@@ -1223,6 +1223,66 @@ statement *not_command(char **c, statement *goal){
 	return goal;
 }
 
+int rename_command(char **c){
+	char name_buffer[256];
+	variable *var;
+	unsigned int depth;
+
+	skip_whitespace(c);
+	if(strncmp(*c, "rename", 6) || is_alphanumeric((*c)[6])){
+		return 0;
+	}
+
+	*c += 6;
+	skip_whitespace(c);
+	get_identifier(c, name_buffer, 256);
+	if(name_buffer[0] == '\0'){
+		set_error("expected identifier");
+		error(1);
+	}
+
+	skip_whitespace(c);
+	
+	var = get_object_var(name_buffer, &depth);
+	//Remove the object from the set of variables
+	write_dictionary(variables + depth, var->name, NULL, 0);
+	if(!var){
+		set_error("unknown object");
+		error(1);
+	}
+
+	if(**c != ':'){
+		set_error("expected ':'");
+		error(1);
+	}
+
+	++*c;
+	skip_whitespace(c);
+	get_identifier(c, name_buffer, 256);
+	if(name_buffer[0] == '\0'){
+		set_error("expected identifier");
+		error(1);
+	}
+
+	skip_whitespace(c);
+	if(**c != ';'){
+		set_error("expected ';'");
+		error(1);
+	}
+
+	++*c;
+
+	if(read_dictionary(variables[depth], name_buffer, 0)){
+		set_error("object already exists");
+		error(1);
+	}
+	var->name = realloc(var->name, sizeof(char)*(strlen(name_buffer) + 1));
+	strcpy(var->name, name_buffer);
+	write_dictionary(variables + depth, name_buffer, var, 0);
+
+	return 1;
+}
+
 statement *verify_command(char **c, unsigned char allow_proof_value, statement *goal){
 	proposition *def;
 	proposition *other_def;
@@ -1274,6 +1334,8 @@ statement *verify_command(char **c, unsigned char allow_proof_value, statement *
 	} else if(allow_proof_value && (return_value = not_command(c, goal))){
 		return return_value;
 	} else if(debug_command(c, goal)){
+		//pass
+	} else if(rename_command(c)){
 		//pass
 	} else if(assign_command(c)){
 		//Pass
