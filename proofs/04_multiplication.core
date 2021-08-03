@@ -423,6 +423,17 @@ prove natural_product_successor_recursion2: *X*Y*SX*P0*P1(is_successor(X, SX) & 
 	return result(X, SX, P0, P1)(successor_SX, product_P0, product_P1);
 }
 
+//Prove that the natural product is a natural number
+prove natural_product_is_natural: *X*Y*Z(is_natural_product(X, Y, Z) -> Z in NATURALS){
+	given |X, Y, Z|;
+	implies product_Z;
+
+	X_in_NATURALS, Y_in_NATURALS, tuple_condition = expand(product_Z);
+	OTHER_Z_in_NATURALS, other_product = natural_product(X, Y)(X_in_NATURALS, Y_in_NATURALS)|OTHER_Z|;
+	equal_Z = natural_product_unique(X, Y, Z, OTHER_Z)(product_Z, other_product);
+	return equality_consistency[<Q: Q in NATURALS>](Z, OTHER_Z)(equal_Z)(OTHER_Z_in_NATURALS);
+}
+
 //Prove that the natural product is commutative
 prove natural_product_commutative: *X*Y*Z(is_natural_product(X, Y, Z) -> is_natural_product(Y, X, Z)){
 	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
@@ -467,5 +478,89 @@ prove natural_product_commutative: *X*Y*Z(is_natural_product(X, Y, Z) -> is_natu
 	X_in_R = expand(NATURALS_subset_R)(X)(X_in_NATURALS);
 	X_in_NATURALS, result = R_def(X)(X_in_R);
 	return result(Y, Z)(X_product_Y);
+}
+
+//We prove that multiplication distributes over addition before proving that multiplication is associative
+//I find this quite odd
+prove natural_product_distributes: *X*Y*Z*SXY*PZ*PXZ*PYZ(is_natural_sum(X, Y, SXY) & is_natural_product(SXY, Z, PZ) & is_natural_product(X, Z, PXZ) & is_natural_product(Y, Z, PYZ) -> is_natural_sum(PXZ, PYZ, PZ)){
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
+
+	//We induct on Y
+	R_def = axiom_specify[<Y: *X*Z*SXY*PZ*PXZ*PYZ(is_natural_sum(X, Y, SXY) & is_natural_product(SXY, Z, PZ) & is_natural_product(X, Z, PXZ) & is_natural_product(Y, Z, PYZ) -> is_natural_sum(PXZ, PYZ, PZ))>](NATURALS)|R|;
+
+	prove ZERO_in_R: *X*Z*SXY*PZ*PXZ*PYZ(is_natural_sum(X, ZERO, SXY) & is_natural_product(SXY, Z, PZ) & is_natural_product(X, Z, PXZ) & is_natural_product(ZERO, Z, PYZ) -> is_natural_sum(PXZ, PYZ, PZ)){
+		given |X, Z, SXY, PZ, PXZ, PYZ|;
+		implies sum_SXY, product_PZ, product_PXZ, product_PYZ;
+
+		X_in_NATURALS, ZERO_in_NATURALS, tuple_exists = expand(sum_SXY);
+		sum_X = natural_sum_zero_identity(X)(X_in_NATURALS);
+		sum_X = natural_sum_commutative(ZERO, X, X)(sum_X);
+		SXY_equal_X = natural_sum_unique(X, ZERO, SXY, X)(sum_SXY, sum_X);
+		
+		ZERO_in_NATURALS, Z_in_NATURALS, tuple_condition = expand(product_PYZ);
+		other_product = natural_product_zero_identity2(Z)(Z_in_NATURALS);
+		PYZ_equal_ZERO = natural_product_unique(ZERO, Z, PYZ, ZERO)(product_PYZ, other_product);
+
+		product_PZ = equality_consistency[<Q: is_natural_product(Q, Z, PZ)>](SXY, X)(SXY_equal_X)(product_PZ);
+		PZ_equal_PXZ = natural_product_unique(X, Z, PZ, PXZ)(product_PZ, product_PXZ);
+		PZ_in_NATURALS = natural_product_is_natural(X, Z, PZ)(product_PZ);
+		result = natural_sum_zero_identity(PZ)(PZ_in_NATURALS);
+		result = natural_sum_commutative(ZERO, PZ, PZ)(result);
+		result = equality_consistency[<Q: is_natural_sum(Q, ZERO, PZ)>](PZ, PXZ)(PZ_equal_PXZ)(result);
+		result = equality_consistency[<Q: is_natural_sum(PXZ, Q, PZ)>](PYZ, ZERO)(PYZ_equal_ZERO)(result);
+
+		return result;
+	}
+
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+	prove closure_R: *Y*SY(Y in R & is_successor(Y, SY) -> SY in R){
+		given |Y, SY|;
+		implies Y_in_R, successor_SY;
+		Y_in_NATURALS, Y_condition = R_def(Y)(Y_in_R);
+		SY_in_NATURALS = closure_naturals(Y, SY)(Y_in_NATURALS, successor_SY);
+
+		prove SY_condition: *X*Z*SXY*PZ*PXZ*PYZ(is_natural_sum(X, SY, SXY) & is_natural_product(SXY, Z, PZ) & is_natural_product(X, Z, PXZ) & is_natural_product(SY, Z, PYZ) -> is_natural_sum(PXZ, PYZ, PZ)){
+			given |X, Z, SXY, PZ, PXZ, PYZ|;
+			implies sum_SXY, product_PZ, product_PXZ, product_PYZ;
+
+			X_in_NATURALS, SY_in_NATURALS, tuple_exists = expand(sum_SXY);
+			SY_in_NATURALS, Z_in_NATURALS, tuple_condition = expand(product_PYZ);
+			T_in_NATURALS, product_T = natural_product(Y, Z)(Y_in_NATURALS, Z_in_NATURALS)|T|;
+			sum_PYZ = natural_product_successor_recursion2(Y, Z, SY, T, PYZ)(successor_SY, product_T, product_PYZ);
+
+			OTHER_SY_in_NATURALS, sum_OTHER_SY = natural_sum(Y, ONE)(Y_in_NATURALS, one_is_natural)|OTHER_SY|;
+			successor_OTHER_SY = natural_sum_successor(Y, OTHER_SY)(sum_OTHER_SY);
+			equal_SY = successor_unique(Y, SY, OTHER_SY)(successor_SY, successor_OTHER_SY);
+			sum_SY = equality_consistency[<Q: is_natural_sum(Y, ONE, Q)>](SY, OTHER_SY)(equal_SY)(sum_OTHER_SY);
+
+			XY_in_NATURALS, sum_XY = natural_sum(X, Y)(X_in_NATURALS, Y_in_NATURALS)|XY|;
+			other_sum_SXY = natural_sum_associative2(X, Y, ONE, SXY, XY, SY)(sum_SY, sum_SXY, sum_XY);
+			successor_SXY = natural_sum_successor(XY, SXY)(other_sum_SXY);
+			
+			Q_in_NATURALS, product_Q = natural_product(XY, Z)(XY_in_NATURALS, Z_in_NATURALS)|Q|;
+			sum_PZ = natural_product_successor_recursion2(XY, Z, SXY, Q, PZ)(successor_SXY, product_Q, product_PZ);
+			
+			QYZ_in_NATURALS, product_QYZ = natural_product(Y, Z)(Y_in_NATURALS, Z_in_NATURALS)|QYZ|;
+			//Here is where the inductive hypothesis is used
+			sum_Q = Y_condition(X, Z, XY, Q, PXZ, QYZ)(sum_XY, product_Q, product_PXZ, product_QYZ);
+
+			R_in_NATURALS, sum_R = natural_sum(QYZ, Z)(QYZ_in_NATURALS, Z_in_NATURALS)|R|;
+			sum_PZ = natural_sum_associative(PXZ, QYZ, Z, PZ, Q, R)(sum_Q, sum_PZ, sum_R);
+			sum_PYZ = natural_product_successor_recursion2(Y, Z, SY, QYZ, PYZ)(successor_SY, product_QYZ, product_PYZ);
+			equal_R = natural_sum_unique(QYZ, Z, PYZ, R)(sum_PYZ, sum_R);
+			return equality_consistency[<W: is_natural_sum(PXZ, W, PZ)>](PYZ, R)(equal_R)(sum_PZ);
+		}
+
+		return R_def(SY)(SY_in_NATURALS, SY_condition);
+	}
+
+	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+	given |X, Y, Z, SXY, PZ, PXZ, PYZ|;
+	implies sum_SXY, product_PZ, product_PXZ, product_PYZ;
+	X_in_NATURALS, Y_in_NATURALS, tuple_condition = expand(sum_SXY);
+	Y_in_R = expand(NATURALS_subset_R)(Y)(Y_in_NATURALS);
+	Y_in_NATURALS, Y_cond = R_def(Y)(Y_in_R);
+	return Y_cond(X, Z, SXY, PZ, PXZ, PYZ)(sum_SXY, product_PZ, product_PXZ, product_PYZ);
 }
 
