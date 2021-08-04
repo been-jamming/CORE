@@ -1493,6 +1493,133 @@ prove natural_less_than_transitive: *A*B*C(A in NATURALS & B in NATURALS & C in 
 	return result(B, C)(A_in_NATURALS, rest_of_premises);
 }
 
+prove natural_less_than_successor_balance: *A*B*SA*SB(A in NATURALS & B in NATURALS & is_successor(A, SA) & is_successor(B, SB) & natural_less_than(A, B) -> natural_less_than(SA, SB)){
+	given |A, B, SA, SB|;
+	implies A_in_NATURALS, B_in_NATURALS, successor_SA, successor_SB, A_less_than_B;
+
+	return branch(natural_less_than_successor_weaken(A, SA, B)(A_in_NATURALS, successor_SA, B_in_NATURALS)(A_less_than_B), SA_equal_B, SA_less_than_B){
+		return #natural_less_than(SA, SB)(expand(successor_SB)(SA)(or(<:SA in B>, SA_equal_B)));
+	} or {
+		SA_in_B = expand(SA_less_than_B);
+		return #natural_less_than(SA, SB)(expand(successor_SB)(SA)(or(SA_in_B, <:equal_sets(SA, B)>)));
+	};
+}
+
+//Define "less than or equal to," except I name it "less_than_weak"
+//Notice that it is the same as the definition of a subset
+define natural_less_than_weak(A, B): *X(X in A -> X in B);
+
+//Now we prove that we can interpret "natural_less_than_weak" as "less than or equal to"
+prove natural_less_than_weak_interpretation: *A*B(A in NATURALS & B in NATURALS -> (natural_less_than_weak(A, B) <-> natural_less_than(A, B) | equal_sets(A, B))){
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
+
+	prove result0: *A*B(A in NATURALS & B in NATURALS & natural_less_than_weak(A, B) -> natural_less_than(A, B) | equal_sets(A, B)){
+		//Induct on A
+		R_def = axiom_specify[<Q: *B(B in NATURALS & natural_less_than_weak(Q, B) -> natural_less_than(Q, B) | equal_sets(Q, B))>](NATURALS)|R|;
+
+		prove ZERO_in_R: *B(B in NATURALS & natural_less_than_weak(ZERO, B) -> natural_less_than(ZERO, B) | equal_sets(ZERO, B)){
+			given |B|;
+			implies B_in_NATURALS, ZERO_less_than_weak_B;
+			return swap(natural_zero_minimal(B)(B_in_NATURALS));
+		}
+		ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+		prove closure_R: *Y*SY(Y in R & is_successor(Y, SY) -> SY in R){
+			given |Y, SY|;
+			implies Y_in_R, successor_SY;
+
+			Y_in_NATURALS, Y_condition = R_def(Y)(Y_in_R);
+			SY_in_NATURALS = closure_naturals(Y, SY)(Y_in_NATURALS, successor_SY);
+
+			prove SY_condition: *B(B in NATURALS & natural_less_than_weak(SY, B) -> natural_less_than(SY, B) | equal_sets(SY, B)){
+				given |B|;
+				implies B_in_NATURALS, SY_less_than_weak_B;
+
+				Y_in_SY = expand(successor_SY)(Y)(or(<:Y in Y>, equal_sets_reflexive(Y)));
+				Y_in_B = expand(SY_less_than_weak_B)(Y)(Y_in_SY);
+				return branch(NATURALS_nonzero_successor(B)(B_in_NATURALS), B_equal_ZERO, predecessor_exists){
+					Y_in_ZERO = equality_consistency[<Q: Y in Q>](B, ZERO)(B_equal_ZERO)(Y_in_B);
+					Y_in_EMPTY_SET = equality_consistency[<Q: Y in Q>](EMPTY_SET, ZERO)(zero_definition)(Y_in_ZERO);
+					return axiom_absurdity[goal](empty_set_condition(Y)(Y_in_EMPTY_SET));
+				} or {
+					PB_in_NATURALS, predecessor_PB = predecessor_exists|PB|;
+					prove Y_less_than_weak_PB: *X(X in Y -> X in PB){
+						given |X|;
+						implies X_in_Y;
+						X_in_SY = expand(successor_SY)(X)(or(X_in_Y, <:equal_sets(X, Y)>));
+						X_in_B = expand(SY_less_than_weak_B)(X)(X_in_SY);
+						return branch(expand(predecessor_PB)(X)(X_in_B), X_in_PB, X_equal_PB){
+							return X_in_PB;
+						} or {
+							PB_in_Y = equality_consistency[<Q: Q in Y>](X, PB)(X_equal_PB)(X_in_Y);
+							return branch(expand(predecessor_PB)(Y)(Y_in_B), Y_in_PB, Y_equal_PB){
+								absurd = branch(no_pair_recursive_membership(Y, PB), not_Y_in_PB, not_PB_in_Y){return not_Y_in_PB(Y_in_PB);} or {return not_PB_in_Y(PB_in_Y);};
+								return axiom_absurdity[goal](absurd);
+							} or {
+								return expand(Y_equal_PB)(X)(X_in_Y);
+							};
+						};
+					}
+					Y_less_than_weak_PB = #natural_less_than_weak(Y, PB)(Y_less_than_weak_PB);
+					return branch(Y_condition(PB)(PB_in_NATURALS, Y_less_than_weak_PB), Y_less_than_PB, Y_equal_PB){
+						return or(natural_less_than_successor_balance(Y, PB, SY, B)(Y_in_NATURALS, PB_in_NATURALS, successor_SY, predecessor_PB, Y_less_than_PB), <:equal_sets(SY, B)>);
+					} or {
+						successor_SY = equality_consistency[<Q: is_successor(Q, SY)>](Y, PB)(Y_equal_PB)(successor_SY);
+						SY_equal_PB = successor_unique(PB, SY, B)(successor_SY, predecessor_PB);
+						return or(<:natural_less_than(SY, B)>, SY_equal_PB);
+					};
+				};
+			}
+			return R_def(SY)(SY_in_NATURALS, SY_condition);
+		}
+		NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+
+		given |A, B|;
+		implies A_in_NATURALS, B_in_NATURALS, A_less_than_weak_B;
+		A_in_R = expand(NATURALS_subset_R)(A)(A_in_NATURALS);
+		A_in_NATURALS, A_cond = R_def(A)(A_in_R);
+		return A_cond(B)(B_in_NATURALS, A_less_than_weak_B);
+	}
+
+	prove result1: *A*B(A in NATURALS & B in NATURALS & (natural_less_than(A, B) | equal_sets(A, B)) -> natural_less_than_weak(A, B)){
+		given |A, B|;
+		implies A_in_NATURALS, B_in_NATURALS, either;
+
+		return branch(either, A_less_than_B, A_equal_B){
+			prove A_less_than_weak_B: *X(X in A -> X in B){
+				given |X|;
+				implies X_in_A;
+				X_less_than_A = #natural_less_than(X, A)(X_in_A);
+				X_in_NATURALS = natural_less_than_natural(X, A)(A_in_NATURALS, X_less_than_A);
+				X_less_than_B = natural_less_than_transitive(X, A, B)(X_in_NATURALS, A_in_NATURALS, B_in_NATURALS, X_less_than_A, A_less_than_B);
+				return expand(X_less_than_B);
+			}
+			return #natural_less_than_weak(A, B)(A_less_than_weak_B);
+		} or {
+			prove A_less_than_weak_B: *X(X in A -> X in B){
+				given |X|;
+				implies X_in_A;
+				return expand(A_equal_B)(X)(X_in_A);
+			}
+			return #natural_less_than_weak(A, B)(A_less_than_weak_B);
+		};
+	}
+
+	given |A, B|;
+	implies A_in_NATURALS, B_in_NATURALS;
+
+	prove result0: natural_less_than_weak(A, B) -> natural_less_than(A, B) | equal_sets(A, B){
+		implies premise;
+		return result0(A, B)(A_in_NATURALS, B_in_NATURALS, premise);
+	}
+	prove result1: natural_less_than(A, B) | equal_sets(A, B) -> natural_less_than_weak(A, B){
+		implies premise;
+		return result1(A, B)(A_in_NATURALS, B_in_NATURALS, premise);
+	}
+
+	return iff(result0, result1);
+}
+
 //Define when a function F is recursively defined on the naturals such that G: T -> T, A in T, F: NATURALS -> T, F(0) = A, and F(N + 1) = G(F(N))
 define is_recursively_defined_naturals(T, A, G, F): is_function(F) & is_domain(F, NATURALS) & is_codomain(F, T) & are_related(ZERO, A, F) & *N*N1*U*V(N in NATURALS & is_successor(N, N1) & are_related(N, U, F) & are_related(N1, V, F) -> are_related(U, V, G));
 
