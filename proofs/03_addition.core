@@ -1523,6 +1523,64 @@ prove natural_less_than_successor_balance: *A*B*SA*SB(A in NATURALS & B in NATUR
 	};
 }
 
+//We finally have to use strong induction, so I prove it here
+//If P(N) is the statement to be proved, we use regular induction to prove that for all N, *K(K < N -> K in S)
+prove NATURALS_strong_induction: *S(*Y(Y in NATURALS & *K(natural_less_than(K, Y) -> K in S) -> Y in S) -> is_subset(NATURALS, S)){
+	given |S|;
+	implies less_than_closure;
+
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
+
+	R_def = axiom_specify[<Q: *K(natural_less_than(K, Q) -> K in S)>](NATURALS)|R|;
+
+	prove ZERO_in_R: *K(natural_less_than(K, ZERO) -> K in S){
+		given |K|;
+		implies K_less_than_ZERO;
+		K_in_ZERO = expand(K_less_than_ZERO);
+		K_in_EMPTY_SET = expand(zero_definition)(K)(K_in_ZERO);
+		return axiom_absurdity[goal](empty_set_condition(K)(K_in_EMPTY_SET));
+	}
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+	prove closure_R: *Y*SY(Y in R & is_successor(Y, SY) -> SY in R){
+		given |Y, SY|;
+		implies Y_in_R, successor_SY;
+		Y_in_NATURALS, Y_condition = R_def(Y)(Y_in_R);
+		SY_in_NATURALS = closure_naturals(Y, SY)(Y_in_NATURALS, successor_SY);
+
+		prove SY_condition: *K(natural_less_than(K, SY) -> K in S){
+			given |K|;
+			implies K_less_than_SY;
+			
+			K_in_SY = expand(K_less_than_SY);
+			K_in_Y_or_K_equal_Y = expand(successor_SY)(K)(K_in_SY);
+			return branch(K_in_Y_or_K_equal_Y, K_in_Y, K_equal_Y){
+				K_less_than_Y = #natural_less_than(K, Y)(K_in_Y);
+				return Y_condition(K)(K_less_than_Y);
+			} or {
+				Y_in_S = less_than_closure(Y)(Y_in_NATURALS, Y_condition);
+				return equality_consistency[<Q: Q in S>](K, Y)(K_equal_Y)(Y_in_S);
+			};
+		}
+		return R_def(SY)(SY_in_NATURALS, SY_condition);
+	}
+
+	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+	prove NATURALS_subset_S: *X(X in NATURALS -> X in S){
+		given |X|;
+		implies X_in_NATURALS;
+		successor_SX = successor(X)|SX|;
+		SX_in_NATURALS = closure_naturals(X, SX)(X_in_NATURALS, successor_SX);
+		SX_in_R = expand(NATURALS_subset_R)(SX)(SX_in_NATURALS);
+		SX_in_NATURALS, SX_condition = R_def(SX)(SX_in_R);
+		X_in_SX = expand(successor_SX)(X)(or(<:X in X>, equal_sets_reflexive(X)));
+		X_less_than_SX = #natural_less_than(X, SX)(X_in_SX);
+		return SX_condition(X)(X_less_than_SX);
+	}
+
+	return #is_subset(NATURALS, S)(NATURALS_subset_S);
+}
+
 //Define "less than or equal to," except I name it "less_than_weak"
 //Notice that it is the same as the definition of a subset
 define natural_less_than_weak(A, B): *X(X in A -> X in B);
