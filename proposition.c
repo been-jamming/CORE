@@ -526,7 +526,7 @@ int get_operation(char **c){
 static statement *parse_statement_recursive(int priority, statement *s0, char **c, int num_bound_vars, int num_bound_props){
 	statement *s1;
 	statement *output;
-	statement_type operation;
+	int operation;
 	char *temp_c;
 
 	skip_whitespace(c);
