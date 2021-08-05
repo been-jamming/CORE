@@ -1,0 +1,86 @@
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: naturals_well_ordering_principle<br><b>Description</b>: Finally we prove the well ordering principle on the natural numbers<br>This is the first proof in CORE I've done which uses strong induction<br>It doesn't have a base case either, which I find interesting<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/naturals_well_ordering_principle.html';" onmouseover="popup_window(this, 'naturals_well_ordering_principle | 03_addition');" onmouseout="close_popup();">naturals_well_ordering_principle</b>: <b style="color: red;">*</b>S(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_subset.html';" onmouseover="popup_window(this, 'is_subset | 00_zf');" onmouseout="close_popup();">is_subset</b>(S, NATURALS) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/not_empty.html';" onmouseover="popup_window(this, 'not_empty | 00_zf');" onmouseout="close_popup();">not_empty</b>(S) <b style="color: red;">-&gt</b> <b style="color: red;">^</b>N(N in S <b style="color: red;">&</b> <b style="color: red;">*</b>M(M in S <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than_weak.html';" onmouseover="popup_window(this, 'natural_less_than_weak | 03_addition');" onmouseout="close_popup();">natural_less_than_weak</b>(N, M)))){
+	empty_in_naturals, closure_naturals = <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_inductive.html';" onmouseover="popup_window(this, 'NATURALS_inductive | 03_addition');" onmouseout="close_popup();">NATURALS_inductive</b>);
+
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>S<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> S_subset_NATURALS, S_not_empty;
+
+	//We induct on a different form of the statement
+	<b style="color: blue;">prove</b> alternative_form: <b style="color: red;">*</b>N(N in S <b style="color: red;">-&gt</b> <b style="color: red;">^</b>M(M in S <b style="color: red;">&</b> <b style="color: red;">*</b>K(K in S <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than_weak.html';" onmouseover="popup_window(this, 'natural_less_than_weak | 03_addition');" onmouseout="close_popup();">natural_less_than_weak</b>(M, K)))){
+		//We use STRONG induction on N
+		R_def = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[&ltQ: Q in S <b style="color: red;">-&gt</b> <b style="color: red;">^</b>M(M in S <b style="color: red;">&</b> <b style="color: red;">*</b>K(K in S <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than_weak.html';" onmouseover="popup_window(this, 'natural_less_than_weak | 03_addition');" onmouseout="close_popup();">natural_less_than_weak</b>(M, K)))&gt](NATURALS)<b style="color: red;">|</b>R<b style="color: red;">|</b>;
+
+		<b style="color: blue;">prove</b> strong_inductive_hypothesis: <b style="color: red;">*</b>Y(Y in NATURALS <b style="color: red;">&</b> <b style="color: red;">*</b>J(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than.html';" onmouseover="popup_window(this, 'natural_less_than | 03_addition');" onmouseout="close_popup();">natural_less_than</b>(J, Y) <b style="color: red;">-&gt</b> J in R) <b style="color: red;">-&gt</b> Y in R){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>Y<b style="color: red;">|</b>;
+			<b style="color: blue;">implies</b> Y_in_NATURALS, closure_less_than;
+
+			<b style="color: blue;">prove</b> Y_condition: Y in S <b style="color: red;">-&gt</b> <b style="color: red;">^</b>M(M in S <b style="color: red;">&</b> <b style="color: red;">*</b>K(K in S <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than_weak.html';" onmouseover="popup_window(this, 'natural_less_than_weak | 03_addition');" onmouseout="close_popup();">natural_less_than_weak</b>(M, K))){
+				<b style="color: blue;">implies</b> Y_in_S;
+
+				<b style="color: blue;">return</b> <b style="color: green;">branch</b>(<b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_excluded_middle.html';" onmouseover="popup_window(this, 'axiom_excluded_middle | 00_zf');" onmouseout="close_popup();">axiom_excluded_middle</b>[&lt:<b style="color: red;">^</b>L(L in S <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than.html';" onmouseover="popup_window(this, 'natural_less_than | 03_addition');" onmouseout="close_popup();">natural_less_than</b>(L, Y))&gt], L_exists, L_not_exists){
+					L_in_S, L_less_than_Y = L_exists<b style="color: red;">|</b>L<b style="color: red;">|</b>;
+					L_in_R = closure_less_than(L)(L_less_than_Y);
+					L_in_NATURALS, L_condition = R_def(L)(L_in_R);
+					<b style="color: blue;">return</b> L_condition(L_in_S);
+				} <b style="color: green;">or</b> {
+					<b style="color: blue;">prove</b> all_greater_than_weak: <b style="color: red;">*</b>K(K in S <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than_weak.html';" onmouseover="popup_window(this, 'natural_less_than_weak | 03_addition');" onmouseout="close_popup();">natural_less_than_weak</b>(Y, K)){
+						<b style="color: blue;">given</b> <b style="color: red;">|</b>K<b style="color: red;">|</b>;
+						<b style="color: blue;">implies</b> K_in_S;
+
+						K_in_NATURALS = <b style="color: green;">expand</b>(S_subset_NATURALS)(K)(K_in_S);
+
+						<b style="color: blue;">return</b> <b style="color: green;">branch</b>(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than_weak_dichotomy.html';" onmouseover="popup_window(this, 'natural_less_than_weak_dichotomy | 03_addition');" onmouseout="close_popup();">natural_less_than_weak_dichotomy</b>(Y, K)(Y_in_NATURALS, K_in_NATURALS), Y_less_than_weak_K, K_less_than_weak_Y){
+							<b style="color: blue;">return</b> Y_less_than_weak_K;
+						} <b style="color: green;">or</b> {
+							less_than_or_equal = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than_weak_interpretation.html';" onmouseover="popup_window(this, 'natural_less_than_weak_interpretation | 03_addition');" onmouseout="close_popup();">natural_less_than_weak_interpretation</b>(K, Y)(K_in_NATURALS, Y_in_NATURALS)(K_less_than_weak_Y);
+							<b style="color: blue;">return</b> <b style="color: green;">branch</b>(less_than_or_equal, K_less_than_Y, K_equal_Y){
+								<b style="color: blue;">prove</b> does_exist: <b style="color: red;">^</b>L(L in S <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than.html';" onmouseover="popup_window(this, 'natural_less_than | 03_addition');" onmouseout="close_popup();">natural_less_than</b>(L, Y)){
+									<b style="color: blue;">choose</b> K;
+									<b style="color: blue;">return</b> K_in_S, K_less_than_Y;
+								}
+								<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_absurdity.html';" onmouseover="popup_window(this, 'axiom_absurdity | 00_zf');" onmouseout="close_popup();">axiom_absurdity</b>[goal](L_not_exists(does_exist));
+							} <b style="color: green;">or</b> {
+								Y_equal_K = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets_symmetric.html';" onmouseover="popup_window(this, 'equal_sets_symmetric | 00_zf');" onmouseout="close_popup();">equal_sets_symmetric</b>(K, Y)(K_equal_Y);
+								<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than_weak_interpretation.html';" onmouseover="popup_window(this, 'natural_less_than_weak_interpretation | 03_addition');" onmouseout="close_popup();">natural_less_than_weak_interpretation</b>(Y, K)(Y_in_NATURALS, K_in_NATURALS)(<b style="color: green;">or</b>(&lt:<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than.html';" onmouseover="popup_window(this, 'natural_less_than | 03_addition');" onmouseout="close_popup();">natural_less_than</b>(Y, K)&gt, Y_equal_K));
+							};
+						};
+					}
+					<b style="color: blue;">prove</b> result: <b style="color: red;">^</b>M(M in S <b style="color: red;">&</b> <b style="color: red;">*</b>K(K in S <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_less_than_weak.html';" onmouseover="popup_window(this, 'natural_less_than_weak | 03_addition');" onmouseout="close_popup();">natural_less_than_weak</b>(M, K))){
+						<b style="color: blue;">choose</b> Y;
+						<b style="color: blue;">return</b> Y_in_S, all_greater_than_weak;
+					}
+
+					<b style="color: blue;">return</b> result;
+				};
+			}
+
+			<b style="color: blue;">return</b> R_def(Y)(Y_in_NATURALS, Y_condition);
+		}
+
+		NATURALS_subset_R = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_strong_induction.html';" onmouseover="popup_window(this, 'NATURALS_strong_induction | 03_addition');" onmouseout="close_popup();">NATURALS_strong_induction</b>(R)(strong_inductive_hypothesis);
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>N<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> N_in_S;
+		N_in_NATURALS = <b style="color: green;">expand</b>(S_subset_NATURALS)(N)(N_in_S);
+		N_in_R = <b style="color: green;">expand</b>(NATURALS_subset_R)(N)(N_in_NATURALS);
+		N_in_NATURALS, N_condition = R_def(N)(N_in_R);
+
+		<b style="color: blue;">return</b> N_condition(N_in_S);
+	}
+
+	W_in_S = <b style="color: green;">expand</b>(S_not_empty)<b style="color: red;">|</b>W<b style="color: red;">|</b>;
+	<b style="color: blue;">return</b> alternative_form(W)(W_in_S);
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

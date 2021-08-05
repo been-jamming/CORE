@@ -1773,6 +1773,81 @@ prove natural_less_than_weak_dichotomy: *A*B(A in NATURALS & B in NATURALS -> na
 	return result(B)(B_in_NATURALS);
 }
 
+//Finally we prove the well ordering principle on the natural numbers
+//This is the first proof in CORE I've done which uses strong induction
+//It doesn't have a base case either, which I find interesting
+prove naturals_well_ordering_principle: *S(is_subset(S, NATURALS) & not_empty(S) -> ^N(N in S & *M(M in S -> natural_less_than_weak(N, M)))){
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
+
+	given |S|;
+	implies S_subset_NATURALS, S_not_empty;
+
+	//We induct on a different form of the statement
+	prove alternative_form: *N(N in S -> ^M(M in S & *K(K in S -> natural_less_than_weak(M, K)))){
+		//We use STRONG induction on N
+		R_def = axiom_specify[<Q: Q in S -> ^M(M in S & *K(K in S -> natural_less_than_weak(M, K)))>](NATURALS)|R|;
+
+		prove strong_inductive_hypothesis: *Y(Y in NATURALS & *J(natural_less_than(J, Y) -> J in R) -> Y in R){
+			given |Y|;
+			implies Y_in_NATURALS, closure_less_than;
+
+			prove Y_condition: Y in S -> ^M(M in S & *K(K in S -> natural_less_than_weak(M, K))){
+				implies Y_in_S;
+
+				return branch(axiom_excluded_middle[<:^L(L in S & natural_less_than(L, Y))>], L_exists, L_not_exists){
+					L_in_S, L_less_than_Y = L_exists|L|;
+					L_in_R = closure_less_than(L)(L_less_than_Y);
+					L_in_NATURALS, L_condition = R_def(L)(L_in_R);
+					return L_condition(L_in_S);
+				} or {
+					prove all_greater_than_weak: *K(K in S -> natural_less_than_weak(Y, K)){
+						given |K|;
+						implies K_in_S;
+
+						K_in_NATURALS = expand(S_subset_NATURALS)(K)(K_in_S);
+
+						return branch(natural_less_than_weak_dichotomy(Y, K)(Y_in_NATURALS, K_in_NATURALS), Y_less_than_weak_K, K_less_than_weak_Y){
+							return Y_less_than_weak_K;
+						} or {
+							less_than_or_equal = natural_less_than_weak_interpretation(K, Y)(K_in_NATURALS, Y_in_NATURALS)(K_less_than_weak_Y);
+							return branch(less_than_or_equal, K_less_than_Y, K_equal_Y){
+								prove does_exist: ^L(L in S & natural_less_than(L, Y)){
+									choose K;
+									return K_in_S, K_less_than_Y;
+								}
+								return axiom_absurdity[goal](L_not_exists(does_exist));
+							} or {
+								Y_equal_K = equal_sets_symmetric(K, Y)(K_equal_Y);
+								return natural_less_than_weak_interpretation(Y, K)(Y_in_NATURALS, K_in_NATURALS)(or(<:natural_less_than(Y, K)>, Y_equal_K));
+							};
+						};
+					}
+					prove result: ^M(M in S & *K(K in S -> natural_less_than_weak(M, K))){
+						choose Y;
+						return Y_in_S, all_greater_than_weak;
+					}
+
+					return result;
+				};
+			}
+
+			return R_def(Y)(Y_in_NATURALS, Y_condition);
+		}
+
+		NATURALS_subset_R = NATURALS_strong_induction(R)(strong_inductive_hypothesis);
+		given |N|;
+		implies N_in_S;
+		N_in_NATURALS = expand(S_subset_NATURALS)(N)(N_in_S);
+		N_in_R = expand(NATURALS_subset_R)(N)(N_in_NATURALS);
+		N_in_NATURALS, N_condition = R_def(N)(N_in_R);
+
+		return N_condition(N_in_S);
+	}
+
+	W_in_S = expand(S_not_empty)|W|;
+	return alternative_form(W)(W_in_S);
+}
+
 //Define when a function F is recursively defined on the naturals such that G: T -> T, A in T, F: NATURALS -> T, F(0) = A, and F(N + 1) = G(F(N))
 define is_recursively_defined_naturals(T, A, G, F): is_function(F) & is_domain(F, NATURALS) & is_codomain(F, T) & are_related(ZERO, A, F) & *N*N1*U*V(N in NATURALS & is_successor(N, N1) & are_related(N, U, F) & are_related(N1, V, F) -> are_related(U, V, G));
 
