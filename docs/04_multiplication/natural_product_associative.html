@@ -1,0 +1,91 @@
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: natural_product_associative<br><b>Description</b>: Finally we prove that multiplication is associative<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_associative.html';" onmouseover="popup_window(this, 'natural_product_associative | 04_multiplication');" onmouseout="close_popup();">natural_product_associative</b>: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C<b style="color: red;">*</b>P<b style="color: red;">*</b>AB<b style="color: red;">*</b>BC(<b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(A, B, AB) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(AB, C, P) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(B, C, BC) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(A, BC, P)){
+	empty_in_naturals, closure_naturals = <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_inductive.html';" onmouseover="popup_window(this, 'NATURALS_inductive | 03_addition');" onmouseout="close_popup();">NATURALS_inductive</b>);
+
+	//I'm going to induct on C
+	R_def = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/axiom_specify.html';" onmouseover="popup_window(this, 'axiom_specify | 00_zf');" onmouseout="close_popup();">axiom_specify</b>[&ltC: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>P<b style="color: red;">*</b>AB<b style="color: red;">*</b>BC(<b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(A, B, AB) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(AB, C, P) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(B, C, BC) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(A, BC, P))&gt](NATURALS)<b style="color: red;">|</b>R<b style="color: red;">|</b>;
+
+	<b style="color: blue;">prove</b> ZERO_in_R: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>P<b style="color: red;">*</b>AB<b style="color: red;">*</b>BC(<b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(A, B, AB) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(AB, ZERO, P) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(B, ZERO, BC) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(A, BC, P)){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, P, AB, BC<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> product_AB, product_P, product_BC;
+
+		A_in_NATURALS, B_in_NATURALS, tuple_condition = <b style="color: green;">expand</b>(product_AB);
+		AB_in_NATURALS, ZERO_in_NATURALS, tuple_condition = <b style="color: green;">expand</b>(product_P);
+		B_in_NATURALS, ZERO_in_NATURALS, tuple_condition = <b style="color: green;">expand</b>(product_BC);
+		other_product_P = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_zero_identity.html';" onmouseover="popup_window(this, 'natural_product_zero_identity | 04_multiplication');" onmouseout="close_popup();">natural_product_zero_identity</b>(AB)(AB_in_NATURALS);
+		P_equals_ZERO = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_unique.html';" onmouseover="popup_window(this, 'natural_product_unique | 04_multiplication');" onmouseout="close_popup();">natural_product_unique</b>(AB, ZERO, P, ZERO)(product_P, other_product_P);
+
+		other_product_BC = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_zero_identity.html';" onmouseover="popup_window(this, 'natural_product_zero_identity | 04_multiplication');" onmouseout="close_popup();">natural_product_zero_identity</b>(B)(B_in_NATURALS);
+		BC_equals_ZERO = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_unique.html';" onmouseover="popup_window(this, 'natural_product_unique | 04_multiplication');" onmouseout="close_popup();">natural_product_unique</b>(B, ZERO, BC, ZERO)(product_BC, other_product_BC);
+
+		result = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_zero_identity.html';" onmouseover="popup_window(this, 'natural_product_zero_identity | 04_multiplication');" onmouseout="close_popup();">natural_product_zero_identity</b>(A)(A_in_NATURALS);
+		result = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(A, Q, ZERO)&gt](BC, ZERO)(BC_equals_ZERO)(result);
+		<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltQ: <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(A, BC, Q)&gt](P, ZERO)(P_equals_ZERO)(result);
+	}
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+	<b style="color: blue;">prove</b> closure_R: <b style="color: red;">*</b>Y<b style="color: red;">*</b>SY(Y in R <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/is_successor.html';" onmouseover="popup_window(this, 'is_successor | 00_zf');" onmouseout="close_popup();">is_successor</b>(Y, SY) <b style="color: red;">-&gt</b> SY in R){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>Y, SY<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> Y_in_R, successor_SY;
+
+		Y_in_NATURALS, Y_condition = R_def(Y)(Y_in_R);
+		SY_in_NATURALS = closure_naturals(Y, SY)(Y_in_NATURALS, successor_SY);
+
+		<b style="color: blue;">prove</b> SY_condition: <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>P<b style="color: red;">*</b>AB<b style="color: red;">*</b>BC(<b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(A, B, AB) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(AB, SY, P) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(B, SY, BC) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(A, BC, P)){
+			<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, P, AB, BC<b style="color: red;">|</b>;
+			<b style="color: blue;">implies</b> product_AB, product_P, product_BC;
+
+			A_in_NATURALS, B_in_NATURALS, tuple_condition = <b style="color: green;">expand</b>(product_AB);
+			AB_in_NATURALS, SY_in_NATURALS, tuple_condition = <b style="color: green;">expand</b>(product_P);
+			B_in_NATURALS, SY_in_NATURALS, tuple_condition = <b style="color: green;">expand</b>(product_BC);
+			BC_in_NATURALS = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_is_natural.html';" onmouseover="popup_window(this, 'natural_product_is_natural | 04_multiplication');" onmouseout="close_popup();">natural_product_is_natural</b>(B, SY, BC)(product_BC);
+
+			PP_in_NATURALS, product_PP = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product.html';" onmouseover="popup_window(this, 'natural_product | 04_multiplication');" onmouseout="close_popup();">natural_product</b>(AB, Y)(AB_in_NATURALS, Y_in_NATURALS)<b style="color: red;">|</b>PP<b style="color: red;">|</b>;
+			Q_in_NATURALS, product_Q = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product.html';" onmouseover="popup_window(this, 'natural_product | 04_multiplication');" onmouseout="close_popup();">natural_product</b>(B, Y)(B_in_NATURALS, Y_in_NATURALS)<b style="color: red;">|</b>Q<b style="color: red;">|</b>;
+			sum_P = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_successor_recursion.html';" onmouseover="popup_window(this, 'natural_product_successor_recursion | 04_multiplication');" onmouseout="close_popup();">natural_product_successor_recursion</b>(AB, Y, SY, PP, P)(successor_SY, product_PP, product_P);
+			//Here is where the inductive hypothesis is applied
+			other_product_PP = Y_condition(A, B, PP, AB, Q)(product_AB, product_PP, product_Q);
+			other_product_PP = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_commutative.html';" onmouseover="popup_window(this, 'natural_product_commutative | 04_multiplication');" onmouseout="close_popup();">natural_product_commutative</b>(A, Q, PP)(other_product_PP);
+			other_product_AB = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_commutative.html';" onmouseover="popup_window(this, 'natural_product_commutative | 04_multiplication');" onmouseout="close_popup();">natural_product_commutative</b>(A, B, AB)(product_AB);
+			other_product_Q = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_commutative.html';" onmouseover="popup_window(this, 'natural_product_commutative | 04_multiplication');" onmouseout="close_popup();">natural_product_commutative</b>(B, Y, Q)(product_Q);
+
+			R_in_NATURALS, sum_R = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum.html';" onmouseover="popup_window(this, 'natural_sum | 03_addition');" onmouseout="close_popup();">natural_sum</b>(Q, B)(Q_in_NATURALS, B_in_NATURALS)<b style="color: red;">|</b>R<b style="color: red;">|</b>;
+			OTHER_P_in_NATURALS, product_OTHER_P = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product.html';" onmouseover="popup_window(this, 'natural_product | 04_multiplication');" onmouseout="close_popup();">natural_product</b>(R, A)(R_in_NATURALS, A_in_NATURALS)<b style="color: red;">|</b>OTHER_P<b style="color: red;">|</b>;
+			sum_OTHER_P = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_distributes.html';" onmouseover="popup_window(this, 'natural_product_distributes | 04_multiplication');" onmouseout="close_popup();">natural_product_distributes</b>(Q, B, A, R, OTHER_P, PP, AB)(sum_R, product_OTHER_P, other_product_PP, other_product_AB);
+			P_equal_OTHER_P = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_unique.html';" onmouseover="popup_window(this, 'natural_sum_unique | 03_addition');" onmouseout="close_popup();">natural_sum_unique</b>(PP, AB, P, OTHER_P)(sum_P, sum_OTHER_P);
+			new_product_P = <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltW: <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(R, A, W)&gt](P, OTHER_P)(P_equal_OTHER_P)(product_OTHER_P);
+			new_product_P = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_commutative.html';" onmouseover="popup_window(this, 'natural_product_commutative | 04_multiplication');" onmouseout="close_popup();">natural_product_commutative</b>(R, A, P)(new_product_P);
+
+			sum_BC = <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/natural_product_successor_recursion.html';" onmouseover="popup_window(this, 'natural_product_successor_recursion | 04_multiplication');" onmouseout="close_popup();">natural_product_successor_recursion</b>(B, Y, SY, Q, BC)(successor_SY, product_Q, product_BC);
+			R_equal_BC = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/natural_sum_unique.html';" onmouseover="popup_window(this, 'natural_sum_unique | 03_addition');" onmouseout="close_popup();">natural_sum_unique</b>(Q, B, R, BC)(sum_R, sum_BC);
+			<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltW: <b style="cursor: pointer;" onclick="window.location.href = '../04_multiplication/is_natural_product.html';" onmouseover="popup_window(this, 'is_natural_product | 04_multiplication');" onmouseout="close_popup();">is_natural_product</b>(A, W, P)&gt](R, BC)(R_equal_BC)(new_product_P);
+		}
+
+		<b style="color: blue;">return</b> R_def(SY)(SY_in_NATURALS, SY_condition);
+	}
+
+	NATURALS_subset_R = <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/NATURALS_induction.html';" onmouseover="popup_window(this, 'NATURALS_induction | 03_addition');" onmouseout="close_popup();">NATURALS_induction</b>(R)(ZERO_in_R, closure_R);
+
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>A, B, C, P, AB, BC<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> product_AB, product_P, product_BC;
+
+	B_in_NATURALS, C_in_NATURALS, tuple_condition = <b style="color: green;">expand</b>(product_BC);
+	C_in_R = <b style="color: green;">expand</b>(NATURALS_subset_R)(C)(C_in_NATURALS);
+	C_in_NATURALS, C_condition = R_def(C)(C_in_R);
+	
+	<b style="color: blue;">return</b> C_condition(A, B, P, AB, BC)(product_AB, product_P, product_BC);
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

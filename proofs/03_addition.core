@@ -1524,7 +1524,7 @@ prove natural_less_than_successor_balance: *A*B*SA*SB(A in NATURALS & B in NATUR
 }
 
 //We finally have to use strong induction, so I prove it here
-//If P(N) is the statement to be proved, we use regular induction to prove that for all N, *K(K < N -> K in S)
+//If P(N) is the statement to be proved, we use regular induction to prove that for all natural N, *K(K < N -> P(K))
 prove NATURALS_strong_induction: *S(*Y(Y in NATURALS & *K(natural_less_than(K, Y) -> K in S) -> Y in S) -> is_subset(NATURALS, S)){
 	given |S|;
 	implies less_than_closure;

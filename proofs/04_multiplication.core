@@ -564,3 +564,81 @@ prove natural_product_distributes: *X*Y*Z*SXY*PZ*PXZ*PYZ(is_natural_sum(X, Y, SX
 	return Y_cond(X, Z, SXY, PZ, PXZ, PYZ)(sum_SXY, product_PZ, product_PXZ, product_PYZ);
 }
 
+//Finally we prove that multiplication is associative
+prove natural_product_associative: *A*B*C*P*AB*BC(is_natural_product(A, B, AB) & is_natural_product(AB, C, P) & is_natural_product(B, C, BC) -> is_natural_product(A, BC, P)){
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
+
+	//I'm going to induct on C
+	R_def = axiom_specify[<C: *A*B*P*AB*BC(is_natural_product(A, B, AB) & is_natural_product(AB, C, P) & is_natural_product(B, C, BC) -> is_natural_product(A, BC, P))>](NATURALS)|R|;
+
+	prove ZERO_in_R: *A*B*P*AB*BC(is_natural_product(A, B, AB) & is_natural_product(AB, ZERO, P) & is_natural_product(B, ZERO, BC) -> is_natural_product(A, BC, P)){
+		given |A, B, P, AB, BC|;
+		implies product_AB, product_P, product_BC;
+
+		A_in_NATURALS, B_in_NATURALS, tuple_condition = expand(product_AB);
+		AB_in_NATURALS, ZERO_in_NATURALS, tuple_condition = expand(product_P);
+		B_in_NATURALS, ZERO_in_NATURALS, tuple_condition = expand(product_BC);
+		other_product_P = natural_product_zero_identity(AB)(AB_in_NATURALS);
+		P_equals_ZERO = natural_product_unique(AB, ZERO, P, ZERO)(product_P, other_product_P);
+
+		other_product_BC = natural_product_zero_identity(B)(B_in_NATURALS);
+		BC_equals_ZERO = natural_product_unique(B, ZERO, BC, ZERO)(product_BC, other_product_BC);
+
+		result = natural_product_zero_identity(A)(A_in_NATURALS);
+		result = equality_consistency[<Q: is_natural_product(A, Q, ZERO)>](BC, ZERO)(BC_equals_ZERO)(result);
+		return equality_consistency[<Q: is_natural_product(A, BC, Q)>](P, ZERO)(P_equals_ZERO)(result);
+	}
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+	prove closure_R: *Y*SY(Y in R & is_successor(Y, SY) -> SY in R){
+		given |Y, SY|;
+		implies Y_in_R, successor_SY;
+
+		Y_in_NATURALS, Y_condition = R_def(Y)(Y_in_R);
+		SY_in_NATURALS = closure_naturals(Y, SY)(Y_in_NATURALS, successor_SY);
+
+		prove SY_condition: *A*B*P*AB*BC(is_natural_product(A, B, AB) & is_natural_product(AB, SY, P) & is_natural_product(B, SY, BC) -> is_natural_product(A, BC, P)){
+			given |A, B, P, AB, BC|;
+			implies product_AB, product_P, product_BC;
+
+			A_in_NATURALS, B_in_NATURALS, tuple_condition = expand(product_AB);
+			AB_in_NATURALS, SY_in_NATURALS, tuple_condition = expand(product_P);
+			B_in_NATURALS, SY_in_NATURALS, tuple_condition = expand(product_BC);
+			BC_in_NATURALS = natural_product_is_natural(B, SY, BC)(product_BC);
+
+			PP_in_NATURALS, product_PP = natural_product(AB, Y)(AB_in_NATURALS, Y_in_NATURALS)|PP|;
+			Q_in_NATURALS, product_Q = natural_product(B, Y)(B_in_NATURALS, Y_in_NATURALS)|Q|;
+			sum_P = natural_product_successor_recursion(AB, Y, SY, PP, P)(successor_SY, product_PP, product_P);
+			//Here is where the inductive hypothesis is applied
+			other_product_PP = Y_condition(A, B, PP, AB, Q)(product_AB, product_PP, product_Q);
+			other_product_PP = natural_product_commutative(A, Q, PP)(other_product_PP);
+			other_product_AB = natural_product_commutative(A, B, AB)(product_AB);
+			other_product_Q = natural_product_commutative(B, Y, Q)(product_Q);
+
+			R_in_NATURALS, sum_R = natural_sum(Q, B)(Q_in_NATURALS, B_in_NATURALS)|R|;
+			OTHER_P_in_NATURALS, product_OTHER_P = natural_product(R, A)(R_in_NATURALS, A_in_NATURALS)|OTHER_P|;
+			sum_OTHER_P = natural_product_distributes(Q, B, A, R, OTHER_P, PP, AB)(sum_R, product_OTHER_P, other_product_PP, other_product_AB);
+			P_equal_OTHER_P = natural_sum_unique(PP, AB, P, OTHER_P)(sum_P, sum_OTHER_P);
+			new_product_P = equality_consistency[<W: is_natural_product(R, A, W)>](P, OTHER_P)(P_equal_OTHER_P)(product_OTHER_P);
+			new_product_P = natural_product_commutative(R, A, P)(new_product_P);
+
+			sum_BC = natural_product_successor_recursion(B, Y, SY, Q, BC)(successor_SY, product_Q, product_BC);
+			R_equal_BC = natural_sum_unique(Q, B, R, BC)(sum_R, sum_BC);
+			return equality_consistency[<W: is_natural_product(A, W, P)>](R, BC)(R_equal_BC)(new_product_P);
+		}
+
+		return R_def(SY)(SY_in_NATURALS, SY_condition);
+	}
+
+	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+
+	given |A, B, C, P, AB, BC|;
+	implies product_AB, product_P, product_BC;
+
+	B_in_NATURALS, C_in_NATURALS, tuple_condition = expand(product_BC);
+	C_in_R = expand(NATURALS_subset_R)(C)(C_in_NATURALS);
+	C_in_NATURALS, C_condition = R_def(C)(C_in_R);
+	
+	return C_condition(A, B, P, AB, BC)(product_AB, product_P, product_BC);
+}
+
