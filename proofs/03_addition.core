@@ -106,27 +106,45 @@ prove NATURALS_induction: *S(ZERO in S & *Y*Z(Y in S & is_successor(Y, Z) -> Z i
 	return #is_subset(NATURALS, S)(subset_def);
 }
 
-prove NATURALS_nonzero_successor: *N(N in NATURALS -> equal_sets(N, ZERO) | ^M(M in NATURALS & is_successor(M, N))){
-	S_def = axiom_specify[<N: equal_sets(N, ZERO) | ^M(M in NATURALS & is_successor(M, N))>](NATURALS)|S|;
-	ZERO_in_S = S_def(ZERO)(zero_is_natural, or(equal_sets_reflexive(ZERO), <:^M(M in NATURALS & is_successor(M, ZERO))>));
-	contains_empty, NATURALS_closure = expand(NATURALS_inductive);
-	prove closure: *Y*Z(Y in S & is_successor(Y, Z) -> Z in S){
-		given |Y, Z|;
-		implies Y_in_S, successor_Y;
-		Y_in_NATURALS, condition = S_def(Y)(Y_in_S);
-		Z_in_NATURALS = NATURALS_closure(Y, Z)(Y_in_NATURALS, successor_Y);
-		prove lemma: ^M(M in NATURALS & is_successor(M, Z)){
-			choose Y;
-			return Y_in_NATURALS, successor_Y;
+prove NATURALS_nonzero_successor: *N(N in NATURALS <-> equal_sets(N, ZERO) | ^M(M in NATURALS & is_successor(M, N))){
+	prove lemma0: *N(N in NATURALS -> equal_sets(N, ZERO) | ^M(M in NATURALS & is_successor(M, N))){
+		S_def = axiom_specify[<N: equal_sets(N, ZERO) | ^M(M in NATURALS & is_successor(M, N))>](NATURALS)|S|;
+		ZERO_in_S = S_def(ZERO)(zero_is_natural, or(equal_sets_reflexive(ZERO), <:^M(M in NATURALS & is_successor(M, ZERO))>));
+		contains_empty, NATURALS_closure = expand(NATURALS_inductive);
+		prove closure: *Y*Z(Y in S & is_successor(Y, Z) -> Z in S){
+			given |Y, Z|;
+			implies Y_in_S, successor_Y;
+			Y_in_NATURALS, condition = S_def(Y)(Y_in_S);
+			Z_in_NATURALS = NATURALS_closure(Y, Z)(Y_in_NATURALS, successor_Y);
+			prove lemma: ^M(M in NATURALS & is_successor(M, Z)){
+				choose Y;
+				return Y_in_NATURALS, successor_Y;
+			}
+			return S_def(Z)(Z_in_NATURALS, or(<:equal_sets(Z, ZERO)>, lemma));
 		}
-		return S_def(Z)(Z_in_NATURALS, or(<:equal_sets(Z, ZERO)>, lemma));
+		NATURALS_subset_S = NATURALS_induction(S)(ZERO_in_S, closure);
+		given |N|;
+		implies N_in_NATURALS;
+		N_in_S = expand(NATURALS_subset_S)(N)(N_in_NATURALS);
+		N_in_NATURALS, result = S_def(N)(N_in_S);
+		return result;
 	}
-	NATURALS_subset_S = NATURALS_induction(S)(ZERO_in_S, closure);
+	
+	prove lemma1: *N(equal_sets(N, ZERO) | ^M(M in NATURALS & is_successor(M, N)) -> N in NATURALS){
+		given |N|;
+		implies either;
+
+		return branch(either, N_equal_ZERO, predecessor_natural){
+			return equality_consistency[<Q: Q in NATURALS>](N, ZERO)(N_equal_ZERO)(zero_is_natural);
+		} or {
+			M_in_NATURALS, predecessor_M = predecessor_natural|M|;
+			empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
+			return closure_naturals(M, N)(M_in_NATURALS, predecessor_M);
+		};
+	}
+
 	given |N|;
-	implies N_in_NATURALS;
-	N_in_S = expand(NATURALS_subset_S)(N)(N_in_NATURALS);
-	N_in_NATURALS, result = S_def(N)(N_in_S);
-	return result;
+	return iff(lemma0(N), lemma1(N));
 }
 
 //We want to show that if a number has a successor, that the number is not zero (for later purposes)
@@ -1618,6 +1636,83 @@ prove natural_less_than_weak_interpretation: *A*B(A in NATURALS & B in NATURALS 
 	}
 
 	return iff(result0, result1);
+}
+
+//The proof that for any natural numbers A and B, either A <= B or B <= A
+prove natural_less_than_weak_dichotomy: *A*B(A in NATURALS & B in NATURALS -> natural_less_than_weak(A, B) | natural_less_than_weak(B, A)){
+	empty_in_naturals, closure_naturals = expand(NATURALS_inductive);
+	//We induct on A
+	R_def = axiom_specify[<Q: *B(B in NATURALS -> natural_less_than_weak(Q, B) | natural_less_than_weak(B, Q))>](NATURALS)|R|;
+
+	prove ZERO_in_R: *B(B in NATURALS -> natural_less_than_weak(ZERO, B) | natural_less_than_weak(B, ZERO)){
+		given |B|;
+		implies B_in_NATURALS;
+		prove ZERO_less_than_weak_B: *X(X in ZERO -> X in B){
+			given |X|;
+			implies X_in_ZERO;
+			X_in_EMPTY_SET = equality_consistency[<Q: X in Q>](EMPTY_SET, ZERO)(zero_definition)(X_in_ZERO);
+			return axiom_absurdity[goal](empty_set_condition(X)(X_in_EMPTY_SET));
+		}
+		return or(#natural_less_than_weak(ZERO, B)(ZERO_less_than_weak_B), <:natural_less_than_weak(B, ZERO)>);
+	}
+	ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
+
+	prove closure_R: *Y*SY(Y in R & is_successor(Y, SY) -> SY in R){
+		given |Y, SY|;
+		implies Y_in_R, successor_SY;
+		Y_in_NATURALS, Y_condition = R_def(Y)(Y_in_R);
+		SY_in_NATURALS = closure_naturals(Y, SY)(Y_in_NATURALS, successor_SY);
+		
+		prove SY_condition: *B(B in NATURALS -> natural_less_than_weak(SY, B) | natural_less_than_weak(B, SY)){
+			given |B|;
+			implies B_in_NATURALS;
+
+			return branch(Y_condition(B)(B_in_NATURALS), Y_less_than_weak_B, B_less_than_weak_Y){
+				Y_less_than_or_equal_B = natural_less_than_weak_interpretation(Y, B)(Y_in_NATURALS, B_in_NATURALS)(Y_less_than_weak_B);
+				return branch(Y_less_than_or_equal_B, Y_less_than_B, Y_equal_B){
+					Y_in_B = expand(Y_less_than_B);
+					prove SY_less_than_weak_B: *X(X in SY -> X in B){
+						given |X|;
+						implies X_in_SY;
+						X_in_Y_or_X_equal_Y = expand(successor_SY)(X)(X_in_SY);
+						return branch(X_in_Y_or_X_equal_Y, X_in_Y, X_equal_Y){
+							return expand(Y_less_than_weak_B)(X)(X_in_Y);
+						} or {
+							return equality_consistency[<Q: Q in B>](X, Y)(X_equal_Y)(Y_in_B);
+						};
+					}
+					return or(#natural_less_than_weak(SY, B)(SY_less_than_weak_B), <:natural_less_than_weak(B, SY)>);
+				} or {
+					prove B_less_than_weak_SY: *X(X in B -> X in SY){
+						given |X|;
+						implies X_in_B;
+						X_in_Y = expand(Y_equal_B)(X)(X_in_B);
+						return expand(successor_SY)(X)(or(X_in_Y, <:equal_sets(X, Y)>));
+					}
+
+					return or(<:natural_less_than_weak(SY, B)>, #natural_less_than_weak(B, SY)(B_less_than_weak_SY));
+				};
+			} or {
+				prove B_less_than_weak_SY: *X(X in B -> X in SY){
+					given |X|;
+					implies X_in_B;
+					X_in_Y = expand(B_less_than_weak_Y)(X)(X_in_B);
+					return expand(successor_SY)(X)(or(X_in_Y, <:equal_sets(X, Y)>));
+				}
+
+				return or(<:natural_less_than_weak(SY, B)>, #natural_less_than_weak(B, SY)(B_less_than_weak_SY));
+			};
+		}
+
+		return R_def(SY)(SY_in_NATURALS, SY_condition);
+	}
+
+	NATURALS_subset_R = NATURALS_induction(R)(ZERO_in_R, closure_R);
+	given |A, B|;
+	implies A_in_NATURALS, B_in_NATURALS;
+	A_in_R = expand(NATURALS_subset_R)(A)(A_in_NATURALS);
+	A_in_NATURALS, result = R_def(A)(A_in_R);
+	return result(B)(B_in_NATURALS);
 }
 
 //Define when a function F is recursively defined on the naturals such that G: T -> T, A in T, F: NATURALS -> T, F(0) = A, and F(N + 1) = G(F(N))
