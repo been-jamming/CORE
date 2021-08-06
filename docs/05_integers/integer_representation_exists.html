@@ -1,0 +1,39 @@
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: proof<br><b>Result name</b>: integer_representation_exists<br><b>Description</b>: Now we prove that integer representations exist for every integer<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">prove</b> <b style="cursor: pointer;" onclick="window.location.href = '../05_integers/integer_representation_exists.html';" onmouseover="popup_window(this, 'integer_representation_exists | 05_integers');" onmouseout="close_popup();">integer_representation_exists</b>: <b style="color: red;">*</b>I(I in INTEGERS <b style="color: red;">-&gt</b> <b style="color: red;">^</b>A<b style="color: red;">^</b>B(A in NATURALS <b style="color: red;">&</b> B in NATURALS <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../05_integers/is_integer_representation.html';" onmouseover="popup_window(this, 'is_integer_representation | 05_integers');" onmouseout="close_popup();">is_integer_representation</b>(A, B, I))){
+	<b style="color: blue;">given</b> <b style="color: red;">|</b>I<b style="color: red;">|</b>;
+	<b style="color: blue;">implies</b> I_in_INTEGERS;
+
+	//The definition of an equivalence class <b style="color: blue;">implies</b> that all equivalence classes are non-empty
+	//How convenient!
+	I_equiv_class = <b style="color: green;">expand</b>(integers_definition)(I)(I_in_INTEGERS);
+	T_in_NATURALS_X_NATURALS, T_condition = <b style="color: green;">expand</b>(I_equiv_class)<b style="color: red;">|</b>T<b style="color: red;">|</b>;
+	T_related_T = <b style="color: green;">expand</b>(<b style="cursor: pointer;" onclick="window.location.href = '../05_integers/integer_def_relation_reflexive.html';" onmouseover="popup_window(this, 'integer_def_relation_reflexive | 05_integers');" onmouseout="close_popup();">integer_def_relation_reflexive</b>)(T)(T_in_NATURALS_X_NATURALS);
+	T_in_I = T_condition(T)(T_in_NATURALS_X_NATURALS, T_related_T);
+	A_in_NATURALS, B_in_NATURALS, tuple_T = <b style="color: green;">expand</b>(NATURALS_X_NATURALS_definition)(T)(T_in_NATURALS_X_NATURALS)<b style="color: red;">|</b>A, B<b style="color: red;">|</b>;
+
+	<b style="color: blue;">choose</b> A, B;
+
+	<b style="color: blue;">prove</b> A_B_represent: <b style="color: red;">*</b>Q(<b style="cursor: pointer;" onclick="window.location.href = '../01_sets/is_tuple.html';" onmouseover="popup_window(this, 'is_tuple | 01_sets');" onmouseout="close_popup();">is_tuple</b>(A, B, Q) <b style="color: red;">-&gt</b> Q in I){
+		<b style="color: blue;">given</b> <b style="color: red;">|</b>Q<b style="color: red;">|</b>;
+		<b style="color: blue;">implies</b> tuple_Q;
+		Q_equal_T = <b style="cursor: pointer;" onclick="window.location.href = '../01_sets/tuple_unique.html';" onmouseover="popup_window(this, 'tuple_unique | 01_sets');" onmouseout="close_popup();">tuple_unique</b>(A, B, Q, T)(tuple_Q, tuple_T);
+		<b style="color: blue;">return</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equality_consistency.html';" onmouseover="popup_window(this, 'equality_consistency | 00_zf');" onmouseout="close_popup();">equality_consistency</b>[&ltW: W in I&gt](Q, T)(Q_equal_T)(T_in_I);
+	}
+	A_B_represent = #<b style="cursor: pointer;" onclick="window.location.href = '../05_integers/is_integer_representation.html';" onmouseover="popup_window(this, 'is_integer_representation | 05_integers');" onmouseout="close_popup();">is_integer_representation</b>(A, B, I)(A_B_represent);
+
+	<b style="color: blue;">return</b> A_in_NATURALS, B_in_NATURALS, A_B_represent;
+}</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>

@@ -2362,3 +2362,4 @@ prove naturals_recursively_defined_unique: *T*A*G(A in T & is_function(G) & is_d
 
 	return #equal_relations(NATURALS, T, F0, F1)(F0_equal_F1);
 }
+

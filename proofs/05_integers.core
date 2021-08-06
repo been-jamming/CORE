@@ -115,3 +115,79 @@ integer_def_relation_equivalence = #is_equivalence_relation(INTEGER_DEFINITION_R
 //WE DEFINE THE INTEGERS
 integers_definition = equivalence_classes(NATURALS_X_NATURALS, INTEGER_DEFINITION_RELATION)(integer_def_relation_equivalence)|INTEGERS|;
 
+//We need a better definition of when a pair of natural numbers represents an integer for convenience
+define is_integer_representation(A, B, I): *T(is_tuple(A, B, T) -> T in I);
+
+//Next we prove that any two naturals A and B represent an integer
+prove integer_representation: *A*B(A in NATURALS & B in NATURALS -> ^I(I in INTEGERS & is_integer_representation(A, B, I))){
+	given |A, B|;
+	implies A_in_NATURALS, B_in_NATURALS;
+
+	tuples_represent = equivalence_classes_class(NATURALS_X_NATURALS, INTEGER_DEFINITION_RELATION, INTEGERS)(integer_def_relation_equivalence, integers_definition);
+	tuple_T = tuple(A, B)|T|;
+	prove T_in_NATURALS_X_NATURALS: ^A^B(A in NATURALS & B in NATURALS & is_tuple(A, B, T)){
+		choose A, B;
+		return A_in_NATURALS, B_in_NATURALS, tuple_T;
+	}
+	T_in_NATURALS_X_NATURALS = expand(NATURALS_X_NATURALS_definition)(T)(T_in_NATURALS_X_NATURALS);
+	I_in_INTEGERS, T_in_I = tuples_represent(T)(T_in_NATURALS_X_NATURALS)|I|;
+
+	choose I;
+
+	prove A_B_represent: *Q(is_tuple(A, B, Q) -> Q in I){
+		given |Q|;
+		implies tuple_Q;
+		Q_equal_T = tuple_unique(A, B, Q, T)(tuple_Q, tuple_T);
+		return equality_consistency[<W: W in I>](Q, T)(Q_equal_T)(T_in_I);
+	}
+	A_B_represent = #is_integer_representation(A, B, I)(A_B_represent);
+
+	return I_in_INTEGERS, A_B_represent;
+}
+
+//Now we prove that integer representations exist for every integer
+prove integer_representation_exists: *I(I in INTEGERS -> ^A^B(A in NATURALS & B in NATURALS & is_integer_representation(A, B, I))){
+	given |I|;
+	implies I_in_INTEGERS;
+
+	//The definition of an equivalence class implies that all equivalence classes are non-empty
+	//How convenient!
+	I_equiv_class = expand(integers_definition)(I)(I_in_INTEGERS);
+	T_in_NATURALS_X_NATURALS, T_condition = expand(I_equiv_class)|T|;
+	T_related_T = expand(integer_def_relation_reflexive)(T)(T_in_NATURALS_X_NATURALS);
+	T_in_I = T_condition(T)(T_in_NATURALS_X_NATURALS, T_related_T);
+	A_in_NATURALS, B_in_NATURALS, tuple_T = expand(NATURALS_X_NATURALS_definition)(T)(T_in_NATURALS_X_NATURALS)|A, B|;
+
+	choose A, B;
+
+	prove A_B_represent: *Q(is_tuple(A, B, Q) -> Q in I){
+		given |Q|;
+		implies tuple_Q;
+		Q_equal_T = tuple_unique(A, B, Q, T)(tuple_Q, tuple_T);
+		return equality_consistency[<W: W in I>](Q, T)(Q_equal_T)(T_in_I);
+	}
+	A_B_represent = #is_integer_representation(A, B, I)(A_B_represent);
+
+	return A_in_NATURALS, B_in_NATURALS, A_B_represent;
+}
+
+//To fully bootstrap everything into the new definition of an integer representation,
+//we need to have a statement which characterizes the definition with respect to the
+//naturals which represent the integer
+prove integer_representation_def: *A*B*C*D*I(I in INTEGERS & is_integer_representation(A, B, I) & is_integer_representation(C, D, I) -> ^S(is_natural_sum(A, D, S) & is_natural_sum(C, B, S))){
+	given |A, B, C, D, I|;
+	implies I_in_integers, A_B_represent, C_D_represent;
+
+	tuple_TAB = tuple(A, B)|TAB|;
+	tuple_TCD = tuple(C, D)|TCD|;
+	TAB_in_I = expand(A_B_represent)(TAB)(tuple_TAB);
+	TCD_in_I = expand(C_D_represent)(TCD)(tuple_TCD);
+	REP_in_NATURALS_X_NATURALS, REP_condition = expand(expand(integers_definition)(I)(I_in_integers))|REP|;
+	TAB_in_NATURALS_X_NATURALS, REP_related_TAB = REP_condition(TAB)(TAB_in_I);
+	TCD_in_NATURALS_X_NATURALS, REP_related_TCD = REP_condition(TCD)(TCD_in_I);
+	TAB_related_REP = expand(integer_def_relation_symmetric)(REP, TAB)(REP_related_TAB);
+	TAB_related_TCD = expand(integer_def_relation_transitive)(TAB, REP, TCD)(TAB_related_REP, REP_related_TCD);
+	TAB_in_NATURALS_X_NATURALS, TCD_in_NATURALS_X_NATURALS, condition = integer_def_relation_def(TAB, TCD)(TAB_related_TCD);
+	return condition(A, B, C, D)(tuple_TAB, tuple_TCD);
+}
+
