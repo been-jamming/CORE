@@ -174,20 +174,76 @@ prove integer_representation_exists: *I(I in INTEGERS -> ^A^B(A in NATURALS & B 
 //To fully bootstrap everything into the new definition of an integer representation,
 //we need to have a statement which characterizes the definition with respect to the
 //naturals which represent the integer
-prove integer_representation_def: *A*B*C*D*I(I in INTEGERS & is_integer_representation(A, B, I) & is_integer_representation(C, D, I) -> ^S(is_natural_sum(A, D, S) & is_natural_sum(C, B, S))){
-	given |A, B, C, D, I|;
-	implies I_in_integers, A_B_represent, C_D_represent;
+prove integer_representation_def: *A*B*C*D*I*J(I in INTEGERS & J in INTEGERS & is_integer_representation(A, B, I) & is_integer_representation(C, D, J) -> (equal_sets(I, J) <-> ^S(is_natural_sum(A, D, S) & is_natural_sum(C, B, S)))){
+	given |A, B, C, D, I, J|;
+	implies I_in_integers, J_in_integers, A_B_represent, C_D_represent;
 
-	tuple_TAB = tuple(A, B)|TAB|;
-	tuple_TCD = tuple(C, D)|TCD|;
-	TAB_in_I = expand(A_B_represent)(TAB)(tuple_TAB);
-	TCD_in_I = expand(C_D_represent)(TCD)(tuple_TCD);
-	REP_in_NATURALS_X_NATURALS, REP_condition = expand(expand(integers_definition)(I)(I_in_integers))|REP|;
-	TAB_in_NATURALS_X_NATURALS, REP_related_TAB = REP_condition(TAB)(TAB_in_I);
-	TCD_in_NATURALS_X_NATURALS, REP_related_TCD = REP_condition(TCD)(TCD_in_I);
-	TAB_related_REP = expand(integer_def_relation_symmetric)(REP, TAB)(REP_related_TAB);
-	TAB_related_TCD = expand(integer_def_relation_transitive)(TAB, REP, TCD)(TAB_related_REP, REP_related_TCD);
-	TAB_in_NATURALS_X_NATURALS, TCD_in_NATURALS_X_NATURALS, condition = integer_def_relation_def(TAB, TCD)(TAB_related_TCD);
-	return condition(A, B, C, D)(tuple_TAB, tuple_TCD);
+	prove lemma0: equal_sets(I, J) -> ^S(is_natural_sum(A, D, S) & is_natural_sum(C, B, S)){
+		implies I_equals_J;
+		tuple_TAB = tuple(A, B)|TAB|;
+		tuple_TCD = tuple(C, D)|TCD|;
+		C_D_represent = equality_consistency[<W: is_integer_representation(C, D, W)>](I, J)(I_equals_J)(C_D_represent);
+		TAB_in_I = expand(A_B_represent)(TAB)(tuple_TAB);
+		TCD_in_I = expand(C_D_represent)(TCD)(tuple_TCD);
+		REP_in_NATURALS_X_NATURALS, REP_condition = expand(expand(integers_definition)(I)(I_in_integers))|REP|;
+		TAB_in_NATURALS_X_NATURALS, REP_related_TAB = REP_condition(TAB)(TAB_in_I);
+		TCD_in_NATURALS_X_NATURALS, REP_related_TCD = REP_condition(TCD)(TCD_in_I);
+		TAB_related_REP = expand(integer_def_relation_symmetric)(REP, TAB)(REP_related_TAB);
+		TAB_related_TCD = expand(integer_def_relation_transitive)(TAB, REP, TCD)(TAB_related_REP, REP_related_TCD);
+		TAB_in_NATURALS_X_NATURALS, TCD_in_NATURALS_X_NATURALS, condition = integer_def_relation_def(TAB, TCD)(TAB_related_TCD);
+		return condition(A, B, C, D)(tuple_TAB, tuple_TCD);
+	}
+
+	prove lemma1: ^S(is_natural_sum(A, D, S) & is_natural_sum(C, B, S)) -> equal_sets(I, J){
+		implies S_exists;
+
+		sum_AD, sum_CB = S_exists|S|;
+		A_in_NATURALS, D_in_NATURALS, tuple_condition = expand(sum_AD);
+		C_in_NATURALS, B_in_NATURALS, tuple_condition = expand(sum_CB);
+		tuple_T0 = tuple(A, B)|T0|;
+		tuple_T1 = tuple(C, D)|T1|;
+
+		T0_in_I = expand(A_B_represent)(T0)(tuple_T0);
+		T1_in_J = expand(C_D_represent)(T1)(tuple_T1);
+
+		REP_I_in_NATURALS_X_NATURALS, REP_I_condition = expand(expand(integers_definition)(I)(I_in_integers))|REP_I|;
+		T0_in_NATURALS_X_NATURALS, REP_I_related_T0 = REP_I_condition(T0)(T0_in_I);
+
+		REP_J_in_NATURALS_X_NATURALS, REP_J_condition = expand(expand(integers_definition)(J)(J_in_integers))|REP_J|;
+		T1_in_NATURALS_X_NATURALS, REP_J_related_T1 = REP_J_condition(T1)(T1_in_J);
+
+		prove T0_related_T1: *U*V*W*X(is_tuple(U, V, T0) & is_tuple(W, X, T1) -> ^S(is_natural_sum(U, X, S) & is_natural_sum(W, V, S))){
+			given |U, V, W, X|;
+			implies other_tuple_T0, other_tuple_T1;
+
+			A_equal_U, B_equal_V = tuple_equal_condition(A, B, U, V, T0, T0)(tuple_T0, other_tuple_T0, equal_sets_reflexive(T0));
+			C_equal_W, D_equal_X = tuple_equal_condition(C, D, W, X, T1, T1)(tuple_T1, other_tuple_T1, equal_sets_reflexive(T1));
+			
+			sum_UD = equality_consistency[<Y: is_natural_sum(Y, D, S)>](A, U)(A_equal_U)(sum_AD);
+			sum_UX = equality_consistency[<Y: is_natural_sum(U, Y, S)>](D, X)(D_equal_X)(sum_UD);
+
+			sum_WB = equality_consistency[<Y: is_natural_sum(Y, B, S)>](C, W)(C_equal_W)(sum_CB);
+			sum_WV = equality_consistency[<Y: is_natural_sum(W, Y, S)>](B, V)(B_equal_V)(sum_WB);
+
+			choose S;
+			return sum_UX, sum_WV;
+		}
+
+		T0_related_T1 = integer_def_relation_def(T0, T1)(T0_in_NATURALS_X_NATURALS, T1_in_NATURALS_X_NATURALS, T0_related_T1);
+		REP_I_related_T1 = expand(integer_def_relation_transitive)(REP_I, T0, T1)(REP_I_related_T0, T0_related_T1);
+		T1_in_I = REP_I_condition(T1)(T1_in_NATURALS_X_NATURALS, REP_I_related_T1);
+
+		prove not_disjoint: ^T1(T1 in I & T1 in J){
+			choose T1;
+			return T1_in_I, T1_in_J;
+		}
+
+		return equivalence_classes_disjoint(NATURALS_X_NATURALS, INTEGER_DEFINITION_RELATION, INTEGERS)(integer_def_relation_equivalence, integers_definition)(I, J)(I_in_integers, J_in_integers, not_disjoint);
+	}
+
+	return iff(lemma0, lemma1);
 }
+
+//Defining the sum of two integers I and J
+define is_sum(I, J, K): I in INTEGERS & J in INTEGERS & K in INTEGERS & *A*B*C*D*S0*S1(is_natural_sum(A, C, S0) & is_natural_sum(B, D, S1) & is_integer_representation(A, B, I) & is_integer_representation(C, D, J) -> is_integer_representation(S0, S1, K));
 

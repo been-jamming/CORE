@@ -1,0 +1,17 @@
+<!DOCTYPE html><html><head><title>CORE result</title><link rel="stylesheet" href="../style.css"></link><link rel="stylesheet" href="https://fontlibrary.org/face/pixelated" type="text/css"></link></head><body><h1 style="font-size: 4vw">CORE library</h1><div class="page_body"><div class="card"><b>Result type</b>: definition<br><b>Result name</b>: is_sum<br><b>Description</b>: Defining the sum of two integers I and J<br><br><b>Source</b>:<br><br><code style="white-space: pre-wrap; cursor: default;"><b style="color: blue;">define</b> <b style="cursor: pointer;" onclick="window.location.href = '../05_integers/is_sum.html';" onmouseover="popup_window(this, 'is_sum | 05_integers');" onmouseout="close_popup();">is_sum</b>(I, J, K): I in INTEGERS <b style="color: red;">&</b> J in INTEGERS <b style="color: red;">&</b> K in INTEGERS <b style="color: red;">&</b> <b style="color: red;">*</b>A<b style="color: red;">*</b>B<b style="color: red;">*</b>C<b style="color: red;">*</b>D<b style="color: red;">*</b>S0<b style="color: red;">*</b>S1(<b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(A, C, S0) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../03_addition/is_natural_sum.html';" onmouseover="popup_window(this, 'is_natural_sum | 03_addition');" onmouseout="close_popup();">is_natural_sum</b>(B, D, S1) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../05_integers/is_integer_representation.html';" onmouseover="popup_window(this, 'is_integer_representation | 05_integers');" onmouseout="close_popup();">is_integer_representation</b>(A, B, I) <b style="color: red;">&</b> <b style="cursor: pointer;" onclick="window.location.href = '../05_integers/is_integer_representation.html';" onmouseover="popup_window(this, 'is_integer_representation | 05_integers');" onmouseout="close_popup();">is_integer_representation</b>(C, D, J) <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../05_integers/is_integer_representation.html';" onmouseover="popup_window(this, 'is_integer_representation | 05_integers');" onmouseout="close_popup();">is_integer_representation</b>(S0, S1, K));
+</code></div></div></body>
+<div id="popup" style="display: none; position: absolute; padding: 2px; border: 2px solid black; border-radius: 2px; background: white;"></div>
+<script type="text/javascript">
+popup = document.getElementById("popup");
+function popup_window(dom, text){
+	rect = dom.getBoundingClientRect()
+	popup.innerHTML = text;
+	popup.style.top = rect.bottom + window.scrollY + 5 + "px";
+	popup.style.left = rect.left + window.scrollX + "px";
+	popup.style.display = "inline-block";
+}
+function close_popup(){
+	popup.style.display = "none";
+}
+</script>
+</html>
