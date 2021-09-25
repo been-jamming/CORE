@@ -247,3 +247,46 @@ prove integer_representation_def: *A*B*C*D*I*J(I in INTEGERS & J in INTEGERS & i
 //Defining the sum of two integers I and J
 define is_sum(I, J, K): I in INTEGERS & J in INTEGERS & K in INTEGERS & *A*B*C*D*S0*S1(is_natural_sum(A, C, S0) & is_natural_sum(B, D, S1) & is_integer_representation(A, B, I) & is_integer_representation(C, D, J) -> is_integer_representation(S0, S1, K));
 
+//Now we must prove that the sum of two integers exists
+//prove sum: *I*J(I in INTEGERS & J in INTEGERS -> ^K(K in INTEGERS & is_sum(I, J, K))){
+//	given |I, J|;
+//	implies I_in_INTEGERS, J_in_INTEGERS;
+//
+//	I0_in_NATURALS, I1_in_NATURALS, I_rep = integer_representation_exists(I)(I_in_INTEGERS)|I0, I1|;
+//	J0_in_NATURALS, J1_in_NATURALS, J_rep = integer_representation_exists(J)(J_in_INTEGERS)|J0, J1|;
+//
+//	K0_in_NATURALS, sum_K0 = natural_sum(I0, J0)(I0_in_NATURALS, J0_in_NATURALS)|K0|;
+//	K1_in_NATURALS, sum_K1 = natural_sum(I1, J1)(I1_in_NATURALS, J1_in_NATURALS)|K1|;
+//
+//	K_in_INTEGERS, K_rep = integer_representation(K0, K1)(K0_in_NATURALS, K1_in_NATURALS)|K|;
+//
+//	choose K;
+//
+//	tuple_TI = tuple(I0, I1)|TI|;
+//	tuple_TJ = tuple(J0, J1)|TJ|;
+//
+//	TI_in_I = expand(I_rep)(TI)(tuple_TI);
+//	TJ_in_I = expand(J_rep)(TJ)(tuple_TJ);
+//
+//	prove sum_K: *A*B*C*D*S0*S1(is_natural_sum(A, C, S0) & is_natural_sum(B, D, S1) & is_integer_representation(A, B, I) & is_integer_representation(C, D, J) -> is_integer_representation(S0, S1, K)){
+//		given |A, B, C, D, S0, S1|;
+//		implies sum_S0, sum_S1, AB_rep_I, CD_rep_J;
+//		A_in_NATURALS, C_in_NATURALS, tuple_exists = expand(sum_S0);
+//		B_in_NATURALS, D_in_NATURALS, tuple_exists = expand(sum_S1);
+//
+//		tuple_TAB = tuple(A, B)|TAB|;
+//		tuple_TCD = tuple(C, D)|TCD|;
+//
+//		TAB_in_I = expand(AB_rep_I)(TAB)(tuple_TAB);
+//		TCD_in_J = expand(CD_rep_J)(TCD)(tuple_TCD);
+//
+//		I_REP_in_NATURALS_X_NATURALS, I_REP_represent = expand(expand(integers_definition)(I)(I_in_INTEGERS))|I_REP|;
+//		J_REP_in_NATURALS_X_NATURALS, J_REP_represent = expand(expand(integers_definition)(J)(J_in_INTEGERS))|J_REP|;
+//
+//		I_REP0_in_NATURALS, I_REP1_in_NATURALS, tuple_I_REP = expand(NATURALS_X_NATURALS_definition)(I_REP)(I_REP_in_NATURALS_X_NATURALS)|I_REP0, I_REP1|;
+//		J_REP0_in_NATURALS, J_REP1_in_NATURALS, tuple_J_REP = expand(NATURALS_X_NATURALS_definition)(J_REP)(J_REP_in_NATURALS_X_NATURALS)|J_REP0, J_REP1|;
+//
+//		print I_REP_represent;
+//	}
+//}
+//

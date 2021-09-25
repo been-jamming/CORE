@@ -1110,7 +1110,7 @@ statement *implies_command(char **c, statement *goal){
 			set_error("not enough premises to unpack");
 			error(1);
 		}
-		if(**c == ';'){
+		if(**c == ';' || **c == '{'){
 			var_statement = goal_child0_copy;
 		} else {
 			var_statement = peel_and_left(&goal_child0_copy);
