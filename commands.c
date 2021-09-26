@@ -102,7 +102,6 @@ int print_command(char **c){
 	skip_whitespace(c);
 	s = parse_statement_value(c, &is_verified);
 	if(!s){
-		set_error("could not parse statement value");
 		error(1);
 	}
 	if(is_verified){
@@ -397,7 +396,6 @@ int assign_command(char **c){
 
 	s = parse_statement_value(c, &is_verified);
 	if(!s){
-		set_error("could not parse statement value");
 		error(1);
 	}
 	skip_whitespace(c);
@@ -501,7 +499,6 @@ statement *return_command(char **c){
 
 	output = parse_statement_value(c, &is_verified);
 	if(!output){
-		set_error("could not parse statement value");
 		error(1);
 	}
 	if(output->num_bound_props || output->num_bound_vars){
@@ -521,7 +518,6 @@ statement *return_command(char **c){
 		skip_whitespace(c);
 		s = parse_statement_value(c, &arg_verified);
 		if(!s){
-			set_error("could not parse statement value");
 			error(1);
 		}
 		if(s->num_bound_props || s->num_bound_vars){
@@ -610,7 +606,6 @@ int debug_command(char **c, statement *goal){
 	skip_whitespace(c);
 	s = parse_statement_value(c, &is_verified);
 	if(!s){
-		set_error("could not parse statement value");
 		error(1);
 	}
 
@@ -624,7 +619,6 @@ int debug_command(char **c, statement *goal){
 	skip_whitespace(c);
 	t = parse_statement_value(c, &is_verified);
 	if(!t){
-		set_error("could not parse statement value");
 		error(1);
 	}
 	skip_whitespace(c);

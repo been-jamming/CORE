@@ -263,6 +263,7 @@ statement *parse_statement_identifier(char **c, unsigned char *is_verified){
 		for(i = current_depth; i >= 0; i--){
 			prop = read_dictionary(definitions[i], name_buffer, 0);
 			if(prop && !prop->statement_data){
+				set_error("proposition has no definition");
 				prop = NULL;
 			}
 			if(prop){
@@ -630,7 +631,6 @@ statement *parse_left(char **c, unsigned char *is_verified){
 	s = parse_statement_value(c, &arg_verified);
 	*is_verified = arg_verified && *is_verified;
 	if(!s){
-		set_error("could not parse statement value");
 		error(1);
 	}
 	skip_whitespace(c);
@@ -676,7 +676,6 @@ statement *parse_right(char **c, unsigned char *is_verified){
 	s = parse_statement_value(c, &arg_verified);
 	*is_verified = arg_verified && *is_verified;
 	if(!s){
-		set_error("could not parse statement value");
 		error(1);
 	}
 	skip_whitespace(c);
@@ -721,7 +720,6 @@ statement *parse_and_or(char **c, unsigned char is_and, unsigned char *is_verifi
 
 	output = parse_statement_value(c, &arg_verified);
 	if(!output){
-		set_error("could not parse statement value");
 		error(1);
 	}
 	if(output->num_bound_props || output->num_bound_vars){
@@ -743,7 +741,6 @@ statement *parse_and_or(char **c, unsigned char is_and, unsigned char *is_verifi
 		s = parse_statement_value(c, &arg_verified);
 		if(!s){
 			free_statement(output);
-			set_error("could not parse statement value");
 			error(1);
 		}
 		if(s->num_bound_props || s->num_bound_vars){
@@ -801,7 +798,6 @@ statement *parse_swap(char **c, unsigned char *is_verified){
 	s = parse_statement_value(c, &arg_verified);
 	*is_verified = arg_verified && *is_verified;
 	if(!s){
-		set_error("could not parse statement value");
 		error(1);
 	}
 	skip_whitespace(c);
@@ -862,7 +858,6 @@ statement *parse_expand(char **c, unsigned char *is_verified){
 	arg = parse_statement_value(c, &arg_verified);
 	*is_verified = arg_verified && *is_verified;
 	if(!arg){
-		set_error("could not parse statement value");
 		error(1);
 	}
 	skip_whitespace(c);
@@ -913,7 +908,6 @@ statement *parse_iff(char **c, unsigned char *is_verified){
 	arg0 = parse_statement_value(c, &arg_verified);
 	*is_verified = arg_verified && *is_verified;
 	if(!arg0){
-		set_error("could not parse statement value");
 		error(1);
 	}
 	skip_whitespace(c);
@@ -928,7 +922,6 @@ statement *parse_iff(char **c, unsigned char *is_verified){
 	arg1 = parse_statement_value(c, &arg_verified);
 	*is_verified = arg_verified && *is_verified;
 	if(!arg1){
-		set_error("could not parse statemnet value");
 		error(1);
 	}
 	skip_whitespace(c);
@@ -975,7 +968,6 @@ statement *parse_branch(char **c){
 	or_statement = parse_statement_value(c, &arg_verified);
 	skip_whitespace(c);
 	if(!or_statement){
-		set_error("could not parse statement value");
 		error(1);
 	}
 	if(!arg_verified){
@@ -1415,7 +1407,7 @@ static statement *parse_statement_value_recursive(char **c, unsigned char *is_ve
 			output = parse_statement_value_parentheses(c, output, is_verified);
 		} else if(**c == '|'){
 			if(!*is_verified){
-				set_error("cannot bind variable in unverified statement");
+				set_error("cannot bind object in unverified statement");
 				error(1);
 			}
 			++*c;
@@ -1433,6 +1425,7 @@ static statement *parse_statement_value_recursive(char **c, unsigned char *is_ve
 statement *parse_statement_value(char **c, unsigned char *is_verified){
 	statement *output;
 
+	set_error("could not parse statement value");
 	*is_verified = 1;
 	output = parse_statement_value_recursive(c, is_verified);
 
