@@ -471,6 +471,7 @@ int relation_command(char **c){
 	relation_info->relation_id = current_relation_id;
 	relation_info->name = name;
 	relation_info->definition = NULL;
+	relation_info->depth = current_depth;
 
 	write_dictionary(relations + current_depth, relation_name, relation_info, 0);
 

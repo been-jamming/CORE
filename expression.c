@@ -117,7 +117,7 @@ unsigned int max_statement_depth(statement *s){
 			} else {
 				b = s->var1->depth;
 			}
-			return umax(a, b);
+			return umax(umax(a, b), s->relation_info->depth);
 		case PROPOSITION:
 			if(!s->is_bound){
 				output = s->prop->depth;

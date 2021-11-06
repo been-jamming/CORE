@@ -136,7 +136,7 @@ void get_relation_identifier(char **c, char *buffer, size_t buffer_length){
 	}
 
 	end_of_identifier = *c;
-	while(!is_alpha(*end_of_identifier) && !is_whitespace(end_of_identifier) && *end_of_identifier && *end_of_identifier != ';'){
+	while(!is_alpha(*end_of_identifier) && !is_whitespace(end_of_identifier) && *end_of_identifier && *end_of_identifier != ';' && *end_of_identifier != ']'){
 		end_of_identifier++;
 	}
 

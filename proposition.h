@@ -72,6 +72,7 @@ struct relation{
 	int relation_id;
 	char *name;
 	statement *definition;
+	unsigned int depth;
 };
 
 struct statement{
