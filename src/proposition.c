@@ -959,7 +959,7 @@ unsigned char compare_statement(statement *a, statement *b){
 			if(a->is_bound0 && a->var0_id != b->var0_id){
 				return 0;
 			}
-			if(!a->is_bound && a->var0 != b->var0){
+			if(!a->is_bound0 && a->var0 != b->var0){
 				return 0;
 			}
 			if(a->is_bound1 != b->is_bound1){

@@ -1381,6 +1381,9 @@ int main(int argc, char **argv){
 		program_start = program_text;
 		if(!program_text){
 			fprintf(stderr, "Error: could not read file '%s'\n", argv[i]);
+#ifdef USE_CUSTOM_ALLOC
+			custom_malloc_abort();
+#endif
 			return 1;
 		}
 
