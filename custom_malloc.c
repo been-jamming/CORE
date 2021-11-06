@@ -6,6 +6,7 @@
 #define CMALLOC_PRINT_ERRORS
 
 typedef struct cmalloc_node cmalloc_node;
+static size_t total_allocated;
 
 struct cmalloc_node{
 	cmalloc_node *child0;
@@ -88,6 +89,8 @@ void *custom_malloc(size_t size){
 	current_node->child0 = NULL;
 	current_node->child1 = NULL;
 
+	total_allocated += size;
+
 	return output;
 }
 
@@ -113,6 +116,9 @@ void custom_free(void *pointer){
 #endif
 		return;
 	}
+
+	total_allocated -= parent_node->block_size;
+
 	free(pointer);
 	parent_node->value = NULL;
 	while(!parent_node->value && parent_node != global_node && !parent_node->child0 && !parent_node->child1){
@@ -204,6 +210,7 @@ void custom_malloc_init(){
 	global_node->parent = NULL;
 	global_node->child0 = NULL;
 	global_node->child1 = NULL;
+	total_allocated = 0;
 }
 
 void custom_malloc_deinit(){
@@ -213,6 +220,11 @@ void custom_malloc_deinit(){
 #endif
 		return;
 	}
+#ifdef CMALLOC_PRINT_ERRORS
+	if(total_allocated){
+		fprintf(stderr, "cmalloc error: deinitialization with %d bytes in use\n", (int) total_allocated);
+	}
+#endif
 	free(global_node);
 }
 

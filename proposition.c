@@ -7,11 +7,13 @@
 #include "custom_malloc.h"
 
 unsigned int current_depth;
+int current_relation_id;
 dictionary variables[MAX_DEPTH];
 dictionary definitions[MAX_DEPTH];
 dictionary proofs[MAX_DEPTH];
 dictionary bound_variables;
 dictionary bound_propositions;
+dictionary relations[MAX_DEPTH];
 unsigned int line_number;
 char *global_file_name;
 char **global_program_pointer;
@@ -30,6 +32,10 @@ statement *create_statement(statement_type type, int num_bound_vars, int num_bou
 	output->parent = NULL;
 
 	return output;
+}
+
+unsigned char is_whitespace(char *c){
+	return *c == ' ' || *c == '\t' || *c == '\n' || (*c == '/' && c[1] == '/');
 }
 
 void skip_whitespace(char **c){
@@ -121,6 +127,29 @@ void get_identifier(char **c, char *buffer, size_t buffer_length){
 	*c += end_of_identifier - *c;
 }
 
+void get_relation_identifier(char **c, char *buffer, size_t buffer_length){
+	char *end_of_identifier;
+
+	if(is_alpha(**c)){
+		get_identifier(c, buffer, buffer_length);
+		return;
+	}
+
+	end_of_identifier = *c;
+	while(!is_alpha(*end_of_identifier) && !is_whitespace(end_of_identifier) && *end_of_identifier && *end_of_identifier != ';'){
+		end_of_identifier++;
+	}
+
+	if(end_of_identifier - *c >= buffer_length){
+		buffer[0] = '\0';
+		return;
+	}
+
+	strncpy(buffer, *c, end_of_identifier - *c);
+	buffer[end_of_identifier - *c] = '\0';
+	*c += end_of_identifier - *c;
+}
+
 statement *parse_true_false(char **c, int num_bound_vars, int num_bound_props){
 	statement *output;
 
@@ -138,13 +167,15 @@ statement *parse_true_false(char **c, int num_bound_vars, int num_bound_props){
 	return NULL;
 }
 
-statement *parse_membership(char **c, int num_bound_vars, int num_bound_props){
+statement *parse_relation(char **c, int num_bound_vars, int num_bound_props){
 	char var_name0[256];
+	char relation_name[256];
 	char var_name1[256];
 	int *var0_id = NULL;
 	int *var1_id = NULL;
 	variable *var0 = NULL;
 	variable *var1 = NULL;
+	relation *relation_info = NULL;
 	unsigned char is_bound0;
 	unsigned char is_bound1;
 	int i;
@@ -158,14 +189,14 @@ statement *parse_membership(char **c, int num_bound_vars, int num_bound_props){
 		*c = beginning;
 		return NULL;
 	}
-
+	
 	skip_whitespace(c);
-	get_identifier(c, var_name1, 256);
-	if(strcmp(var_name1, "in")){
+	get_relation_identifier(c, relation_name, 256);
+	if(relation_name[0] == '\0'){
 		*c = beginning;
 		return NULL;
 	}
-
+	
 	skip_whitespace(c);
 	get_identifier(c, var_name1, 256);
 	if(var_name1[0] == '\0'){
@@ -186,6 +217,13 @@ statement *parse_membership(char **c, int num_bound_vars, int num_bound_props){
 		is_bound0 = 1;
 	}
 
+	for(i = current_depth; i >= 0; i--){
+		relation_info = read_dictionary(relations[i], relation_name, 0);
+		if(relation_info){
+			break;
+		}
+	}
+
 	var1_id = read_dictionary(bound_variables, var_name1, 0);
 	if(!var1_id){
 		is_bound1 = 0;
@@ -199,8 +237,9 @@ statement *parse_membership(char **c, int num_bound_vars, int num_bound_props){
 		is_bound1 = 1;
 	}
 
-	if((var0_id || var0) && (var1_id || var1)){
-		output = create_statement(MEMBERSHIP, num_bound_vars, num_bound_props);
+	if((var0_id || var0) && (var1_id || var1) && relation_info){
+		output = create_statement(RELATION, num_bound_vars, num_bound_props);
+		output->relation_info = relation_info;
 		if(is_bound0){
 			output->var0_id = *var0_id;
 		} else {
@@ -484,7 +523,7 @@ statement *parse_value(char **c, int num_bound_vars, int num_bound_props){
 
 	if((output = parse_true_false(c, num_bound_vars, num_bound_props))){
 		return output;
-	} else if((output = parse_membership(c, num_bound_vars, num_bound_props))){
+	} else if((output = parse_relation(c, num_bound_vars, num_bound_props))){
 		return output;
 	} else if((output = parse_proposition(c, num_bound_vars, num_bound_props))){
 		return output;
@@ -595,7 +634,7 @@ void decrement_references(statement *s){
 		case NOT:
 			decrement_references(s->child0);
 			break;
-		case MEMBERSHIP:
+		case RELATION:
 			if(!s->is_bound0){
 				s->var0->num_references--;
 			}
@@ -666,7 +705,7 @@ void free_statement(statement *s){
 			free_statement(s->child0);
 			free(s);
 			break;
-		case MEMBERSHIP:
+		case RELATION:
 			if(!s->is_bound0){
 				s->var0->num_references--;
 			}
@@ -705,7 +744,8 @@ void copy_statement(statement *dest, statement *s){
 			copy_statement(dest->child0, s->child0);
 			dest->child0->parent = dest;
 			break;
-		case MEMBERSHIP:
+		case RELATION:
+			dest->relation_info = s->relation_info;
 			if(s->is_bound0){
 				dest->is_bound0 = 1;
 				dest->var0_id = s->var0_id;
@@ -811,13 +851,13 @@ void print_statement(statement *s){
 		case TRUE:
 			printf("true");
 			break;
-		case MEMBERSHIP:
+		case RELATION:
 			if(s->is_bound0){
 				printf("%d", s->var0_id);
 			} else {
 				printf("%s", s->var0->name);
 			}
-			printf(" in ");
+			printf(" %s ", s->relation_info->name);
 			if(s->is_bound1){
 				printf("%d", s->var1_id);
 			} else {
@@ -909,7 +949,10 @@ unsigned char compare_statement(statement *a, statement *b){
 		case FORALL:
 		case EXISTS:
 			return compare_statement(a->child0, b->child0);
-		case MEMBERSHIP:
+		case RELATION:
+			if(a->relation_info != b->relation_info){
+				return 0;
+			}
 			if(a->is_bound0 != b->is_bound0){
 				return 0;
 			}

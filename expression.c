@@ -36,6 +36,14 @@ void free_variable(variable *v){
 	free(v);
 }
 
+void free_relation(relation *r){
+	if(r->definition){
+		free_statement(r->definition);
+	}
+	free(r->name);
+	free(r);
+}
+
 void free_proposition_independent(proposition *p){
 	free(p->name);
 	if(p->statement_data){
@@ -58,6 +66,10 @@ void free_proposition_void(void *p){
 
 void free_variable_void(void *v){
 	free_variable_independent(v);
+}
+
+void free_relation_void(void *v){
+	free_relation(v);
 }
 
 void proposition_decrement_references_void(void *p){
@@ -94,7 +106,7 @@ unsigned int max_statement_depth(statement *s){
 		case FORALL:
 		case EXISTS:
 			return max_statement_depth(s->child0);
-		case MEMBERSHIP:
+		case RELATION:
 			if(s->is_bound0){
 				a = 0;
 			} else {
@@ -310,7 +322,7 @@ void add_bound_variables(statement *s, int increment){
 		case EXISTS:
 			add_bound_variables(s->child0, increment);
 			break;
-		case MEMBERSHIP:
+		case RELATION:
 			if(s->is_bound0){
 				s->var0_id += increment;
 			}
@@ -348,7 +360,7 @@ void substitute_variable_recursive(statement *s, int id, variable *v){
 		case EXISTS:
 			substitute_variable_recursive(s->child0, id, v);
 			break;
-		case MEMBERSHIP:
+		case RELATION:
 			if(s->is_bound0 && s->var0_id == id){
 				s->is_bound0 = 0;
 				s->var0 = v;
@@ -401,7 +413,7 @@ void reset_replaced(statement *s){
 		case EXISTS:
 			reset_replaced(s->child0);
 			break;
-		case MEMBERSHIP:
+		case RELATION:
 			s->replaced0 = 0;
 			s->replaced1 = 0;
 			break;
@@ -462,7 +474,7 @@ void substitute_variable_bound(statement *s, int id, int new_id){
 				}
 			}
 			break;
-		case MEMBERSHIP:
+		case RELATION:
 			if(s->is_bound0 && s->var0_id == id && !s->replaced0){
 				s->var0_id = new_id;
 				s->replaced0 = 1;
@@ -528,7 +540,7 @@ void substitute_proposition(statement *s, statement *child){
 				s->prop_id--;
 			}
 			break;
-		case MEMBERSHIP:
+		case RELATION:
 		case TRUE:
 		case FALSE:
 			//pass

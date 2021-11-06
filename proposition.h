@@ -1,10 +1,12 @@
 #define MAX_DEPTH 128
 
 extern unsigned int current_depth;
+extern int current_relation_id;
 extern dictionary variables[MAX_DEPTH];
 extern dictionary definitions[MAX_DEPTH];
 extern dictionary bound_variables;
 extern dictionary bound_propositions;
+extern dictionary relations[MAX_DEPTH];
 extern unsigned int line_number;
 extern char *global_file_name;
 extern char **global_program_pointer;
@@ -18,7 +20,7 @@ typedef enum{
 	EXISTS,
 	FORALL,
 	NOT,
-	MEMBERSHIP,
+	RELATION,
 	PROPOSITION,
 	FALSE,
 	TRUE
@@ -34,6 +36,7 @@ typedef struct variable variable;
 typedef struct proposition proposition;
 typedef struct bound_proposition bound_proposition;
 typedef struct proposition_arg proposition_arg;
+typedef struct relation relation;
 
 struct proposition{
 	char *name;
@@ -65,6 +68,12 @@ struct proposition_arg{
 	};
 };
 
+struct relation{
+	int relation_id;
+	char *name;
+	statement *definition;
+};
+
 struct statement{
 	statement_type type;
 	union{
@@ -73,8 +82,9 @@ struct statement{
 			statement *child0;
 			statement *child1;
 		};
-		//For membership
+		//For relations
 		struct{
+			relation *relation_info;
 			unsigned char is_bound0;
 			unsigned char replaced0;
 			union{
@@ -112,6 +122,7 @@ void skip_whitespace(char **c);
 void set_error(char *error_message);
 void error(int error_code);
 void get_identifier(char **c, char *buffer, size_t buffer_length);
+void get_relation_identifier(char **c, char *buffer, size_t buffer_length);
 statement *create_statement(statement_type type, int num_bound_vars, int num_bound_props);
 statement *parse_statement(char **c, int num_bound_vars, int num_bound_props);
 void decrement_references(statement *s);
