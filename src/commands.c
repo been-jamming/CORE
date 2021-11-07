@@ -437,9 +437,13 @@ int assign_command(char **c){
 }
 
 int relation_command(char **c){
-	char relation_name[256];
+	char identifier0[256];
+	char identifier1[256];
+	char identifier2[256];
 	char *name;
 	relation *relation_info;
+	int *new_int;
+	statement *s;
 
 	skip_whitespace(c);
 	if(strncmp(*c, "relation", 8) || is_alphanumeric((*c)[8])){
@@ -448,34 +452,84 @@ int relation_command(char **c){
 
 	*c += 8;
 	skip_whitespace(c);
-	get_relation_identifier(c, relation_name, 256);
-	if(relation_name[0] == '\0'){
-		set_error("expected relation name");
-		error(1);
-	}
+	get_relation_identifier(c, identifier0, 256);
 	skip_whitespace(c);
-	if(**c != ';'){
-		set_error("expected ';'");
-		error(1);
+	if(**c == ';'){
+		if(identifier0[0] == '\0'){
+			set_error("expected relation name");
+			error(1);
+		}
+		++*c;
+
+		if(read_dictionary(relations[current_depth], identifier0, 0)){
+			set_error("duplicate relation name");
+			error(1);
+		}
+
+		name = malloc(sizeof(char)*(strlen(identifier0) + 1));
+		strcpy(name, identifier0);
+		relation_info = malloc(sizeof(relation));
+		relation_info->relation_id = current_relation_id;
+		current_relation_id++;
+		relation_info->name = name;
+		relation_info->definition = NULL;
+		relation_info->depth = current_depth;
+
+		write_dictionary(relations + current_depth, identifier0, relation_info, 0);
+
+		return 1;
+	} else {
+		if(!is_alpha(identifier0[0])){
+			set_error("expected identifier");
+			error(1);
+		}
+		get_relation_identifier(c, identifier1, 256);
+		if(identifier1[0] == '\0'){
+			set_error("expected relation name");
+			error(1);
+		}
+		skip_whitespace(c);
+		get_identifier(c, identifier2, 256);
+		if(identifier2[0] == '\0'){
+			set_error("expected identifier");
+			error(1);
+		}
+		if(!strcmp(identifier1, identifier2)){
+			set_error("duplicate identifier");
+			error(1);
+		}
+		skip_whitespace(c);
+		if(**c != ':'){
+			set_error("expected ':'");
+			error(1);
+		}
+		++*c;
+		new_int = malloc(sizeof(int));
+		*new_int = 0;
+		write_dictionary(&bound_variables, identifier0, new_int, 0);
+		new_int = malloc(sizeof(int));
+		*new_int = 1;
+		write_dictionary(&bound_variables, identifier2, new_int, 0);
+		s = parse_statement(c, 2, 0);
+		if(**c != ';'){
+			set_error("expected ';'");
+			error(1);
+		}
+		++*c;
+
+		name = malloc(sizeof(char)*(strlen(identifier1) + 1));
+		strcpy(name, identifier1);
+		relation_info = malloc(sizeof(relation));
+		relation_info->relation_id = current_relation_id;
+		current_relation_id++;
+		relation_info->name = name;
+		relation_info->definition = s;
+		relation_info->depth = current_depth;
+
+		write_dictionary(relations + current_depth, identifier1, relation_info, 0);
+
+		return 1;
 	}
-	++*c;
-
-	if(read_dictionary(relations[current_depth], relation_name, 0)){
-		set_error("duplicate relation name");
-		error(1);
-	}
-
-	name = malloc(sizeof(char)*(strlen(relation_name) + 1));
-	strcpy(name, relation_name);
-	relation_info = malloc(sizeof(relation));
-	relation_info->relation_id = current_relation_id;
-	relation_info->name = name;
-	relation_info->definition = NULL;
-	relation_info->depth = current_depth;
-
-	write_dictionary(relations + current_depth, relation_name, relation_info, 0);
-
-	return 1;
 }
 
 statement *return_command(char **c){

@@ -133,51 +133,6 @@ unsigned int max_statement_depth(statement *s){
 	}
 }
 
-statement *statement_to_definition(char *name){
-	proposition *prop;
-	statement *output;
-	statement *new;
-	int i;
-
-	for(i = current_depth; i >= 0; i--){
-		prop = read_dictionary(definitions[i], name, 0);
-		if(prop && !prop->statement_data){
-			prop = NULL;
-		}
-		if(prop){
-			break;
-		}
-	}
-
-	if(prop){
-		output = create_statement(IMPLIES, prop->statement_data->num_bound_vars, 0);
-		output->child0 = create_statement(PROPOSITION, prop->statement_data->num_bound_vars, 0);
-		output->child0->is_bound = 0;
-		output->child0->prop = prop;
-		prop->num_references++;
-		output->child0->num_args = prop->num_args;
-		output->child0->prop_args = malloc(sizeof(proposition_arg)*output->child0->num_args);
-		output->child0->parent = output;
-		for(i = 0; i < output->child0->num_args; i++){
-			output->child0->prop_args[i].is_bound = 1;
-			output->child0->prop_args[i].var_id = i;
-		}
-		output->child1 = malloc(sizeof(statement));
-		copy_statement(output->child1, prop->statement_data);
-		output->child1->parent = output;
-		for(i = prop->statement_data->num_bound_vars - 1; i >= 0; i--){
-			new = create_statement(FORALL, i, 0);
-			new->child0 = output;
-			new->child0->parent = new;
-			output = new;
-		}
-
-		return output;
-	}
-
-	return NULL;
-}
-
 statement *definition_to_statement(char *name){
 	proposition *prop;
 	statement *output;
@@ -195,7 +150,7 @@ statement *definition_to_statement(char *name){
 	}
 
 	if(prop){
-		output = create_statement(IMPLIES, prop->statement_data->num_bound_vars, 0);
+		output = create_statement(BICOND, prop->statement_data->num_bound_vars, 0);
 		output->child1 = create_statement(PROPOSITION, prop->statement_data->num_bound_vars, 0);
 		output->child1->is_bound = 0;
 		output->child1->prop = prop;
@@ -223,6 +178,49 @@ statement *definition_to_statement(char *name){
 	return NULL;
 }
 
+statement *relation_to_statement(char *name){
+	relation *relation_info;
+	statement *output;
+	statement *new;
+	int i;
+
+	for(i = current_depth; i >= 0; i--){
+		relation_info = read_dictionary(relations[i], name, 0);
+		if(relation_info && !relation_info->definition){
+			relation_info = NULL;
+		}
+		if(relation_info){
+			break;
+		}
+	}
+
+	if(relation_info){
+		output = create_statement(BICOND, relation_info->definition->num_bound_vars, 0);
+		output->child1 = create_statement(RELATION, relation_info->definition->num_bound_vars, 0);
+		output->child1->relation_info = relation_info;
+		output->child1->is_bound0 = 1;
+		output->child1->var0_id = 0;
+		output->child1->is_bound1 = 1;
+		output->child1->var1_id = 1;
+		output->child1->parent = output;
+		output->child0 = malloc(sizeof(statement));
+		copy_statement(output->child0, relation_info->definition);
+		output->child0->parent = output;
+		new = create_statement(FORALL, 1, 0);
+		new->child0 = output;
+		new->child0->parent = new;
+		output = new;
+		new = create_statement(FORALL, 0, 0);
+		new->child0 = output;
+		new->child0->parent = new;
+		output = new;
+
+		return output;
+	}
+
+	return NULL;
+}
+
 statement *parse_statement_identifier(char **c, unsigned char *is_verified){
 	variable *var;
 	statement *output;
@@ -235,13 +233,33 @@ statement *parse_statement_identifier(char **c, unsigned char *is_verified){
 	beginning = *c;
 	if(**c == '#'){
 		++*c;
-		get_identifier(c, name_buffer, 256);
-		if(name_buffer[0]){
-			output = definition_to_statement(name_buffer);
-		}
-		if(!name_buffer[0] || !output){
-			*c = beginning;
-			return NULL;
+		skip_whitespace(c);
+		if(**c == '['){
+			++*c;
+			skip_whitespace(c);
+			get_relation_identifier(c, name_buffer, 256);
+			skip_whitespace(c);
+			if(**c != ']'){
+				*c = beginning;
+				return NULL;
+			}
+			++*c;
+			if(name_buffer[0]){
+				output = relation_to_statement(name_buffer);
+			}
+			if(!name_buffer[0] || !output){
+				*c = beginning;
+				return NULL;
+			}
+		} else {
+			get_identifier(c, name_buffer, 256);
+			if(name_buffer[0]){
+				output = definition_to_statement(name_buffer);
+			}
+			if(!name_buffer[0] || !output){
+				*c = beginning;
+				return NULL;
+			}
 		}
 		return output;
 	}
@@ -251,14 +269,6 @@ statement *parse_statement_identifier(char **c, unsigned char *is_verified){
 		return NULL;
 	}
 	skip_whitespace(c);
-	if(**c == '#'){
-		++*c;
-		output = statement_to_definition(name_buffer);
-		if(!output){
-			*c = beginning;
-		}
-		return output;
-	}
 
 	for(i = current_depth; i >= 0; i--){
 		var = read_dictionary(variables[i], name_buffer, 0);
@@ -864,6 +874,7 @@ statement *parse_expand(char **c, unsigned char *is_verified){
 	statement *output;
 	statement *arg;
 	proposition *prop;
+	relation *relation_info;
 	unsigned char arg_verified;
 	int i;
 
@@ -884,32 +895,70 @@ statement *parse_expand(char **c, unsigned char *is_verified){
 		error(1);
 	}
 
-	if(arg->type != PROPOSITION){
+	if(arg->type != PROPOSITION && arg->type != RELATION){
 		set_error("invalid operand for 'expand'");
 		error(1);
 	}
 
-	prop = arg->prop;
+	if(arg->type == PROPOSITION){
+		prop = arg->prop;
 
-	if(!prop->statement_data){
-		set_error("proposition has no definition");
-		error(1);
-	}
+		if(!prop->statement_data){
+			set_error("proposition has no definition");
+			error(1);
+		}
 
-	output = malloc(sizeof(statement));
-	output->parent = NULL;
-	copy_statement(output, prop->statement_data);
+		output = malloc(sizeof(statement));
+		output->parent = NULL;
+		copy_statement(output, prop->statement_data);
 
-	for(i = 0; i < arg->num_args; i++){
-		if(!substitute_variable(output, 0, arg->prop_args[i].var)){
+		for(i = 0; i < arg->num_args; i++){
+			if(!substitute_variable(output, 0, arg->prop_args[i].var)){
+				set_error("failed to substitute variable");
+				error(1);
+			}
+			add_bound_variables(output, -1);
+		}
+
+		free_statement(arg);
+		return output;
+	} else {
+		relation_info = arg->relation_info;
+
+		if(!relation_info->definition){
+			set_error("relation has no definition");
+			error(1);
+		}
+
+		//Neither of these should happen
+		if(arg->is_bound0){
+			set_error("first object is bound");
+			error(1);
+		}
+
+		if(arg->is_bound1){
+			set_error("second object is bound");
+			error(1);
+		}
+
+		output = malloc(sizeof(statement));
+		output->parent = NULL;
+		copy_statement(output, relation_info->definition);
+
+		if(!substitute_variable(output, 0, arg->var0)){
 			set_error("failed to substitute variable");
 			error(1);
 		}
 		add_bound_variables(output, -1);
+		if(!substitute_variable(output, 0, arg->var1)){
+			set_error("failed to substitute variable");
+			error(1);
+		}
+		add_bound_variables(output, -1);
+		
+		free_statement(arg);
+		return output;
 	}
-
-	free_statement(arg);
-	return output;
 }
 
 statement *parse_iff(char **c, unsigned char *is_verified){

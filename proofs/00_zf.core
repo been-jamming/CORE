@@ -3,10 +3,7 @@ axiom axiom_absurdity[P]: false -> P;
 axiom axiom_true: true;
 axiom axiom_excluded_middle[P]: P | ~P;
 
-relation =;
 relation in;
-axiom test_axiom: *A*B(A = B <-> *X(X in A <-> X in B));
-print test_axiom;
 
 //ZF in CORE (biconditional revision)
 
