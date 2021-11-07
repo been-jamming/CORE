@@ -10,10 +10,12 @@ statement *verify_block(char **c, unsigned char allow_proof_value, statement *go
 unsigned int umax(unsigned int a, unsigned int b);
 void free_proposition(proposition *p);
 void free_variable(variable *v);
+void free_relation(relation *r);
 void free_proposition_independent(proposition *p);
 void free_variable_independent(variable *v);
 void free_proposition_void(void *p);
 void free_variable_void(void *v);
+void free_relation_void(void *v);
 void proposition_decrement_references_void(void *p);
 void variable_decrement_references_void(void *p);
 void init_verifier();
