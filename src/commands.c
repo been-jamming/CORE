@@ -56,9 +56,10 @@ void clear_bound_propositions(){
 char *load_file(char *file_name){
 	FILE *fp;
 	size_t size;
+	size_t read_size;
 	char *output;
 
-	fp = fopen(file_name, "r");
+	fp = fopen(file_name, "rb");
 	if(!fp){
 		return NULL;
 	}
@@ -67,7 +68,8 @@ char *load_file(char *file_name){
 	size = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
 	output = malloc(sizeof(char)*(size + 1));
-	if(fread(output, sizeof(char), size, fp) < size){
+	read_size = fread(output, sizeof(char), size, fp);
+	if(read_size < size){
 		free(output);
 		return NULL;
 	}
