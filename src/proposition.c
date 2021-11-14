@@ -35,11 +35,11 @@ statement *create_statement(statement_type type, int num_bound_vars, int num_bou
 }
 
 unsigned char is_whitespace(char *c){
-	return *c == ' ' || *c == '\t' || *c == '\n' || (*c == '/' && c[1] == '/');
+	return *c == ' ' || *c == '\t' || *c == '\n' || *c == '\r' || (*c == '/' && c[1] == '/');
 }
 
 void skip_whitespace(char **c){
-	while(**c == ' ' || **c == '\t' || **c == '\n' || (**c == '/' && (*c)[1] == '/')){
+	while(**c == ' ' || **c == '\t' || **c == '\n' || **c == '\r' || (**c == '/' && (*c)[1] == '/')){
 		if(**c == '\n'){
 			line_number++;
 		}
