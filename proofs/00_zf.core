@@ -3,6 +3,8 @@ axiom axiom_absurdity[P]: false -> P;
 axiom axiom_true: true;
 axiom axiom_excluded_middle[P]: P | ~P;
 
+relation in;
+
 //ZF in CORE (biconditional revision)
 
 define equal_sets(A, B): *X(X in A <-> X in B);

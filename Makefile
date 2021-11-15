@@ -2,20 +2,20 @@ CC = gcc
 DEL = rm
 FLAGS = -Wall -DUSE_CUSTOM_ALLOC -g
 
-core: commands.c custom_malloc.o dictionary.o proposition.o expression.o
-	$(CC) commands.c expression.o proposition.o dictionary.o custom_malloc.o $(FLAGS) -o core
+core: src/commands.c custom_malloc.o dictionary.o proposition.o expression.o
+	$(CC) src/commands.c expression.o proposition.o dictionary.o custom_malloc.o $(FLAGS) -o core
 
-custom_malloc.o: custom_malloc.c
-	$(CC) custom_malloc.c -c $(FLAGS)
+custom_malloc.o: src/custom_malloc.c
+	$(CC) src/custom_malloc.c -c $(FLAGS)
 
-dictionary.o: dictionary.c
-	$(CC) dictionary.c -c $(FLAGS)
+dictionary.o: src/dictionary.c
+	$(CC) src/dictionary.c -c $(FLAGS)
 
-proposition.o: proposition.c
-	$(CC) proposition.c -c $(FLAGS)
+proposition.o: src/proposition.c
+	$(CC) src/proposition.c -c $(FLAGS)
 
-expression.o: expression.c
-	$(CC) expression.c -c $(FLAGS)
+expression.o: src/expression.c
+	$(CC) src/expression.c -c $(FLAGS)
 
 clean:
 	$(DEL) custom_malloc.o

@@ -1,0 +1,222 @@
+//CORE ZF Implementation Mark 3
+
+//A few logical axioms first
+axiom axiom_absurdity[P]: false -> P;
+axiom axiom_true: true;
+axiom axiom_excluded_middle[P]: P | ~P;
+
+//The relation for set membership
+relation in;
+//The relation for set equality
+relation A = B: *X(X in A <-> X in B);
+//The relation for subset
+relation A <= B: *X(X in A -> X in B);
+//The relation for disjoint sets
+relation A disjoint B: *X(X in A -> ~X in B);
+
+define is_empty(A): *X(~X in A);
+define not_empty(A): ^X(X in A);
+
+//This axiom allows us to replace sets with equal sets
+axiom replace[P(1)]: *X*Y(X = Y -> (P(X) <-> P(Y)));
+
+prove equal_reflexive: *A(A = A){
+	given |A|;
+	prove equal_def: *X(X in A <-> X in A){
+		given |X|;
+		prove lemma: X in A -> X in A{
+			implies X_in_A;
+			return X_in_A;
+		}
+		return iff(lemma, lemma);
+	}
+	return #[=](A, A)(equal_def);
+}
+
+prove equal_symmetric: *A*B(A = B -> B = A){
+	given |A, B|;
+	implies A_eq_B;
+	prove equal_def: *X(X in B <-> X in A){
+		given |X|;
+		return expand(A_eq_B)(X);
+	}
+	return #[=](B, A)(equal_def);
+}
+
+prove equal_transitive: *A*B*C(A = B & B = C -> A = C){
+	given |A, B, C|;
+	implies A_eq_B, B_eq_C;
+	return replace[<X: X = C>](A, B)(A_eq_B)(B_eq_C);
+}
+
+//Proving the "axiom" of extensionality which follows directly from replacement and our definition of equals
+prove axiom_extensionality: *A*B(A = B -> *W(A in W <-> B in W)){
+	given |A, B|;
+	implies A_eq_B;
+	given |W|;
+	return replace[<X: X in W>](A, B)(A_eq_B);
+}
+
+axiom axiom_regularity: *A(^X(X in A) -> ^B(B in A & *C(~C in B | ~C in A)));
+
+axiom specify[P(1)]: *A^B*X(X in B <-> X in A & P(X));
+
+axiom axiom_pairing: *A*B^C(A in C & B in C);
+
+axiom axiom_union: *F^A*Y*X((Y in F & X in Y) -> X in A);
+
+axiom axiom_replacement[P(3)]: *A(*X(X in A -> ^Y(P(X, Y, A) & *Z(P(X, Z, A) -> Y = Z))) -> ^B*Y((Y in B -> ^X(X in A & P(X, Y, A))) & (^X(X in A & P(X, Y, A)) -> Y in B)));
+
+define is_pair(A, B, C): *X(X in C <-> X = A | X = B);
+
+prove definition_uniqueness_lemma[P(1)]: *A*B(*X(X in A <-> P(X)) & *X(X in B <-> P(X)) -> A = B){
+	given |A, B|;
+	implies A_def, B_def;
+	prove equal_def: *X(X in A <-> X in B){
+		given |X|;
+		prove lemma0: X in A -> X in B{
+			implies X_in_A;
+			return B_def(X)(A_def(X)(X_in_A));
+		}
+		prove lemma1: X in B -> X in A{
+			implies X_in_B;
+			return A_def(X)(B_def(X)(X_in_B));
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #[=](A, B)(equal_def);
+}
+
+prove pair: *A*B^C(is_pair(A, B, C)){
+	given |A, B|;
+	A_in_C_BIG, B_in_C_BIG = axiom_pairing(A, B)|C_BIG|;
+	C_def = specify[<X: X = A | X = B>](C_BIG)|C|;
+	choose C;
+	prove pair_def: *X(X in C <-> X = A | X = B){
+		given |X|;
+		prove lemma0: X in C -> X = A | X = B{
+			implies X_in_C;
+			X_in_C_BIG, result = C_def(X)(X_in_C);
+			return result;
+		}
+		prove lemma1: X = A | X = B -> X in C{
+			implies either;
+			X_in_C_BIG = branch(either, X_eq_A, X_eq_B){
+				return replace[<W: W in C_BIG>](X, A)(X_eq_A)(A_in_C_BIG);
+			} or {
+				return replace[<W: W in C_BIG>](X, B)(X_eq_B)(B_in_C_BIG);
+			};
+			return C_def(X)(X_in_C_BIG, either);
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #is_pair(A, B, C)(pair_def);
+}
+
+prove pair_unique: *A*B*C*D(is_pair(A, B, C) & is_pair(A, B, D) -> C = D){
+	given |A, B, C, D|;
+	implies pair_C, pair_D;
+	return definition_uniqueness_lemma[<X: X = A | X = B>](C, D)(expand(pair_C), expand(pair_D));
+}
+
+define is_union(A, B): *X(X in B <-> ^Y(Y in A & X in Y));
+
+prove union: *A^B(is_union(A, B)){
+	given |A|;
+	implies_in_NEW = axiom_union(A)|NEW|;
+	specified = specify[<X: ^Y(Y in A & X in Y)>](NEW)|B|;
+	choose B;
+	prove union_def: *X(X in B <-> ^Y(Y in A & X in Y)){
+		given |X|;
+		prove lemma0: X in B -> ^Y(Y in A & X in Y){
+			implies X_in_B;
+			X_in_NEW, result = specified(X)(X_in_B);
+			return result;
+		}
+		prove lemma1: ^Y(Y in A & X in Y) -> X in B{
+			implies exists_condition;
+			condition_Y = exists_condition|Y|;
+			X_in_NEW = implies_in_NEW(Y, X)(condition_Y);
+			return specified(X)(X_in_NEW, exists_condition);
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #is_union(A, B)(union_def);
+}
+
+prove union_unique: *A*B*C(is_union(A, B) & is_union(A, C) -> B = C){
+	given |A, B, C|;
+	implies union_B, union_C;
+	return definition_uniqueness_lemma[<X: ^Y(Y in A & X in Y)>](B, C)(expand(union_B), expand(union_C));
+}
+
+define is_successor(A, B): *X(X in B <-> X in A | X = A);
+
+prove successor: *A^B(is_successor(A, B)){
+	given |A|;
+	pair_AA = pair(A, A)|C|;
+	pair_AC = pair(A, C)|D|;
+	union_B = union(D)|B|;
+	choose B;
+	prove successor_def: *X(X in B <-> X in A | X = A){
+		given |X|;
+		prove lemma0: X in B -> X in A | X = A{
+			implies X_in_B;
+			Y_in_D, X_in_Y = expand(union_B)(X)(X_in_B)|Y|;
+			equal_A_or_C = expand(pair_AC)(Y)(Y_in_D);
+			return branch(equal_A_or_C, equal_A, equal_C){
+				X_in_A = replace[<S: X in S>](Y, A)(equal_A)(X_in_Y);
+				return or(X_in_A, <:X = A>);
+			} or {
+				X_in_C = replace[<S: X in S>](Y, C)(equal_C)(X_in_Y);
+				equal_A_or = expand(pair_AA)(X)(X_in_C);
+				equal_A = branch(equal_A_or, equal_A, equal_A){return equal_A;} or {return equal_A;};
+				return or(<:X in A>, equal_A);
+			};
+		}
+		prove lemma1: X in A | X = A -> X in B{
+			implies premise;
+			return branch(premise, X_in_A, X_equal_A){
+				prove union_def: ^Y(Y in D & X in Y){
+					choose A;
+					return expand(pair_AC)(A)(or(equal_reflexive(A), <:A = C>)), X_in_A;
+				}
+				return expand(union_B)(X)(union_def);
+			} or {
+				X_in_C = expand(pair_AA)(X)(or(X_equal_A, X_equal_A));
+				prove union_def: ^Y(Y in D & X in Y){
+					choose C;
+					return expand(pair_AC)(C)(or(<:C = A>, equal_reflexive(C))), X_in_C;
+				}
+				return expand(union_B)(X)(union_def);
+			};
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #is_successor(A, B)(successor_def);
+}
+
+prove successor_unique: *A*B*C(is_successor(A, B) & is_successor(A, C) -> B = C){
+	given |A, B, C|;
+	implies successor_B, successor_C;
+	return definition_uniqueness_lemma[<X: X in A | X = A>](B, C)(expand(successor_B), expand(successor_C));
+}
+
+define is_inductive_set(X): ^E(E in X & is_empty(E)) & *Y*Z(Y in X & is_successor(Y, Z) -> Z in X);
+
+axiom axiom_infinity: ^X(is_inductive_set(X));
+
+axiom axiom_power_set: *X^Y*Z(Z <= X -> Z in Y);
+
+//These are all of the ZF axioms
+
+//Finally, I want to show that the inverse of the axiom of extensionality can be proven
+prove axiom_extensionality_inverse: *A*B(*W(A in W <-> B in W) -> A = B){
+	given |A, B|;
+	implies premise;
+	pair_U = expand(pair(B, B)|U|);
+	B_in_U = pair_U(B)(or(equal_reflexive(B), equal_reflexive(B)));
+	A_in_U = premise(U)(B_in_U);
+	return branch(pair_U(A)(A_in_U), A_equal_B, A_equal_B){return A_equal_B;} or {return A_equal_B;};
+}
+

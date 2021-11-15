@@ -11,12 +11,14 @@ void init_verifier(){
 
 	current_depth = 0;
 	goal_depth = 0;
+	current_relation_id = 0;
 	bound_variables = create_dictionary(NULL);
 	bound_propositions = create_dictionary(NULL);
 
 	for(i = 0; i < MAX_DEPTH; i++){
 		variables[i] = create_dictionary(NULL);
 		definitions[i] = create_dictionary(NULL);
+		relations[i] = create_dictionary(NULL);
 		goals[i] = NULL;
 	}
 }
@@ -36,6 +38,7 @@ void drop_scope(){
 		iterate_dictionary(definitions[current_depth], proposition_decrement_references_void);
 		free_dictionary(variables + current_depth, free_variable_void);
 		free_dictionary(definitions + current_depth, free_proposition_void);
+		free_dictionary(relations + current_depth, free_relation_void);
 		current_depth--;
 	} else {
 		fprintf(stderr, "WARNING: drop scope called when scope was 0\n");
@@ -53,9 +56,10 @@ void clear_bound_propositions(){
 char *load_file(char *file_name){
 	FILE *fp;
 	size_t size;
+	size_t read_size;
 	char *output;
 
-	fp = fopen(file_name, "r");
+	fp = fopen(file_name, "rb");
 	if(!fp){
 		return NULL;
 	}
@@ -64,7 +68,8 @@ char *load_file(char *file_name){
 	size = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
 	output = malloc(sizeof(char)*(size + 1));
-	if(fread(output, sizeof(char), size, fp) < size){
+	read_size = fread(output, sizeof(char), size, fp);
+	if(read_size < size){
 		free(output);
 		return NULL;
 	}
@@ -433,53 +438,101 @@ int assign_command(char **c){
 	return 1;
 }
 
-/*
-variable *assign_command(char **c){
-	char name_buffer[256];
-	unsigned char is_verified;
-	char *beginning;
+int relation_command(char **c){
+	char identifier0[256];
+	char identifier1[256];
+	char identifier2[256];
+	char *name;
+	relation *relation_info;
+	int *new_int;
 	statement *s;
-	variable *output;
 
 	skip_whitespace(c);
-	beginning = *c;
-	get_identifier(c, name_buffer, 256);
-	if(name_buffer[0] == '\0'){
-		*c = beginning;
-		return NULL;
+	if(strncmp(*c, "relation", 8) || is_alphanumeric((*c)[8])){
+		return 0;
 	}
 
+	*c += 8;
 	skip_whitespace(c);
-	if(**c != '='){
-		*c = beginning;
-		return NULL;
-	}
-	++*c;
+	get_relation_identifier(c, identifier0, 256);
 	skip_whitespace(c);
-	
-	s = parse_statement_value(c, &is_verified);
-	if(!s){
-		set_error("could not parse statement value");
-		error(1);
-	}
-	skip_whitespace(c);
-	if(**c != ';'){
-		free_statement(s);
-		set_error("expected ';'");
-		error(1);
-	}
-	if(!is_verified){
-		free_statement(s);
-		set_error("statement must be verified");
-		error(1);
-	}
-	++*c;
+	if(**c == ';'){
+		if(identifier0[0] == '\0'){
+			set_error("expected relation name");
+			error(1);
+		}
+		++*c;
 
-	output = create_statement_var(name_buffer, s);
-	
-	return output;
+		if(read_dictionary(relations[current_depth], identifier0, 0)){
+			set_error("duplicate relation name");
+			error(1);
+		}
+
+		name = malloc(sizeof(char)*(strlen(identifier0) + 1));
+		strcpy(name, identifier0);
+		relation_info = malloc(sizeof(relation));
+		relation_info->relation_id = current_relation_id;
+		current_relation_id++;
+		relation_info->name = name;
+		relation_info->definition = NULL;
+		relation_info->depth = current_depth;
+
+		write_dictionary(relations + current_depth, identifier0, relation_info, 0);
+
+		return 1;
+	} else {
+		if(!is_alpha(identifier0[0])){
+			set_error("expected identifier");
+			error(1);
+		}
+		get_relation_identifier(c, identifier1, 256);
+		if(identifier1[0] == '\0'){
+			set_error("expected relation name");
+			error(1);
+		}
+		skip_whitespace(c);
+		get_identifier(c, identifier2, 256);
+		if(identifier2[0] == '\0'){
+			set_error("expected identifier");
+			error(1);
+		}
+		if(!strcmp(identifier1, identifier2)){
+			set_error("duplicate identifier");
+			error(1);
+		}
+		skip_whitespace(c);
+		if(**c != ':'){
+			set_error("expected ':'");
+			error(1);
+		}
+		++*c;
+		new_int = malloc(sizeof(int));
+		*new_int = 0;
+		write_dictionary(&bound_variables, identifier0, new_int, 0);
+		new_int = malloc(sizeof(int));
+		*new_int = 1;
+		write_dictionary(&bound_variables, identifier2, new_int, 0);
+		s = parse_statement(c, 2, 0);
+		if(**c != ';'){
+			set_error("expected ';'");
+			error(1);
+		}
+		++*c;
+
+		name = malloc(sizeof(char)*(strlen(identifier1) + 1));
+		strcpy(name, identifier1);
+		relation_info = malloc(sizeof(relation));
+		relation_info->relation_id = current_relation_id;
+		current_relation_id++;
+		relation_info->name = name;
+		relation_info->definition = s;
+		relation_info->depth = current_depth;
+
+		write_dictionary(relations + current_depth, identifier1, relation_info, 0);
+
+		return 1;
+	}
 }
-*/
 
 statement *return_command(char **c){
 	unsigned char is_verified = 1;
@@ -1331,6 +1384,8 @@ statement *verify_command(char **c, unsigned char allow_proof_value, statement *
 		//pass
 	} else if(rename_command(c)){
 		//pass
+	} else if(relation_command(c)){
+		//Pass
 	} else if(assign_command(c)){
 		//Pass
 	} else if(evaluate_command(c)){
@@ -1382,6 +1437,9 @@ int main(int argc, char **argv){
 		program_start = program_text;
 		if(!program_text){
 			fprintf(stderr, "Error: could not read file '%s'\n", argv[i]);
+#ifdef USE_CUSTOM_ALLOC
+			custom_malloc_abort();
+#endif
 			return 1;
 		}
 
@@ -1405,6 +1463,7 @@ int main(int argc, char **argv){
 	}
 	free_dictionary(variables, free_variable_void);
 	free_dictionary(definitions, free_proposition_void);
+	free_dictionary(relations, free_relation_void);
 
 #ifdef USE_CUSTOM_ALLOC
 	custom_malloc_deinit();
