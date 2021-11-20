@@ -226,6 +226,22 @@ prove intersection_unique: *A*B*C(is_intersection(A, B) & is_intersection(A, C) 
 	return definition_uniqueness_lemma[<X: *Y(Y in A -> X in Y)>](B, C)(expand(intersection_B), expand(intersection_C));
 }
 
+prove intersection_subset: *R*F*I(is_intersection(F, I) & *J(J in F -> R <= J) -> R <= I){
+	given |R, F, I|;
+	implies intersection_I, condition;
+	prove subset_def: *X(X in R -> X in I){
+		given |X|;
+		implies X_in_R;
+		prove X_in_I: *J(J in F -> X in J){
+			given |J|;
+			implies J_in_F;
+			return expand(condition(J)(J_in_F))(X)(X_in_R);
+		}
+		return expand(intersection_I)(X)(X_in_I);
+	}
+	return #[<=](R, I)(subset_def);
+}
+
 prove operation_uniqueness_lemma[P(1), Q(1)]: ^X(P(X)) & *X*Y(P(X) & P(Y) -> X = Y) -> (*X(P(X) -> Q(X)) <-> ^X(P(X) & Q(X))){
 	implies exists, unique;
 	

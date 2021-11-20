@@ -154,6 +154,126 @@ prove equiv_relation_sup: *A*R(relation_between(A, A, R) -> ^S(equiv_relation(A,
 	intersection_S = intersection(F)(F_not_empty)|S|;
 	choose S;
 
-	//Continue here
+	//A lemma for symmetry and transitivity of S
+	prove S_lemma: *X*Y(related(X, Y, S) <-> *J(J in F -> related(X, Y, J))){
+		given |X, Y|;
+		prove lemma0: related(X, Y, S) -> *J(J in F -> related(X, Y, J)){
+			implies X_related_Y;
+			given |J|;
+			implies J_in_F;
+			prove related_J: *T(is_tuple(X, Y, T) -> T in J){
+				given |T|;
+				implies tuple_T;
+				T_in_S = expand(X_related_Y)(T)(tuple_T);
+				return expand(intersection_S)(T)(T_in_S)(J)(J_in_F);
+			}
+			return #related(X, Y, J)(related_J);
+		}
+
+		prove lemma1: *J(J in F -> related(X, Y, J)) -> related(X, Y, S){
+			implies condition;
+			prove related_S: *T(is_tuple(X, Y, T) -> T in S){
+				given |T|;
+				implies tuple_T;
+				prove in_all: *J(J in F -> T in J){
+					given |J|;
+					implies J_in_F;
+					return expand(condition(J)(J_in_F))(T)(tuple_T);
+				}
+				return expand(intersection_S)(T)(in_all);
+			}
+			return #related(X, Y, S)(related_S);
+		}
+		return iff(lemma0, lemma1);
+	}
+
+	prove S_reflexive: *X(X in A -> related(X, X, S)){
+		given |X|;
+		implies X_in_A;
+		prove related_in_all: *J(J in F -> related(X, X, J)){
+			given |J|;
+			implies J_in_F;
+			J_in_P, J_equiv, R_subset_J = specified_F(J)(J_in_F);
+			J_between, J_reflexive, J_symmetric, J_transitive = expand(J_equiv);
+			return expand(J_reflexive)(X)(X_in_A);
+		}
+		return S_lemma(X, X)(related_in_all);
+	}
+	S_reflexive = #reflexive(A, S)(S_reflexive);
+
+	prove S_symmetric: *X*Y(related(X, Y, S) -> related(Y, X, S)){
+		given |X, Y|;
+		implies X_Y_related_S;
+		related_in_J = S_lemma(X, Y)(X_Y_related_S);
+		prove related_in_all: *J(J in F -> related(Y, X, J)){
+			given |J|;
+			implies J_in_F;
+			X_Y_related_J = related_in_J(J)(J_in_F);
+			J_in_P, J_equiv, R_subset_J = specified_F(J)(J_in_F);
+			J_between, J_reflexive, J_symmetric, J_transitive = expand(J_equiv);
+			return expand(J_symmetric)(X, Y)(X_Y_related_J);
+		}
+		return S_lemma(Y, X)(related_in_all);
+	}
+	S_symmetric = #symmetric(S)(S_symmetric);
+
+	prove S_transitive: *X*Y*Z(related(X, Y, S) & related(Y, Z, S) -> related(X, Z, S)){
+		given |X, Y, Z|;
+		implies related_X_Y, related_Y_Z;
+		J_related_X_Y = S_lemma(X, Y)(related_X_Y);
+		J_related_Y_Z = S_lemma(Y, Z)(related_Y_Z);
+		prove related_in_all: *J(J in F -> related(X, Z, J)){
+			given |J|;
+			implies J_in_F;
+			X_Y_related = J_related_X_Y(J)(J_in_F);
+			Y_Z_related = J_related_Y_Z(J)(J_in_F);
+			J_in_P, J_equiv, R_subset_J = specified_F(J)(J_in_F);
+			J_between, J_reflexive, J_symmetric, J_transitive = expand(J_equiv);
+			return expand(J_transitive)(X, Y, Z)(X_Y_related, Y_Z_related);
+		}
+		return S_lemma(X, Z)(related_in_all);
+	}
+	S_transitive = #transitive(S)(S_transitive);
+
+	prove S_between: *C(is_cross_product(A, A, C) -> S <= C){
+		given |D|;
+		implies cross;
+		C_eq_D = cross_product_unique(A, A, C, D)(cross_product_C, cross);
+		D_in_F = replace[<Q: Q in F>](C, D)(C_eq_D)(C_in_F);
+		prove subset_def: *X(X in S -> X in D){
+			given |X|;
+			implies X_in_S;
+			return expand(intersection_S)(X)(X_in_S)(D)(D_in_F);
+		}
+		return #[<=](S, D)(subset_def);
+	}
+	S_between = #relation_between(A, A, S)(S_between);
+
+	S_equiv = #equiv_relation(A, S)(S_between, S_reflexive, S_symmetric, S_transitive);
+	prove R_subset_all: *J(J in F -> R <= J){
+		given |J|;
+		implies J_in_F;
+		J_in_P, J_equiv, result = specified_F(J)(J_in_F);
+		return result;
+	}
+	R_subset_S = intersection_subset(R, F, S)(intersection_S, R_subset_all);
+	
+	prove S_min: *T(equiv_relation(A, T) & R <= T -> S <= T){
+		given |T|;
+		implies T_equiv, R_subset_T;
+		T_between, T_reflexive, T_symmetric, T_transitive = expand(T_equiv);
+		T_subset_C = expand(T_between)(C)(cross_product_C);
+		T_in_P = expand(power_set_P)(T)(T_subset_C);
+		T_in_F = specified_F(T)(T_in_P, T_equiv, R_subset_T);
+		prove S_subset_T: *X(X in S -> X in T){
+			given |X|;
+			implies X_in_S;
+			return expand(intersection_S)(X)(X_in_S)(T)(T_in_F);
+		}
+		return #[<=](S, T)(S_subset_T);
+	}
+
+	//Well this was longer than expected
+	return S_equiv, R_subset_S, S_min;
 }
 
