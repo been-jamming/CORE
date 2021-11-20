@@ -1,0 +1,159 @@
+define related(A, B, R): *T(is_tuple(A, B, T) -> T in R);
+
+define reflexive(A, R): *X(X in A -> related(X, X, R));
+
+define symmetric(R): *X*Y(related(X, Y, R) -> related(Y, X, R));
+
+define transitive(R): *X*Y*Z(related(X, Y, R) & related(Y, Z, R) -> related(X, Z, R));
+
+define relation_between(A, B, R): *C(is_cross_product(A, B, C) -> R <= C);
+
+define equiv_relation(A, R): relation_between(A, A, R) & reflexive(A, R) & symmetric(R) & transitive(R);
+
+define equiv_class(A, R, C): ^P(P in A & *X(X in C <-> related(P, X, R)));
+
+prove relation_existence_lemma[P(2)]: *A*B^R*X*Y(related(X, Y, R) <-> X in A & Y in B & P(X, Y)){
+	given |A, B|;
+	cross_product_T = cross_product(A, B)|T|;
+	specified_R = specify[<Q: *X*Y(is_tuple(X, Y, Q) -> P(X, Y))>](T)|R|;
+	choose R;
+	given |X, Y|;
+	prove lemma0: related(X, Y, R) -> X in A & Y in B & P(X, Y){
+		implies X_related_Y;
+		tuple_Q = tuple(X, Y)|Q|;
+		Q_in_R = expand(X_related_Y)(Q)(tuple_Q);
+		Q_in_T, condition = specified_R(Q)(Q_in_R);
+		P_X_Y = condition(X, Y)(tuple_Q);
+		X_OTHER_in_A, Y_OTHER_in_B, other_tuple_Q = expand(cross_product_T)(Q)(Q_in_T)|X_OTHER, Y_OTHER|;
+		X_eq, Y_eq = tuple_equal(X, Y, X_OTHER, Y_OTHER, Q)(tuple_Q, other_tuple_Q);
+		X_in_A = replace[<K: K in A>](X, X_OTHER)(X_eq)(X_OTHER_in_A);
+		Y_in_B = replace[<K: K in B>](Y, Y_OTHER)(Y_eq)(Y_OTHER_in_B);
+		return X_in_A, Y_in_B, P_X_Y;
+	}
+
+	prove lemma1: X in A & Y in B & P(X, Y) -> related(X, Y, R){
+		implies X_in_A, Y_in_B, P_X_Y;
+		prove X_related_Y: *K(is_tuple(X, Y, K) -> K in R){
+			given |K|;
+			implies tuple_K;
+
+			prove K_in_T: ^X^Y(X in A & Y in B & is_tuple(X, Y, K)){
+				choose X, Y;
+				return X_in_A, Y_in_B, tuple_K;
+			}
+			K_in_T = expand(cross_product_T)(K)(K_in_T);
+
+			prove condition: *X_OTHER*Y_OTHER(is_tuple(X_OTHER, Y_OTHER, K) -> P(X_OTHER, Y_OTHER)){
+				given |X_OTHER, Y_OTHER|;
+				implies other_tuple_K;
+				X_eq, Y_eq = tuple_equal(X, Y, X_OTHER, Y_OTHER, K)(tuple_K, other_tuple_K);
+				result = replace[<V: P(V, Y)>](X, X_OTHER)(X_eq)(P_X_Y);
+				return replace[<V: P(X_OTHER, V)>](Y, Y_OTHER)(Y_eq)(result);
+			}
+
+			return specified_R(K)(K_in_T, condition);
+		}
+		return #related(X, Y, R)(X_related_Y);
+	}
+
+	return iff(lemma0, lemma1);
+}
+
+prove equiv_relation_sup: *A*R(relation_between(A, A, R) -> ^S(equiv_relation(A, S) & R <= S & *T(equiv_relation(A, T) & R <= T -> S <= T))){
+	given |A, R|;
+	implies between;
+
+	cross_product_C = cross_product(A, A)|C|;
+	R_subset_C = expand(between)(C)(cross_product_C);
+	power_set_P = power_set(C)|P|;
+	C_in_P = expand(power_set_P)(C)(subset_reflexive(C));
+	specified_F = specify[<V: equiv_relation(A, V) & R <= V>](P)|F|;
+
+	//I need to prove that this family of equivalence relations is not empty
+	//Luckily, the relation where everything is related is an equivalence relation
+	prove C_between_A: *D(is_cross_product(A, A, D) -> C <= D){
+		given |D|;
+		implies cross_product_D;
+		C_eq_D = cross_product_unique(A, A, C, D)(cross_product_C, cross_product_D);
+		return replace[<V: C <= V>](C, D)(C_eq_D)(subset_reflexive(C));
+	}
+	C_between_A = #relation_between(A, A, C)(C_between_A);
+
+	prove C_reflexive: *X(X in A -> related(X, X, C)){
+		given |X|;
+		implies X_in_A;
+		prove related_def: *T(is_tuple(X, X, T) -> T in C){
+			given |T|;
+			implies tuple_T;
+			prove T_in_C: ^I^J(I in A & J in A & is_tuple(I, J, T)){
+				choose X, X;
+				return X_in_A, X_in_A, tuple_T;
+			}
+			return expand(cross_product_C)(T)(T_in_C);
+		}
+		return #related(X, X, C)(related_def);
+	}
+	C_reflexive = #reflexive(A, C)(C_reflexive);
+
+	//A lemma for symmetry and transitivity
+	prove C_lemma: *X*Y(related(X, Y, C) <-> X in A & Y in A){
+		given |X, Y|;
+
+		prove lemma0: related(X, Y, C) -> X in A & Y in A{
+			implies X_related_Y;
+			tuple_T = tuple(X, Y)|T|;
+			T_in_C = expand(X_related_Y)(T)(tuple_T);
+			X_OTHER_in_A, Y_OTHER_in_A, other_tuple_T = expand(cross_product_C)(T)(T_in_C)|X_OTHER, Y_OTHER|;
+			X_eq, Y_eq = tuple_equal(X, Y, X_OTHER, Y_OTHER, T)(tuple_T, other_tuple_T);
+			X_in_A = replace[<V: V in A>](X, X_OTHER)(X_eq)(X_OTHER_in_A);
+			Y_in_A = replace[<V: V in A>](Y, Y_OTHER)(Y_eq)(Y_OTHER_in_A);
+			return X_in_A, Y_in_A;
+		}
+
+		prove lemma1: X in A & Y in A -> related(X, Y, C){
+			implies X_in_A, Y_in_A;
+			prove related_def: *T(is_tuple(X, Y, T) -> T in C){
+				given |T|;
+				implies tuple_T;
+				prove T_in_C: ^X^Y(X in A & Y in A & is_tuple(X, Y, T)){
+					choose X, Y;
+					return X_in_A, Y_in_A, tuple_T;
+				}
+				return expand(cross_product_C)(T)(T_in_C);
+			}
+			return #related(X, Y, C)(related_def);
+		}
+
+		return iff(lemma0, lemma1);
+	}
+
+	prove C_symmetric: *X*Y(related(X, Y, C) -> related(Y, X, C)){
+		given |X, Y|;
+		implies X_related_Y;
+		X_in_A, Y_in_A = C_lemma(X, Y)(X_related_Y);
+		return C_lemma(Y, X)(Y_in_A, X_in_A);
+	}
+	C_symmetric = #symmetric(C)(C_symmetric);
+
+	prove C_transitive: *X*Y*Z(related(X, Y, C) & related(Y, Z, C) -> related(X, Z, C)){
+		given |X, Y, Z|;
+		implies X_related_Y, Y_related_Z;
+		X_in_A, Y_in_A = C_lemma(X, Y)(X_related_Y);
+		Y_in_A, Z_in_A = C_lemma(Y, Z)(Y_related_Z);
+		return C_lemma(X, Z)(X_in_A, Z_in_A);
+	}
+	C_transitive = #transitive(C)(C_transitive);
+
+	C_equiv_relation = #equiv_relation(A, C)(C_between_A, C_reflexive, C_symmetric, C_transitive);
+	C_in_F = specified_F(C)(C_in_P, C_equiv_relation, R_subset_C);
+	prove F_not_empty: ^C(C in F){
+		choose C;
+		return C_in_F;
+	}
+	F_not_empty = #not_empty(F)(F_not_empty);
+	intersection_S = intersection(F)(F_not_empty)|S|;
+	choose S;
+
+	//Continue here
+}
+

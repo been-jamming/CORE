@@ -5,6 +5,17 @@ prove copy_set: *A^B(A = B){
 	return equal_reflexive(A);
 }
 
+prove subset_reflexive: *A(A <= A){
+	given |A|;
+
+	prove subset_def: *X(X in A -> X in A){
+		given |X|;
+		implies X_in_A;
+		return X_in_A;
+	}
+	return #[<=](A, A)(subset_def);
+}
+
 define is_power_set(A, B): *X(X in B <-> X <= A);
 
 prove power_set: *A^B(is_power_set(A, B)){
@@ -27,6 +38,12 @@ prove power_set: *A^B(is_power_set(A, B)){
 		return iff(lemma0, lemma1);
 	}
 	return #is_power_set(A, B)(power_set_def);
+}
+
+prove power_set_unique: *A*B*C(is_power_set(A, B) & is_power_set(A, C) -> B = C){
+	given |A, B, C|;
+	implies power_set_B, power_set_C;
+	return definition_uniqueness_lemma[<X: X <= A>](B, C)(expand(power_set_B), expand(power_set_C));
 }
 
 define is_tuple(A, B, C): *E*F(is_pair(A, A, E) & is_pair(A, B, F) -> is_pair(E, F, C));
@@ -209,3 +226,132 @@ prove intersection_unique: *A*B*C(is_intersection(A, B) & is_intersection(A, C) 
 	return definition_uniqueness_lemma[<X: *Y(Y in A -> X in Y)>](B, C)(expand(intersection_B), expand(intersection_C));
 }
 
+prove operation_uniqueness_lemma[P(1), Q(1)]: ^X(P(X)) & *X*Y(P(X) & P(Y) -> X = Y) -> (*X(P(X) -> Q(X)) <-> ^X(P(X) & Q(X))){
+	implies exists, unique;
+	
+	prove lemma0: *X(P(X) -> Q(X)) -> ^X(P(X) & Q(X)){
+		implies premise;
+
+		P_X = exists|X|;
+		choose X;
+		Q_X = premise(X)(P_X);
+		return P_X, Q_X;
+	}
+
+	prove lemma1: ^X(P(X) & Q(X)) -> *X(P(X) -> Q(X)){
+		implies premise;
+
+		P_X, Q_X = premise|X|;
+		given |Y|;
+		implies P_Y;
+		X_eq_Y = unique(X, Y)(P_X, P_Y);
+		return replace[<J: Q(J)>](X, Y)(X_eq_Y)(Q_X);
+	}
+
+	return iff(lemma0, lemma1);
+}
+
+prove pairs: *A*B^P*X(X in P <-> ^Y^Z(Y in A & Z in B & is_pair(Y, Z, X))){
+	given |A, B|;
+	
+	pair_Q = pair(A, B)|Q|;
+	union_U = union(Q)|U|;
+	power_set_R = power_set(U)|R|;
+	specified_P = specify[<X: ^Y^Z(Y in A & Z in B & is_pair(Y, Z, X))>](R)|P|;
+	choose P;
+	given |X|;
+
+	prove lemma0: X in P -> ^Y^Z(Y in A & Z in B & is_pair(Y, Z, X)){
+		implies X_in_P;
+		X_in_R, result = specified_P(X)(X_in_P);
+		return result;
+	}
+
+	prove lemma1: ^Y^Z(Y in A & Z in B & is_pair(Y, Z, X)) -> X in P{
+		implies exists;
+		Y_in_A, Z_in_B, pair_X = exists|Y, Z|;
+		prove Y_in_U: ^J(J in Q & Y in J){
+			choose A;
+			return expand(pair_Q)(A)(or(equal_reflexive(A), <:A = B>)), Y_in_A;
+		}
+		Y_in_U = expand(union_U)(Y)(Y_in_U);
+		prove Z_in_U: ^J(J in Q & Z in J){
+			choose B;
+			return expand(pair_Q)(B)(or(<:B = A>, equal_reflexive(B))), Z_in_B;
+		}
+		Z_in_U = expand(union_U)(Z)(Z_in_U);
+		
+		prove X_subset_U: *J(J in X -> J in U){
+			given |J|;
+			implies J_in_X;
+			either_Y_Z = expand(pair_X)(J)(J_in_X);
+			return branch(either_Y_Z, J_eq_Y, J_eq_Z){
+				return replace[<K: K in U>](J, Y)(J_eq_Y)(Y_in_U);
+			} or {
+				return replace[<K: K in U>](J, Z)(J_eq_Z)(Z_in_U);
+			};
+		}
+		X_subset_U = #[<=](X, U)(X_subset_U);
+		X_in_R = expand(power_set_R)(X)(X_subset_U);
+		return specified_P(X)(X_in_R, exists);
+	}
+
+	return iff(lemma0, lemma1);
+}
+
+define is_cross_product(A, B, C): *X(X in C <-> ^Y^Z(Y in A & Z in B & is_tuple(Y, Z, X)));
+
+prove cross_product: *A*B^C(is_cross_product(A, B, C)){
+	given |A, B|;
+
+	pairs_AA = pairs(A, A)|AA|;
+	pairs_AB = pairs(A, B)|AB|;
+	pairs_T = pairs(AA, AB)|T|;
+	specified_C = specify[<Q: ^Y^Z(Y in A & Z in B & is_tuple(Y, Z, Q))>](T)|C|;
+	choose C;
+
+	prove cross_product_def: *X(X in C <-> ^Y^Z(Y in A & Z in B & is_tuple(Y, Z, X))){
+		given |X|;
+		prove lemma0: X in C -> ^Y^Z(Y in A & Z in B & is_tuple(Y, Z, X)){
+			implies X_in_C;
+			X_in_T, result = specified_C(X)(X_in_C);
+			return result;
+		}
+
+		prove lemma1: ^Y^Z(Y in A & Z in B & is_tuple(Y, Z, X)) -> X in C{
+			implies exists;
+			Y_in_A, Z_in_B, tuple_X = exists|Y, Z|;
+			pair_YY = pair(Y, Y)|YY|;
+			prove YY_in_AA: ^J^K(J in A & K in A & is_pair(J, K, YY)){
+				choose Y, Y;
+				return Y_in_A, Y_in_A, pair_YY;
+			}
+			YY_in_AA = pairs_AA(YY)(YY_in_AA);
+			pair_YZ = pair(Y, Z)|YZ|;
+			prove YZ_in_AB: ^J^K(J in A & K in B & is_pair(J, K, YZ)){
+				choose Y, Z;
+				return Y_in_A, Z_in_B, pair_YZ;
+			}
+			YZ_in_AB = pairs_AB(YZ)(YZ_in_AB);
+			
+			pair_X = expand(tuple_X)(YY, YZ)(pair_YY, pair_YZ);
+			prove X_in_T: ^J^K(J in AA & K in AB & is_pair(J, K, X)){
+				choose YY, YZ;
+				return YY_in_AA, YZ_in_AB, pair_X;
+			}
+			X_in_T = pairs_T(X)(X_in_T);
+
+			return specified_C(X)(X_in_T, exists);
+		}
+
+		return iff(lemma0, lemma1);
+	}
+
+	return #is_cross_product(A, B, C)(cross_product_def);
+}
+
+prove cross_product_unique: *A*B*C*D(is_cross_product(A, B, C) & is_cross_product(A, B, D) -> C = D){
+	given |A, B, C, D|;
+	implies cross_product_C, cross_product_D;
+	return definition_uniqueness_lemma[<Q: ^X^Y(X in A & Y in B & is_tuple(X, Y, Q))>](C, D)(expand(cross_product_C), expand(cross_product_D));
+}
