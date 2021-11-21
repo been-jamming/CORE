@@ -12,6 +12,128 @@ define equiv_relation(A, R): relation_between(A, A, R) & reflexive(A, R) & symme
 
 define equiv_class(A, R, C): ^P(P in A & *X(X in C <-> related(P, X, R)));
 
+define equiv_classes(A, R, C): *X(X in C <-> equiv_class(A, R, X));
+
+prove equiv_class_subset: *A*R*C(equiv_relation(A, R) & equiv_class(A, R, C) -> C <= A){
+	given |A, R, C|;
+	implies equiv_relation_R, class_C;
+	between_R, reflexive_R, symmetric_R, transitive_R = expand(equiv_relation_R);
+	P_in_A, C_cond = expand(class_C)|P|;
+	prove subset_def: *X(X in C -> X in A){
+		given |X|;
+		implies X_in_C;
+		P_related_X = C_cond(X)(X_in_C);
+		tuple_T = tuple(P, X)|T|;
+		T_in_R = expand(P_related_X)(T)(tuple_T);
+		cross_S = cross_product(A, A)|S|;
+		T_in_S = expand(expand(between_R)(S)(cross_S))(T)(T_in_R);
+		OTHER_P_in_A, OTHER_X_in_A, other_tuple_T = expand(cross_S)(T)(T_in_S)|OTHER_P, OTHER_X|;
+		equal_P, equal_X = tuple_equal(P, X, OTHER_P, OTHER_X, T)(tuple_T, other_tuple_T);
+		return replace[<Q: Q in A>](X, OTHER_X)(equal_X)(OTHER_X_in_A);
+	}
+	return #[<=](C, A)(subset_def);
+}
+
+prove equiv_classes_exists: *A*R(equiv_relation(A, R) -> ^C(equiv_classes(A, R, C))){
+	given |A, R|;
+	implies equiv_relation_R;
+	power_set_P = power_set(A)|P|;
+	specified_C = specify[<Q: equiv_class(A, R, Q)>](P)|C|;
+	choose C;
+	prove equiv_classes_def: *X(X in C <-> equiv_class(A, R, X)){
+		given |X|;
+		prove lemma0: X in C -> equiv_class(A, R, X){
+			implies X_in_C;
+			X_in_P, result = specified_C(X)(X_in_C);
+			return result;
+		}
+		prove lemma1: equiv_class(A, R, X) -> X in C{
+			implies equiv_class_X;
+			X_subset_A = equiv_class_subset(A, R, X)(equiv_relation_R, equiv_class_X);
+			X_in_P = expand(power_set_P)(X)(X_subset_A);
+			return specified_C(X)(X_in_P, equiv_class_X);
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #equiv_classes(A, R, C)(equiv_classes_def);
+}
+
+prove equiv_classes_unique: *A*R*C*D(equiv_classes(A, R, C) & equiv_classes(A, R, D) -> C = D){
+	given |A, R, C, D|;
+	implies classes_C, classes_D;
+	return definition_uniqueness_lemma[<Q: equiv_class(A, R, Q)>](C, D)(expand(classes_C), expand(classes_D));
+}
+
+prove equiv_classes_disjoint: *A*R*C*D*X(equiv_relation(A, R) & equiv_class(A, R, C) & equiv_class(A, R, D) & X in C & X in D -> C = D){
+	given |A, R, C, D, X|;
+	implies equiv_relation_R, equiv_class_C, equiv_class_D, X_in_C, X_in_D;
+	between_R, reflexive_R, symmetric_R, transitive_R = expand(equiv_relation_R);
+	C_REP_in_A, C_cond = expand(equiv_class_C)|C_REP|;
+	D_REP_in_A, D_cond = expand(equiv_class_D)|D_REP|;
+	C_REP_related_X = C_cond(X)(X_in_C);
+	D_REP_related_X = D_cond(X)(X_in_D);
+	prove C_eq_D: *Y(Y in C <-> Y in D){
+		given |Y|;
+		prove lemma0: Y in C -> Y in D{
+			implies Y_in_C;
+			C_REP_related_Y = C_cond(Y)(Y_in_C);
+			Y_related_C_REP = expand(symmetric_R)(C_REP, Y)(C_REP_related_Y);
+			Y_related_X = expand(transitive_R)(Y, C_REP, X)(Y_related_C_REP, C_REP_related_X);
+			X_related_Y = expand(symmetric_R)(Y, X)(Y_related_X);
+			D_REP_related_Y = expand(transitive_R)(D_REP, X, Y)(D_REP_related_X, X_related_Y);
+			return D_cond(Y)(D_REP_related_Y);
+		}
+
+		prove lemma1: Y in D -> Y in C{
+			implies Y_in_D;
+			D_REP_related_Y = D_cond(Y)(Y_in_D);
+			Y_related_D_REP = expand(symmetric_R)(D_REP, Y)(D_REP_related_Y);
+			Y_related_X = expand(transitive_R)(Y, D_REP, X)(Y_related_D_REP, D_REP_related_X);
+			X_related_Y = expand(symmetric_R)(Y, X)(Y_related_X);
+			C_REP_related_Y = expand(transitive_R)(C_REP, X, Y)(C_REP_related_X, X_related_Y);
+			return C_cond(Y)(C_REP_related_Y);
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #[=](C, D)(C_eq_D);
+}
+
+prove equiv_class_exists: *A*R*X(equiv_relation(A, R) & X in A -> ^C(equiv_class(A, R, C) & X in C)){
+	given |A, R, X|;
+	implies equiv_relation_R, X_in_A;
+	between_R, reflexive_R, symmetric_R, transitive_R = expand(equiv_relation_R);
+	specified_C = specify[<Q: related(X, Q, R)>](A)|C|;
+	choose C;
+	X_in_C = specified_C(X)(X_in_A, expand(reflexive_R)(X)(X_in_A));
+	prove equiv_class_C: ^P(P in A & *Y(Y in C <-> related(P, Y, R))){
+		choose X;
+		prove condition: *Y(Y in C <-> related(X, Y, R)){
+			given |Y|;
+			prove lemma0: Y in C -> related(X, Y, R){
+				implies Y_in_C;
+				Y_in_A, result = specified_C(Y)(Y_in_C);
+				return result;
+			}
+
+			prove lemma1: related(X, Y, R) -> Y in C{
+				implies X_related_Y;
+				cross_S = cross_product(A, A)|S|;
+				R_subset_S = expand(between_R)(S)(cross_S);
+				tuple_T = tuple(X, Y)|T|;
+				T_in_R = expand(X_related_Y)(T)(tuple_T);
+				T_in_S = expand(R_subset_S)(T)(T_in_R);
+				OTHER_X_in_A, OTHER_Y_in_A, other_tuple_T = expand(cross_S)(T)(T_in_S)|OTHER_X, OTHER_Y|;
+				X_eq, Y_eq = tuple_equal(X, Y, OTHER_X, OTHER_Y, T)(tuple_T, other_tuple_T);
+				Y_in_A = replace[<Q: Q in A>](Y, OTHER_Y)(Y_eq)(OTHER_Y_in_A);
+				return specified_C(Y)(Y_in_A, X_related_Y);
+			}
+			return iff(lemma0, lemma1);
+		}
+		return X_in_A, condition;
+	}
+	return #equiv_class(A, R, C)(equiv_class_C), X_in_C;
+}
+
 prove relation_existence_lemma[P(2)]: *A*B^R*X*Y(related(X, Y, R) <-> X in A & Y in B & P(X, Y)){
 	given |A, B|;
 	cross_product_T = cross_product(A, B)|T|;
