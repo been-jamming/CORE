@@ -14,6 +14,11 @@ define equiv_class(A, R, C): ^P(P in A & *X(X in C <-> related(P, X, R)));
 
 define equiv_classes(A, R, C): *X(X in C <-> equiv_class(A, R, X));
 
+define function(A, B, F): relation_between(A, B, F) & *X(X in A -> ^Y(Y in B & related(X, Y, F))) & *X*Y*Z(related(X, Y, F) & related(X, Z, F) -> Y = Z);
+
+//When H is a composition of functions F: A->B and G: B->C
+define composition(F, G, H): *X*Y(related(X, Y, H) <-> *Z(related(X, Z, G) -> related(Z, Y, F)));
+
 prove equiv_class_subset: *A*R*C(equiv_relation(A, R) & equiv_class(A, R, C) -> C <= A){
 	given |A, R, C|;
 	implies equiv_relation_R, class_C;

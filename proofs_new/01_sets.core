@@ -5,6 +5,24 @@ prove copy_set: *A^B(A = B){
 	return equal_reflexive(A);
 }
 
+prove empty_unique: *A*B(is_empty(A) & is_empty(B) -> A = B){
+	given |A, B|;
+	implies empty_A, empty_B;
+	prove A_eq_B: *X(X in A <-> X in B){
+		given |X|;
+		prove lemma0: X in A -> X in B{
+			implies X_in_A;
+			return absurdity[goal](expand(empty_A)(X)(X_in_A));
+		}
+		prove lemma1: X in B -> X in A{
+			implies X_in_B;
+			return absurdity[goal](expand(empty_B)(X)(X_in_B));
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #[=](A, B)(A_eq_B);
+}
+
 prove subset_reflexive: *A(A <= A){
 	given |A|;
 

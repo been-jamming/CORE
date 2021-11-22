@@ -1,9 +1,9 @@
 //CORE ZF Implementation Mark 3
 
 //A few logical axioms first
-axiom axiom_absurdity[P]: false -> P;
+axiom absurdity[P]: false -> P;
 axiom axiom_true: true;
-axiom axiom_excluded_middle[P]: P | ~P;
+axiom excluded_middle[P]: P | ~P;
 
 //The relation for set membership
 relation in;
@@ -150,9 +150,9 @@ prove union_unique: *A*B*C(is_union(A, B) & is_union(A, C) -> B = C){
 	return definition_uniqueness_lemma[<X: ^Y(Y in A & X in Y)>](B, C)(expand(union_B), expand(union_C));
 }
 
-define is_successor(A, B): *X(X in B <-> X in A | X = A);
+define successor(A, B): *X(X in B <-> X in A | X = A);
 
-prove successor: *A^B(is_successor(A, B)){
+prove successor: *A^B(successor(A, B)){
 	given |A|;
 	pair_AA = pair(A, A)|C|;
 	pair_AC = pair(A, C)|D|;
@@ -193,16 +193,16 @@ prove successor: *A^B(is_successor(A, B)){
 		}
 		return iff(lemma0, lemma1);
 	}
-	return #is_successor(A, B)(successor_def);
+	return #successor(A, B)(successor_def);
 }
 
-prove successor_unique: *A*B*C(is_successor(A, B) & is_successor(A, C) -> B = C){
+prove successor_unique: *A*B*C(successor(A, B) & successor(A, C) -> B = C){
 	given |A, B, C|;
 	implies successor_B, successor_C;
 	return definition_uniqueness_lemma[<X: X in A | X = A>](B, C)(expand(successor_B), expand(successor_C));
 }
 
-define is_inductive_set(X): ^E(E in X & is_empty(E)) & *Y*Z(Y in X & is_successor(Y, Z) -> Z in X);
+define is_inductive_set(X): ^E(E in X & is_empty(E)) & *Y*Z(Y in X & successor(Y, Z) -> Z in X);
 
 axiom axiom_infinity: ^X(is_inductive_set(X));
 

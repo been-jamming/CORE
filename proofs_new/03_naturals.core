@@ -1,0 +1,98 @@
+INDUCTIVE_SET_inductive = axiom_infinity|INDUCTIVE_SET|;
+EMPTY_in_INDUCTIVE_SET, INDUCTIVE_SET_closure = expand(INDUCTIVE_SET_inductive);
+EMPTY_in_INDUCTIVE_SET, empty_definition = EMPTY_in_INDUCTIVE_SET|EMPTY|;
+empty_definition = expand(empty_definition);
+
+prove naturals: ^N*X(X in N <-> *I(is_inductive_set(I) -> X in I)){
+	specified_N = specify[<Q: *I(is_inductive_set(I) -> Q in I)>](INDUCTIVE_SET)|N|;
+	choose N;
+	given |X|;
+	prove lemma0: X in N -> *I(is_inductive_set(I) -> X in I){
+		implies X_in_N;
+		X_in_INDUCTIVE_SET, result = specified_N(X)(X_in_N);
+		return result;
+	}
+
+	prove lemma1: *I(is_inductive_set(I) -> X in I) -> X in N{
+		implies condition;
+		X_in_INDUCTIVE_SET = condition(INDUCTIVE_SET)(INDUCTIVE_SET_inductive);
+		return specified_N(X)(X_in_INDUCTIVE_SET, condition);
+	}
+	return iff(lemma0, lemma1);
+}
+
+naturals_definition = naturals|NATURALS|;
+
+prove naturals_inductive_set: ^E(E in NATURALS & is_empty(E)) & *Y*Z(Y in NATURALS & successor(Y, Z) -> Z in NATURALS){
+	prove lemma0: ^E(E in NATURALS & is_empty(E)){
+		choose EMPTY;
+		EMPTY_empty = #is_empty(EMPTY)(empty_definition);
+		prove EMPTY_in_NATURALS: *I(is_inductive_set(I) -> EMPTY in I){
+			given |I|;
+			implies inductive_I;
+			empty_exists, closure = expand(inductive_I);
+			empty_in_I, empty_is_empty = empty_exists|E|;
+			empty_equal = empty_unique(E, EMPTY)(empty_is_empty, EMPTY_empty);
+			return replace[<Q: Q in I>](E, EMPTY)(empty_equal)(empty_in_I);
+		}
+		return naturals_definition(EMPTY)(EMPTY_in_NATURALS), EMPTY_empty;
+	}
+
+	prove lemma1: *Y*Z(Y in NATURALS & successor(Y, Z) -> Z in NATURALS){
+		given |Y, Z|;
+		implies Y_in_NATURALS, successor_Z;
+		prove Z_in_NATURALS: *I(is_inductive_set(I) -> Z in I){
+			given |I|;
+			implies inductive_I;
+			empty_in_I, closure_I = expand(inductive_I);
+			Y_in_I = naturals_definition(Y)(Y_in_NATURALS)(I)(inductive_I);
+			return closure_I(Y, Z)(Y_in_I, successor_Z);
+		}
+		return naturals_definition(Z)(Z_in_NATURALS);
+	}
+	return lemma0, lemma1;
+}
+naturals_inductive_set = #is_inductive_set(NATURALS)(naturals_inductive_set);
+
+zero_definition = copy_set(EMPTY)|ZERO|;
+prove ZERO_in_NATURALS: *I(is_inductive_set(I) -> ZERO in I){
+	given |I|;
+	implies inductive_I;
+	empty_in_I, closure_I = expand(inductive_I);
+	E_in_I, empty_E = empty_in_I|E|;
+	empty_equal = empty_unique(E, EMPTY)(empty_E, #is_empty(EMPTY)(empty_definition));
+	EMPTY_in_I = replace[<Q: Q in I>](E, EMPTY)(empty_equal)(E_in_I);
+	return replace[<Q: Q in I>](EMPTY, ZERO)(zero_definition)(EMPTY_in_I);
+}
+ZERO_in_NATURALS = naturals_definition(ZERO)(ZERO_in_NATURALS);
+
+prove naturals_successor_closure: *X*Y(X in NATURALS & successor(X, Y) -> Y in NATURALS){
+	empty_in_naturals, result = expand(naturals_inductive_set);
+	return result;
+}
+
+prove naturals_induction[P(1)]: P(ZERO) & *X*Y(P(X) & successor(X, Y) -> P(Y)) -> *N(N in NATURALS -> P(N)){
+	implies P_ZERO, closure_P;
+	P_empty = replace[<Q: P(Q)>](EMPTY, ZERO)(zero_definition)(P_ZERO);
+	specified_R = specify[<Q: P(Q)>](NATURALS)|R|;
+	prove empty_in_R: ^E(E in R & is_empty(E)){
+		choose EMPTY;
+		EMPTY_in_NATURALS = replace[<Q: Q in NATURALS>](EMPTY, ZERO)(zero_definition)(ZERO_in_NATURALS);
+		return specified_R(EMPTY)(EMPTY_in_NATURALS, P_empty), #is_empty(EMPTY)(empty_definition);
+	}
+	prove closure_R: *X*Y(X in R & successor(X, Y) -> Y in R){
+		given |X, Y|;
+		implies X_in_R, successor_Y;
+		X_in_NATURALS, P_X = specified_R(X)(X_in_R);
+		Y_in_NATURALS = naturals_successor_closure(X, Y)(X_in_NATURALS, successor_Y);
+		P_Y = closure_P(X, Y)(P_X, successor_Y);
+		return specified_R(Y)(Y_in_NATURALS, P_Y);
+	}
+	R_inductive = #is_inductive_set(R)(empty_in_R, closure_R);
+	given |N|;
+	implies N_in_NATURALS;
+	N_in_R = naturals_definition(N)(N_in_NATURALS)(R)(R_inductive);
+	N_in_NATURALS, result = specified_R(N)(N_in_R);
+	return result;
+}
+
