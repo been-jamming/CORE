@@ -66,6 +66,28 @@ prove ZERO_in_NATURALS: *I(is_inductive_set(I) -> ZERO in I){
 }
 ZERO_in_NATURALS = naturals_definition(ZERO)(ZERO_in_NATURALS);
 
+//The relation < on the naturals is just set membership given our successor operation
+relation A < B: A in B;
+
+prove zero_minimal: *X(~X < ZERO){
+	given |X|;
+	not X_lt_ZERO;
+	X_in_ZERO = expand(X_lt_ZERO);
+	X_in_EMPTY = replace[<Q: X in Q>](EMPTY, ZERO)(zero_definition)(X_in_ZERO);
+	return empty_definition(X)(X_in_EMPTY);
+}
+
+prove zero_minimum: *X(ZERO <= X){
+	given |X|;
+	prove subset_def: *Y(Y in ZERO -> Y in X){
+		given |Y|;
+		implies Y_in_ZERO;
+		Y_in_EMPTY = replace[<Q: Y in Q>](EMPTY, ZERO)(zero_definition)(Y_in_ZERO);
+		return absurdity[goal](empty_definition(Y)(Y_in_EMPTY));
+	}
+	return #[<=](ZERO, X)(subset_def);
+}
+
 prove naturals_successor_closure: *X*Y(X in NATURALS & successor(X, Y) -> Y in NATURALS){
 	empty_in_naturals, result = expand(naturals_inductive_set);
 	return result;
@@ -94,5 +116,113 @@ prove naturals_induction[P(1)]: P(ZERO) & *X*Y(P(X) & successor(X, Y) -> P(Y)) -
 	N_in_R = naturals_definition(N)(N_in_NATURALS)(R)(R_inductive);
 	N_in_NATURALS, result = specified_R(N)(N_in_R);
 	return result;
+}
+
+prove naturals_strong_induction[P(1)]: *X(X in NATURALS & *Y(Y < X -> P(Y)) -> P(X)) -> *N(N in NATURALS -> P(N)){
+	//The statement we will actually induct on
+	define Q(X): X in NATURALS & *Y(Y < X -> P(Y));
+	//The strong inductive hypothesis
+	implies hypothesis;
+
+	prove Q_ZERO: *Y(Y < ZERO -> P(Y)){
+		given |Y|;
+		implies Y_lt_ZERO;
+		return absurdity[goal](zero_minimal(Y)(Y_lt_ZERO));
+	}
+	Q_ZERO = #Q(ZERO)(ZERO_in_NATURALS, Q_ZERO);
+	
+	prove Q_successor: *Y*Z(Q(Y) & successor(Y, Z) -> Q(Z)){
+		given |Y, Z|;
+		implies Q_Y, successor_Z;
+		Y_in_NATURALS, closure_Y = expand(Q_Y);
+		Z_in_NATURALS = naturals_successor_closure(Y, Z)(Y_in_NATURALS, successor_Z);
+		prove Q_Z: *K(K < Z -> P(K)){
+			given |K|;
+			implies K_lt_Z;
+			K_in_Z = expand(K_lt_Z);
+			return branch(expand(successor_Z)(K)(K_in_Z), K_in_Y, K_eq_Y){
+				K_lt_Y = #[<](K, Y)(K_in_Y);
+				return closure_Y(K)(K_lt_Y);
+			} or {
+				Q_K = replace[<B: Q(B)>](K, Y)(K_eq_Y)(Q_Y);
+				return hypothesis(K)(expand(Q_K));
+			};
+		}
+		return #Q(Z)(Z_in_NATURALS, Q_Z);
+	}
+
+	Q_all = naturals_induction[<B: Q(B)>](Q_ZERO, Q_successor);
+	//Almost there
+	given |N|;
+	implies N_in_NATURALS;
+	Q_N = Q_all(N)(N_in_NATURALS);
+	return hypothesis(N)(expand(Q_N));
+}
+
+//We need this lemma in order to prove the well ordering theorem on the naturals
+prove naturals_dichotomy: *A*B(A in NATURALS & B in NATURALS -> A < B | B <= A){
+	//The statement to induct on
+	define Q(B): B in NATURALS & *A(A in NATURALS -> A < B | B <= A);
+
+	prove Q_ZERO: *A(A in NATURALS -> A < ZERO | ZERO <= A){
+		given |A|;
+		implies A_in_NATURALS;
+		return or(<: A < ZERO>, zero_minimum(A));
+	}
+	Q_ZERO = #Q(ZERO)(ZERO_in_NATURALS, Q_ZERO);
+
+	prove Q_closed: *X*Y(Q(X) & successor(X, Y) -> Q(Y)){
+		given |X, Y|;
+		implies Q_X, successor_Y;
+		X_in_NATURALS, X_closure = expand(Q_X);
+		Y_in_NATURALS = naturals_successor_closure(X, Y)(X_in_NATURALS, successor_Y);
+		prove Q_Y: *A(A in NATURALS -> A < Y | Y <= A){
+			given |A|;
+			implies A_in_NATURALS;
+			return branch(X_closure(A)(A_in_NATURALS), A_lt_X, X_lteq_A){
+				A_in_X = expand(A_lt_X);
+				A_in_Y = expand(successor_Y)(A)(or(A_in_X, <: A = X>));
+				return or(#[<](A, Y)(A_in_Y));
+			} or {
+				return branch(excluded_middle[<: ^J(J in X & ~J in A)>], J_exists, J_not_exists){
+					
+				} or {
+
+				};
+			};
+		}
+	}
+}
+
+prove naturals_well_ordering: *S(S <= NATURALS -> ^M(M in S & *N(N in S -> M <= N))){
+	given |S|;
+	implies S_subset_NATURALS;
+	//The statement to induct on
+	define Q(X): X in S -> ^M(M in S & *N(N in S -> M <= N));
+
+	prove hypothesis: *X(X in NATURALS & *Y(Y < X -> Q(Y)) -> Q(X)){
+		given |X|;
+		implies X_in_NATURALS, closure;
+		prove Q_X: X in S -> ^M(M in S & *N(N in S -> M <= N)){
+			implies X_in_S;
+			//Here, either there is J in S with J < X or there isn't
+			//This is the first time I'm having to use the law of excluded middle. I wish I didn't have to
+			return branch(excluded_middle[<: ^J(J in S & J < X)>], X_not_min, X_min){
+				J_in_S, J_lt_X = X_not_min|J|;
+				return expand(closure(J)(J_lt_X))(J_in_S);
+			} or {
+				prove is_min: *N(N in S -> X <= N){
+					given |N|;
+					implies N_in_S;
+					N_not_lt_X = branch(excluded_middle[<: N < X>], N_lt_X, N_not_lt_X){
+						return absurdity[<: ~N < X>](negate_exists[<J: J in S & J < X>](X_min)(N)(N_in_S, N_lt_X));
+					} or {
+						return N_not_lt_X;
+					};
+					print N_not_lt_X;
+				}
+			};
+		}
+	}
 }
 

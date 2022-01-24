@@ -389,3 +389,25 @@ prove cross_product_unique: *A*B*C*D(is_cross_product(A, B, C) & is_cross_produc
 	implies cross_product_C, cross_product_D;
 	return definition_uniqueness_lemma[<Q: ^X^Y(X in A & Y in B & is_tuple(X, Y, Q))>](C, D)(expand(cross_product_C), expand(cross_product_D));
 }
+
+prove negate_exists[P(1)]: ~^X(P(X)) <-> *X(~P(X)){
+	prove lemma0: ~^X(P(X)) -> *X(~P(X)){
+		implies premise;
+		given |X|;
+		not P_X;
+		prove exists: ^X(P(X)){
+			choose X;
+			return P_X;
+		}
+		return premise(exists);
+	}
+
+	prove lemma1: *X(~P(X)) -> ~^X(P(X)){
+		implies premise;
+		not exists;
+		P_X = exists|X|;
+		return premise(X)(P_X);
+	}
+
+	return iff(lemma0, lemma1);
+}

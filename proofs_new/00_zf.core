@@ -219,4 +219,3 @@ prove axiom_extensionality_inverse: *A*B(*W(A in W <-> B in W) -> A = B){
 	A_in_U = premise(U)(B_in_U);
 	return branch(pair_U(A)(A_in_U), A_equal_B, A_equal_B){return A_equal_B;} or {return A_equal_B;};
 }
-
