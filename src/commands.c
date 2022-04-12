@@ -127,6 +127,34 @@ int print_command(char **c){
 	return 1;
 }
 
+int object_command(char **c){
+	char var_name[256];
+
+	if(strncmp(*c, "object", 6) || is_alphanumeric((*c)[6])){
+		return 0;
+	}
+	*c += 6;
+	skip_whitespace(c);
+
+	get_identifier(c, var_name, 256);
+	if(var_name[0] == '\0'){
+		set_error("expected identifier");
+		error(1);
+	}
+
+	create_object_var(var_name, current_depth);
+
+	skip_whitespace(c);
+
+	if(**c != ';'){
+		set_error("expected ';'");
+		error(1);
+	}
+
+	++*c;
+	return 1;
+}
+
 proposition *definition_command(char **c){
 	int num_bound_vars = 0;
 	int *new_int;
@@ -185,20 +213,24 @@ proposition *definition_command(char **c){
 		++*c;
 	}
 	skip_whitespace(c);
-	if(**c != ':'){
+	if(**c == ';'){
+		++*c;
+		s = NULL;
+	} else if(**c == ':'){
+		++*c;
+		s = parse_statement(c, num_bound_vars, 0);
+		if(**c != ';'){
+			free(def_name);
+			free_statement(s);
+			set_error("expected ';'");
+			error(1);
+		}
+		++*c;
+	} else {
 		free(def_name);
-		set_error("expected ':'");
+		set_error("expected ':' or ';'");
 		error(1);
 	}
-	++*c;
-	s = parse_statement(c, num_bound_vars, 0);
-	if(**c != ';'){
-		free(def_name);
-		free_statement(s);
-		set_error("expected ';'");
-		error(1);
-	}
-	++*c;
 	output = malloc(sizeof(proposition));
 	output->name = def_name;
 	output->statement_data = s;
@@ -1381,6 +1413,8 @@ statement *verify_command(char **c, unsigned char allow_proof_value, statement *
 	} else if(allow_proof_value && (return_value = not_command(c, goal))){
 		return return_value;
 	} else if(debug_command(c, goal)){
+		//pass
+	} else if(object_command(c)){
 		//pass
 	} else if(rename_command(c)){
 		//pass

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language: CORE proof assistant
 " Maintainer: Benjamin Jones
-" Latest Revision: 4 April 2021
+" Latest Revision: 11 April 2022
 
 if exists("b:current_syntax")
 	finish
@@ -21,6 +21,7 @@ syn keyword CORE_commands choose
 syn keyword CORE_commands implies
 syn keyword CORE_commands not
 syn keyword CORE_commands print
+syn keyword CORE_commands object
 syn keyword CORE_commands debug
 syn keyword CORE_commands rename
 syn keyword CORE_commands relation

@@ -34,6 +34,57 @@ prove subset_reflexive: *A(A <= A){
 	return #[<=](A, A)(subset_def);
 }
 
+prove subset_transitive: *A*B*C(A <= B & B <= C -> A <= C){
+	given |A, B, C|;
+	implies A_subset_B, B_subset_C;
+	prove A_subset_C: *X(X in A -> X in C){
+		given |X|;
+		implies X_in_A;
+		X_in_B = expand(A_subset_B)(X)(X_in_A);
+		return expand(B_subset_C)(X)(X_in_B);
+	}
+	return #[<=](A, C)(A_subset_C);
+}
+
+prove successor_subset: *A*B(successor(A, B) -> A <= B){
+	given |A, B|;
+	implies successor_B;
+	prove A_subset_B: *X(X in A -> X in B){
+		given |X|;
+		implies X_in_A;
+		return expand(successor_B)(X)(or(X_in_A, <: X = A>));
+	}
+	return #[<=](A, B)(A_subset_B);
+}
+
+//I need to prove that we can't have A in B & B in A
+prove no_recursive_membership: *A*B(~B in A | ~A in B){
+	given |A, B|;
+	pair_C = pair(A, B)|C|;
+	A_in_C = expand(pair_C)(A)(or(equal_reflexive(A), <: A = B>));
+	B_in_C = expand(pair_C)(B)(or(<: B = A>, equal_reflexive(B)));
+	prove C_not_empty: ^X(X in C){
+		choose A;
+		return A_in_C;
+	}
+	X_in_C, disjoint = axiom_regularity(C)(C_not_empty)|X|;
+	return branch(expand(pair_C)(X)(X_in_C), X_eq_A, X_eq_B){
+		return branch(disjoint(B), B_not_in_X, B_not_in_C){
+			return or(replace[<Q: ~B in Q>](X, A)(X_eq_A)(B_not_in_X), <: ~A in B>);
+		} or {
+			contradiction = B_not_in_C(B_in_C);
+			return absurdity[goal](contradiction);
+		};
+	} or {
+		return branch(disjoint(A), A_not_in_X, A_not_in_C){
+			return or(<: ~B in A>, replace[<Q: ~A in Q>](X, B)(X_eq_B)(A_not_in_X));
+		} or {
+			contradiction = A_not_in_C(A_in_C);
+			return absurdity[goal](contradiction);
+		};
+	};
+}
+
 define is_power_set(A, B): *X(X in B <-> X <= A);
 
 prove power_set: *A^B(is_power_set(A, B)){
