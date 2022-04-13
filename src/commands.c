@@ -130,6 +130,7 @@ int print_command(char **c){
 int object_command(char **c){
 	char var_name[256];
 
+	skip_whitespace(c);
 	if(strncmp(*c, "object", 6) || is_alphanumeric((*c)[6])){
 		return 0;
 	}
@@ -163,7 +164,6 @@ proposition *definition_command(char **c){
 	statement *s;
 	proposition *output;
 
-	clear_bound_variables();
 	skip_whitespace(c);
 	if(strncmp(*c, "define", 6) || is_alphanumeric((*c)[6])){
 		return NULL;
@@ -171,6 +171,7 @@ proposition *definition_command(char **c){
 	*c += 6;
 	skip_whitespace(c);
 	
+	clear_bound_variables();
 	get_identifier(c, name_buffer, 256);
 	if(name_buffer[0] == '\0'){
 		set_error("expected identifier");
@@ -253,7 +254,6 @@ variable *axiom_command(char **c){
 	variable *output;
 	statement *s;
 
-	clear_bound_propositions();
 	skip_whitespace(c);
 	if(strncmp(*c, "axiom", 5) || is_alphanumeric((*c)[5])){
 		return NULL;
@@ -262,6 +262,7 @@ variable *axiom_command(char **c){
 	*c += 5;
 	skip_whitespace(c);
 
+	clear_bound_propositions();
 	get_identifier(c, name_buffer, 256);
 	if(name_buffer[0] == '\0'){
 		set_error("expected identifier");
@@ -551,6 +552,7 @@ int relation_command(char **c){
 		}
 		++*c;
 
+		clear_bound_variables();
 		name = malloc(sizeof(char)*(strlen(identifier1) + 1));
 		strcpy(name, identifier1);
 		relation_info = malloc(sizeof(relation));
@@ -1495,6 +1497,8 @@ int main(int argc, char **argv){
 
 		free(program_start);
 	}
+	clear_bound_variables();
+	clear_bound_propositions();
 	free_dictionary(variables, free_variable_void);
 	free_dictionary(definitions, free_proposition_void);
 	free_dictionary(relations, free_relation_void);
@@ -1503,7 +1507,7 @@ int main(int argc, char **argv){
 	custom_malloc_deinit();
 #endif
 
-	printf("Proof validation successful.\n");
+	printf("Proof verification successful.\n");
 	return 0;
 }
 
