@@ -146,9 +146,21 @@ int object_command(char **c){
 	create_object_var(var_name, current_depth);
 
 	skip_whitespace(c);
+	while(**c == ','){
+		++*c;
+		skip_whitespace(c);
+		get_identifier(c, var_name, 256);
+		if(var_name[0] == '\0'){
+			set_error("expected identifier");
+			error(1);
+		}
+
+		create_object_var(var_name, current_depth);
+		skip_whitespace(c);
+	}
 
 	if(**c != ';'){
-		set_error("expected ';'");
+		set_error("expected ',' or ';'");
 		error(1);
 	}
 
