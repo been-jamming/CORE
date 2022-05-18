@@ -28,7 +28,8 @@ typedef enum{
 
 typedef enum{
 	OBJECT,
-	STATEMENT
+	STATEMENT,
+	CONTEXT
 } var_type;
 
 typedef struct statement statement;
@@ -37,6 +38,7 @@ typedef struct proposition proposition;
 typedef struct bound_proposition bound_proposition;
 typedef struct proposition_arg proposition_arg;
 typedef struct relation relation;
+typedef struct context context;
 
 struct proposition{
 	char *name;
@@ -114,6 +116,13 @@ struct statement{
 	statement *parent;
 	int num_bound_vars;
 	int num_bound_props;
+};
+
+struct context{
+	dictionary variables;
+	dictionary definitions;
+	dictionary relations;
+	unsigned int num_references;
 };
 
 int is_digit(char c);
