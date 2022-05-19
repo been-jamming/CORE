@@ -789,20 +789,158 @@ void print_sentence(sentence *s){
 	}
 }
 
+int sentence_stronger(sentence *s0, sentence *s1){
+	sentence *child0;
+	sentence *child1;
+	int i;
+
+	if(s0->type == FALSE){
+		return 1;
+	} else if(s1->type == TRUE){
+		return 1;
+	} else if(s0->type == OR){
+		return sentence_stronger(s0->child0, s1) && sentence_stronger(s0->child1, s1);
+	} else if(s1->type == AND){
+		return sentence_stronger(s0, s1->child0) && sentence_stronger(s0, s1->child1);
+	} else if(s0->type == AND){
+		return sentence_stronger(s0->child0, s1) || sentence_stronger(s0->child1, s1);
+	} else if(s1->type == OR){
+		return sentence_stronger(s0, s1->child0) || sentence_stronger(s0, s1->child1);
+	} else if(s0->type == NOT && s1->type == NOT){
+		return sentence_stronger(s1->child0, s0->child0);
+	} else if(s0->type == IMPLIES && s1->type == IMPLIES){
+		return sentence_stronger(s1->child0, s0->child0) && sentence_stronger(s0->child1, s1->child1);
+	} else if(s0->type == FORALL && s1->type == FORALL){
+		return sentence_stronger(s0->child0, s1->child0);
+	} else if(s0->type == EXISTS && s1->type == EXISTS){
+		return sentence_stronger(s0->child0, s1->child0);
+	} else if(s1->type == BICOND){
+		child0 = s1->child0;
+		child1 = s1->child1;
+		s1->type = IMPLIES;
+		if(sentence_stronger(s0, s1)){
+			s1->child0 = child1;
+			s1->child1 = child0;
+			if(sentence_stronger(s0, s1)){
+				s1->child0 = child0;
+				s1->child1 = child1;
+				s1->type = BICOND;
+				return 1;
+			}
+			s1->child0 = child0;
+			s1->child1 = child1;
+		}
+		s1->type = BICOND;
+	} else if(s0->type == BICOND){
+		child0 = s0->child0;
+		child1 = s0->child1;
+		s0->type = IMPLIES;
+		if(sentence_stronger(s0, s1)){
+			s0->type = BICOND;
+			return 1;
+		}
+		s0->child0 = child1;
+		s0->child1 = child0;
+		if(sentence_stronger(s0, s1)){
+			s0->child0 = child0;
+			s0->child1 = child1;
+			s0->type = BICOND;
+			return 1;
+		}
+		s0->child0 = child0;
+		s0->child1 = child1;
+		s0->type = BICOND;
+	} else if(s0->type == RELATION && s1->type == RELATION){
+		if(s0->relation_data != s1->relation_data){
+			return 0;
+		}
+		if(s0->is_bound0 != s1->is_bound0){
+			return 0;
+		}
+		if(s0->is_bound1 != s1->is_bound1){
+			return 0;
+		}
+		if(s0->is_bound0){
+			if(s0->var0_id != s1->var0_id){
+				return 0;
+			}
+		} else {
+			if(s0->var0 != s1->var0){
+				return 0;
+			}
+		}
+		if(s0->is_bound1){
+			if(s0->var1_id != s1->var1_id){
+				return 0;
+			}
+		} else {
+			if(s0->var1 != s1->var1){
+				return 0;
+			}
+		}
+		return 1;
+	} else if(s0->type == PROPOSITION && s1->type == PROPOSITION){
+		if(s0->is_bound != s1->is_bound){
+			return 0;
+		}
+		if(s0->is_bound){
+			if(s0->definition_id != s1->definition_id){
+				return 0;
+			}
+		} else {
+			if(s0->definition_data != s1->definition_data){
+				return 0;
+			}
+		}
+		if(s0->num_args != s1->num_args){
+			return 0;
+		}
+		for(i = 0; i < s0->num_args; i++){
+			if(s0->proposition_args[i].is_bound != s1->proposition_args[i].is_bound){
+				return 0;
+			}
+			if(s0->proposition_args[i].is_bound){
+				if(s0->proposition_args[i].var_id != s1->proposition_args[i].var_id){
+					return 0;
+				}
+			} else {
+				if(s0->proposition_args[i].var != s1->proposition_args[i].var){
+					return 0;
+				}
+			}
+		}
+		return 1;
+	}
+
+	return 0;
+}
+
 int main(int argc, char **argv){
-	definition BOO;
-	sentence *s;
+	definition A;
+	definition B;
+	definition C;
+	sentence *s0;
+	sentence *s1;
 	context c;
-	char *program = "*X*Y*Z(boo(X, Y) & boo(Y, Z) -> boo(X, Z))";
+	char *program0 = "B() <-> C()";
+	char *program1 = "B() <-> C()";
 	
 	custom_malloc_init();
-	global_program_start = program;
-	global_program_pointer = &program;
 
-	BOO.name = "boo";
-	BOO.sentence_data = NULL;
-	BOO.num_references = 0;
-	BOO.num_args = 2;
+	A.name = "A";
+	A.sentence_data = NULL;
+	A.num_references = 0;
+	A.num_args = 0;
+
+	B.name = "B";
+	B.sentence_data = NULL;
+	B.num_references = 0;
+	B.num_args = 0;
+
+	C.name = "C";
+	C.sentence_data = NULL;
+	C.num_references = 0;
+	C.num_args = 0;
 
 	c.variables = create_dictionary(NULL);
 	c.definitions = create_dictionary(NULL);
@@ -810,11 +948,23 @@ int main(int argc, char **argv){
 	c.parent = NULL;
 	global_context = &c;
 
-	write_dictionary(&c.definitions, "boo", &BOO, 0);
-	s = parse_sentence(global_program_pointer, 0, 0);
-	print_sentence(s);
-	printf("\n");
-	free_sentence(s);
+	write_dictionary(&c.definitions, "A", &A, 0);
+	write_dictionary(&c.definitions, "B", &B, 0);
+	write_dictionary(&c.definitions, "C", &C, 0);
+
+	global_program_start = program0;
+	global_program_pointer = &program0;
+	s0 = parse_sentence(global_program_pointer, 0, 0);
+	global_program_start = program1;
+	global_program_pointer = &program1;
+	s1 = parse_sentence(global_program_pointer, 0, 0);
+	printf("sentence 0: ");
+	print_sentence(s0);
+	printf("\nsentence 1: ");
+	print_sentence(s1);
+	printf("\nsentence 0 stronger: %d\nsentence 1 stronger: %d\n", sentence_stronger(s0, s1), sentence_stronger(s1, s0));
+	free_sentence(s0);
+	free_sentence(s1);
 	custom_malloc_deinit();
 
 	return 0;
