@@ -18,12 +18,19 @@ unsigned int global_line_number;
 char *global_file_name;
 char **global_program_pointer;
 char *global_program_start;
+context *global_context;
 
 //Predicate parsing order of operations
 static int order_of_operations[4] = {3, 2, 1, 0};
 //All CORE error messages
 static char *error_messages[] = {
-	
+	NULL,
+	"Identifier exceeds maximum length",
+	"Expected identifier",
+	"Argument count mismatch",
+	"Expected ')'",
+	"Unrecognized sentence value",
+	"Unrecognized sentence operation"
 };
 
 //Allocate a sentence structure
@@ -90,7 +97,7 @@ void error(int error_code){
 	for(place = line_start; *place && *place != '\n'; place++){
 		fputc(*place, stderr);
 	}
-	fprintf(stderr, "\n%*c^\n", (int) (error_place - line_start + num_digits_uint(line_number) + 1), ' ');
+	fprintf(stderr, "\n%*c^\n", (int) (error_place - line_start + num_digits_uint(global_line_number) + 1), ' ');
 
 #ifdef USE_CUSTOM_ALLOC
 	custom_malloc_abort();
@@ -124,7 +131,7 @@ int get_identifier(char **c, char *buffer, size_t buffer_length){
 	//Each identifier must begin with a letter
 	if(!is_alpha(**c)){
 		buffer[0] = '\0';
-		return;
+		return 0;
 	}
 
 	end_of_identifier = *c;
@@ -176,11 +183,11 @@ sentence *parse_true_false(char **c, int num_bound_vars, int num_bound_props){
 
 	skip_whitespace(c);
 	if(!strncmp(*c, "true", 4) && !is_alphanumeric((*c)[4])){
-		output = create_statement(TRUE, num_bound_vars, num_bound_props);
+		output = create_sentence(TRUE, num_bound_vars, num_bound_props);
 		*c += 4;
 		return output;
 	} else if(!strncmp(*c, "false", 5) && !is_alphanumeric((*c)[5])){
-		output = create_statement(FALSE, num_bound_vars, num_bound_props);
+		output = create_sentence(FALSE, num_bound_vars, num_bound_props);
 		*c += 5;
 		return output;
 	}
@@ -188,7 +195,628 @@ sentence *parse_true_false(char **c, int num_bound_vars, int num_bound_props){
 	return NULL;
 }
 
-int main(int argc, char **argv){
+//Parse a relation
+//Allocates and returns a sentence structure when successful
+//Returns NULL when unsuccessful
+sentence *parse_relation(char **c, int num_bound_vars, int num_bound_props){
+	char var_name0[256];
+	char relation_name[256];
+	char var_name1[256];
+	int *var0_id = NULL;
+	int *var1_id = NULL;
+	variable *var0 = NULL;
+	variable *var1 = NULL;
+	relation *relation_data = NULL;
+	unsigned char is_bound0;
+	unsigned char is_bound1;
+	context *current_context;
+	sentence *output;
+	char *beginning;
 
+	skip_whitespace(c);
+	beginning = *c;
+	if(get_identifier(c, var_name0, 256)){
+		error(ERROR_IDENTIFIER_LENGTH);
+	}
+	if(var_name0[0] == '\0'){
+		*c = beginning;
+		return NULL;
+	}
+
+	skip_whitespace(c);
+	if(get_relation_identifier(c, relation_name, 256)){
+		error(ERROR_IDENTIFIER_LENGTH);
+	}
+	if(relation_name[0] == '\0'){
+		*c = beginning;
+		return NULL;
+	}
+
+	skip_whitespace(c);
+	if(get_identifier(c, var_name1, 256)){
+		error(ERROR_IDENTIFIER_LENGTH);
+	}
+	if(var_name1[0] == '\0'){
+		*c = beginning;
+		return NULL;
+	}
+
+	var0_id = read_dictionary(global_bound_variables, var_name0, 0);
+	if(!var0_id){
+		is_bound0 = 0;
+		current_context = global_context;
+		while(current_context != NULL){
+			var0 = read_dictionary(current_context->variables, var_name0, 0);
+			if(var0){
+				break;
+			}
+			current_context = current_context->parent;
+		}
+	} else {
+		is_bound0 = 1;
+	}
+
+	current_context = global_context;
+	while(current_context != NULL){
+		relation_data = read_dictionary(current_context->relations, relation_name, 0);
+		if(relation_data){
+			break;
+		}
+		current_context = current_context->parent;
+	}
+
+	var1_id = read_dictionary(global_bound_variables, var_name1, 0);
+	if(!var1_id){
+		is_bound1 = 0;
+		current_context = global_context;
+		while(current_context != NULL){
+			var1 = read_dictionary(current_context->variables, var_name1, 0);
+			if(var1){
+				break;
+			}
+		}
+	} else {
+		is_bound1 = 1;
+	}
+
+	if((var0_id || var0) && (var1_id || var1) && relation_data){
+		output = create_sentence(RELATION, num_bound_vars, num_bound_props);
+		output->relation_data = relation_data;
+		if(is_bound0){
+			output->var0_id = *var0_id;
+		} else {
+			output->var0 = var0;
+			output->var0->num_references++;
+		}
+		if(is_bound1){
+			output->var1_id = *var1_id;
+		} else {
+			output->var1 = var1;
+			output->var1->num_references++;
+		}
+		output->is_bound0 = is_bound0;
+		output->is_bound1 = is_bound1;
+		return output;
+	} else {
+		*c = beginning;
+		return NULL;
+	}
+}
+
+//Parse a proposition
+//Allocates and returns a sentence structure when successful
+//Returns NULL when unsuccessful
+sentence *parse_proposition(char **c, int num_bound_vars, int num_bound_props){
+	char prop_name[256];
+	char var_name[256];
+	unsigned char is_bound;
+	definition *prop = NULL;
+	bound_proposition *bound_prop = NULL;
+	int *var_id = NULL;
+	variable *var = NULL;
+	int i;
+	unsigned int num_args;
+	unsigned int counted_args = 0;
+	proposition_arg *args = NULL;
+	sentence *output = NULL;
+	char *beginning = NULL;
+	context *current_context = NULL;
+
+	skip_whitespace(c);
+	beginning = *c;
+	if(get_identifier(c, prop_name, 256)){
+		error(ERROR_IDENTIFIER_LENGTH);
+	}
+	if(prop_name[0] == '\0'){
+		*c = beginning;
+		return NULL;
+	}
+
+	skip_whitespace(c);
+	bound_prop = read_dictionary(global_bound_propositions, prop_name, 0);
+	if(!bound_prop){
+		is_bound = 0;
+		current_context = global_context;
+		while(current_context){
+			prop = read_dictionary(current_context->definitions, prop_name, 0);
+			if(prop){
+				break;
+			}
+			current_context = current_context->parent;
+		}
+	} else {
+		is_bound = 1;
+	}
+
+	if(is_bound){
+		num_args = bound_prop->num_args;
+	} else {
+		if(prop){
+			num_args = prop->num_args;
+		} else {
+			*c = beginning;
+			return NULL;
+		}
+	}
+
+	if(**c == '('){
+		++*c;
+		if(num_args == 0){
+			skip_whitespace(c);
+			if(**c != ')'){
+				*c = beginning;
+				return NULL;
+			}
+			++*c;
+		} else {
+			args = malloc(sizeof(proposition_arg)*num_args);
+			skip_whitespace(c);
+			while(**c != ')'){
+				skip_whitespace(c);
+				if(get_identifier(c, var_name, 256)){
+					error(ERROR_IDENTIFIER_LENGTH);
+				}
+				if(var_name[0] == '\0'){
+					*c = beginning;
+					free(args);
+					return NULL;
+				}
+				var_id = read_dictionary(global_bound_variables, var_name, 0);
+				if(!var_id){
+					current_context = global_context;
+					while(current_context){
+						var = read_dictionary(current_context->variables, var_name, 0);
+						if(var){
+							break;
+						}
+						current_context = current_context->parent;
+					}
+				}
+				if(var_id){
+					args[counted_args].is_bound = 1;
+					args[counted_args].var_id = *var_id;
+				} else if(var){
+					args[counted_args].is_bound = 0;
+					args[counted_args].var = var;
+					args[counted_args].var->num_references++;
+				} else {
+					*c = beginning;
+					free(args);
+					return NULL;
+				}
+				counted_args++;
+				skip_whitespace(c);
+				if(**c == ',' && counted_args < num_args){
+					++*c;
+				} else if(**c == ','){
+					*c = beginning;
+					free(args);
+					return NULL;
+				} else if(**c != ')'){
+					*c = beginning;
+					free(args);
+					return NULL;
+				}
+			}
+			++*c;
+			if(counted_args < num_args){
+				*c = beginning;
+				free(args);
+				return NULL;
+			}
+		}
+	} else if(num_args == 0){
+		args = NULL;
+	} else {
+		*c = beginning;
+		return NULL;
+	}
+
+	if(bound_prop || prop){
+		output = create_sentence(PROPOSITION, num_bound_vars, num_bound_props);
+		if(is_bound){
+			output->definition_id = bound_prop->prop_id;
+			output->proposition_args = args;
+		} else {
+			output->definition_data = prop;
+			output->proposition_args = args;
+			output->definition_data->num_references++;
+		}
+		output->is_bound = is_bound;
+		output->num_args = num_args;
+		return output;
+	} else {
+		*c = beginning;
+		return NULL;
+	}
+}
+
+sentence *parse_sentence_value(char **c, int num_bound_vars, int num_bound_props);
+sentence *parse_sentence(char **c, int num_bound_vars, int num_bound_props);
+
+//Parse a sentence value beginning with "~" which represents "not"
+sentence *parse_not(char **c, int num_bound_vars, int num_bound_props){
+	sentence *output;
+
+	skip_whitespace(c);
+	if(**c != '~'){
+		return NULL;
+	}
+
+	++*c;
+	output = create_sentence(NOT, num_bound_vars, num_bound_props);
+	output->child0 = parse_sentence_value(c, num_bound_vars, num_bound_props);
+	output->child0->parent = output;
+
+	return output;
+}
+
+//Parse a sentence value beginning with "*" which represents "for all"
+sentence *parse_all(char **c, int num_bound_vars, int num_bound_props){
+	char var_name[256];
+	sentence *output;
+	char *beginning;
+	int new_int;
+	int *old_int;
+
+	skip_whitespace(c);
+	beginning = *c;
+	if(**c != '*'){
+		return NULL;
+	}
+
+	++*c;
+	skip_whitespace(c);
+	if(get_identifier(c, var_name, 256)){
+		error(ERROR_IDENTIFIER_LENGTH);
+	}
+	skip_whitespace(c);
+	if(var_name[0] == '\0'){
+		*c = beginning;
+		return NULL;
+	}
+
+	old_int = read_dictionary(global_bound_variables, var_name, 0);
+
+	new_int = num_bound_vars;
+	write_dictionary(&global_bound_variables, var_name, &new_int, 0);
+
+	output = create_sentence(FORALL, num_bound_vars, num_bound_props);
+	output->child0 = parse_sentence_value(c, num_bound_vars + 1, num_bound_props);
+	output->child0->parent = output;
+
+	write_dictionary(&global_bound_variables, var_name, old_int, 0);
+
+	return output;
+}
+
+//Parse a sentence value beginning with "^" which represents "there exists"
+sentence *parse_exists(char **c, int num_bound_vars, int num_bound_props){
+	char var_name[256];
+	sentence *output;
+	char *beginning;
+	int *old_int;
+	int new_int;
+
+	skip_whitespace(c);
+	beginning = *c;
+	if(**c != '^'){
+		return NULL;
+	}
+
+	++*c;
+	skip_whitespace(c);
+	if(get_identifier(c, var_name, 256)){
+		error(ERROR_IDENTIFIER_LENGTH);
+	}
+	if(var_name[0] == '\0'){
+		*c = beginning;
+		return NULL;
+	}
+
+	old_int = read_dictionary(global_bound_variables, var_name, 0);
+
+	new_int = num_bound_vars;
+	write_dictionary(&global_bound_variables, var_name, &new_int, 0);
+
+	output = create_sentence(EXISTS, num_bound_vars, num_bound_props);
+	output->child0 = parse_sentence_value(c, num_bound_vars + 1, num_bound_props);
+	output->child0->parent = output;
+
+	write_dictionary(&global_bound_variables, var_name, old_int, 0);
+
+	return output;
+}
+
+//Parse a sentence value beginning with parentheses
+sentence *parse_parentheses(char **c, int num_bound_vars, int num_bound_props){
+	sentence *output;
+
+	skip_whitespace(c);
+	if(**c != '('){
+		return NULL;
+	}
+	++*c;
+	output = parse_sentence(c, num_bound_vars, num_bound_props);
+
+	if(**c != ')'){
+		error(ERROR_END_PARENTHESES);
+	}
+	++*c;
+
+	return output;
+}
+
+//Parse any sentence value
+sentence *parse_sentence_value(char **c, int num_bound_vars, int num_bound_props){
+	sentence *output;
+
+	if((output = parse_true_false(c, num_bound_vars, num_bound_props))){
+		return output;
+	} else if((output = parse_relation(c, num_bound_vars, num_bound_props))){
+		return output;
+	} else if((output = parse_proposition(c, num_bound_vars, num_bound_props))){
+		return output;
+	} else if((output = parse_not(c, num_bound_vars, num_bound_props))){
+		return output;
+	} else if((output = parse_all(c, num_bound_vars, num_bound_props))){
+		return output;
+	} else if((output = parse_exists(c, num_bound_vars, num_bound_props))){
+		return output;
+	} else if((output = parse_parentheses(c, num_bound_vars, num_bound_props))){
+		return output;
+	} else {
+		error(ERROR_SENTENCE_VALUE);
+	}
+
+	//NULL is never actually returned
+	return NULL;
+}
+
+//Determine which operation is given by the next character in the source
+//Returns -1 when the operation is unrecognized
+int get_operation(char **c){
+	skip_whitespace(c);
+	if(**c == '&'){
+		++*c;
+		return AND;
+	} else if(**c == '|'){
+		++*c;
+		return OR;
+	} else if((*c)[0] == '-' && (*c)[1] == '>'){
+		*c += 2;
+		return IMPLIES;
+	} else if((*c)[0] == '<' && (*c)[1] == '-' && (*c)[2] == '>'){
+		*c += 3;
+		return BICOND;
+	} else {
+		return -1;
+	}
+}
+
+//Recursive sentence parser
+static sentence *parse_sentence_recursive(int priority, sentence *s0, char **c, int num_bound_vars, int num_bound_props){
+	sentence *s1 = NULL;
+	sentence *output = NULL;
+	int operation;
+	char *temp_c = NULL;
+
+	skip_whitespace(c);
+	temp_c = *c;
+	operation = get_operation(&temp_c);
+	if(operation == -1 && **c && **c != ')' && **c != ';' && **c != ']' && **c != '{' && **c != '>'){
+		error(ERROR_SENTENCE_OPERATION);
+	} else if(!**c || **c == ')' || **c == ';' || **c == ']' || **c == '{' || **c == '>'){
+		return s0;
+	}
+
+	if(order_of_operations[operation] < priority){
+		return s0;
+	}
+
+	*c = temp_c;
+	s1 = parse_sentence_value(c, num_bound_vars, num_bound_props);
+	s1 = parse_sentence_recursive(order_of_operations[operation], s1, c, num_bound_vars, num_bound_props);
+	output = create_sentence(operation, num_bound_vars, num_bound_props);
+	output->child0 = s0;
+	output->child1 = s1;
+	output->child0->parent = output;
+	output->child1->parent = output;
+
+	return output;
+}
+
+//Parse a sentence
+sentence *parse_sentence(char **c, int num_bound_vars, int num_bound_props){
+	sentence *output;
+
+	output = parse_sentence_value(c, num_bound_vars, num_bound_props);
+	skip_whitespace(c);
+	while(**c && **c != ')' && **c != ';' && **c != ']' && **c != '{' && **c != '>'){
+		output = parse_sentence_recursive(0, output, c, num_bound_vars, num_bound_props);
+		skip_whitespace(c);
+	}
+
+	return output;
+}
+
+//Free a sentence and its children recursively
+void free_sentence(sentence *s){
+	int i;
+
+	switch(s->type){
+		case AND:
+		case OR:
+		case IMPLIES:
+		case BICOND:
+			free_sentence(s->child0);
+			free_sentence(s->child1);
+			free(s);
+			break;
+		case PROPOSITION:
+			for(i = 0; i < s->num_args; i++){
+				if(!s->proposition_args[i].is_bound){
+					s->proposition_args[i].var->num_references--;
+				}
+			}
+			free(s->proposition_args);
+			if(!s->is_bound){
+				s->definition_data->num_references--;
+			}
+			free(s);
+			break;
+		case FORALL:
+		case EXISTS:
+		case NOT:
+			free_sentence(s->child0);
+			free(s);
+			break;
+		case RELATION:
+			if(!s->is_bound0){
+				s->var0->num_references--;
+			}
+			if(!s->is_bound1){
+				s->var1->num_references--;
+			}
+			free(s);
+			break;
+		default:
+			free(s);
+			break;
+	}
+}
+
+//Print a sentence recursively
+void print_sentence(sentence *s){
+	int i;
+
+	if(s->type != FORALL && s->type != EXISTS){
+		printf("(");
+	}
+	switch(s->type){
+		case AND:
+			print_sentence(s->child0);
+			printf("&");
+			print_sentence(s->child1);
+			break;
+		case OR:
+			print_sentence(s->child0);
+			printf("|");
+			print_sentence(s->child1);
+			break;
+		case PROPOSITION:
+			if(s->is_bound){
+				printf("P%d(", s->definition_id);
+			} else {
+				printf("%s(", s->definition_data->name);
+			}
+			for(i = 0; i < s->num_args; i++){
+				if(i){
+					printf(", ");
+				}
+				if(s->proposition_args[i].is_bound){
+					printf("%d", s->proposition_args[i].var_id);
+				} else {
+					printf("%s", s->proposition_args[i].var->name);
+				}
+			}
+			printf(")");
+			break;
+		case FORALL:
+			printf("*%d", s->num_bound_vars);
+			print_sentence(s->child0);
+			break;
+		case EXISTS:
+			printf("^%d", s->num_bound_vars);
+			print_sentence(s->child0);
+			break;
+		case IMPLIES:
+			print_sentence(s->child0);
+			printf("->");
+			print_sentence(s->child1);
+			break;
+		case BICOND:
+			print_sentence(s->child0);
+			printf("<->");
+			print_sentence(s->child1);
+			break;
+		case NOT:
+			printf("~");
+			print_sentence(s->child0);
+			break;
+		case FALSE:
+			printf("false");
+			break;
+		case TRUE:
+			printf("true");
+			break;
+		case RELATION:
+			if(s->is_bound0){
+				printf("%d", s->var0_id);
+			} else {
+				printf("%s", s->var0->name);
+			}
+			printf(" %s ", s->relation_data->name);
+			if(s->is_bound1){
+				printf("%d", s->var1_id);
+			} else {
+				printf("%s", s->var1->name);
+			}
+			break;
+	}
+	if(s->type != FORALL && s->type != EXISTS){
+		printf(")");
+	}
+}
+
+int main(int argc, char **argv){
+	definition BOO;
+	sentence *s;
+	context c;
+	char *program = "*X*Y*Z(boo(X, Y) & boo(Y, Z) -> boo(X, Z))";
+	
+	custom_malloc_init();
+	global_program_start = program;
+	global_program_pointer = &program;
+
+	BOO.name = "boo";
+	BOO.sentence_data = NULL;
+	BOO.num_references = 0;
+	BOO.num_args = 2;
+
+	c.variables = create_dictionary(NULL);
+	c.definitions = create_dictionary(NULL);
+	c.relations = create_dictionary(NULL);
+	c.parent = NULL;
+	global_context = &c;
+
+	write_dictionary(&c.definitions, "boo", &BOO, 0);
+	s = parse_sentence(global_program_pointer, 0, 0);
+	print_sentence(s);
+	printf("\n");
+	free_sentence(s);
+	custom_malloc_deinit();
+
+	return 0;
 }
 

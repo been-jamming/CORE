@@ -1,5 +1,12 @@
 #define MAX_DEPTH 128
 
+#define ERROR_IDENTIFIER_LENGTH 1
+#define ERROR_IDENTIFIER_EXPECTED 2
+#define ERROR_ARGUMENT_COUNT 3
+#define ERROR_END_PARENTHESES 4
+#define ERROR_SENTENCE_VALUE 5
+#define ERROR_SENTENCE_OPERATION 6
+
 extern int global_relation_id;
 extern dictionary global_bound_variables;
 extern dictionary global_bound_propositions;
@@ -31,9 +38,12 @@ typedef enum{
 typedef struct sentence sentence;
 typedef struct variable variable;
 typedef struct definition definition;
+typedef struct bound_proposition bound_proposition;
 typedef struct proposition_arg proposition_arg;
 typedef struct relation relation;
 typedef struct context context;
+
+extern context *global_context;
 
 struct definition{
 	char *name;
@@ -47,6 +57,11 @@ struct variable{
 	variable_type type;
 	sentence *sentence_data;
 	unsigned int num_references;
+};
+
+struct bound_proposition{
+	int prop_id;
+	int num_args;
 };
 
 struct proposition_arg{
@@ -65,7 +80,7 @@ struct relation{
 };
 
 struct sentence{
-	statement_type type;
+	sentence_type type;
 	union{
 		//For boolean operations
 		struct{
@@ -110,6 +125,5 @@ struct context{
 	dictionary definitions;
 	dictionary relations;
 	context *parent;
-	unsigned int num_references;
 };
 
