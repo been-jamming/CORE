@@ -271,9 +271,11 @@ sentence *parse_relation(char **c, int num_bound_vars, int num_bound_props){
 		current_context = global_context;
 		while(current_context != NULL){
 			var1 = read_dictionary(current_context->variables, var_name1, 0);
+
 			if(var1){
 				break;
 			}
+			current_context = current_context->parent;
 		}
 	} else {
 		is_bound1 = 1;
@@ -922,8 +924,8 @@ int main(int argc, char **argv){
 	sentence *s0;
 	sentence *s1;
 	context c;
-	char *program0 = "B() <-> C()";
-	char *program1 = "B() <-> C()";
+	char *program0 = "*X(B & A)";
+	char *program1 = "*X(B)";
 	
 	custom_malloc_init();
 
