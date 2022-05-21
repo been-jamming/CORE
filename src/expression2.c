@@ -30,21 +30,156 @@ void free_expr_value(expr_value *val){
 }
 
 //Free a definition
-void free_definition(definition *def){
-	free(def->name);
+//Don't decrement outside references
+void free_definition_independent(definition *def){
 	if(def->sentence_data){
-		free_sentence(def->sentence_data);
+		free_sentence_independent(def->sentence_data);
 	}
+	free(def->name);
 	free(def);
 }
 
+//Free a definition
+//Version which accepts void pointer
+void free_definition_void(void *v){
+	free_definition_independent(v);
+}
+
+//Free a definition
+//Decrement all outside references
+void free_definition(definition *def){
+	if(def->sentence_data){
+		free_sentence(def->sentence_data);
+	}
+	free(def->name);
+	free(def);
+}
+
+//Decrement all outside references of a definition
+void decrement_definition(definition *def){
+	if(def->sentence_data){
+		decrement_references_sentence(def->sentence_data);
+	}
+}
+
+//Decrement all outside references of a definition
+//Version which accepts void pointer
+void decrement_definition_void(void *v){
+	decrement_definition(v);
+}
+
 //Free a relation
-void free_relation(relation *rel){
+//Don't decrement outside references
+void free_relation_independent(relation *rel){
+	if(rel->sentence_data){
+		free_sentence_independent(rel->sentence_data);
+	}
 	free(rel->name);
+	free(rel);
+}
+
+//Free a relation
+//Version which accepts void pointer
+void free_relation_void(void *v){
+	free_relation_independent(v);
+}
+
+//Free a relation
+//Decrement all outside references
+void free_relation(relation *rel){
 	if(rel->sentence_data){
 		free_sentence(rel->sentence_data);
 	}
+	free(rel->name);
 	free(rel);
+}
+
+//Decrement outside references of a relation
+void decrement_relation(relation *rel){
+	if(rel->sentence_data){
+		decrement_references_sentence(rel->sentence_data);
+	}
+}
+
+//Decrement outside references of a relation
+//Version which accepts void pointer
+void decrement_relation_void(void *v){
+	decrement_relation(v);
+}
+
+//Free a variable
+//Don't decrement outside references
+void free_variable_independent(variable *var){
+	if(var->type == SENTENCE_VAR){
+		free_sentence_independent(var->sentence_data);
+	} else if(var->type == CONTEXT_VAR){
+		free_context_independent(var->context_data);
+	}
+	free(var->name);
+	free(var);
+}
+
+//Free a variable
+//Version which accepts a void pointer
+void free_variable_void(void *v){
+	free_variable_independent(v);
+}
+
+//Free a variable
+//Decrement all outside references
+void free_variable(variable *var){
+	if(var->type == SENTENCE_VAR){
+		free_sentence(var->sentence_data);
+	} else if(var->type == CONTEXT_VAR){
+		free_context(var->context_data);
+	}
+	free(var->name);
+	free(var);
+}
+
+//Decrement outside references of a variable
+void decrement_variable(variable *var){
+	if(var->type == SENTENCE_VAR){
+		decrement_references_sentence(var->sentence_data);
+	} else if(var->type == CONTEXT_VAR){
+		decrement_context(var->context_data);
+	}
+}
+
+//Decrement outside references of a variable
+//Version which accepts a void pointer
+void decrement_variable_void(void *v){
+	decrement_variable(v);
+}
+
+//Free a context
+//Frees all dependent variables, definitions, and relations
+//Does not decrement any outside references
+void free_context_independent(context *c){
+	free_dictionary(&(c->variables), free_variable_void);
+	free_dictionary(&(c->definitions), free_definition_void);
+	free_dictionary(&(c->relations), free_relation_void);
+	free(c);
+}
+
+//Decrement all outside references of a context
+void decrement_context(context *c){
+	iterate_dictionary(c->variables, decrement_variable_void);
+	iterate_dictionary(c->definitions, decrement_definition_void);
+	iterate_dictionary(c->relations, decrement_relation_void);
+}
+
+//Free a context
+//Frees all dependent variables, definitions, and relations
+//Decrements all outside references
+void free_context(context *c){
+	iterate_dictionary(c->variables, decrement_variable_void);
+	iterate_dictionary(c->definitions, decrement_definition_void);
+	iterate_dictionary(c->relations, decrement_relation_void);
+	free_dictionary(&(c->variables), free_variable_void);
+	free_dictionary(&(c->definitions), free_definition_void);
+	free_dictionary(&(c->relations), free_relation_void);
+	free(c);
 }
 
 //Convert a definition to the sentence describing it
@@ -495,4 +630,8 @@ void substitute_proposition(sentence *s, sentence *child){
 			break;
 	}
 }
+
+//variable *create_object_variable(char *var_name, context *parent_context){
+	//variable *output;
+//}
 

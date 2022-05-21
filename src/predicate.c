@@ -4,6 +4,7 @@
 #include <string.h>
 #include "dictionary.h"
 #include "predicate.h"
+#include "expression2.h"
 #include "custom_malloc.h"
 
 //CORE First Order Logic Parser
@@ -672,6 +673,7 @@ sentence *parse_sentence(char **c, int num_bound_vars, int num_bound_props){
 }
 
 //Free a sentence and its children recursively
+//Decrement outside references
 void free_sentence(sentence *s){
 	int i;
 
@@ -713,6 +715,76 @@ void free_sentence(sentence *s){
 			break;
 		default:
 			free(s);
+			break;
+	}
+}
+
+//Free a sentence and its children recursively
+//Don't decrement outside references
+void free_sentence_independent(sentence *s){
+	switch(s->type){
+		case AND:
+		case OR:
+		case IMPLIES:
+		case BICOND:
+			free_sentence(s->child0);
+			free_sentence(s->child1);
+			free(s);
+			break;
+		case PROPOSITION:
+			free(s->proposition_args);
+			free(s);
+			break;
+		case FORALL:
+		case EXISTS:
+		case NOT:
+			free_sentence(s->child0);
+			free(s);
+			break;
+		default:
+			free(s);
+			break;
+	}
+}
+
+//Decrement all outside references of a sentence
+void decrement_references_sentence(sentence *s){
+	int i;
+
+	switch(s->type){
+		case AND:
+		case OR:
+		case IMPLIES:
+		case BICOND:
+			decrement_references_sentence(s->child0);
+			decrement_references_sentence(s->child1);
+			break;
+		case NOT:
+		case FORALL:
+		case EXISTS:
+			decrement_references_sentence(s->child0);
+			break;
+		case PROPOSITION:
+			for(i = 0; i < s->num_args; i++){
+				if(!s->proposition_args[i].is_bound){
+					s->proposition_args[i].var->num_references--;
+				}
+			}
+			if(!s->is_bound){
+				s->definition_data->num_references--;
+			}
+			break;
+		case RELATION:
+			if(!s->is_bound0){
+				s->var0->num_references--;
+			}
+			if(!s->is_bound1){
+				s->var1->num_references--;
+			}
+			break;
+		case TRUE:
+		case FALSE:
+			//pass
 			break;
 	}
 }
@@ -1000,41 +1072,48 @@ void copy_sentence(sentence *dest, sentence *s){
 }
 
 int main(int argc, char **argv){
-	definition A;
-	definition B;
-	definition C;
+	definition *A;
+	definition *B;
+	definition *C;
 	sentence *s0;
 	sentence *s1;
-	context c;
+	context *c;
 	char *program0 = "A <-> B";
 	char *program1 = "B -> A";
 	
 	custom_malloc_init();
 
-	A.name = "A";
-	A.sentence_data = NULL;
-	A.num_references = 0;
-	A.num_args = 0;
+	A = malloc(sizeof(definition));
+	B = malloc(sizeof(definition));
+	C = malloc(sizeof(definition));
+	A->name = malloc(sizeof(char)*2);
+	strcpy(A->name, "A");
+	A->sentence_data = NULL;
+	A->num_references = 0;
+	A->num_args = 0;
 
-	B.name = "B";
-	B.sentence_data = NULL;
-	B.num_references = 0;
-	B.num_args = 0;
+	B->name = malloc(sizeof(char)*2);
+	strcpy(B->name, "B");
+	B->sentence_data = NULL;
+	B->num_references = 0;
+	B->num_args = 0;
 
-	C.name = "C";
-	C.sentence_data = NULL;
-	C.num_references = 0;
-	C.num_args = 0;
+	C->name = malloc(sizeof(char)*2);
+	strcpy(C->name, "C");
+	C->sentence_data = NULL;
+	C->num_references = 0;
+	C->num_args = 0;
 
-	c.variables = create_dictionary(NULL);
-	c.definitions = create_dictionary(NULL);
-	c.relations = create_dictionary(NULL);
-	c.parent = NULL;
-	global_context = &c;
+	c = malloc(sizeof(context));
+	c->variables = create_dictionary(NULL);
+	c->definitions = create_dictionary(NULL);
+	c->relations = create_dictionary(NULL);
+	c->parent = NULL;
+	global_context = c;
 
-	write_dictionary(&c.definitions, "A", &A, 0);
-	write_dictionary(&c.definitions, "B", &B, 0);
-	write_dictionary(&c.definitions, "C", &C, 0);
+	write_dictionary(&c->definitions, "A", A, 0);
+	write_dictionary(&c->definitions, "B", B, 0);
+	write_dictionary(&c->definitions, "C", C, 0);
 
 	global_program_start = program0;
 	global_program_pointer = &program0;
@@ -1049,6 +1128,7 @@ int main(int argc, char **argv){
 	printf("\nsentence 0 stronger: %d\nsentence 1 stronger: %d\n", sentence_stronger(s0, s1), sentence_stronger(s1, s0));
 	free_sentence(s0);
 	free_sentence(s1);
+	free_context(global_context);
 	custom_malloc_deinit();
 
 	return 0;

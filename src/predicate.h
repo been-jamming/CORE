@@ -89,7 +89,7 @@ struct variable{
 		context *context_data;
 	};
 	unsigned int num_references;
-	unsigned int depth;
+	context *parent_context;
 };
 
 struct bound_proposition{
@@ -181,6 +181,8 @@ int get_operation(char **c);
 static sentence *parse_sentence_recursive(int priority, sentence *s0, char **c, int num_bound_vars, int num_bound_props);
 sentence *parse_sentence(char **c, int num_bound_vars, int num_bound_props);
 void free_sentence(sentence *s);
+void free_sentence_independent(sentence *s);
+void decrement_references_sentence(sentence *s);
 void print_sentence(sentence *s);
 int sentence_stronger(sentence *s0, sentence *s1);
 void copy_sentence(sentence *dest, sentence *s);
