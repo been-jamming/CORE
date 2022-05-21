@@ -30,7 +30,16 @@ static char *error_messages[] = {
 	"Argument count mismatch",
 	"Expected ')'",
 	"Unrecognized sentence value",
-	"Unrecognized sentence operation"
+	"Unrecognized sentence operation",
+	"Definition does not exist",
+	"Definition is empty",
+	"Relation does not exist",
+	"Relation is empty",
+	"Expected ']'",
+	"Expected '.'",
+	"Context member not found",
+	"Cannot apply '.'",
+	"Sentence has no bound variables"
 };
 
 //Allocate a sentence structure
@@ -791,6 +800,8 @@ void print_sentence(sentence *s){
 	}
 }
 
+//Determines whether one sentence trivially implies another sentence
+//Returns 1 if it can determine that s0 implies s1, and 0 otherwise
 int sentence_stronger(sentence *s0, sentence *s1){
 	sentence *child0;
 	sentence *child1;
@@ -917,6 +928,77 @@ int sentence_stronger(sentence *s0, sentence *s1){
 	return 0;
 }
 
+//Copies a sentence into the destination and allocates as needed
+void copy_sentence(sentence *dest, sentence *s){
+	int i;
+
+	dest->type = s->type;
+	dest->num_bound_vars = s->num_bound_vars;
+	dest->num_bound_props = s->num_bound_props;
+
+	switch(s->type){
+		case AND:
+		case OR:
+		case IMPLIES:
+		case BICOND:
+			dest->child0 = malloc(sizeof(sentence));
+			dest->child1 = malloc(sizeof(sentence));
+			copy_sentence(dest->child0, s->child0);
+			copy_sentence(dest->child1, s->child1);
+			dest->child0->parent = dest;
+			dest->child1->parent = dest;
+			break;
+		case NOT:
+		case FORALL:
+		case EXISTS:
+			dest->child0 = malloc(sizeof(sentence));
+			copy_sentence(dest->child0, s->child0);
+			dest->child0->parent = dest;
+			break;
+		case RELATION:
+			dest->relation_data = s->relation_data;
+			if(s->is_bound0){
+				dest->is_bound0 = 1;
+				dest->var0_id = s->var0_id;
+			} else {
+				dest->is_bound0 = 0;
+				dest->var0 = s->var0;
+				dest->var0->num_references++;
+			}
+			if(s->is_bound1){
+				dest->is_bound1 = 1;
+				dest->var1_id = s->var1_id;
+			} else {
+				dest->is_bound1 = 0;
+				dest->var1 = s->var1;
+				dest->var1->num_references++;
+			}
+			break;
+		case PROPOSITION:
+			if(s->is_bound){
+				dest->is_bound = 1;
+				dest->definition_id = s->definition_id;
+			} else {
+				dest->is_bound = 0;
+				dest->definition_data = s->definition_data;
+				dest->definition_data->num_references++;
+			}
+			dest->proposition_args = malloc(sizeof(proposition_arg)*s->num_args);
+			memcpy(dest->proposition_args, s->proposition_args, sizeof(proposition_arg)*s->num_args);
+			dest->num_args = s->num_args;
+			for(i = 0; i < dest->num_args; i++){
+				if(!dest->proposition_args[i].is_bound){
+					dest->proposition_args[i].var->num_references++;
+				}
+			}
+			break;
+		case TRUE:
+		case FALSE:
+			//pass
+			break;
+	}
+}
+
 int main(int argc, char **argv){
 	definition A;
 	definition B;
@@ -924,8 +1006,8 @@ int main(int argc, char **argv){
 	sentence *s0;
 	sentence *s1;
 	context c;
-	char *program0 = "*X(B & A)";
-	char *program1 = "*X(B)";
+	char *program0 = "A <-> B";
+	char *program1 = "B -> A";
 	
 	custom_malloc_init();
 

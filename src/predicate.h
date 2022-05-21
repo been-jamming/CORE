@@ -6,6 +6,15 @@
 #define ERROR_END_PARENTHESES 4
 #define ERROR_SENTENCE_VALUE 5
 #define ERROR_SENTENCE_OPERATION 6
+#define ERROR_DEFINITION_EXISTS 7
+#define ERROR_DEFINITION_EMPTY 8
+#define ERROR_RELATION_EXISTS 9
+#define ERROR_RELATION_EMPTY 10
+#define ERROR_BRACKET_EXPECTED 11
+#define ERROR_DOT_EXPECTED 12
+#define ERROR_CONTEXT_MEMBER 13
+#define ERROR_CANNOT_DOT 14
+#define ERROR_NO_BOUND_VARIABLES 15
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;
@@ -30,10 +39,15 @@ typedef enum{
 } sentence_type;
 
 typedef enum{
-	OBJECT,
 	SENTENCE,
-	CONTEXT
-} variable_type;
+	OBJECT
+} expr_value_type;
+
+typedef enum{
+	SENTENCE_VAR,
+	OBJECT_VAR,
+	CONTEXT_VAR
+} var_type;
 
 typedef struct sentence sentence;
 typedef struct variable variable;
@@ -42,6 +56,7 @@ typedef struct bound_proposition bound_proposition;
 typedef struct proposition_arg proposition_arg;
 typedef struct relation relation;
 typedef struct context context;
+typedef struct expr_value expr_value;
 
 extern context *global_context;
 
@@ -52,11 +67,29 @@ struct definition{
 	unsigned int num_args;
 };
 
+struct expr_value{
+	expr_value_type type;
+	union{
+		struct{
+			sentence *sentence_data;
+			unsigned char verified;
+		};
+		variable *var;
+	};
+};
+
 struct variable{
 	char *name;
-	variable_type type;
-	sentence *sentence_data;
+	var_type type;
+	union{
+		struct{
+			sentence *sentence_data;
+			unsigned char verified;
+		};
+		context *context_data;
+	};
 	unsigned int num_references;
+	unsigned int depth;
 };
 
 struct bound_proposition{
@@ -126,4 +159,29 @@ struct context{
 	dictionary relations;
 	context *parent;
 };
+
+sentence *create_sentence(sentence_type type, int num_bound_vars, int num_bound_props);
+unsigned char is_whitespace(char *c);
+void skip_whitespace(char **c);
+void error(int error_code);
+int is_digit(char c);
+int is_alpha(char c);
+int is_alphanumeric(char c);
+int get_identifier(char **c, char *buffer, size_t buffer_length);
+int get_relation_identifier(char **c, char *buffer, size_t buffer_length);
+sentence *parse_true_false(char **c, int num_bound_vars, int num_bound_props);
+sentence *parse_relation(char **c, int num_bound_vars, int num_bound_props);
+sentence *parse_proposition(char **c, int num_bound_vars, int num_bound_props);
+sentence *parse_not(char **c, int num_bound_vars, int num_bound_props);
+sentence *parse_all(char **c, int num_bound_vars, int num_bound_props);
+sentence *parse_exists(char **c, int num_bound_vars, int num_bound_props);
+sentence *parse_parentheses(char **c, int num_bound_vars, int num_bound_props);
+sentence *parse_sentence_value(char **c, int num_bound_vars, int num_bound_props);
+int get_operation(char **c);
+static sentence *parse_sentence_recursive(int priority, sentence *s0, char **c, int num_bound_vars, int num_bound_props);
+sentence *parse_sentence(char **c, int num_bound_vars, int num_bound_props);
+void free_sentence(sentence *s);
+void print_sentence(sentence *s);
+int sentence_stronger(sentence *s0, sentence *s1);
+void copy_sentence(sentence *dest, sentence *s);
 
