@@ -31,3 +31,8 @@ void reset_replaced(sentence *s);
 void set_num_bound_props(sentence *s, int num_props);
 void substitute_variable_bound(sentence *s, int id, int new_id);
 void substitute_proposition(sentence *s, sentence *child);
+variable *create_object_variable(char *var_name, context *parent_context);
+variable *create_sentence_variable(char *var_name, sentence *sentence_data, unsigned char verified, context *parent_context);
+variable *create_context_variable(char *var_name, context *context_data, context *parent_context);
+variable *get_variable(char *var_name, context *parent_context);
+expr_value *parse_expr_value(char **c);

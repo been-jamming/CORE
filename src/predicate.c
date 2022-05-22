@@ -40,7 +40,13 @@ static char *error_messages[] = {
 	"Expected '.'",
 	"Context member not found",
 	"Cannot apply '.'",
-	"Sentence has no bound variables"
+	"Sentence has no bound variables",
+	"Cannot overwrite referenced variable",
+	"Variable not found",
+	"Invalid argument type",
+	"Argument has bound variables",
+	"Argument has bound propositions",
+	"Expected ')' or ','"
 };
 
 //Allocate a sentence structure
@@ -1121,6 +1127,7 @@ int main(int argc, char **argv){
 	global_program_start = program1;
 	global_program_pointer = &program1;
 	s1 = parse_sentence(global_program_pointer, 0, 0);
+	printf("A references: %u\nB references: %u\n", A->num_references, B->num_references);
 	printf("sentence 0: ");
 	print_sentence(s0);
 	printf("\nsentence 1: ");

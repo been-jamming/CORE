@@ -289,12 +289,12 @@ expr_value *relation_to_value(char *name){
 
 //Parse an identifier
 expr_value *parse_expr_identifier(char **c){
-	variable *var;
+	variable *var = NULL;
 	expr_value *output = NULL;
-	definition *def;
+	definition *def = NULL;
 	char name_buffer[256];
-	char *beginning;
-	context *current_context;
+	char *beginning = NULL;
+	context *current_context = NULL;
 
 	skip_whitespace(c);
 	beginning = *c;
@@ -343,6 +343,11 @@ expr_value *parse_expr_identifier(char **c){
 				break;
 			}
 			current_context = current_context->parent;
+		}
+
+		if(!var){
+			*c = beginning;
+			return NULL;
 		}
 
 		while(var->type == CONTEXT_VAR){
@@ -631,7 +636,342 @@ void substitute_proposition(sentence *s, sentence *child){
 	}
 }
 
-//variable *create_object_variable(char *var_name, context *parent_context){
-	//variable *output;
-//}
+//Create a variable storing an object
+variable *create_object_variable(char *var_name, context *parent_context){
+	variable *output;
+	variable *var;
 
+	var = read_dictionary(parent_context->variables, var_name, 0);
+	if(var && !var->num_references){
+		free_variable(var);
+	} else if(var){
+		error(ERROR_VARIABLE_OVERWRITE);
+	}
+
+	output = malloc(sizeof(variable));
+	output->type = OBJECT_VAR;
+	output->num_references = 0;
+	output->name = malloc(sizeof(char)*(strlen(var_name) + 1));
+	strcpy(output->name, var_name);
+	output->parent_context = parent_context;
+
+	write_dictionary(&(parent_context->variables), var_name, output, 0);
+
+	return output;
+}
+
+//Create a variables storing a sentence
+variable *create_sentence_variable(char *var_name, sentence *sentence_data, unsigned char verified, context *parent_context){
+	variable *output;
+	variable *var;
+
+	var = read_dictionary(parent_context->variables, var_name, 0);
+	if(var && !var->num_references){
+		free_variable(var);
+	} else if(var){
+		error(ERROR_VARIABLE_OVERWRITE);
+	}
+
+	output = malloc(sizeof(variable));
+	output->type = SENTENCE_VAR;
+	output->num_references = 0;
+	output->name = malloc(sizeof(char)*(strlen(var_name) + 1));
+	strcpy(output->name, var_name);
+	output->parent_context = parent_context;
+	output->sentence_data = sentence_data;
+	output->verified = verified;
+
+	write_dictionary(&(parent_context->variables), var_name, output, 0);
+
+	return output;
+}
+
+//Create a variable storing a context
+variable *create_context_variable(char *var_name, context *context_data, context *parent_context){
+	variable *output;
+	variable *var;
+
+	var = read_dictionary(parent_context->variables, var_name, 0);
+	if(var && !var->num_references){
+		free_variable(var);
+	} else if(var){
+		error(ERROR_VARIABLE_OVERWRITE);
+	}
+
+	output = malloc(sizeof(variable));
+	output->type = CONTEXT_VAR;
+	output->num_references = 0;
+	output->name = malloc(sizeof(char)*(strlen(var_name) + 1));
+	strcpy(output->name, var_name);
+	output->parent_context = parent_context;
+	output->context_data = context_data;
+
+	write_dictionary(&(parent_context->variables), var_name, output, 0);
+
+	return output;
+}
+
+//Retrieve a variable by name
+variable *get_variable(char *var_name, context *parent_context){
+	variable *output = NULL;
+
+	while(parent_context){
+		output = read_dictionary(parent_context->variables, var_name, 0);
+		if(output){
+			break;
+		}
+		parent_context = parent_context->parent;
+	}
+
+	return output;
+}
+
+//Parse the "left" command
+expr_value *parse_left(char **c){
+	expr_value *expr;
+	expr_value *output;
+	sentence *sentence_data;
+	sentence *temp;
+
+	expr = parse_expr_value(c);
+	skip_whitespace(c);
+	if(**c != ')'){
+		error(ERROR_END_PARENTHESES);
+	}
+	++*c;
+
+	if(expr->type != SENTENCE){
+		error(ERROR_ARGUMENT_TYPE);
+	}
+
+	sentence_data = expr->sentence_data;
+	if(sentence_data->num_bound_vars > 0){
+		error(ERROR_ARGUMENT_BOUND_VARIABLES);
+	}
+	if(sentence_data->num_bound_props > 0){
+		error(ERROR_ARGUMENT_BOUND_PROPOSITIONS);
+	}
+
+	if(sentence_data->type == AND || sentence_data->type == OR || sentence_data->type == IMPLIES){
+		expr->verified = (sentence_data->type == AND) && expr->verified;
+		expr->sentence_data = sentence_data->child0;
+		free_sentence(sentence_data->child1);
+		free(sentence_data);
+		return expr;
+	} else if(sentence_data->type == BICOND){
+		temp = sentence_data->child0;
+		sentence_data->child0 = sentence_data->child1;
+		sentence_data->child1 = temp;
+		sentence_data->type = IMPLIES;
+		return expr;
+	} else {
+		error(ERROR_ARGUMENT_TYPE);
+	}
+
+	//Prevent GCC from giving a warning. NULL is never returned.
+	return NULL;
+}
+
+//Parse the "right" command
+expr_value *parse_right(char **c){
+	expr_value *expr;
+	expr_value *output;
+	sentence *sentence_data;
+
+	expr = parse_expr_value(c);
+	skip_whitespace(c);
+	if(**c != ')'){
+		error(ERROR_END_PARENTHESES);
+	}
+	++*c;
+
+	if(expr->type != SENTENCE){
+		error(ERROR_ARGUMENT_TYPE);
+	}
+
+	sentence_data = expr->sentence_data;
+	if(sentence_data->num_bound_vars > 0){
+		error(ERROR_ARGUMENT_BOUND_VARIABLES);
+	}
+	if(sentence_data->num_bound_props > 0){
+		error(ERROR_ARGUMENT_BOUND_PROPOSITIONS);
+	}
+
+	if(sentence_data->type == AND || sentence_data->type == OR || sentence_data->type == IMPLIES){
+		expr->verified = (sentence_data->type == AND) && expr->verified;
+		expr->sentence_data = sentence_data->child1;
+		free_sentence(sentence_data->child0);
+		free(sentence_data);
+		return expr;
+	} else if(sentence_data->type == BICOND){
+		sentence_data->type = IMPLIES;
+		return expr;
+	} else {
+		error(ERROR_ARGUMENT_TYPE);
+	}
+
+	//Prevent GCC from giving a warning. NULL is never returned.
+	return NULL;
+}
+
+//Parse an "and" or "or" function call
+//Reused for parentheses operation
+expr_value *parse_and_or(char **c, unsigned char is_and){
+	expr_value *output;
+	expr_value *val;
+	sentence *last_parent_sentence = NULL;
+	sentence *new;
+	sentence *output_sentence;
+	sentence *s;
+	unsigned char verified;
+
+	val = parse_expr_value(c);
+	if(val->type != SENTENCE){
+		error(ERROR_ARGUMENT_TYPE);
+	}
+	output_sentence = val->sentence_data;
+	if(output_sentence->num_bound_vars > 0){
+		error(ERROR_ARGUMENT_BOUND_VARIABLES);
+	}
+	if(output_sentence->num_bound_props > 0){
+		error(ERROR_ARGUMENT_BOUND_PROPOSITIONS);
+	}
+
+	verified = val->verified;
+	skip_whitespace(c);
+	if(**c != ')' && **c != ','){
+		error(ERROR_PARENTHESES_OR_COMMA);
+	}
+
+	while(**c != ')'){
+		++*c;
+		skip_whitespace(c);
+		val = parse_expr_value(c);
+		if(val->type != SENTENCE){
+			error(ERROR_ARGUMENT_TYPE);
+		}
+		s = val->sentence_data;
+		if(s->num_bound_vars > 0){
+			error(ERROR_ARGUMENT_BOUND_VARIABLES);
+		}
+		if(s->num_bound_props > 0){
+			error(ERROR_ARGUMENT_BOUND_PROPOSITIONS);
+		}
+
+		if(is_and){
+			verified = verified && val->verified;
+			new = create_sentence(AND, 0, 0);
+		} else {
+			verified = verified || val->verified;
+			new = create_sentence(OR, 0, 0);
+		}
+
+		if(!last_parent_sentence){
+			last_parent_sentence = new;
+			last_parent_sentence->child0 = output_sentence;
+			last_parent_sentence->child1 = s;
+			last_parent_sentence->child0->parent = last_parent_sentence;
+			last_parent_sentence->child1->parent = last_parent_sentence;
+			output_sentence = last_parent_sentence;
+		} else {
+			new->child0 = last_parent_sentence->child1;
+			new->child1 = s;
+			new->child0->parent = new;
+			new->child1->parent = new;
+			last_parent_sentence->child1 = new;
+			last_parent_sentence->child1->parent = last_parent_sentence;
+			last_parent_sentence = new;
+		}
+
+		skip_whitespace(c);
+		if(**c != ')' && **c != ','){
+			error(ERROR_PARENTHESES_OR_COMMA);
+		}
+
+		free(val);
+	}
+	
+	++*c;
+	output = create_expr_value(SENTENCE);
+	output->sentence_data = output_sentence;
+	output->verified = verified;
+
+	return output;
+}
+
+//Parse "expand" command
+expr_value *parse_expand(char **c){
+	expr_value *output;
+	sentence *output_sentence;
+	expr_value *arg;
+	sentence *arg_sentence;
+	definition *def;
+	relation *rel;
+	unsigned char verified;
+	int i;
+
+	arg = parse_expr_value(c);
+	verified = arg->verified;
+	skip_whitespace(c);
+	if(**c != ')'){
+		error(ERROR_END_PARENTHESES);
+	}
+	++*c;
+
+	if(arg->type != SENTENCE){
+		error(ERROR_ARGUMENT_TYPE);
+	}
+	arg_sentence = arg->sentence_data;
+	if(arg_sentence->num_bound_vars > 0){
+		error(ERROR_ARGUMENT_BOUND_VARIABLES);
+	}
+	if(arg_sentence->num_bound_props > 0){
+		error(ERROR_ARGUMENT_BOUND_PROPOSITIONS);
+	}
+	if(arg_sentence->type != PROPOSITION && arg_sentence->type != RELATION){
+		error(ERROR_ARGUMENT_TYPE);
+	}
+
+	if(arg_sentence->type == PROPOSITION){
+		def = arg_sentence->definition_data;
+
+		if(!def->sentence_data){
+			error(ERROR_DEFINITION_EMPTY);
+		}
+
+		output_sentence = malloc(sizeof(sentence));
+		output_sentence->parent = NULL;
+		copy_sentence(output_sentence, def->sentence_data);
+
+		for(i = 0; i < arg_sentence->num_args; i++){
+			substitute_variable(output_sentence, arg_sentence->proposition_args[i].var);
+		}
+
+		free_expr_value(arg);
+	} else {
+		rel = arg_sentence->relation_data;
+
+		if(!rel->sentence_data){
+			error(ERROR_RELATION_EMPTY);
+		}
+
+		output_sentence = malloc(sizeof(sentence));
+		output_sentence->parent = NULL;
+		copy_sentence(output_sentence, rel->sentence_data);
+
+		substitute_variable(output_sentence, arg_sentence->var0);
+		substitute_variable(output_sentence, arg_sentence->var1);
+
+		free_expr_value(arg);
+	}
+
+	output = create_expr_value(SENTENCE);
+	output->sentence_data = output_sentence;
+	output->verified = verified;
+
+	return output;
+}
+
+expr_value *parse_expr_value(char **c){
+	return NULL;
+}
