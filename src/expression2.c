@@ -972,6 +972,58 @@ expr_value *parse_expand(char **c){
 	return output;
 }
 
+//Parse "iff" command
+expr_value *parse_iff(char **c){
+	expr_value *arg0;
+	expr_value *arg1;
+	expr_value *output;
+	sentence *arg0_sentence;
+	sentence *arg1_sentence;
+	sentence *output_sentence;
+	unsigned char verified;
+
+	arg0 = parse_expr_value(c);
+	skip_whitespace(c);
+	if(**c != ','){
+		error(ERROR_COMMA);
+	}
+	if(arg0->type != SENTENCE){
+		error(ERROR_ARGUMENT_TYPE);
+	}
+	if(arg0->sentence_data->type != IMPLIES){
+		error(ERROR_ARGUMENT_TYPE);
+	}
+
+	++*c;
+	skip_whitespace(c);
+	arg1 = parse_expr_value(c);
+	skip_whitespace(c);
+	if(**c != ')'){
+		error(ERROR_PARENTHESES);
+	}
+	if(arg1->type != SENTENCE){
+		error(ERROR_ARGUMENT_TYPE);
+	}
+	if(arg1->sentence_data->type != IMPLIES){
+		error(ERROR_ARGUMENT_TYPE);
+	}
+	++*c;
+
+	verified = arg0->verified && arg1->verified;
+	arg0_sentence = arg0->sentence_data;
+	arg1_sentence = arg1->sentence_data;
+
+	if(!sentence_equivalent(arg0_sentence->child0, arg1_sentence->child1) || !sentence_equivalent(arg0_sentence->child1, arg1_sentence->child0)){
+		error(ERROR_MISMATCHED_IMPLICATIONS);
+	}
+
+	free_expr_value(arg1);
+	arg0_sentence->type = BICOND;
+	arg0->verified = verified;
+
+	return arg0;
+}
+
 expr_value *parse_expr_value(char **c){
 	return NULL;
 }

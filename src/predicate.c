@@ -46,7 +46,10 @@ static char *error_messages[] = {
 	"Invalid argument type",
 	"Argument has bound variables",
 	"Argument has bound propositions",
-	"Expected ')' or ','"
+	"Expected ')' or ','",
+	"Expected ','",
+	"Expected ')'",
+	"Mismatched implications"
 };
 
 //Allocate a sentence structure
@@ -1006,6 +1009,11 @@ int sentence_stronger(sentence *s0, sentence *s1){
 	return 0;
 }
 
+//Determine if two sentences imply each other
+int sentence_equivalent(sentence *s0, sentence *s1){
+	return sentence_stronger(s0, s1) && sentence_stronger(s1, s0);
+}
+
 //Copies a sentence into the destination and allocates as needed
 void copy_sentence(sentence *dest, sentence *s){
 	int i;
@@ -1075,6 +1083,29 @@ void copy_sentence(sentence *dest, sentence *s){
 			//pass
 			break;
 	}
+}
+
+//Peel the left-most part of an "|" off of a sentence and return it
+sentence *peel_or_left(sentence **s){
+	sentence *output = NULL;
+	sentence *child;
+
+	if((*s)->type != OR){
+		output = *s;
+		*s = NULL;
+		return output;
+	}
+
+	while((*s)->child0->type == OR){
+		s = &((*s)->child0);
+	}
+
+	output = (*s)->child0;
+	child = (*s)->child1;
+	free(*s);
+	*s = child;
+
+	return output;
 }
 
 int main(int argc, char **argv){

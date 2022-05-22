@@ -21,6 +21,9 @@
 #define ERROR_ARGUMENT_BOUND_VARIABLES 19
 #define ERROR_ARGUMENT_BOUND_PROPOSITIONS 20
 #define ERROR_PARENTHESES_OR_COMMA 21
+#define ERROR_COMMA 22
+#define ERROR_PARENTHESES 23
+#define ERROR_MISMATCHED_IMPLICATIONS 24
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;
@@ -191,5 +194,7 @@ void free_sentence_independent(sentence *s);
 void decrement_references_sentence(sentence *s);
 void print_sentence(sentence *s);
 int sentence_stronger(sentence *s0, sentence *s1);
+int sentence_equivalent(sentence *s0, sentence *s1);
 void copy_sentence(sentence *dest, sentence *s);
+sentence *peel_or_left(sentence **s);
 
