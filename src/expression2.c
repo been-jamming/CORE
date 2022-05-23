@@ -11,6 +11,19 @@
 
 //Parses and evaluates expressions in CORE
 
+//Allocate and initialize a context
+context *create_context(context *parent){
+	context *output;
+
+	output = malloc(sizeof(context));
+	output->variables = create_dictionary(NULL);
+	output->definitions = create_dictionary(NULL);
+	output->relations = create_dictionary(NULL);
+	output->parent = parent;
+
+	return output;
+}
+
 //Allocate an expression value with a given type
 expr_value *create_expr_value(expr_value_type type){
 	expr_value *output;
@@ -1024,6 +1037,157 @@ expr_value *parse_iff(char **c){
 	return arg0;
 }
 
+//Parse "branch" command
+expr_value *parse_branch(char **c){
+	expr_value *output;
+	expr_value *or_arg;
+	expr_value *returned_val;
+	sentence *or_sentence;
+	sentence *peeled;
+	char (*var_names)[256];
+	context *first_context;
+	context *next_context;
+	int max_vars;
+	int num_vars;
+	int current_arg = 1;
+	unsigned char verified;
+
+	or_arg = parse_expr_value(c);
+	skip_whitespace(c);
+	if(**c != ','){
+		error(ERROR_COMMA);
+	}
+	if(or_arg->type != SENTENCE){
+		error(ERROR_ARGUMENT_TYPE);
+	}
+	if(!or_arg->verified){
+		error(ERROR_ARGUMENT_VERIFY);
+	}
+	or_sentence = or_arg->sentence_data;
+	if(or_sentence->num_bound_vars > 0){
+		error(ERROR_ARGUMENT_BOUND_VARIABLES);
+	}
+	if(or_sentence->num_bound_props > 0){
+		error(ERROR_ARGUMENT_BOUND_PROPOSITIONS);
+	}
+	++*c;
+	skip_whitespace(c);
+
+	max_vars = count_or(or_sentence);
+	var_names = malloc(sizeof(char [256])*max_vars);
+
+	if(get_identifier(c, var_names[0], 256)){
+		error(ERROR_IDENTIFIER_LENGTH);
+	}
+	if(var_names[0][0] == '\0'){
+		error(ERROR_IDENTIFIER_EXPECTED);
+	}
+	skip_whitespace(c);
+	num_vars = 1;
+
+	if(**c != ','){
+		error(ERROR_COMMA);
+	}
+
+	while(**c != ')'){
+		if(**c != ','){
+			error(ERROR_PARENTHESES_OR_COMMA);
+		}
+		++*c;
+		skip_whitespace(c);
+		if(num_vars >= max_vars){
+			error(ERROR_TOO_MANY_UNPACK);
+		}
+		if(get_identifier(c, var_names[num_vars], 256)){
+			error(ERROR_IDENTIFIER_LENGTH);
+		}
+		if(var_names[num_vars][0] == '\0'){
+			error(ERROR_IDENTIFIER_EXPECTED);
+		}
+		skip_whitespace(c);
+		num_vars++;
+	}
+
+	++*c;
+	skip_whitespace(c);
+
+	if(**c != '{'){
+		error(ERROR_BEGIN_BRACE);
+	}
+	++*c;
+	skip_whitespace(c);
+	first_context = create_context(global_context);
+	peeled = peel_or_left(&or_sentence);
+	create_sentence_variable(var_names[0], peeled, 1, first_context);
+	global_context = first_context;
+	output = parse_context(c);
+	if(!output){
+		error(ERROR_RETURN_EXPECTED);
+	}
+	if(**c != '}'){
+		error(ERROR_END_BRACE);
+	}
+	++*c;
+	skip_whitespace(c);
+
+	global_context = global_context->parent;
+
+	if(strncmp(*c, "or", 2) || is_alphanumeric((*c)[2])){
+		error(ERROR_OR_EXPECTED);
+	}
+	*c += 2;
+	skip_whitespace(c);
+	while(current_arg < num_vars){
+		if(**c != '{'){
+			error(ERROR_BEGIN_BRACE);
+		}
+		++*c;
+		skip_whitespace(c);
+		next_context = create_context(global_context);
+		if(current_arg < num_vars - 1){
+			peeled = peel_or_left(&or_sentence);
+		} else {
+			peeled = or_sentence;
+		}
+		create_sentence_variable(var_names[current_arg], peeled, 1, next_context);
+		global_context = next_context;
+		returned_val = parse_context(c);
+		if(!returned_val){
+			error(ERROR_RETURN_EXPECTED);
+		}
+		if(**c != '}'){
+			error(ERROR_END_BRACE);
+		}
+		++*c;
+		skip_whitespace(c);
+
+		global_context = global_context->parent;
+
+		if(!sentence_equivalent(output->sentence_data, returned_val->sentence_data)){
+			error(ERROR_MISMATCHED_RETURN);
+		}
+		free_expr_value(returned_val);
+		free_context(next_context);
+		current_arg++;
+
+		if(current_arg < num_vars){
+			if(strncmp(*c, "or", 2) || is_alphanumeric((*c)[2])){
+				error(ERROR_OR_EXPECTED);
+			}
+			*c += 2;
+			skip_whitespace(c);
+		}
+	}
+
+	free_context(first_context);
+
+	return output;
+}
+
 expr_value *parse_expr_value(char **c){
+	return NULL;
+}
+
+expr_value *parse_context(char **c){
 	return NULL;
 }

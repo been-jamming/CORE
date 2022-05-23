@@ -24,6 +24,13 @@
 #define ERROR_COMMA 22
 #define ERROR_PARENTHESES 23
 #define ERROR_MISMATCHED_IMPLICATIONS 24
+#define ERROR_ARGUMENT_VERIFY 25
+#define ERROR_TOO_MANY_UNPACK 26
+#define ERROR_BEGIN_BRACE 27
+#define ERROR_RETURN_EXPECTED 28
+#define ERROR_END_BRACE 29
+#define ERROR_OR_EXPECTED 30
+#define ERROR_MISMATCHED_RETURN 31
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;
@@ -197,4 +204,5 @@ int sentence_stronger(sentence *s0, sentence *s1);
 int sentence_equivalent(sentence *s0, sentence *s1);
 void copy_sentence(sentence *dest, sentence *s);
 sentence *peel_or_left(sentence **s);
+int count_or(sentence *s);
 

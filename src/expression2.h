@@ -36,3 +36,4 @@ variable *create_sentence_variable(char *var_name, sentence *sentence_data, unsi
 variable *create_context_variable(char *var_name, context *context_data, context *parent_context);
 variable *get_variable(char *var_name, context *parent_context);
 expr_value *parse_expr_value(char **c);
+expr_value *parse_context(char **c);

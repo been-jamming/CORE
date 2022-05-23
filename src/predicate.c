@@ -49,7 +49,14 @@ static char *error_messages[] = {
 	"Expected ')' or ','",
 	"Expected ','",
 	"Expected ')'",
-	"Mismatched implications"
+	"Mismatched implications",
+	"Expected verified value",
+	"Too many arguments to unpack",
+	"Expected '{'",
+	"Expected return statement",
+	"Expected '}'",
+	"Expected 'or'",
+	"Mismatched returned sentences"
 };
 
 //Allocate a sentence structure
@@ -1108,6 +1115,16 @@ sentence *peel_or_left(sentence **s){
 	return output;
 }
 
+//Count the number of sub-sentences which are "|"-ed together
+//Used to determine the number of times peel_or_left can be called
+int count_or(sentence *s){
+	if(s->type != OR){
+		return 1;
+	}
+
+	return count_or(s->child0) + count_or(s->child1);
+}
+
 int main(int argc, char **argv){
 	definition *A;
 	definition *B;
@@ -1116,7 +1133,7 @@ int main(int argc, char **argv){
 	sentence *s1;
 	context *c;
 	char *program0 = "A <-> B";
-	char *program1 = "B -> A";
+	char *program1 = "B <-> A";
 	
 	custom_malloc_init();
 
