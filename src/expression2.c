@@ -1184,6 +1184,68 @@ expr_value *parse_branch(char **c){
 	return output;
 }
 
+expr_value *parse_expr_value_builtin(char **c){
+	unsigned char is_and;
+
+	if(!strncmp(*c, "left", 4) && !is_alphanumeric((*c)[4])){
+		*c += 4;
+		skip_whitespace(c);
+		if(**c != '('){
+			error(ERROR_BEGIN_PARENTHESES);
+		}
+		++*c;
+		return parse_left(c);
+	} else if(!strncmp(*c, "right", 5) && !is_alphanumeric((*c)[5])){
+		*c += 5;
+		skip_whitespace(c);
+		if(**c != '('){
+			error(ERROR_BEGIN_PARENTHESES);
+		}
+		++*c;
+		return parse_right(c);
+	} else if((!strncmp(*c, "and", 3) && !is_alphanumeric((*c)[3])) || (!strncmp(*c, "or", 2) && !is_alphanumeric((*c)[2]))){
+		if(**c == 'a'){
+			*c += 3;
+			is_and = 1;
+		} else {
+			*c += 2;
+			is_and = 0;
+		}
+		skip_whitespace(c);
+		if(**c != '('){
+			error(ERROR_BEGIN_PARENTHESES);
+		}
+		++*c;
+		parse_and_or(c, is_and);
+	} else if(!strncmp(*c, "expand", 6) && !is_alphanumeric((*c)[6])){
+		*c += 6;
+		skip_whitespace(c);
+		if(**c != '('){
+			error(ERROR_BEGIN_PARENTHESES);
+		}
+		++*c;
+		return parse_expand(c);
+	} else if(!strncmp(*c, "iff", 3) && !is_alphanumeric((*c)[3])){
+		*c += 3;
+		skip_whitespace(c);
+		if(**c != '('){
+			error(ERROR_BEGIN_PARENTHESES);
+		}
+		++*c;
+		return parse_iff(c);
+	} else if(!strncmp(*c, "branch", 6) && !is_alphanumeric((*c)[6])){
+		*c += 6;
+		skip_whitespace(c);
+		if(**c != '('){
+			error(ERROR_BEGIN_PARENTHESES);
+		}
+		++*c;
+		return parse_branch(c);
+	}
+
+	return NULL;
+}
+
 expr_value *parse_expr_value(char **c){
 	return NULL;
 }

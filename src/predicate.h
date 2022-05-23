@@ -31,6 +31,7 @@
 #define ERROR_END_BRACE 29
 #define ERROR_OR_EXPECTED 30
 #define ERROR_MISMATCHED_RETURN 31
+#define ERROR_BEGIN_PARENTHESES 32
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;

@@ -56,7 +56,8 @@ static char *error_messages[] = {
 	"Expected return statement",
 	"Expected '}'",
 	"Expected 'or'",
-	"Mismatched returned sentences"
+	"Mismatched returned sentences",
+	"Expected '('"
 };
 
 //Allocate a sentence structure
