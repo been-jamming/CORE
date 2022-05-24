@@ -1184,6 +1184,7 @@ expr_value *parse_branch(char **c){
 	return output;
 }
 
+//Parse all built-in functions
 expr_value *parse_expr_value_builtin(char **c){
 	unsigned char is_and;
 
@@ -1244,6 +1245,181 @@ expr_value *parse_expr_value_builtin(char **c){
 	}
 
 	return NULL;
+}
+
+//Parse the '|' operation
+expr_value *parse_expr_value_pipe(char **c, expr_value *input){
+	expr_value *output;
+	sentence *input_sentence;
+	sentence *next_input_sentence;
+	variable *var;
+	char var_name[256];
+
+	if(input->type != SENTENCE){
+		error(ERROR_OPERAND_TYPE);
+	}
+	input_sentence = input->sentence_data;
+	if(input_sentence->num_bound_vars){
+		error(ERROR_OPERAND_BOUND_VARIABLES);
+	}
+	if(input_sentence->num_bound_props){
+		error(ERROR_OPERAND_BOUND_PROPOSITIONS);
+	}
+	if(!input->verified){
+		error(ERROR_OPERAND_VERIFY);
+	}
+	skip_whitespace(c);
+	if(**c != '|'){
+		error(ERROR_IDENTIFIER_EXPECTED);
+	}
+	while(**c != '|'){
+		if(input_sentence->type != EXISTS){
+			error(ERROR_TOO_MANY_UNPACK);
+		}
+		if(get_identifier(c, var_name, 256)){
+			error(ERROR_IDENTIFIER_LENGTH);
+		}
+		if(var_name[0] == '\0'){
+			error(ERROR_IDENTIFIER_EXPECTED);
+		}
+		skip_whitespace(c);
+		var = create_object_variable(var_name, global_context);
+		next_input_sentence = input_sentence->child0;
+		free(input_sentence);
+		input_sentence = next_input_sentence;
+		input_sentence->parent = NULL;
+		substitute_variable(input_sentence, var);
+		if(**c != '|' && **c != ','){
+			error(ERROR_PIPE_OR_COMMA);
+		}
+		if(**c == ','){
+			++*c;
+			skip_whitespace(c);
+			if(**c == '|'){
+				error(ERROR_IDENTIFIER_EXPECTED);
+			}
+		}
+	}
+
+	++*c;
+	skip_whitespace(c);
+	free(input);
+	output = create_expr_value(SENTENCE);
+	output->verified = 1;
+	output->sentence_data = input_sentence;
+
+	return output;
+}
+
+//Parse the '(' operation
+expr_value *parse_expr_value_parentheses(char **c, expr_value *input){
+	expr_value *output;
+	expr_value *arg;
+	sentence_type compare_type;
+	sentence *input_sentence;
+	sentence *next_input_sentence;
+	sentence *arg_sentence;
+	variable *var;
+	char var_name[256];
+	unsigned char is_child0;
+	unsigned char verified;
+
+	if(input->type != SENTENCE){
+		error(ERROR_OPERAND_TYPE);
+	}
+	input_sentence = input->sentence_data;
+	if(input_sentence->num_bound_vars){
+		error(ERROR_OPERAND_BOUND_VARIABLES);
+	}
+	if(input_sentence->num_bound_props){
+		error(ERROR_OPERAND_BOUND_PROPOSITIONS);
+	}
+
+	compare_type = input_sentence->type;
+	skip_whitespace(c);
+	if(**c == ')'){
+		error(ERROR_EXPRESSION_OR_VARIABLE);
+	}
+	if(compare_type == IMPLIES || compare_type == BICOND || compare_type == NOT){
+		arg = parse_and_or(c, 1);
+		arg_sentence = arg->sentence_data;
+		skip_whitespace(c);
+		if(compare_type == BICOND){
+			is_child0 = sentence_equivalent(arg_sentence, input_sentence->child0);
+			if(!is_child0 && !sentence_equivalent(arg_sentence, input_sentence->child1)){
+				error(ERROR_MISMATCHED_ARGUMENT);
+			}
+		} else {
+			if(!sentence_equivalent(arg_sentence, input_sentence->child0)){
+				error(ERROR_MISMATCHED_ARGUMENT);
+			}
+		}
+		verified = input->verified && arg->verified;
+		free_expr_value(arg);
+		if(compare_type == IMPLIES || (compare_type == BICOND && is_child0)){
+			free_sentence(input_sentence->child0);
+			next_input_sentence = input_sentence->child1;
+			free(input_sentence);
+			input_sentence = next_input_sentence;
+			input_sentence->parent = NULL;
+		} else if(compare_type == BICOND && !is_child0){
+			free_sentence(input_sentence->child1);
+			next_input_sentence = input_sentence->child0;
+			free(input_sentence);
+			input_sentence = next_input_sentence;
+			input_sentence->parent = NULL;
+		} else if(compare_type == NOT){
+			free_sentence(input_sentence);
+			input_sentence = create_sentence(FALSE, 0, 0);
+		}
+	} else if(compare_type == FORALL){
+		verified = input->verified;
+		while(**c != ')'){
+			if(input_sentence->type != FORALL){
+				error(ERROR_TOO_MANY_UNPACK);
+			}
+			if(get_identifier(c, var_name, 256)){
+				error(ERROR_IDENTIFIER_LENGTH);
+			}
+			if(var_name[0] == '\0'){
+				error(ERROR_IDENTIFIER_EXPECTED);
+			}
+			skip_whitespace(c);
+			var = get_variable(var_name, global_context);
+			if(!var){
+				error(ERROR_VARIABLE_NOT_FOUND);
+			}
+			if(var->type != OBJECT_VAR){
+				error(ERROR_ARGUMENT_TYPE);
+			}
+			next_input_sentence = input_sentence->child0;
+			free(input_sentence);
+			input_sentence = next_input_sentence;
+			input_sentence->parent = NULL;
+			substitute_variable(input_sentence, var);
+			if(**c != ')' && **c != ','){
+				error(ERROR_PARENTHESES_OR_COMMA);
+			}
+			if(**c == ','){
+				++*c;
+				skip_whitespace(c);
+				if(**c == ')'){
+					error(ERROR_EXPRESSION);
+				}
+			}
+		}
+		++*c;
+		skip_whitespace(c);
+	} else {
+		error(ERROR_OPERAND_TYPE);
+	}
+
+	free(input);
+	output = create_expr_value(SENTENCE);
+	output->verified = verified;
+	output->sentence_data = input_sentence;
+
+	return output;
 }
 
 expr_value *parse_expr_value(char **c){

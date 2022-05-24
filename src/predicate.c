@@ -50,14 +50,23 @@ static char *error_messages[] = {
 	"Expected ','",
 	"Expected ')'",
 	"Mismatched implications",
-	"Expected verified value",
+	"Expected verified argument",
 	"Too many arguments to unpack",
 	"Expected '{'",
 	"Expected return statement",
 	"Expected '}'",
 	"Expected 'or'",
 	"Mismatched returned sentences",
-	"Expected '('"
+	"Expected '('",
+	"Invalid operand type",
+	"Operand has bound variables",
+	"Operand has bound propositions",
+	"Expected '|'",
+	"Expected '|' or ','",
+	"Expected verified operand",
+	"Expected expression or variable",
+	"Mismatched argument",
+	"Expected expression"
 };
 
 //Allocate a sentence structure
