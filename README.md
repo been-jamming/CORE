@@ -1,5 +1,5 @@
 # CORE
-A first order proof assistant for propositional set theory with axiom and proof schema.
+A constructive proof assistant for first order logic.
 
 ## Introduction
 
