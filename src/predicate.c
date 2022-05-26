@@ -66,7 +66,12 @@ static char *error_messages[] = {
 	"Expected verified operand",
 	"Expected expression or variable",
 	"Mismatched argument",
-	"Expected expression"
+	"Expected expression",
+	"Operand must have more bound propositions",
+	"Expected ']' or ','",
+	"Expected ':' or ','",
+	"Expected '>'",
+	"Unrecognized operation"
 };
 
 //Allocate a sentence structure
@@ -1135,7 +1140,7 @@ int count_or(sentence *s){
 	return count_or(s->child0) + count_or(s->child1);
 }
 
-int main(int argc, char **argv){
+int main2(int argc, char **argv){
 	definition *A;
 	definition *B;
 	definition *C;

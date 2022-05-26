@@ -41,6 +41,11 @@
 #define ERROR_EXPRESSION_OR_VARIABLE 39
 #define ERROR_MISMATCHED_ARGUMENT 40
 #define ERROR_EXPRESSION 41
+#define ERROR_MORE_BOUND_PROPOSITIONS 42
+#define ERROR_BRACKET_OR_COMMA 43
+#define ERROR_COLON_OR_COMMA 44
+#define ERROR_GREATER_THAN 45
+#define ERROR_OPERATION 46
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;
@@ -204,7 +209,6 @@ sentence *parse_exists(char **c, int num_bound_vars, int num_bound_props);
 sentence *parse_parentheses(char **c, int num_bound_vars, int num_bound_props);
 sentence *parse_sentence_value(char **c, int num_bound_vars, int num_bound_props);
 int get_operation(char **c);
-static sentence *parse_sentence_recursive(int priority, sentence *s0, char **c, int num_bound_vars, int num_bound_props);
 sentence *parse_sentence(char **c, int num_bound_vars, int num_bound_props);
 void free_sentence(sentence *s);
 void free_sentence_independent(sentence *s);

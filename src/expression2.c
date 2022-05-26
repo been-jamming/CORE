@@ -11,6 +11,11 @@
 
 //Parses and evaluates expressions in CORE
 
+//Clear the global bound variables
+void clear_bound_variables(void){
+	free_dictionary(&global_bound_variables, free);
+}
+
 //Allocate and initialize a context
 context *create_context(context *parent){
 	context *output;
@@ -344,8 +349,7 @@ expr_value *parse_expr_identifier(char **c){
 			error(ERROR_IDENTIFIER_LENGTH);
 		}
 		if(name_buffer[0] == '\0'){
-			*c = beginning;
-			return NULL;
+			error(ERROR_IDENTIFIER_EXPECTED);
 		}
 		skip_whitespace(c);
 
@@ -359,8 +363,7 @@ expr_value *parse_expr_identifier(char **c){
 		}
 
 		if(!var){
-			*c = beginning;
-			return NULL;
+			error(ERROR_VARIABLE_NOT_FOUND);
 		}
 
 		while(var->type == CONTEXT_VAR){
@@ -856,6 +859,8 @@ expr_value *parse_and_or(char **c, unsigned char is_and){
 		error(ERROR_PARENTHESES_OR_COMMA);
 	}
 
+	free(val);
+
 	while(**c != ')'){
 		++*c;
 		skip_whitespace(c);
@@ -1217,7 +1222,7 @@ expr_value *parse_expr_value_builtin(char **c){
 			error(ERROR_BEGIN_PARENTHESES);
 		}
 		++*c;
-		parse_and_or(c, is_and);
+		return parse_and_or(c, is_and);
 	} else if(!strncmp(*c, "expand", 6) && !is_alphanumeric((*c)[6])){
 		*c += 6;
 		skip_whitespace(c);
@@ -1269,7 +1274,7 @@ expr_value *parse_expr_value_pipe(char **c, expr_value *input){
 		error(ERROR_OPERAND_VERIFY);
 	}
 	skip_whitespace(c);
-	if(**c != '|'){
+	if(**c == '|'){
 		error(ERROR_IDENTIFIER_EXPECTED);
 	}
 	while(**c != '|'){
@@ -1320,7 +1325,6 @@ expr_value *parse_expr_value_parentheses(char **c, expr_value *input){
 	sentence *next_input_sentence;
 	sentence *arg_sentence;
 	variable *var;
-	char var_name[256];
 	unsigned char is_child0;
 	unsigned char verified;
 
@@ -1345,12 +1349,12 @@ expr_value *parse_expr_value_parentheses(char **c, expr_value *input){
 		arg_sentence = arg->sentence_data;
 		skip_whitespace(c);
 		if(compare_type == BICOND){
-			is_child0 = sentence_equivalent(arg_sentence, input_sentence->child0);
-			if(!is_child0 && !sentence_equivalent(arg_sentence, input_sentence->child1)){
+			is_child0 = sentence_stronger(arg_sentence, input_sentence->child0);
+			if(!is_child0 && !sentence_stronger(arg_sentence, input_sentence->child1)){
 				error(ERROR_MISMATCHED_ARGUMENT);
 			}
 		} else {
-			if(!sentence_equivalent(arg_sentence, input_sentence->child0)){
+			if(!sentence_stronger(arg_sentence, input_sentence->child0)){
 				error(ERROR_MISMATCHED_ARGUMENT);
 			}
 		}
@@ -1378,20 +1382,13 @@ expr_value *parse_expr_value_parentheses(char **c, expr_value *input){
 			if(input_sentence->type != FORALL){
 				error(ERROR_TOO_MANY_UNPACK);
 			}
-			if(get_identifier(c, var_name, 256)){
-				error(ERROR_IDENTIFIER_LENGTH);
-			}
-			if(var_name[0] == '\0'){
-				error(ERROR_IDENTIFIER_EXPECTED);
-			}
+			arg = parse_expr_value(c);
 			skip_whitespace(c);
-			var = get_variable(var_name, global_context);
-			if(!var){
-				error(ERROR_VARIABLE_NOT_FOUND);
-			}
-			if(var->type != OBJECT_VAR){
+			if(arg->type != OBJECT){
 				error(ERROR_ARGUMENT_TYPE);
 			}
+			var = arg->var;
+			free_expr_value(arg);
 			next_input_sentence = input_sentence->child0;
 			free(input_sentence);
 			input_sentence = next_input_sentence;
@@ -1422,10 +1419,238 @@ expr_value *parse_expr_value_parentheses(char **c, expr_value *input){
 	return output;
 }
 
+//Parse the '[' operation
+expr_value *parse_expr_value_brackets(char **c, expr_value *input){
+	expr_value *arg;
+	sentence *arg_sentence;
+	sentence *input_sentence;
+
+	if(input->type != SENTENCE){
+		error(ERROR_OPERAND_TYPE);
+	}
+	input_sentence = input->sentence_data;
+
+	do{
+		if(input_sentence->num_bound_props == 0){
+			error(ERROR_MORE_BOUND_PROPOSITIONS);
+		}
+		++*c;
+		skip_whitespace(c);
+
+		arg = parse_expr_value(c);
+		if(arg->type != SENTENCE){
+			error(ERROR_ARGUMENT_TYPE);
+		}
+		arg_sentence = arg->sentence_data;
+		if(arg_sentence->num_bound_props > 0){
+			error(ERROR_ARGUMENT_BOUND_PROPOSITIONS);
+		}
+
+		skip_whitespace(c);
+		if(**c != ']' && **c != ','){
+			error(ERROR_BRACKET_OR_COMMA);
+		}
+		substitute_proposition(input_sentence, arg_sentence);
+		free_expr_value(arg);
+	} while(**c != ']');
+
+	++*c;
+
+	return input;
+}
+
+//Parse anonymous definitions
+//They are of the form <A, B, C,... : P(A, B, C,...)>
+expr_value *parse_anonymous_definition(char **c){
+	expr_value *output;
+	sentence *output_sentence;
+	int *new_int;
+	int num_bound_vars = 0;
+	char name_buffer[256];
+
+	clear_bound_variables();
+	skip_whitespace(c);
+	while(**c != ':'){
+		if(get_identifier(c, name_buffer, 256)){
+			error(ERROR_IDENTIFIER_LENGTH);
+		}
+		if(name_buffer[0] == '\0'){
+			error(ERROR_IDENTIFIER_EXPECTED);
+		}
+		new_int = malloc(sizeof(int));
+		*new_int = num_bound_vars;
+		write_dictionary(&global_bound_variables, name_buffer, new_int, 0);
+		num_bound_vars++;
+		skip_whitespace(c);
+		if(**c == ','){
+			++*c;
+			skip_whitespace(c);
+			if(**c == ':'){
+				error(ERROR_IDENTIFIER_EXPECTED);
+			}
+		} else if(**c != ':'){
+			error(ERROR_COLON_OR_COMMA);
+		}
+	}
+	++*c;
+	skip_whitespace(c);
+	output_sentence = parse_sentence(c, num_bound_vars, 0);
+	if(**c != '>'){
+		error(ERROR_GREATER_THAN);
+	}
+	++*c;
+	clear_bound_variables();
+
+	output = create_expr_value(SENTENCE);
+	output->sentence_data = output_sentence;
+	output->verified = 0;
+
+	return output;
+}
+
 expr_value *parse_expr_value(char **c){
-	return NULL;
+	expr_value *output;
+
+	skip_whitespace(c);
+	if((output = parse_expr_value_builtin(c))){
+		//pass
+	} else if(**c == '('){
+		++*c;
+		output = parse_expr_value(c);
+		if(**c != ')'){
+			error(ERROR_END_PARENTHESES);
+		}
+		++*c;
+	} else if(**c == '<'){
+		++*c;
+		output = parse_anonymous_definition(c);
+	} else {
+		output = parse_expr_identifier(c);
+	}
+	skip_whitespace(c);
+	while(**c && **c != ';' && **c != ')' && **c != ',' && **c != ']' && **c != ':'){
+		if(**c == '['){
+			output = parse_expr_value_brackets(c, output);
+		} else if(**c == '('){
+			++*c;
+			output = parse_expr_value_parentheses(c, output);
+		} else if(**c == '|'){
+			++*c;
+			output = parse_expr_value_pipe(c, output);
+		} else {
+			error(ERROR_OPERATION);
+		}
+		skip_whitespace(c);
+	}
+
+	return output;
 }
 
 expr_value *parse_context(char **c){
 	return NULL;
+}
+
+void print_expr_value(expr_value *val){
+	if(val->type == SENTENCE){
+		if(val->verified){
+			printf("(verified)   ");
+		} else {
+			printf("(unverified) ");
+		}
+		print_sentence(val->sentence_data);
+	} else if(val->type == OBJECT){
+		printf("%s", val->var->name);
+	}
+}
+
+expr_value *get_expr_value(char *c){
+	global_program_start = c;
+	global_program_pointer = &c;
+	return parse_expr_value(&c);
+}
+
+int main(int argc, char **argv){
+	definition *A;
+	definition *B;
+	definition *C;
+	context *c;
+	expr_value *val;
+	expr_value *val2;
+	sentence *s;
+
+	custom_malloc_init();
+
+	A = malloc(sizeof(definition));
+	B = malloc(sizeof(definition));
+	C = malloc(sizeof(definition));
+	A->name = malloc(sizeof(char)*2);
+	strcpy(A->name, "A");
+	A->sentence_data = NULL;
+	A->num_references = 0;
+	A->num_args = 1;
+
+	B->name = malloc(sizeof(char)*2);
+	strcpy(B->name, "B");
+	B->sentence_data = NULL;
+	B->num_references = 0;
+	B->num_args = 2;
+
+	C->name = malloc(sizeof(char)*2);
+	strcpy(C->name, "C");
+	C->sentence_data = NULL;
+	C->num_references = 0;
+	C->num_args = 1;
+
+	c = malloc(sizeof(context));
+	c->variables = create_dictionary(NULL);
+	c->definitions = create_dictionary(NULL);
+	c->relations = create_dictionary(NULL);
+	c->parent = NULL;
+	global_context = c;
+	write_dictionary(&c->definitions, "A", A, 0);
+	write_dictionary(&c->definitions, "B", B, 0);
+	write_dictionary(&c->definitions, "C", C, 0);
+
+	val = get_expr_value("<X: *Y(B(X, Y))>");
+	A->sentence_data = malloc(sizeof(sentence));
+	copy_sentence(A->sentence_data, val->sentence_data);
+	free_expr_value(val);
+
+	create_object_variable("N", global_context);
+
+	val = get_expr_value("<: *X(A(X))>");
+	s = malloc(sizeof(sentence));
+	copy_sentence(s, val->sentence_data);
+	create_sentence_variable("test", s, 1, global_context);
+	free_expr_value(val);
+
+	val = get_expr_value("<: *X(A(X) | C(X) -> B(X, X))>");
+	s = malloc(sizeof(sentence));
+	copy_sentence(s, val->sentence_data);
+	create_sentence_variable("test2", s, 1, global_context);
+	free_expr_value(val);
+
+	val = get_expr_value("<: *X^Y(B(X, Y))>");
+	s = malloc(sizeof(sentence));
+	copy_sentence(s, val->sentence_data);
+	create_sentence_variable("test3", s, 1, global_context);
+	free_expr_value(val);
+
+	val = get_expr_value("test(N)");
+	print_expr_value(val);
+	printf("\n");
+	free_expr_value(val);
+
+	val = get_expr_value("test3(N)|M|)");
+	print_expr_value(val);
+	printf("\n");
+	free_expr_value(val);
+
+	val = get_expr_value("test2(N)(test(N))");
+	print_expr_value(val);
+	printf("\n");
+	free_expr_value(val);
+
+	free_context(global_context);
+	custom_malloc_deinit();
 }
