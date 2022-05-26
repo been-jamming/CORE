@@ -46,6 +46,8 @@
 #define ERROR_COLON_OR_COMMA 44
 #define ERROR_GREATER_THAN 45
 #define ERROR_OPERATION 46
+#define ERROR_PARENT_CONTEXT 47
+#define ERROR_SEMICOLON 48
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;
@@ -189,6 +191,7 @@ struct context{
 	dictionary definitions;
 	dictionary relations;
 	context *parent;
+	sentence *goal;
 };
 
 sentence *create_sentence(sentence_type type, int num_bound_vars, int num_bound_props);

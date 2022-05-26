@@ -71,7 +71,9 @@ static char *error_messages[] = {
 	"Expected ']' or ','",
 	"Expected ':' or ','",
 	"Expected '>'",
-	"Unrecognized operation"
+	"Unrecognized operation",
+	"No parent context",
+	"Expected ';'"
 };
 
 //Allocate a sentence structure

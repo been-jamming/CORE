@@ -2,6 +2,8 @@ extern sentence *goals[MAX_DEPTH];
 extern unsigned int goal_depth;
 
 void clear_bound_variables(void);
+void clear_bound_propositions(void);
+context *create_context(context *parent);
 expr_value *create_expr_value(expr_value_type type);
 void free_expr_value(expr_value *val);
 void free_definition_independent(definition *def);
@@ -50,4 +52,5 @@ expr_value *parse_expr_value_brackets(char **c, expr_value *input);
 expr_value *parse_anonymous_definition(char **c);
 
 expr_value *parse_expr_value(char **c);
+void print_expr_value(expr_value *val);
 expr_value *parse_context(char **c);

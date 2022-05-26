@@ -16,6 +16,10 @@ void clear_bound_variables(void){
 	free_dictionary(&global_bound_variables, free);
 }
 
+void clear_bound_propositions(void){
+	free_dictionary(&global_bound_propositions, free);
+}
+
 //Allocate and initialize a context
 context *create_context(context *parent){
 	context *output;
@@ -25,6 +29,7 @@ context *create_context(context *parent){
 	output->definitions = create_dictionary(NULL);
 	output->relations = create_dictionary(NULL);
 	output->parent = parent;
+	output->goal = NULL;
 
 	return output;
 }
@@ -177,6 +182,9 @@ void free_context_independent(context *c){
 	free_dictionary(&(c->variables), free_variable_void);
 	free_dictionary(&(c->definitions), free_definition_void);
 	free_dictionary(&(c->relations), free_relation_void);
+	if(c->goal){
+		free_sentence_independent(c->goal);
+	}
 	free(c);
 }
 
@@ -185,6 +193,9 @@ void decrement_context(context *c){
 	iterate_dictionary(c->variables, decrement_variable_void);
 	iterate_dictionary(c->definitions, decrement_definition_void);
 	iterate_dictionary(c->relations, decrement_relation_void);
+	if(c->goal){
+		decrement_references_sentence(c->goal);
+	}
 }
 
 //Free a context
@@ -194,9 +205,15 @@ void free_context(context *c){
 	iterate_dictionary(c->variables, decrement_variable_void);
 	iterate_dictionary(c->definitions, decrement_definition_void);
 	iterate_dictionary(c->relations, decrement_relation_void);
+	if(c->goal){
+		decrement_references_sentence(c->goal);
+	}
 	free_dictionary(&(c->variables), free_variable_void);
 	free_dictionary(&(c->definitions), free_definition_void);
 	free_dictionary(&(c->relations), free_relation_void);
+	if(c->goal){
+		free_sentence_independent(c->goal);
+	}
 	free(c);
 }
 
