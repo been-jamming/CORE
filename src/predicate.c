@@ -73,7 +73,11 @@ static char *error_messages[] = {
 	"Expected '>'",
 	"Unrecognized operation",
 	"No parent context",
-	"Expected ';'"
+	"Expected ';'",
+	"Duplicate identifier",
+	"Expected ':' or ';'",
+	"Expected number of arguments",
+	"Expected ':'"
 };
 
 //Allocate a sentence structure

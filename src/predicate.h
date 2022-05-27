@@ -48,6 +48,10 @@
 #define ERROR_OPERATION 46
 #define ERROR_PARENT_CONTEXT 47
 #define ERROR_SEMICOLON 48
+#define ERROR_DUPLICATE_IDENTIFIER 49
+#define ERROR_COLON_OR_SEMICOLON 50
+#define ERROR_NUM_ARGS 51
+#define ERROR_COLON 52
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;

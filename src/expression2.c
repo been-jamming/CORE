@@ -1494,6 +1494,9 @@ expr_value *parse_anonymous_definition(char **c){
 		if(name_buffer[0] == '\0'){
 			error(ERROR_IDENTIFIER_EXPECTED);
 		}
+		if(read_dictionary(global_bound_variables, name_buffer, 0)){
+			error(ERROR_DUPLICATE_IDENTIFIER);
+		}
 		new_int = malloc(sizeof(int));
 		*new_int = num_bound_vars;
 		write_dictionary(&global_bound_variables, name_buffer, new_int, 0);
