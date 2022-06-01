@@ -299,6 +299,7 @@ expr_value *relation_to_value(char *name){
 	sentence_data = create_sentence(BICOND, rel->sentence_data->num_bound_vars, 0);
 	sentence_data->child1 = create_sentence(RELATION, rel->sentence_data->num_bound_vars, 0);
 	sentence_data->child1->relation_data = rel;
+	rel->num_references++;
 	sentence_data->child1->is_bound0 = 1;
 	sentence_data->child1->var0_id = 0;
 	sentence_data->child1->is_bound1 = 1;
@@ -1566,10 +1567,6 @@ expr_value *parse_expr_value(char **c){
 	return output;
 }
 
-expr_value *parse_context(char **c){
-	return NULL;
-}
-
 void print_expr_value(expr_value *val){
 	if(val->type == SENTENCE){
 		if(val->verified){
@@ -1589,7 +1586,7 @@ expr_value *get_expr_value(char *c){
 	return parse_expr_value(&c);
 }
 
-int main(int argc, char **argv){
+int main3(int argc, char **argv){
 	definition *A;
 	definition *B;
 	definition *C;

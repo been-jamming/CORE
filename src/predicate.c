@@ -77,7 +77,14 @@ static char *error_messages[] = {
 	"Duplicate identifier",
 	"Expected ':' or ';'",
 	"Expected number of arguments",
-	"Expected ':'"
+	"Expected ':'",
+	"Expected relation identifier",
+	"Duplicate relation",
+	"Empty relation in non-global scope",
+	"Duplicate definition",
+	"Expected ';' or ','",
+	"Expected '}' or EOF",
+	"Expected EOF"
 };
 
 //Allocate a sentence structure
@@ -330,6 +337,7 @@ sentence *parse_relation(char **c, int num_bound_vars, int num_bound_props){
 
 	if((var0_id || var0) && (var1_id || var1) && relation_data){
 		output = create_sentence(RELATION, num_bound_vars, num_bound_props);
+		relation_data->num_references++;
 		output->relation_data = relation_data;
 		if(is_bound0){
 			output->var0_id = *var0_id;
@@ -748,6 +756,7 @@ void free_sentence(sentence *s){
 			if(!s->is_bound1){
 				s->var1->num_references--;
 			}
+			s->relation_data->num_references--;
 			free(s);
 			break;
 		default:
@@ -764,8 +773,8 @@ void free_sentence_independent(sentence *s){
 		case OR:
 		case IMPLIES:
 		case BICOND:
-			free_sentence(s->child0);
-			free_sentence(s->child1);
+			free_sentence_independent(s->child0);
+			free_sentence_independent(s->child1);
 			free(s);
 			break;
 		case PROPOSITION:
@@ -775,7 +784,7 @@ void free_sentence_independent(sentence *s){
 		case FORALL:
 		case EXISTS:
 		case NOT:
-			free_sentence(s->child0);
+			free_sentence_independent(s->child0);
 			free(s);
 			break;
 		default:
@@ -818,6 +827,7 @@ void decrement_references_sentence(sentence *s){
 			if(!s->is_bound1){
 				s->var1->num_references--;
 			}
+			s->relation_data->num_references--;
 			break;
 		case TRUE:
 		case FALSE:
@@ -1071,6 +1081,7 @@ void copy_sentence(sentence *dest, sentence *s){
 			break;
 		case RELATION:
 			dest->relation_data = s->relation_data;
+			dest->relation_data->num_references++;
 			if(s->is_bound0){
 				dest->is_bound0 = 1;
 				dest->var0_id = s->var0_id;
@@ -1116,7 +1127,7 @@ void copy_sentence(sentence *dest, sentence *s){
 //Peel the left-most part of an "|" off of a sentence and return it
 sentence *peel_or_left(sentence **s){
 	sentence *output = NULL;
-	sentence *child;
+	sentence *child = NULL;
 
 	if((*s)->type != OR){
 		output = *s;
@@ -1125,6 +1136,29 @@ sentence *peel_or_left(sentence **s){
 	}
 
 	while((*s)->child0->type == OR){
+		s = &((*s)->child0);
+	}
+
+	output = (*s)->child0;
+	child = (*s)->child1;
+	free(*s);
+	*s = child;
+
+	return output;
+}
+
+//Peel the left-most part of an "&" off of a sentence and return it
+sentence *peel_and_left(sentence **s){
+	sentence *output = NULL;
+	sentence *child = NULL;
+
+	if((*s)->type != AND){
+		output = *s;
+		*s = NULL;
+		return output;
+	}
+
+	while((*s)->child0->type == AND){
 		s = &((*s)->child0);
 	}
 

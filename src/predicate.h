@@ -52,6 +52,13 @@
 #define ERROR_COLON_OR_SEMICOLON 50
 #define ERROR_NUM_ARGS 51
 #define ERROR_COLON 52
+#define ERROR_RELATION_IDENTIFIER 53
+#define ERROR_DUPLICATE_RELATION 54
+#define ERROR_RELATION_CONTEXT 55
+#define ERROR_DUPLICATE_DEFINITION 56
+#define ERROR_SEMICOLON_OR_COMMA 57
+#define ERROR_BRACE_OR_EOF 58
+#define ERROR_EOF 59
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;
@@ -144,9 +151,9 @@ struct proposition_arg{
 };
 
 struct relation{
-	int relation_id;
 	char *name;
 	sentence *sentence_data;
+	unsigned int num_references;
 };
 
 struct sentence{
@@ -225,5 +232,7 @@ int sentence_stronger(sentence *s0, sentence *s1);
 int sentence_equivalent(sentence *s0, sentence *s1);
 void copy_sentence(sentence *dest, sentence *s);
 sentence *peel_or_left(sentence **s);
+sentence *peel_and_left(sentence **s);
 int count_or(sentence *s);
 
+expr_value *parse_context(char **c);

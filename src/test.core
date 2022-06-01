@@ -1,0 +1,4 @@
+relation in;
+object S;
+axiom all_member: *X(X in S);
+print all_member(S);
