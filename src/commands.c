@@ -792,7 +792,7 @@ variable *prove_command(char **c){
 			}
 			if(num_bound_props >= prop_list_size){
 				prop_list_size += 8;
-				prop_list = realloc(prop_list, sizeof(proposition)*prop_list_size);
+				prop_list = realloc(prop_list, sizeof(proposition *)*prop_list_size);
 				if(!prop_list){
 					free(proof_name);
 					set_error("could not expand proposition list");

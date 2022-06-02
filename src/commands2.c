@@ -263,6 +263,9 @@ variable *axiom_command(char **c){
 	*c += 5;
 	skip_whitespace(c);
 
+	if(global_context->parent){
+		error(ERROR_GLOBAL_SCOPE);
+	}
 	clear_bound_propositions();
 	if(get_identifier(c, axiom_name, 256)){
 		error(ERROR_IDENTIFIER_LENGTH);
@@ -622,9 +625,206 @@ void evaluate_command(char **c){
 	++*c;
 }
 
+int debug_command(char **c){
+	expr_value *val;
+
+	skip_whitespace(c);
+	if(strncmp(*c, "debug", 5) || is_alphanumeric((*c)[5])){
+		return 0;
+	}
+	*c += 5;
+	skip_whitespace(c);
+	val = parse_expr_value(c);
+	printf("DEBUG: ");
+	print_expr_value(val);
+	printf("\n");
+	free_expr_value(val);
+	skip_whitespace(c);
+	if(**c != ';'){
+		error(ERROR_SEMICOLON);
+	}
+	++*c;
+	return 1;
+}
+
+variable *prove_command(char **c){
+	int num_bound_props = 0;
+	int num_args;
+	int i, j;
+	bound_proposition *new_bound_prop;
+	definition **definitions = NULL;
+	unsigned int definitions_size;
+	char name_buffer[256];
+	char proof_name[256];
+	char *int_end;
+	variable *output;
+	expr_value *returned;
+	sentence *result;
+	sentence *goal;
+	sentence prop_sentence;
+
+	skip_whitespace(c);
+	if(strncmp(*c, "prove", 5) || is_alphanumeric((*c)[5])){
+		return NULL;
+	}
+	*c += 5;
+	skip_whitespace(c);
+
+	clear_bound_propositions();
+	if(get_identifier(c, proof_name, 256)){
+		error(ERROR_IDENTIFIER_LENGTH);
+	}
+	if(proof_name[0] == '\0'){
+		error(ERROR_IDENTIFIER_EXPECTED);
+	}
+
+	new_scope();
+
+	skip_whitespace(c);
+
+	if(**c == '['){
+		++*c;
+		skip_whitespace(c);
+		definitions = malloc(sizeof(definition *)*8);
+		definitions_size = 8;
+		while(**c != ']'){
+			if(get_identifier(c, name_buffer, 256)){
+				error(ERROR_IDENTIFIER_LENGTH);
+			}
+			if(name_buffer[0] == '\0'){
+				error(ERROR_IDENTIFIER_EXPECTED);
+			}
+			if(read_dictionary(global_bound_propositions, name_buffer, 0)){
+				error(ERROR_DUPLICATE_IDENTIFIER);
+			}
+			if(num_bound_props >= definitions_size){
+				definitions_size += 8;
+				definitions = realloc(definitions, sizeof(definition *)*definitions_size);
+			}
+			definitions[num_bound_props] = malloc(sizeof(definition));
+			new_bound_prop = malloc(sizeof(bound_proposition));
+			skip_whitespace(c);
+			if(**c == '('){
+				++*c;
+				skip_whitespace(c);
+				if(**c != ')' && !is_digit(**c)){
+					error(ERROR_NUM_ARGS);
+				} else if(is_digit(**c)){
+					num_args = strtol(*c, &int_end, 10);
+					*c = int_end;
+					if(num_args < 0){
+						error(ERROR_NUM_ARGS);
+					}
+					skip_whitespace(c);
+					if(**c != ')'){
+						error(ERROR_END_PARENTHESES);
+					}
+					++*c;
+				} else {
+					++*c;
+					num_args = 0;
+				}
+			} else {
+				num_args = 0;
+			}
+			definitions[num_bound_props]->name = malloc(sizeof(char)*(strlen(name_buffer) + 1));
+			strcpy(definitions[num_bound_props]->name, name_buffer);
+			definitions[num_bound_props]->sentence_data = NULL;
+			definitions[num_bound_props]->num_references = 1;
+			definitions[num_bound_props]->num_args = num_args;
+
+			new_bound_prop->prop_id = num_bound_props;
+			new_bound_prop->num_args = num_args;
+			write_dictionary(&global_bound_propositions, name_buffer, new_bound_prop, 0);
+
+			num_bound_props++;
+			skip_whitespace(c);
+			if(**c == ','){
+				++*c;
+				skip_whitespace(c);
+				if(**c == ']'){
+					error(ERROR_IDENTIFIER_EXPECTED);
+				}
+			} else if(**c != ']'){
+				error(ERROR_BRACKET_OR_COMMA);
+			}
+		}
+		++*c;
+	} else {
+		definitions_size = 0;
+	}
+
+	for(i = 0; i < num_bound_props; i++){
+		write_dictionary(&(global_context->definitions), definitions[i]->name, definitions[i], 0);
+	}
+	skip_whitespace(c);
+	if(**c != ':'){
+		error(ERROR_COLON);
+	}
+	++*c;
+	skip_whitespace(c);
+	result = parse_sentence(c, 0, num_bound_props);
+	skip_whitespace(c);
+	if(**c != '{'){
+		error(ERROR_BEGIN_BRACE);
+	}
+	++*c;
+	skip_whitespace(c);
+
+	goal = malloc(sizeof(sentence));
+	copy_sentence(goal, result);
+	for(i = 0; i < num_bound_props; i++){
+		prop_sentence.type = PROPOSITION;
+		prop_sentence.num_bound_vars = definitions[i]->num_args;
+		prop_sentence.num_bound_props = 0;
+		prop_sentence.parent = NULL;
+		prop_sentence.is_bound = 0;
+		prop_sentence.definition_data = definitions[i];
+		prop_sentence.num_args = definitions[i]->num_args;
+		prop_sentence.proposition_args = malloc(sizeof(proposition_arg)*(definitions[i]->num_args));
+		for(j = 0; j < definitions[i]->num_args; j++){
+			prop_sentence.proposition_args[j].is_bound = 1;
+			prop_sentence.proposition_args[j].var_id = j;
+		}
+		substitute_proposition(goal, &prop_sentence);
+		free(prop_sentence.proposition_args);
+	}
+
+	clear_bound_propositions();
+	create_sentence_variable("goal", goal, 0, global_context);
+	global_context->goal = goal;
+	returned = parse_context(c);
+	global_context->goal = NULL;
+
+	if(**c != '}'){
+		error(ERROR_END_BRACE);
+	}
+	++*c;
+
+	if(!returned){
+		error(ERROR_RETURN_EXPECTED);
+	}
+	if(returned->type != SENTENCE){
+		error(ERROR_RETURN_TYPE);
+	}
+	if(!returned->verified){
+		error(ERROR_RETURN_VERIFIED);
+	}
+	if(!sentence_stronger(returned->sentence_data, goal)){
+		error(ERROR_MISMATCHED_RETURN);
+	}
+	free_expr_value(returned);
+	drop_scope();
+	free(definitions);
+
+	output = create_sentence_variable(proof_name, result, 1, global_context);
+	return output;
+}
+
 expr_value *parse_command(char **c){
 	definition *def;
 	variable *axiom;
+	variable *var;
 	expr_value *val;
 	expr_value *return_value;
 
@@ -639,6 +839,10 @@ expr_value *parse_command(char **c){
 	} else if(object_command(c)){
 		//pass
 	} else if(relation_command(c)){
+		//pass
+	} else if(debug_command(c)){
+		//pass
+	} else if((var = prove_command(c))){
 		//pass
 	} else if(assign_command(c)){
 		//pass

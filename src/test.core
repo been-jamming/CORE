@@ -1,4 +1,7 @@
 relation in;
 object S;
 axiom all_member: *X(X in S);
-print all_member(S);
+prove all_member2: *X(X in S) | false{
+	return all_member;
+}
+return all_member2;

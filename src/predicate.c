@@ -84,7 +84,10 @@ static char *error_messages[] = {
 	"Duplicate definition",
 	"Expected ';' or ','",
 	"Expected '}' or EOF",
-	"Expected EOF"
+	"Expected EOF",
+	"Invalid return type",
+	"Return value unverified",
+	"Scope is not global"
 };
 
 //Allocate a sentence structure

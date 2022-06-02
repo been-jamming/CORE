@@ -59,6 +59,9 @@
 #define ERROR_SEMICOLON_OR_COMMA 57
 #define ERROR_BRACE_OR_EOF 58
 #define ERROR_EOF 59
+#define ERROR_RETURN_TYPE 60
+#define ERROR_RETURN_VERIFIED 61
+#define ERROR_GLOBAL_SCOPE 62
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;
