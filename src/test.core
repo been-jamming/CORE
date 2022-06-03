@@ -1,7 +1,12 @@
-relation in;
-object S;
-axiom all_member: *X(X in S);
-prove all_member2: *X(X in S) | false{
-	return all_member;
+prove not_exists[P(1)]: ~^X(P(X)) -> *X(~P(X)){
+	implies premise;
+	given |X|;
+	not P_X;
+	prove exists: ^X(P(X)){
+		choose X;
+		return P_X;
+	}
+	return premise(exists);
 }
-return all_member2;
+
+print not_exists;

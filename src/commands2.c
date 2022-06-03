@@ -40,7 +40,7 @@ definition *create_definition(char *name, sentence *sentence_data, int num_args,
 			error(ERROR_DUPLICATE_DEFINITION);
 		}
 	}
-	def = malloc(sizeof(def));
+	def = malloc(sizeof(definition));
 	if(sentence_data){
 		def->sentence_data = malloc(sizeof(sentence));
 		copy_sentence(def->sentence_data, sentence_data);
@@ -138,6 +138,10 @@ int object_command(char **c){
 	}
 	*c += 6;
 	skip_whitespace(c);
+
+	if(global_context->parent){
+		error(ERROR_GLOBAL_SCOPE);
+	}
 
 	if(get_identifier(c, var_name, 256)){
 		error(ERROR_IDENTIFIER_LENGTH);
@@ -278,7 +282,7 @@ variable *axiom_command(char **c){
 	if(**c == '['){
 		++*c;
 		skip_whitespace(c);
-		while(**c == ']'){
+		while(**c != ']'){
 			if(get_identifier(c, name_buffer, 256)){
 				error(ERROR_IDENTIFIER_LENGTH);
 			}
@@ -773,6 +777,7 @@ variable *prove_command(char **c){
 
 	goal = malloc(sizeof(sentence));
 	copy_sentence(goal, result);
+	goal->parent = NULL;
 	for(i = 0; i < num_bound_props; i++){
 		prop_sentence.type = PROPOSITION;
 		prop_sentence.num_bound_vars = definitions[i]->num_args;
@@ -792,9 +797,10 @@ variable *prove_command(char **c){
 
 	clear_bound_propositions();
 	create_sentence_variable("goal", goal, 0, global_context);
-	global_context->goal = goal;
+	global_context->goal = malloc(sizeof(sentence));
+	copy_sentence(global_context->goal, goal);
+	global_context->goal->parent = NULL;
 	returned = parse_context(c);
-	global_context->goal = NULL;
 
 	if(**c != '}'){
 		error(ERROR_END_BRACE);
@@ -821,6 +827,393 @@ variable *prove_command(char **c){
 	return output;
 }
 
+expr_value *given_command(char **c){
+	unsigned char explicit_scope;
+	char name_buffer[256];
+	sentence *next_goal = NULL;
+	sentence *temp_goal;
+	variable *new_var;
+	expr_value *return_value;
+	expr_value *output_value;
+
+	skip_whitespace(c);
+	if(strncmp(*c, "given", 5) || is_alphanumeric((*c)[5])){
+		return NULL;
+	}
+	*c += 5;
+	skip_whitespace(c);
+
+	if(!global_context->goal){
+		error(ERROR_GOAL);
+	}
+
+	if(**c != '|'){
+		error(ERROR_PIPE);
+	}
+	++*c;
+	skip_whitespace(c);
+
+	if(!is_alpha(**c)){
+		error(ERROR_IDENTIFIER_EXPECTED);
+	}
+
+	new_scope();
+	do{
+		if(**c == ','){
+			++*c;
+			skip_whitespace(c);
+		}
+		if((next_goal && next_goal->type != FORALL) || global_context->parent->goal->type != FORALL){
+			error(ERROR_GOAL_TYPE);
+		}
+		if(get_identifier(c, name_buffer, 256)){
+			error(ERROR_IDENTIFIER_LENGTH);
+		}
+		if(name_buffer[0] == '\0'){
+			error(ERROR_IDENTIFIER_EXPECTED);
+		}
+
+		skip_whitespace(c);
+		if(**c != '|' && **c != ','){
+			error(ERROR_PIPE_OR_COMMA);
+		}
+		if(next_goal){
+			temp_goal = next_goal->child0;
+			free(next_goal);
+			next_goal = temp_goal;
+			next_goal->parent = NULL;
+		} else {
+			next_goal = malloc(sizeof(sentence));
+			copy_sentence(next_goal, global_context->parent->goal->child0);
+			next_goal->parent = NULL;
+		}
+		new_var = create_object_variable(name_buffer, global_context);
+		substitute_variable(next_goal, new_var);
+	} while(**c == ',');
+
+	++*c;
+	skip_whitespace(c);
+	if(**c != '{' && **c != ';'){
+		error(ERROR_BRACE_OR_SEMICOLON);
+	}
+
+	explicit_scope = (**c == '{');
+	++*c;
+	skip_whitespace(c);
+
+	create_sentence_variable("goal", next_goal, 0, global_context);
+	global_context->goal = malloc(sizeof(sentence));
+	copy_sentence(global_context->goal, next_goal);
+	global_context->goal->parent = NULL;
+
+	return_value = parse_context(c);
+	if(explicit_scope){
+		if(**c != '}'){
+			error(ERROR_END_BRACE);
+		}
+		++*c;
+	}
+	if(!return_value){
+		error(ERROR_RETURN_EXPECTED);
+	}
+	if(return_value->type != SENTENCE){
+		error(ERROR_RETURN_TYPE);
+	}
+	if(!return_value->verified){
+		error(ERROR_RETURN_VERIFIED);
+	}
+	if(!sentence_stronger(return_value->sentence_data, global_context->goal)){
+		error(ERROR_MISMATCHED_RETURN);
+	}
+	free_expr_value(return_value);
+	drop_scope();
+
+	output_value = create_expr_value(SENTENCE);
+	output_value->sentence_data = malloc(sizeof(sentence));
+	copy_sentence(output_value->sentence_data, global_context->goal);
+	output_value->sentence_data->parent = NULL;
+	output_value->verified = 1;
+
+	return output_value;
+}
+
+expr_value *choose_command(char **c){
+	unsigned char explicit_scope;
+	char name_buffer[256];
+	sentence *next_goal = NULL;
+	sentence *temp_goal;
+	variable *var;
+	expr_value *arg_value;
+	expr_value *return_value;
+	expr_value *output_value;
+
+	skip_whitespace(c);
+	if(strncmp(*c, "choose", 6) || is_alphanumeric((*c)[6])){
+		return NULL;
+	}
+
+	*c += 6;
+	skip_whitespace(c);
+
+	if(!global_context->goal){
+		error(ERROR_GOAL);
+	}
+
+	if(!is_alpha(**c)){
+		error(ERROR_IDENTIFIER_EXPECTED);
+	}
+
+	new_scope();
+	do{
+		if(**c == ','){
+			++*c;
+			skip_whitespace(c);
+		}
+		if((next_goal && next_goal->type != EXISTS) || global_context->parent->goal->type != EXISTS){
+			error(ERROR_GOAL_TYPE);
+		}
+
+		arg_value = parse_expr_value(c);
+		if(arg_value->type != OBJECT){
+			error(ERROR_ARGUMENT_TYPE);
+		}
+		var = arg_value->var;
+		free_expr_value(arg_value);
+
+		skip_whitespace(c);
+		if(**c != '{' &&  **c != ';' && **c != ','){
+			error(ERROR_BRACE_OR_SEMICOLON_OR_COMMA);
+		}
+		if(next_goal){
+			temp_goal = next_goal->child0;
+			free(next_goal);
+			next_goal = temp_goal;
+		} else {
+			next_goal = malloc(sizeof(sentence));
+			copy_sentence(next_goal, global_context->parent->goal->child0);
+			next_goal->parent = NULL;
+		}
+		substitute_variable(next_goal, var);
+	} while(**c == ',');
+
+	explicit_scope = (**c == '{');
+
+	++*c;
+	skip_whitespace(c);
+
+	create_sentence_variable("goal", next_goal, 0, global_context);
+	global_context->goal = malloc(sizeof(sentence));
+	copy_sentence(global_context->goal, next_goal);
+	global_context->goal->parent = NULL;
+
+	return_value = parse_context(c);
+	if(explicit_scope){
+		if(**c != '}'){
+			error(ERROR_END_BRACE);
+		}
+		++*c;
+	}
+	if(!return_value){
+		error(ERROR_RETURN_EXPECTED);
+	}
+	if(return_value->type != SENTENCE){
+		error(ERROR_RETURN_TYPE);
+	}
+	if(!return_value->verified){
+		error(ERROR_RETURN_VERIFIED);
+	}
+	if(!sentence_stronger(return_value->sentence_data, global_context->goal)){
+		error(ERROR_MISMATCHED_RETURN);
+	}
+	free_expr_value(return_value);
+	drop_scope();
+
+	output_value = create_expr_value(SENTENCE);
+	output_value->sentence_data = malloc(sizeof(sentence));
+	copy_sentence(output_value->sentence_data, global_context->goal);
+	output_value->sentence_data->parent = NULL;
+	output_value->verified = 1;
+
+	return output_value;
+}
+
+expr_value *implies_command(char **c){
+	unsigned char explicit_scope;
+	char name_buffer[256];
+	sentence *next_goal;
+	sentence *goal_child0_copy;
+	sentence *var_sentence;
+	expr_value *return_value;
+	expr_value *output_value;
+
+	skip_whitespace(c);
+	if(strncmp(*c, "implies", 7) || is_alphanumeric((*c)[7])){
+		return NULL;
+	}
+	*c += 7;
+	skip_whitespace(c);
+
+	if(!global_context->goal){
+		error(ERROR_GOAL);
+	}
+
+	if(!is_alpha(**c)){
+		error(ERROR_IDENTIFIER_EXPECTED);
+	}
+
+	if(global_context->goal->type != IMPLIES){
+		error(ERROR_GOAL_TYPE);
+	}
+
+	goal_child0_copy = malloc(sizeof(sentence));
+	copy_sentence(goal_child0_copy, global_context->goal->child0);
+	goal_child0_copy->parent = NULL;
+
+	new_scope();
+	do{
+		if(**c == ','){
+			++*c;
+			skip_whitespace(c);
+		}
+		if(get_identifier(c, name_buffer, 256)){
+			error(ERROR_IDENTIFIER_LENGTH);
+		}
+		if(name_buffer[0] == '\0'){
+			error(ERROR_IDENTIFIER_EXPECTED);
+		}
+
+		skip_whitespace(c);
+		if(**c != '{' && **c != ';' && **c != ','){
+			error(ERROR_BRACE_OR_SEMICOLON_OR_COMMA);
+		}
+		if(!goal_child0_copy){
+			error(ERROR_TOO_MANY_UNPACK);
+		}
+		if(**c == '{' || **c == ';'){
+			var_sentence = goal_child0_copy;
+		} else {
+			var_sentence = peel_and_left(&goal_child0_copy);
+		}
+		var_sentence->parent = NULL;
+		create_sentence_variable(name_buffer, var_sentence, 1, global_context);
+	} while(**c == ',');
+
+	explicit_scope = (**c == '{');
+	++*c;
+	skip_whitespace(c);
+
+	next_goal = malloc(sizeof(sentence));
+	copy_sentence(next_goal, global_context->parent->goal->child1);
+	next_goal->parent = NULL;
+	create_sentence_variable("goal", next_goal, 0, global_context);
+	global_context->goal = malloc(sizeof(sentence));
+	copy_sentence(global_context->goal, next_goal);
+	global_context->goal->parent = NULL;
+
+	return_value = parse_context(c);
+	if(!return_value){
+		error(ERROR_RETURN_EXPECTED);
+	}
+	if(return_value->type != SENTENCE){
+		error(ERROR_RETURN_TYPE);
+	}
+	if(!return_value->verified){
+		error(ERROR_RETURN_VERIFIED);
+	}
+	if(!sentence_stronger(return_value->sentence_data, global_context->goal)){
+		error(ERROR_MISMATCHED_RETURN);
+	}
+	free_expr_value(return_value);
+	drop_scope();
+
+	output_value = create_expr_value(SENTENCE);
+	output_value->sentence_data = malloc(sizeof(sentence));
+	copy_sentence(output_value->sentence_data, global_context->goal);
+	output_value->sentence_data->parent = NULL;
+	output_value->verified = 1;
+
+	return output_value;
+}
+
+expr_value *not_command(char **c){
+	unsigned char explicit_scope;
+	char name_buffer[256];
+	sentence *next_goal;
+	sentence *var_sentence;
+	expr_value *return_value;
+	expr_value *output_value;
+
+	skip_whitespace(c);
+	if(strncmp(*c, "not", 3) || is_alphanumeric((*c)[3])){
+		return NULL;
+	}
+	*c += 3;
+	skip_whitespace(c);
+
+	if(!global_context->goal){
+		error(ERROR_GOAL);
+	}
+
+	if(global_context->goal->type != NOT){
+		error(ERROR_GOAL_TYPE);
+	}
+
+	if(get_identifier(c, name_buffer, 256)){
+		error(ERROR_IDENTIFIER_LENGTH);
+	}
+	if(name_buffer[0] == '\0'){
+		error(ERROR_IDENTIFIER_EXPECTED);
+	}
+
+	skip_whitespace(c);
+	if(**c != '{' && **c != ';'){
+		error(ERROR_BRACE_OR_SEMICOLON);
+	}
+
+	explicit_scope = (**c == '{');
+	++*c;
+	skip_whitespace(c);
+
+	new_scope();
+	var_sentence = malloc(sizeof(sentence));
+	copy_sentence(var_sentence, global_context->parent->goal->child0);
+	var_sentence->parent = NULL;
+	create_sentence_variable(name_buffer, var_sentence, 1, global_context);
+	next_goal = create_sentence(FALSE, 0, 0);
+	create_sentence_variable("goal", next_goal, 0, global_context);
+	return_value = parse_context(c);
+
+	if(explicit_scope){
+		if(**c != '}'){
+			error(ERROR_END_BRACE);
+		}
+		++*c;
+	}
+
+	if(!return_value){
+		error(ERROR_RETURN_EXPECTED);
+	}
+	if(return_value->type != SENTENCE){
+		error(ERROR_RETURN_TYPE);
+	}
+	if(!return_value->verified){
+		error(ERROR_RETURN_VERIFIED);
+	}
+	if(!sentence_stronger(return_value->sentence_data, global_context->goal)){
+		error(ERROR_MISMATCHED_RETURN);
+	}
+	free_expr_value(return_value);
+	drop_scope();
+
+	output_value = create_expr_value(SENTENCE);
+	output_value->sentence_data = malloc(sizeof(sentence));
+	copy_sentence(output_value->sentence_data, global_context->goal);
+	output_value->sentence_data->parent = NULL;
+	output_value->verified = 1;
+
+	return output_value;
+}
+
 expr_value *parse_command(char **c){
 	definition *def;
 	variable *axiom;
@@ -844,6 +1237,14 @@ expr_value *parse_command(char **c){
 		//pass
 	} else if((var = prove_command(c))){
 		//pass
+	} else if((return_value = given_command(c))){
+		return return_value;
+	} else if((return_value = choose_command(c))){
+		return return_value;
+	} else if((return_value = implies_command(c))){
+		return return_value;
+	} else if((return_value = not_command(c))){
+		return return_value;
 	} else if(assign_command(c)){
 		//pass
 	} else {

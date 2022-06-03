@@ -87,7 +87,11 @@ static char *error_messages[] = {
 	"Expected EOF",
 	"Invalid return type",
 	"Return value unverified",
-	"Scope is not global"
+	"Scope is not global",
+	"Incorrect goal type",
+	"Expected '{' or ';'",
+	"Expected '{', ';', or ','",
+	"No goal"
 };
 
 //Allocate a sentence structure

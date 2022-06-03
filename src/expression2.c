@@ -623,6 +623,7 @@ void substitute_proposition(sentence *s, sentence *child){
 	int num_args;
 	proposition_arg *prop_args;
 
+	s->num_bound_props--;
 	switch(s->type){
 		case AND:
 		case OR:
@@ -1203,6 +1204,8 @@ expr_value *parse_branch(char **c){
 	}
 
 	free_context(first_context);
+	free(var_names);
+	free(or_arg);
 
 	return output;
 }

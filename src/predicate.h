@@ -62,6 +62,10 @@
 #define ERROR_RETURN_TYPE 60
 #define ERROR_RETURN_VERIFIED 61
 #define ERROR_GLOBAL_SCOPE 62
+#define ERROR_GOAL_TYPE 63
+#define ERROR_BRACE_OR_SEMICOLON 64
+#define ERROR_BRACE_OR_SEMICOLON_OR_COMMA 65
+#define ERROR_GOAL 66
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;
