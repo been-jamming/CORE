@@ -953,42 +953,8 @@ int sentence_stronger(sentence *s0, sentence *s1){
 		return sentence_stronger(s0->child0, s1->child0);
 	} else if(s0->type == EXISTS && s1->type == EXISTS){
 		return sentence_stronger(s0->child0, s1->child0);
-	} else if(s1->type == BICOND){
-		child0 = s1->child0;
-		child1 = s1->child1;
-		s1->type = IMPLIES;
-		if(sentence_stronger(s0, s1)){
-			s1->child0 = child1;
-			s1->child1 = child0;
-			if(sentence_stronger(s0, s1)){
-				s1->child0 = child0;
-				s1->child1 = child1;
-				s1->type = BICOND;
-				return 1;
-			}
-			s1->child0 = child0;
-			s1->child1 = child1;
-		}
-		s1->type = BICOND;
-	} else if(s0->type == BICOND){
-		child0 = s0->child0;
-		child1 = s0->child1;
-		s0->type = IMPLIES;
-		if(sentence_stronger(s0, s1)){
-			s0->type = BICOND;
-			return 1;
-		}
-		s0->child0 = child1;
-		s0->child1 = child0;
-		if(sentence_stronger(s0, s1)){
-			s0->child0 = child0;
-			s0->child1 = child1;
-			s0->type = BICOND;
-			return 1;
-		}
-		s0->child0 = child0;
-		s0->child1 = child1;
-		s0->type = BICOND;
+	} else if(s0->type == BICOND && s1->type == BICOND){
+		return (sentence_equivalent(s0->child0, s1->child0) && sentence_equivalent(s0->child1, s1->child1)) || (sentence_equivalent(s0->child0, s1->child1) && sentence_equivalent(s0->child1, s1->child0));
 	} else if(s0->type == RELATION && s1->type == RELATION){
 		if(s0->relation_data != s1->relation_data){
 			return 0;
@@ -1050,10 +1016,10 @@ int sentence_stronger(sentence *s0, sentence *s1){
 		}
 		return 1;
 	} else {
-		if(s1->type == OR && (sentence_stronger(s0, s1->child0) || sentence_stronger(s0, s1->child1))){
+		if(s0->type == AND && (sentence_stronger(s0->child0, s1) || sentence_stronger(s0->child1, s1))){
 			return 1;
 		}
-		if(s0->type == AND && (sentence_stronger(s0->child0, s1) || sentence_stronger(s0->child1, s1))){
+		if(s1->type == OR && (sentence_stronger(s0, s1->child0) || sentence_stronger(s0, s1->child1))){
 			return 1;
 		}
 
@@ -1201,8 +1167,8 @@ int mainn(int argc, char **argv){
 	sentence *s0;
 	sentence *s1;
 	context *c;
-	char *program0 = "(A | B) & C";
-	char *program1 = "(A & B) & C";
+	char *program0 = "A <-> B";
+	char *program1 = "B <-> A";
 	
 	custom_malloc_init();
 

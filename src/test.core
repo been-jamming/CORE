@@ -1,12 +1,2 @@
-prove not_exists[P(1)]: ~^X(P(X)) -> *X(~P(X)){
-	implies premise;
-	given |X|;
-	not P_X;
-	prove exists: ^X(P(X)){
-		choose X;
-		return P_X;
-	}
-	return premise(exists);
-}
-
-print not_exists;
+relation in;
+define all_member(X): *Y(X in Y);

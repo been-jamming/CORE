@@ -1596,7 +1596,7 @@ prove natural_less_than_weak_interpretation: *A*B(A in NATURALS & B in NATURALS 
 		prove ZERO_in_R: *B(B in NATURALS & natural_less_than_weak(ZERO, B) -> natural_less_than(ZERO, B) | equal_sets(ZERO, B)){
 			given |B|;
 			implies B_in_NATURALS, ZERO_less_than_weak_B;
-			return swap(natural_zero_minimal(B)(B_in_NATURALS));
+			return natural_zero_minimal(B)(B_in_NATURALS);
 		}
 		ZERO_in_R = R_def(ZERO)(zero_is_natural, ZERO_in_R);
 

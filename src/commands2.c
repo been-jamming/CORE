@@ -41,12 +41,7 @@ definition *create_definition(char *name, sentence *sentence_data, int num_args,
 		}
 	}
 	def = malloc(sizeof(definition));
-	if(sentence_data){
-		def->sentence_data = malloc(sizeof(sentence));
-		copy_sentence(def->sentence_data, sentence_data);
-	} else {
-		def->sentence_data = NULL;
-	}
+	def->sentence_data = sentence_data;
 	def->name = malloc(sizeof(char)*(strlen(name) + 1));
 	strcpy(def->name, name);
 	def->num_args = num_args;
