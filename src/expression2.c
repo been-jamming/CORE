@@ -1346,7 +1346,7 @@ expr_value *parse_expr_value_parentheses(char **c, expr_value *input){
 	sentence *next_input_sentence;
 	sentence *arg_sentence;
 	variable *var;
-	unsigned char is_child0;
+	unsigned char is_child0 = 0;
 	unsigned char verified;
 
 	if(input->type != SENTENCE){
