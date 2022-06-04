@@ -1181,6 +1181,9 @@ expr_value *not_command(char **c){
 	create_sentence_variable(name_buffer, var_sentence, 1, global_context);
 	next_goal = create_sentence(FALSE, 0, 0);
 	create_sentence_variable("goal", next_goal, 0, global_context);
+	global_context->goal = malloc(sizeof(sentence));
+	copy_sentence(global_context->goal, next_goal);
+	global_context->goal->parent = NULL;
 	return_value = parse_context(c);
 
 	if(explicit_scope){

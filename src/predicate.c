@@ -931,9 +931,13 @@ void print_sentence(sentence *s){
 int sentence_stronger(sentence *s0, sentence *s1){
 	sentence *child0;
 	sentence *child1;
+	int stronger0;
+	int stronger1;
 	int i;
 
-	if(s0->type == FALSE){
+	if(s0->num_bound_vars != s1->num_bound_vars || s0->num_bound_props != s1->num_bound_props){
+		return 0;
+	} else if(s0->type == FALSE){
 		return 1;
 	} else if(s1->type == TRUE){
 		return 1;
@@ -941,10 +945,6 @@ int sentence_stronger(sentence *s0, sentence *s1){
 		return sentence_stronger(s0->child0, s1) && sentence_stronger(s0->child1, s1);
 	} else if(s1->type == AND){
 		return sentence_stronger(s0, s1->child0) && sentence_stronger(s0, s1->child1);
-	} else if(s0->type == AND){
-		return sentence_stronger(s0->child0, s1) || sentence_stronger(s0->child1, s1);
-	} else if(s1->type == OR){
-		return sentence_stronger(s0, s1->child0) || sentence_stronger(s0, s1->child1);
 	} else if(s0->type == NOT && s1->type == NOT){
 		return sentence_stronger(s1->child0, s0->child0);
 	} else if(s0->type == IMPLIES && s1->type == IMPLIES){
@@ -1049,9 +1049,16 @@ int sentence_stronger(sentence *s0, sentence *s1){
 			}
 		}
 		return 1;
-	}
+	} else {
+		if(s1->type == OR && (sentence_stronger(s0, s1->child0) || sentence_stronger(s0, s1->child1))){
+			return 1;
+		}
+		if(s0->type == AND && (sentence_stronger(s0->child0, s1) || sentence_stronger(s0->child1, s1))){
+			return 1;
+		}
 
-	return 0;
+		return 0;
+	}
 }
 
 //Determine if two sentences imply each other
@@ -1187,15 +1194,15 @@ int count_or(sentence *s){
 	return count_or(s->child0) + count_or(s->child1);
 }
 
-int main2(int argc, char **argv){
+int mainn(int argc, char **argv){
 	definition *A;
 	definition *B;
 	definition *C;
 	sentence *s0;
 	sentence *s1;
 	context *c;
-	char *program0 = "A <-> B";
-	char *program1 = "B <-> A";
+	char *program0 = "(A | B) & C";
+	char *program1 = "(A & B) & C";
 	
 	custom_malloc_init();
 

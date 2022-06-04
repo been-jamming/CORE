@@ -167,11 +167,11 @@ prove pair_swap: *A*B*C(is_pair(A, B, C) -> is_pair(B, A, C)){
 		given |X|;
 		prove lemma0: X in C -> equal_sets(X, B) | equal_sets(X, A){
 			implies X_in_C;
-			return swap(pair_C(X)(X_in_C));
+			return pair_C(X)(X_in_C);
 		}
 		prove lemma1: equal_sets(X, B) | equal_sets(X, A) -> X in C{
 			implies both;
-			return pair_C(X)(swap(both));
+			return pair_C(X)(both);
 		}
 		return iff(lemma0, lemma1);
 	}
