@@ -2,232 +2,335 @@
 #include <stdio.h>
 #include <string.h>
 #include "dictionary.h"
-#include "proposition.h"
+#include "predicate.h"
 #include "expression.h"
 #include "custom_malloc.h"
 
-char *program_text;
-statement *goals[MAX_DEPTH];
-unsigned int goal_depth;
+//CORE Expression Parser
+//Ben Jones
 
-static statement *parse_statement_value_recursive(char **c, unsigned char *is_verified);
+//Parses and evaluates expressions in CORE
 
-unsigned int umax(unsigned int a, unsigned int b){
-	if(a > b){
-		return a;
+//Clear the global bound variables
+void clear_bound_variables(void){
+	free_dictionary(&global_bound_variables, free);
+}
+
+void clear_bound_propositions(void){
+	free_dictionary(&global_bound_propositions, free);
+}
+
+//Allocate and initialize a context
+context *create_context(context *parent){
+	context *output;
+
+	output = malloc(sizeof(context));
+	output->variables = create_dictionary(NULL);
+	output->definitions = create_dictionary(NULL);
+	output->relations = create_dictionary(NULL);
+	output->parent = parent;
+	output->goal = NULL;
+
+	return output;
+}
+
+//Allocate an expression value with a given type
+expr_value *create_expr_value(expr_value_type type){
+	expr_value *output;
+
+	output = malloc(sizeof(expr_value));
+	output->type = type;
+
+	return output;
+}
+
+//Free an expression value
+void free_expr_value(expr_value *val){
+	if(val->type == SENTENCE){
+		free_sentence(val->sentence_data);
 	}
-
-	return b;
+	free(val);
 }
 
-void free_proposition(proposition *p){
-	free(p->name);
-	if(p->statement_data){
-		free_statement(p->statement_data);
+//Free a definition
+//Don't decrement outside references
+void free_definition_independent(definition *def){
+	if(def->sentence_data){
+		free_sentence_independent(def->sentence_data);
 	}
-	free(p);
+	free(def->name);
+	free(def);
 }
 
-void free_variable(variable *v){
-	free(v->name);
-	if(v->type == STATEMENT && v->statement_data){
-		free_statement(v->statement_data);
+//Free a definition
+//Version which accepts void pointer
+void free_definition_void(void *v){
+	free_definition_independent(v);
+}
+
+//Free a definition
+//Decrement all outside references
+void free_definition(definition *def){
+	if(def->sentence_data){
+		free_sentence(def->sentence_data);
 	}
-	free(v);
+	free(def->name);
+	free(def);
 }
 
-void free_relation(relation *r){
-	if(r->definition){
-		free_statement(r->definition);
+//Decrement all outside references of a definition
+void decrement_definition(definition *def){
+	if(def->sentence_data){
+		decrement_references_sentence(def->sentence_data);
 	}
-	free(r->name);
-	free(r);
 }
 
-void free_proposition_independent(proposition *p){
-	free(p->name);
-	if(p->statement_data){
-		free_statement_independent(p->statement_data);
+//Decrement all outside references of a definition
+//Version which accepts void pointer
+void decrement_definition_void(void *v){
+	decrement_definition(v);
+}
+
+//Free a relation
+//Don't decrement outside references
+void free_relation_independent(relation *rel){
+	if(rel->sentence_data){
+		free_sentence_independent(rel->sentence_data);
 	}
-	free(p);
+	free(rel->name);
+	free(rel);
 }
 
-void free_variable_independent(variable *v){
-	free(v->name);
-	if(v->type == STATEMENT && v->statement_data){
-		free_statement_independent(v->statement_data);
+//Free a relation
+//Version which accepts void pointer
+void free_relation_void(void *v){
+	free_relation_independent(v);
+}
+
+//Free a relation
+//Decrement all outside references
+void free_relation(relation *rel){
+	if(rel->sentence_data){
+		free_sentence(rel->sentence_data);
 	}
-	free(v);
+	free(rel->name);
+	free(rel);
 }
 
-void free_proposition_void(void *p){
-	free_proposition_independent(p);
+//Decrement outside references of a relation
+void decrement_relation(relation *rel){
+	if(rel->sentence_data){
+		decrement_references_sentence(rel->sentence_data);
+	}
 }
 
+//Decrement outside references of a relation
+//Version which accepts void pointer
+void decrement_relation_void(void *v){
+	decrement_relation(v);
+}
+
+//Free a variable
+//Don't decrement outside references
+void free_variable_independent(variable *var){
+	if(var->type == SENTENCE_VAR){
+		free_sentence_independent(var->sentence_data);
+	} else if(var->type == CONTEXT_VAR){
+		free_context_independent(var->context_data);
+	}
+	free(var->name);
+	free(var);
+}
+
+//Free a variable
+//Version which accepts a void pointer
 void free_variable_void(void *v){
 	free_variable_independent(v);
 }
 
-void free_relation_void(void *v){
-	free_relation(v);
+//Free a variable
+//Decrement all outside references
+void free_variable(variable *var){
+	if(var->type == SENTENCE_VAR){
+		free_sentence(var->sentence_data);
+	} else if(var->type == CONTEXT_VAR){
+		free_context(var->context_data);
+	}
+	free(var->name);
+	free(var);
 }
 
-void proposition_decrement_references_void(void *p){
-	proposition *prop;
-
-	prop = p;
-	if(prop->statement_data){
-		decrement_references(prop->statement_data);
+//Decrement outside references of a variable
+void decrement_variable(variable *var){
+	if(var->type == SENTENCE_VAR){
+		decrement_references_sentence(var->sentence_data);
+	} else if(var->type == CONTEXT_VAR){
+		decrement_context(var->context_data);
 	}
 }
 
-void variable_decrement_references_void(void *p){
-	variable *v;
+//Decrement outside references of a variable
+//Version which accepts a void pointer
+void decrement_variable_void(void *v){
+	decrement_variable(v);
+}
 
-	v = p;
-	if(v->type == STATEMENT && v->statement_data){
-		decrement_references(v->statement_data);
+//Free a context
+//Frees all dependent variables, definitions, and relations
+//Does not decrement any outside references
+void free_context_independent(context *c){
+	free_dictionary(&(c->variables), free_variable_void);
+	free_dictionary(&(c->definitions), free_definition_void);
+	free_dictionary(&(c->relations), free_relation_void);
+	if(c->goal){
+		free_sentence_independent(c->goal);
+	}
+	free(c);
+}
+
+//Decrement all outside references of a context
+void decrement_context(context *c){
+	iterate_dictionary(c->variables, decrement_variable_void);
+	iterate_dictionary(c->definitions, decrement_definition_void);
+	iterate_dictionary(c->relations, decrement_relation_void);
+	if(c->goal){
+		decrement_references_sentence(c->goal);
 	}
 }
 
-unsigned int max_statement_depth(statement *s){
-	unsigned int a;
-	unsigned int b;
-	unsigned int output = 0;
+//Free a context
+//Frees all dependent variables, definitions, and relations
+//Decrements all outside references
+void free_context(context *c){
+	iterate_dictionary(c->variables, decrement_variable_void);
+	iterate_dictionary(c->definitions, decrement_definition_void);
+	iterate_dictionary(c->relations, decrement_relation_void);
+	if(c->goal){
+		decrement_references_sentence(c->goal);
+	}
+	free_dictionary(&(c->variables), free_variable_void);
+	free_dictionary(&(c->definitions), free_definition_void);
+	free_dictionary(&(c->relations), free_relation_void);
+	if(c->goal){
+		free_sentence_independent(c->goal);
+	}
+	free(c);
+}
+
+//Convert a definition to the sentence describing it
+expr_value *definition_to_value(char *name){
+	definition *def;
+	expr_value *output;
+	sentence *sentence_data;
+	sentence *new;
+	context *current_context;
 	int i;
 
-	switch(s->type){
-		case AND:
-		case OR:
-		case IMPLIES:
-		case BICOND:
-			return umax(max_statement_depth(s->child0), max_statement_depth(s->child1));
-		case NOT:
-		case FORALL:
-		case EXISTS:
-			return max_statement_depth(s->child0);
-		case RELATION:
-			if(s->is_bound0){
-				a = 0;
-			} else {
-				a = s->var0->depth;
-			}
-			if(s->is_bound1){
-				b = 0;
-			} else {
-				b = s->var1->depth;
-			}
-			return umax(umax(a, b), s->relation_info->depth);
-		case PROPOSITION:
-			if(!s->is_bound){
-				output = s->prop->depth;
-			}
-			for(i = 0; i < s->num_args; i++){
-				if(!s->prop_args[i].is_bound){
-					output = umax(output, s->prop_args[i].var->depth);
-				}
-			}
-			return output;
-		default:
-			return 0;
-	}
-}
-
-statement *definition_to_statement(char *name){
-	proposition *prop;
-	statement *output;
-	statement *new;
-	int i;
-
-	for(i = current_depth; i >= 0; i--){
-		prop = read_dictionary(definitions[i], name, 0);
-		if(prop && !prop->statement_data){
-			prop = NULL;
-		}
-		if(prop){
+	current_context = global_context;
+	while(current_context){
+		def = read_dictionary(current_context->definitions, name, 0);
+		if(def){
 			break;
 		}
+		current_context = current_context->parent;
 	}
 
-	if(prop){
-		output = create_statement(BICOND, prop->statement_data->num_bound_vars, 0);
-		output->child1 = create_statement(PROPOSITION, prop->statement_data->num_bound_vars, 0);
-		output->child1->is_bound = 0;
-		output->child1->prop = prop;
-		prop->num_references++;
-		output->child1->num_args = prop->num_args;
-		output->child1->prop_args = malloc(sizeof(proposition_arg)*output->child1->num_args);
-		output->child1->parent = output;
-		for(i = 0; i < output->child1->num_args; i++){
-			output->child1->prop_args[i].is_bound = 1;
-			output->child1->prop_args[i].var_id = i;
-		}
-		output->child0 = malloc(sizeof(statement));
-		copy_statement(output->child0, prop->statement_data);
-		output->child0->parent = output;
-		for(i = prop->statement_data->num_bound_vars - 1; i >= 0; i--){
-			new = create_statement(FORALL, i, 0);
-			new->child0 = output;
-			new->child0->parent = new;
-			output = new;
-		}
-
-		return output;
+	if(!def){
+		error(ERROR_DEFINITION_EXISTS);
+	}
+	if(!def->sentence_data){
+		error(ERROR_DEFINITION_EMPTY);
 	}
 
-	return NULL;
+	sentence_data = create_sentence(BICOND, def->sentence_data->num_bound_vars, 0);
+	sentence_data->child1 = create_sentence(PROPOSITION, def->sentence_data->num_bound_vars, 0);
+	sentence_data->child1->is_bound = 0;
+	sentence_data->child1->definition_data = def;
+	def->num_references++;
+	sentence_data->child1->num_args = def->num_args;
+	sentence_data->child1->proposition_args = malloc(sizeof(proposition_arg)*sentence_data->child1->num_args);
+	sentence_data->child1->parent = sentence_data;
+	for(i = 0; i < sentence_data->child1->num_args; i++){
+		sentence_data->child1->proposition_args[i].is_bound = 1;
+		sentence_data->child1->proposition_args[i].var_id = i;
+	}
+	sentence_data->child0 = malloc(sizeof(sentence));
+	copy_sentence(sentence_data->child0, def->sentence_data);
+	sentence_data->child0->parent = sentence_data;
+	for(i = def->sentence_data->num_bound_vars - 1; i >= 0; i--){
+		new = create_sentence(FORALL, i, 0);
+		new->child0 = sentence_data;
+		new->child0->parent = new;
+		sentence_data = new;
+	}
+
+	output = create_expr_value(SENTENCE);
+	output->sentence_data = sentence_data;
+	output->verified = 1;
+
+	return output;
 }
 
-statement *relation_to_statement(char *name){
-	relation *relation_info;
-	statement *output;
-	statement *new;
+//Convert a relation to the sentence describing it
+expr_value *relation_to_value(char *name){
+	relation *rel;
+	expr_value *output;
+	sentence *sentence_data;
+	sentence *new;
+	context *current_context;
 	int i;
 
-	for(i = current_depth; i >= 0; i--){
-		relation_info = read_dictionary(relations[i], name, 0);
-		if(relation_info && !relation_info->definition){
-			relation_info = NULL;
-		}
-		if(relation_info){
+	current_context = global_context;
+	while(current_context){
+		rel = read_dictionary(current_context->relations, name, 0);
+		if(rel){
 			break;
 		}
+		current_context = current_context->parent;
 	}
 
-	if(relation_info){
-		output = create_statement(BICOND, relation_info->definition->num_bound_vars, 0);
-		output->child1 = create_statement(RELATION, relation_info->definition->num_bound_vars, 0);
-		output->child1->relation_info = relation_info;
-		output->child1->is_bound0 = 1;
-		output->child1->var0_id = 0;
-		output->child1->is_bound1 = 1;
-		output->child1->var1_id = 1;
-		output->child1->parent = output;
-		output->child0 = malloc(sizeof(statement));
-		copy_statement(output->child0, relation_info->definition);
-		output->child0->parent = output;
-		new = create_statement(FORALL, 1, 0);
-		new->child0 = output;
-		new->child0->parent = new;
-		output = new;
-		new = create_statement(FORALL, 0, 0);
-		new->child0 = output;
-		new->child0->parent = new;
-		output = new;
-
-		return output;
+	if(!rel){
+		error(ERROR_RELATION_EXISTS);
+	}
+	if(!rel->sentence_data){
+		error(ERROR_RELATION_EMPTY);
 	}
 
-	return NULL;
+	sentence_data = create_sentence(BICOND, rel->sentence_data->num_bound_vars, 0);
+	sentence_data->child1 = create_sentence(RELATION, rel->sentence_data->num_bound_vars, 0);
+	sentence_data->child1->relation_data = rel;
+	rel->num_references++;
+	sentence_data->child1->is_bound0 = 1;
+	sentence_data->child1->var0_id = 0;
+	sentence_data->child1->is_bound1 = 1;
+	sentence_data->child1->var1_id = 1;
+	sentence_data->child1->parent = sentence_data;
+	sentence_data->child0 = malloc(sizeof(sentence));
+	copy_sentence(sentence_data->child0, rel->sentence_data);
+	sentence_data->child0->parent = sentence_data;
+	new = create_sentence(FORALL, 1, 0);
+	new->child0 = sentence_data;
+	new->child0->parent = new;
+	sentence_data = new;
+	new = create_sentence(FORALL, 0, 0);
+	new->child0 = sentence_data;
+	new->child0->parent = new;
+
+	output = create_expr_value(SENTENCE);
+	output->sentence_data = new;
+	output->verified = 1;
+
+	return output;
 }
 
-statement *parse_statement_identifier(char **c, unsigned char *is_verified){
-	variable *var;
-	statement *output;
-	proposition *prop;
+//Parse an identifier
+expr_value *parse_expr_identifier(char **c){
+	variable *var = NULL;
+	expr_value *output = NULL;
+	definition *def = NULL;
 	char name_buffer[256];
-	char *beginning;
-	int i;
+	char *beginning = NULL;
+	context *current_context = NULL;
 
 	skip_whitespace(c);
 	beginning = *c;
@@ -237,88 +340,94 @@ statement *parse_statement_identifier(char **c, unsigned char *is_verified){
 		if(**c == '['){
 			++*c;
 			skip_whitespace(c);
-			get_relation_identifier(c, name_buffer, 256);
+			if(get_relation_identifier(c, name_buffer, 256)){
+				error(ERROR_IDENTIFIER_LENGTH);
+			}
+			if(name_buffer[0] == '\0'){
+				error(ERROR_IDENTIFIER_EXPECTED);
+			}
 			skip_whitespace(c);
 			if(**c != ']'){
-				*c = beginning;
-				return NULL;
+				error(ERROR_BRACKET_EXPECTED);
 			}
 			++*c;
-			if(name_buffer[0]){
-				output = relation_to_statement(name_buffer);
-			}
-			if(!name_buffer[0] || !output){
-				*c = beginning;
-				return NULL;
-			}
+			output = relation_to_value(name_buffer);
 		} else {
-			get_identifier(c, name_buffer, 256);
-			if(name_buffer[0]){
-				output = definition_to_statement(name_buffer);
+			if(get_identifier(c, name_buffer, 256)){
+				error(ERROR_IDENTIFIER_LENGTH);
 			}
-			if(!name_buffer[0] || !output){
-				*c = beginning;
-				return NULL;
+			if(name_buffer[0] == '\0'){
+				error(ERROR_IDENTIFIER_EXPECTED);
 			}
+			output = definition_to_value(name_buffer);
 		}
 		return output;
-	}
-	get_identifier(c, name_buffer, 256);
-	if(name_buffer[0] == '\0'){
-		*c = beginning;
-		return NULL;
-	}
-	skip_whitespace(c);
-
-	for(i = current_depth; i >= 0; i--){
-		var = read_dictionary(variables[i], name_buffer, 0);
-		if(var && var->type != STATEMENT){
-			var = NULL;
+	} else {
+		if(get_identifier(c, name_buffer, 256)){
+			error(ERROR_IDENTIFIER_LENGTH);
 		}
-		if(var){
-			break;
+		if(name_buffer[0] == '\0'){
+			error(ERROR_IDENTIFIER_EXPECTED);
 		}
-	}
+		skip_whitespace(c);
 
-	if(!var){
-		*is_verified = 0;
-		for(i = current_depth; i >= 0; i--){
-			prop = read_dictionary(definitions[i], name_buffer, 0);
-			if(prop && !prop->statement_data){
-				set_error("proposition has no definition");
-				prop = NULL;
-			}
-			if(prop){
+		current_context = global_context;
+		while(current_context){
+			var = read_dictionary(current_context->variables, name_buffer, 0);
+			if(var){
 				break;
 			}
+			current_context = current_context->parent;
 		}
 
-		if(!prop){
-			*c = beginning;
-			return NULL;
-		} else {
-			output = malloc(sizeof(statement));
-			output->parent = NULL;
-			copy_statement(output, prop->statement_data);
-			return output;
+		if(!var){
+			error(ERROR_VARIABLE_NOT_FOUND);
 		}
-	}
 
-	if(!var){
-		*c = beginning;
-		return NULL;
-	} else {
-		output = malloc(sizeof(statement));
-		output->parent = NULL;
-		copy_statement(output, var->statement_data);
+		while(var->type == CONTEXT_VAR){
+			if(**c != '.'){
+				error(ERROR_DOT_EXPECTED);
+			}
+			++*c;
+			skip_whitespace(c);
+			current_context = var->context_data;
+			if(get_identifier(c, name_buffer, 256)){
+				error(ERROR_IDENTIFIER_LENGTH);
+			}
+			if(name_buffer[0] == '\0'){
+				error(ERROR_IDENTIFIER_EXPECTED);
+			}
+			skip_whitespace(c);
+			var = read_dictionary(current_context->variables, name_buffer, 0);
+			if(!var){
+				error(ERROR_CONTEXT_MEMBER);
+			}
+		}
+
+		if(**c == '.'){
+			error(ERROR_CANNOT_DOT);
+		}
+
+		if(var->type == SENTENCE_VAR){
+			output = create_expr_value(SENTENCE);
+			output->sentence_data = malloc(sizeof(sentence));
+			copy_sentence(output->sentence_data, var->sentence_data);
+			output->verified = var->verified;
+		} else if(var->type == OBJECT_VAR){
+			output = create_expr_value(OBJECT);
+			output->var = var;
+		}
+
 		return output;
 	}
 }
 
-void add_bound_variables(statement *s, int increment){
+//Add new bound variables to a sentence
+void add_bound_variables(sentence *s, int increment){
 	int i;
 
 	s->num_bound_vars += increment;
+
 	switch(s->type){
 		case AND:
 		case OR:
@@ -342,19 +451,20 @@ void add_bound_variables(statement *s, int increment){
 			break;
 		case PROPOSITION:
 			for(i = 0; i < s->num_args; i++){
-				if(s->prop_args[i].is_bound){
-					s->prop_args[i].var_id += increment;
+				if(s->proposition_args[i].is_bound){
+					s->proposition_args[i].var_id += increment;
 				}
 			}
 			break;
-		case FALSE:
 		case TRUE:
+		case FALSE:
 			//pass
 			break;
 	}
 }
 
-void substitute_variable_recursive(statement *s, int id, variable *v){
+//Substitute a variable for the 0 bound variable in a sentence
+void substitute_variable_recursive(sentence *s, int id, variable *v){
 	int i;
 
 	switch(s->type){
@@ -384,9 +494,9 @@ void substitute_variable_recursive(statement *s, int id, variable *v){
 			break;
 		case PROPOSITION:
 			for(i = 0; i < s->num_args; i++){
-				if(s->prop_args[i].is_bound && s->prop_args[i].var_id == id){
-					s->prop_args[i].is_bound = 0;
-					s->prop_args[i].var = v;
+				if(s->proposition_args[i].is_bound && s->proposition_args[i].var_id == id){
+					s->proposition_args[i].is_bound = 0;
+					s->proposition_args[i].var = v;
 					v->num_references++;
 				}
 			}
@@ -398,16 +508,18 @@ void substitute_variable_recursive(statement *s, int id, variable *v){
 	}
 }
 
-int substitute_variable(statement *s, int id, variable *v){
-	if(s->num_bound_props || s->num_bound_vars <= id){
-		return 0;
+//Substitute a variable in a sentence for a bound variable
+void substitute_variable(sentence *s, variable *v){
+	if(s->num_bound_vars <= 0){
+		error(ERROR_NO_BOUND_VARIABLES);
 	}
-	substitute_variable_recursive(s, id, v);
 
-	return 1;
+	substitute_variable_recursive(s, 0, v);
+	add_bound_variables(s, -1);
 }
 
-void reset_replaced(statement *s){
+//Reset the replaced flag for each variable in a sentence
+void reset_replaced(sentence *s){
 	int i;
 
 	switch(s->type){
@@ -429,7 +541,7 @@ void reset_replaced(statement *s){
 			break;
 		case PROPOSITION:
 			for(i = 0; i < s->num_args; i++){
-				s->prop_args[i].replaced = 0;
+				s->proposition_args[i].replaced = 0;
 			}
 			break;
 		case TRUE:
@@ -439,28 +551,30 @@ void reset_replaced(statement *s){
 	}
 }
 
-void set_num_bound_props(statement *s, int num_bound_props){
-	s->num_bound_props = num_bound_props;
+//Set the number of bound propositions in a sentence
+void set_num_bound_props(sentence *s, int num_props){
+	s->num_bound_props = num_props;
 
 	switch(s->type){
 		case AND:
 		case OR:
 		case IMPLIES:
 		case BICOND:
-			set_num_bound_props(s->child0, num_bound_props);
-			set_num_bound_props(s->child1, num_bound_props);
+			set_num_bound_props(s->child0, num_props);
+			set_num_bound_props(s->child1, num_props);
 			break;
 		case NOT:
 		case FORALL:
 		case EXISTS:
-			set_num_bound_props(s->child0, num_bound_props);
+			set_num_bound_props(s->child0, num_props);
 			break;
 		default:
 			break;
 	}
 }
 
-void substitute_variable_bound(statement *s, int id, int new_id){
+//Replace a bound variable id with another bound variable id
+void substitute_variable_bound(sentence *s, int id, int new_id){
 	int i;
 
 	switch(s->type){
@@ -476,14 +590,6 @@ void substitute_variable_bound(statement *s, int id, int new_id){
 		case EXISTS:
 			substitute_variable_bound(s->child0, id, new_id);
 			break;
-		case PROPOSITION:
-			for(i = 0; i < s->num_args; i++){
-				if(s->prop_args[i].is_bound && s->prop_args[i].var_id == id && !s->prop_args[i].replaced){
-					s->prop_args[i].var_id = new_id;
-					s->prop_args[i].replaced = 1;
-				}
-			}
-			break;
 		case RELATION:
 			if(s->is_bound0 && s->var0_id == id && !s->replaced0){
 				s->var0_id = new_id;
@@ -494,6 +600,14 @@ void substitute_variable_bound(statement *s, int id, int new_id){
 				s->replaced1 = 1;
 			}
 			break;
+		case PROPOSITION:
+			for(i = 0; i < s->num_args; i++){
+				if(s->proposition_args[i].is_bound && s->proposition_args[i].var_id == id && !s->proposition_args[i].replaced){
+					s->proposition_args[i].var_id = new_id;
+					s->proposition_args[i].replaced = 1;
+				}
+			}
+			break;
 		case TRUE:
 		case FALSE:
 			//pass
@@ -501,7 +615,8 @@ void substitute_variable_bound(statement *s, int id, int new_id){
 	}
 }
 
-void substitute_proposition(statement *s, statement *child){
+//Substitute a sentence for a bound proposition
+void substitute_proposition(sentence *s, sentence *child){
 	int i;
 	int num_bound_vars;
 	int num_bound_props;
@@ -518,21 +633,20 @@ void substitute_proposition(statement *s, statement *child){
 			substitute_proposition(s->child1, child);
 			break;
 		case NOT:
-		case FORALL:
 		case EXISTS:
+		case FORALL:
 			substitute_proposition(s->child0, child);
 			break;
 		case PROPOSITION:
-			if(s->is_bound && !s->prop_id){
+			if(s->is_bound && s->definition_id == 0){
 				if(s->num_args != child->num_bound_vars){
-					set_error("argument count mismatch");
-					error(1);
+					error(ERROR_ARGUMENT_COUNT);
 				}
 				num_bound_vars = s->num_bound_vars;
 				num_bound_props = s->num_bound_props;
 				num_args = s->num_args;
-				prop_args = s->prop_args;
-				copy_statement(s, child);
+				prop_args = s->proposition_args;
+				copy_sentence(s, child);
 				reset_replaced(s);
 				set_num_bound_props(s, num_bound_props);
 				for(i = 0; i < num_args; i++){
@@ -544,10 +658,9 @@ void substitute_proposition(statement *s, statement *child){
 					}
 				}
 				add_bound_variables(s, num_bound_vars - num_args);
-				s->num_bound_props = num_bound_props;
 				free(prop_args);
 			} else if(s->is_bound){
-				s->prop_id--;
+				s->definition_id--;
 			}
 			break;
 		case RELATION:
@@ -558,646 +671,600 @@ void substitute_proposition(statement *s, statement *child){
 	}
 }
 
-variable *create_object_var(char *var_name, unsigned int depth){
-	variable *v;
+//Create a variable storing an object
+variable *create_object_variable(char *var_name, context *parent_context){
+	variable *output;
+	variable *var;
 
-	v = read_dictionary(variables[depth], var_name, 0);
-	if(v && !v->num_references){
-		free_variable(v);
-	} else if(v){
-		set_error("cannot overwrite bound variable");
-		error(1);
+	var = read_dictionary(parent_context->variables, var_name, 0);
+	if(var && !var->num_references){
+		free_variable(var);
+	} else if(var){
+		error(ERROR_VARIABLE_OVERWRITE);
 	}
 
-	v = malloc(sizeof(variable));
-	v->type = OBJECT;
-	v->num_references = 0;
-	v->name = malloc(sizeof(char)*(strlen(var_name) + 1));
-	strcpy(v->name, var_name);
-	v->depth = current_depth;
+	output = malloc(sizeof(variable));
+	output->type = OBJECT_VAR;
+	output->num_references = 0;
+	output->name = malloc(sizeof(char)*(strlen(var_name) + 1));
+	strcpy(output->name, var_name);
+	output->parent_context = parent_context;
 
-	write_dictionary(variables + depth, var_name, v, 0);
+	write_dictionary(&(parent_context->variables), var_name, output, 0);
 
-	return v;
+	return output;
 }
 
-variable *get_object_var(char *var_name, unsigned int *depth){
-	variable *v;
-	int i;
+//Create a variables storing a sentence
+variable *create_sentence_variable(char *var_name, sentence *sentence_data, unsigned char verified, context *parent_context){
+	variable *output;
+	variable *var;
 
-	for(i = current_depth; i >= 0; i--){
-		v = read_dictionary(variables[i], var_name, 0);
-		if(v && v->type != OBJECT){
-			v = NULL;
-		}
-		if(v){
+	var = read_dictionary(parent_context->variables, var_name, 0);
+	if(var && !var->num_references){
+		free_variable(var);
+	} else if(var){
+		error(ERROR_VARIABLE_OVERWRITE);
+	}
+
+	output = malloc(sizeof(variable));
+	output->type = SENTENCE_VAR;
+	output->num_references = 0;
+	output->name = malloc(sizeof(char)*(strlen(var_name) + 1));
+	strcpy(output->name, var_name);
+	output->parent_context = parent_context;
+	output->sentence_data = sentence_data;
+	output->verified = verified;
+
+	write_dictionary(&(parent_context->variables), var_name, output, 0);
+
+	return output;
+}
+
+//Create a variable storing a context
+variable *create_context_variable(char *var_name, context *context_data, context *parent_context){
+	variable *output;
+	variable *var;
+
+	var = read_dictionary(parent_context->variables, var_name, 0);
+	if(var && !var->num_references){
+		free_variable(var);
+	} else if(var){
+		error(ERROR_VARIABLE_OVERWRITE);
+	}
+
+	output = malloc(sizeof(variable));
+	output->type = CONTEXT_VAR;
+	output->num_references = 0;
+	output->name = malloc(sizeof(char)*(strlen(var_name) + 1));
+	strcpy(output->name, var_name);
+	output->parent_context = parent_context;
+	output->context_data = context_data;
+
+	write_dictionary(&(parent_context->variables), var_name, output, 0);
+
+	return output;
+}
+
+//Retrieve a variable by name
+variable *get_variable(char *var_name, context *parent_context){
+	variable *output = NULL;
+
+	while(parent_context){
+		output = read_dictionary(parent_context->variables, var_name, 0);
+		if(output){
 			break;
 		}
+		parent_context = parent_context->parent;
 	}
 
-	if(v && depth){
-		*depth = i;
-	}
-
-	return v;
+	return output;
 }
 
-variable *get_statement_var(char *var_name){
-	variable *v;
-	int i;
+//Parse the "left" command
+expr_value *parse_left(char **c){
+	expr_value *expr;
+	expr_value *output;
+	sentence *sentence_data;
+	sentence *temp;
 
-	for(i = current_depth; i >= 0; i--){
-		v = read_dictionary(variables[i], var_name, 0);
-		if(v && v->type != STATEMENT){
-			v = NULL;
-		}
-		if(v){
-			break;
-		}
-	}
-
-	return v;
-}
-
-variable *create_statement_var(char *var_name, statement *s){
-	variable *v;
-
-	v = read_dictionary(variables[current_depth], var_name, 0);
-	if(v && !v->num_references){
-		free_variable(v);
-	} else if(v){
-		free_statement(s);
-		set_error("cannot overwrite bound variable");
-		error(1);
-	}
-
-	v = malloc(sizeof(variable));
-	v->type = STATEMENT;
-	v->num_references = 0;
-	v->name = malloc(sizeof(char)*(strlen(var_name) + 1));
-	strcpy(v->name, var_name);
-	v->statement_data = s;
-	v->depth = current_depth;
-
-	write_dictionary(variables + current_depth, var_name, v, 0);
-
-	return v;
-}
-
-statement *parse_left(char **c, unsigned char *is_verified){
-	statement *s;
-	statement *output;
-	statement *temp;
-	unsigned char arg_verified;
-
-	s = parse_statement_value(c, &arg_verified);
-	*is_verified = arg_verified && *is_verified;
-	if(!s){
-		error(1);
-	}
+	expr = parse_expr_value(c);
 	skip_whitespace(c);
 	if(**c != ')'){
-		free_statement(s);
-		set_error("expected ')'");
-		error(1);
+		error(ERROR_END_PARENTHESES);
 	}
 	++*c;
 
-	if(s->num_bound_vars || s->num_bound_props){
-		free_statement(s);
-		set_error("expected operand to have no bound variables or propositions");
-		error(1);
+	if(expr->type != SENTENCE){
+		error(ERROR_ARGUMENT_TYPE);
 	}
 
-	if(s->type == OR || s->type == IMPLIES || s->type == AND){
-		*is_verified = *is_verified && (s->type == AND);
-		free_statement(s->child1);
-		output = s->child0;
-		free(s);
-		return output;
-	} else if(s->type == BICOND){
-		temp = s->child0;
-		s->child0 = s->child1;
-		s->child1 = temp;
-		s->type = IMPLIES;
-		return s;
+	sentence_data = expr->sentence_data;
+	if(sentence_data->num_bound_vars > 0){
+		error(ERROR_ARGUMENT_BOUND_VARIABLES);
+	}
+	if(sentence_data->num_bound_props > 0){
+		error(ERROR_ARGUMENT_BOUND_PROPOSITIONS);
+	}
+
+	if(sentence_data->type == AND || sentence_data->type == OR || sentence_data->type == IMPLIES){
+		expr->verified = (sentence_data->type == AND) && expr->verified;
+		expr->sentence_data = sentence_data->child0;
+		free_sentence(sentence_data->child1);
+		free(sentence_data);
+		return expr;
+	} else if(sentence_data->type == BICOND){
+		temp = sentence_data->child0;
+		sentence_data->child0 = sentence_data->child1;
+		sentence_data->child1 = temp;
+		sentence_data->type = IMPLIES;
+		return expr;
 	} else {
-		set_error("invalid operand for 'left'");
-		error(1);
+		error(ERROR_ARGUMENT_TYPE);
 	}
 
-	//This prevents GCC from giving a warning. NULL is never returned.
+	//Prevent GCC from giving a warning. NULL is never returned.
 	return NULL;
 }
 
-statement *parse_right(char **c, unsigned char *is_verified){
-	statement *s;
-	statement *output;
-	unsigned char arg_verified;
+//Parse the "right" command
+expr_value *parse_right(char **c){
+	expr_value *expr;
+	expr_value *output;
+	sentence *sentence_data;
 
-	s = parse_statement_value(c, &arg_verified);
-	*is_verified = arg_verified && *is_verified;
-	if(!s){
-		error(1);
-	}
+	expr = parse_expr_value(c);
 	skip_whitespace(c);
 	if(**c != ')'){
-		free_statement(s);
-		set_error("expected ')'");
-		error(1);
+		error(ERROR_END_PARENTHESES);
 	}
 	++*c;
 
-	if(s->num_bound_vars || s->num_bound_props){
-		free_statement(s);
-		set_error("expected operand to have no bound variables or propositions");
-		error(1);
+	if(expr->type != SENTENCE){
+		error(ERROR_ARGUMENT_TYPE);
 	}
 
-	if(s->type == OR || s->type == IMPLIES || s->type == AND){
-		*is_verified = *is_verified && (s->type == AND);
-		free_statement(s->child0);
-		output = s->child1;
-		free(s);
-		return output;
-	} else if(s->type == BICOND){
-		s->type = IMPLIES;
-		return s;
-	} else {
-		set_error("invalid operand for 'right'");
-		error(1);
+	sentence_data = expr->sentence_data;
+	if(sentence_data->num_bound_vars > 0){
+		error(ERROR_ARGUMENT_BOUND_VARIABLES);
 	}
+	if(sentence_data->num_bound_props > 0){
+		error(ERROR_ARGUMENT_BOUND_PROPOSITIONS);
+	}
+
+	if(sentence_data->type == AND || sentence_data->type == OR || sentence_data->type == IMPLIES){
+		expr->verified = (sentence_data->type == AND) && expr->verified;
+		expr->sentence_data = sentence_data->child1;
+		free_sentence(sentence_data->child0);
+		free(sentence_data);
+		return expr;
+	} else if(sentence_data->type == BICOND){
+		sentence_data->type = IMPLIES;
+		return expr;
+	} else {
+		error(ERROR_ARGUMENT_TYPE);
+	}
+
+	//Prevent GCC from giving a warning. NULL is never returned.
 	return NULL;
 }
 
-//NOTE:
-//This function is reused for the parentheses operation with respect to implications and biconditionals
-statement *parse_and_or(char **c, unsigned char is_and, unsigned char *is_verified){
-	statement *output;
-	statement *last_parent = NULL;
-	statement *s;
-	statement *new;
-	unsigned char args_verified;
-	unsigned char arg_verified = 1;
+//Parse an "and" or "or" function call
+//Reused for parentheses operation
+expr_value *parse_and_or(char **c, unsigned char is_and){
+	expr_value *output;
+	expr_value *val;
+	sentence *last_parent_sentence = NULL;
+	sentence *new;
+	sentence *output_sentence;
+	sentence *s;
+	unsigned char verified;
 
-	output = parse_statement_value(c, &arg_verified);
-	if(!output){
-		error(1);
+	val = parse_expr_value(c);
+	if(val->type != SENTENCE){
+		error(ERROR_ARGUMENT_TYPE);
 	}
-	if(output->num_bound_props || output->num_bound_vars){
-		free_statement(output);
-		set_error("expected operand to have no bound variables or propositions");
-		error(1);
+	output_sentence = val->sentence_data;
+	if(output_sentence->num_bound_vars > 0){
+		error(ERROR_ARGUMENT_BOUND_VARIABLES);
 	}
-	args_verified = arg_verified;
+	if(output_sentence->num_bound_props > 0){
+		error(ERROR_ARGUMENT_BOUND_PROPOSITIONS);
+	}
 
+	verified = val->verified;
+	skip_whitespace(c);
 	if(**c != ')' && **c != ','){
-		set_error("expected ',' or ')'");
-		error(1);
+		error(ERROR_PARENTHESES_OR_COMMA);
 	}
+
+	free(val);
 
 	while(**c != ')'){
 		++*c;
 		skip_whitespace(c);
-		arg_verified = 1;
-		s = parse_statement_value(c, &arg_verified);
-		if(!s){
-			free_statement(output);
-			error(1);
+		val = parse_expr_value(c);
+		if(val->type != SENTENCE){
+			error(ERROR_ARGUMENT_TYPE);
 		}
-		if(s->num_bound_props || s->num_bound_vars){
-			free_statement(s);
-			free_statement(output);
-			set_error("expected operand to have no bound variables or propositions");
-			error(1);
+		s = val->sentence_data;
+		if(s->num_bound_vars > 0){
+			error(ERROR_ARGUMENT_BOUND_VARIABLES);
+		}
+		if(s->num_bound_props > 0){
+			error(ERROR_ARGUMENT_BOUND_PROPOSITIONS);
 		}
 
 		if(is_and){
-			args_verified = arg_verified && args_verified;
-			new = create_statement(AND, 0, 0);
+			verified = verified && val->verified;
+			new = create_sentence(AND, 0, 0);
 		} else {
-			args_verified = arg_verified || args_verified;
-			new = create_statement(OR, 0, 0);
+			verified = verified || val->verified;
+			new = create_sentence(OR, 0, 0);
 		}
-		if(!last_parent){
-			last_parent = new;
-			last_parent->child0 = output;
-			last_parent->child1 = s;
-			last_parent->child0->parent = last_parent;
-			last_parent->child1->parent = last_parent;
-			output = last_parent;
+
+		if(!last_parent_sentence){
+			last_parent_sentence = new;
+			last_parent_sentence->child0 = output_sentence;
+			last_parent_sentence->child1 = s;
+			last_parent_sentence->child0->parent = last_parent_sentence;
+			last_parent_sentence->child1->parent = last_parent_sentence;
+			output_sentence = last_parent_sentence;
 		} else {
-			new->child0 = last_parent->child1;
+			new->child0 = last_parent_sentence->child1;
 			new->child1 = s;
 			new->child0->parent = new;
 			new->child1->parent = new;
-			last_parent->child1 = new;
-			last_parent->child1->parent = last_parent;
-			last_parent = new;
+			last_parent_sentence->child1 = new;
+			last_parent_sentence->child1->parent = last_parent_sentence;
+			last_parent_sentence = new;
 		}
 
 		skip_whitespace(c);
 		if(**c != ')' && **c != ','){
-			free_statement(output);
-			set_error("expected ',' or ')'");
-			error(1);
+			error(ERROR_PARENTHESES_OR_COMMA);
 		}
-	}
 
+		free(val);
+	}
+	
 	++*c;
-	*is_verified = args_verified && *is_verified;
+	output = create_expr_value(SENTENCE);
+	output->sentence_data = output_sentence;
+	output->verified = verified;
+
 	return output;
 }
 
-statement *parse_swap(char **c, unsigned char *is_verified){
-	statement *s;
-	statement *output;
-	statement *new;
-	statement *child0;
-	statement *child1;
-	unsigned char arg_verified;
-
-	s = parse_statement_value(c, &arg_verified);
-	*is_verified = arg_verified && *is_verified;
-	if(!s){
-		error(1);
-	}
-	skip_whitespace(c);
-	if(**c != ')'){
-		free_statement(s);
-		set_error("expected ')'");
-		error(1);
-	}
-	++*c;
-
-	if(s->num_bound_vars || s->num_bound_props){
-		free_statement(s);
-		set_error("expected operand to have no bound variables or propositions");
-		error(1);
-	}
-
-	if(s->type == AND || s->type == OR){
-		output = s->child0;
-		s->child0 = s->child1;
-		s->child1 = output;
-		s->child0->parent = s;
-		s->child1->parent = s;
-		output = s;
-
-		return s;
-	} else if(s->type == IMPLIES || s->type == BICOND){
-		child0 = s->child0;
-		child1 = s->child1;
-
-		new = create_statement(NOT, s->num_bound_vars, s->num_bound_props);
-		new->child0 = child0;
-		new->child0->parent = new;
-		s->child1 = new;
-		s->child1->parent = s;
-
-		new = create_statement(NOT, s->num_bound_vars, s->num_bound_props);
-		new->child0 = child1;
-		new->child0->parent = new;
-		s->child0 = new;
-		s->child0->parent = s;
-
-		return s;
-	} else {
-		free_statement(s);
-		set_error("invalid operand for 'swap'");
-		error(1);
-		return NULL;
-	}
-}
-
-statement *parse_expand(char **c, unsigned char *is_verified){
-	statement *output;
-	statement *arg;
-	proposition *prop;
-	relation *relation_info;
-	unsigned char arg_verified;
+//Parse "expand" command
+expr_value *parse_expand(char **c){
+	expr_value *output;
+	sentence *output_sentence;
+	expr_value *arg;
+	sentence *arg_sentence;
+	definition *def;
+	relation *rel;
+	unsigned char verified;
 	int i;
 
-	arg = parse_statement_value(c, &arg_verified);
-	*is_verified = arg_verified && *is_verified;
-	if(!arg){
-		error(1);
-	}
+	arg = parse_expr_value(c);
+	verified = arg->verified;
 	skip_whitespace(c);
 	if(**c != ')'){
-		set_error("expected ')'");
-		error(1);
+		error(ERROR_END_PARENTHESES);
 	}
 	++*c;
 
-	if(arg->num_bound_vars || arg->num_bound_props){
-		set_error("expected operand to have no bound variables or propositions");
-		error(1);
+	if(arg->type != SENTENCE){
+		error(ERROR_ARGUMENT_TYPE);
+	}
+	arg_sentence = arg->sentence_data;
+	if(arg_sentence->num_bound_vars > 0){
+		error(ERROR_ARGUMENT_BOUND_VARIABLES);
+	}
+	if(arg_sentence->num_bound_props > 0){
+		error(ERROR_ARGUMENT_BOUND_PROPOSITIONS);
+	}
+	if(arg_sentence->type != PROPOSITION && arg_sentence->type != RELATION){
+		error(ERROR_ARGUMENT_TYPE);
 	}
 
-	if(arg->type != PROPOSITION && arg->type != RELATION){
-		set_error("invalid operand for 'expand'");
-		error(1);
-	}
+	if(arg_sentence->type == PROPOSITION){
+		def = arg_sentence->definition_data;
 
-	if(arg->type == PROPOSITION){
-		prop = arg->prop;
-
-		if(!prop->statement_data){
-			set_error("proposition has no definition");
-			error(1);
+		if(!def->sentence_data){
+			error(ERROR_DEFINITION_EMPTY);
 		}
 
-		output = malloc(sizeof(statement));
-		output->parent = NULL;
-		copy_statement(output, prop->statement_data);
+		output_sentence = malloc(sizeof(sentence));
+		output_sentence->parent = NULL;
+		copy_sentence(output_sentence, def->sentence_data);
 
-		for(i = 0; i < arg->num_args; i++){
-			if(!substitute_variable(output, 0, arg->prop_args[i].var)){
-				set_error("failed to substitute variable");
-				error(1);
-			}
-			add_bound_variables(output, -1);
+		for(i = 0; i < arg_sentence->num_args; i++){
+			substitute_variable(output_sentence, arg_sentence->proposition_args[i].var);
 		}
 
-		free_statement(arg);
-		return output;
+		free_expr_value(arg);
 	} else {
-		relation_info = arg->relation_info;
+		rel = arg_sentence->relation_data;
 
-		if(!relation_info->definition){
-			set_error("relation has no definition");
-			error(1);
+		if(!rel->sentence_data){
+			error(ERROR_RELATION_EMPTY);
 		}
 
-		//Neither of these should happen
-		if(arg->is_bound0){
-			set_error("first object is bound");
-			error(1);
-		}
+		output_sentence = malloc(sizeof(sentence));
+		output_sentence->parent = NULL;
+		copy_sentence(output_sentence, rel->sentence_data);
 
-		if(arg->is_bound1){
-			set_error("second object is bound");
-			error(1);
-		}
+		substitute_variable(output_sentence, arg_sentence->var0);
+		substitute_variable(output_sentence, arg_sentence->var1);
 
-		output = malloc(sizeof(statement));
-		output->parent = NULL;
-		copy_statement(output, relation_info->definition);
-
-		if(!substitute_variable(output, 0, arg->var0)){
-			set_error("failed to substitute variable");
-			error(1);
-		}
-		add_bound_variables(output, -1);
-		if(!substitute_variable(output, 0, arg->var1)){
-			set_error("failed to substitute variable");
-			error(1);
-		}
-		add_bound_variables(output, -1);
-		
-		free_statement(arg);
-		return output;
+		free_expr_value(arg);
 	}
+
+	output = create_expr_value(SENTENCE);
+	output->sentence_data = output_sentence;
+	output->verified = verified;
+
+	return output;
 }
 
-statement *parse_iff(char **c, unsigned char *is_verified){
-	statement *arg0;
-	statement *arg1;
-	unsigned char arg_verified;
+//Parse "iff" command
+expr_value *parse_iff(char **c){
+	expr_value *arg0;
+	expr_value *arg1;
+	expr_value *output;
+	sentence *arg0_sentence;
+	sentence *arg1_sentence;
+	sentence *output_sentence;
+	unsigned char verified;
 
-	arg0 = parse_statement_value(c, &arg_verified);
-	*is_verified = arg_verified && *is_verified;
-	if(!arg0){
-		error(1);
-	}
+	arg0 = parse_expr_value(c);
 	skip_whitespace(c);
 	if(**c != ','){
-		set_error("expected ','");
-		error(1);
+		error(ERROR_COMMA);
+	}
+	if(arg0->type != SENTENCE){
+		error(ERROR_ARGUMENT_TYPE);
+	}
+	if(arg0->sentence_data->type != IMPLIES){
+		error(ERROR_ARGUMENT_TYPE);
 	}
 
 	++*c;
 	skip_whitespace(c);
-
-	arg1 = parse_statement_value(c, &arg_verified);
-	*is_verified = arg_verified && *is_verified;
-	if(!arg1){
-		error(1);
-	}
+	arg1 = parse_expr_value(c);
 	skip_whitespace(c);
 	if(**c != ')'){
-		set_error("expected ')'");
-		error(1);
+		error(ERROR_PARENTHESES);
+	}
+	if(arg1->type != SENTENCE){
+		error(ERROR_ARGUMENT_TYPE);
+	}
+	if(arg1->sentence_data->type != IMPLIES){
+		error(ERROR_ARGUMENT_TYPE);
 	}
 	++*c;
 
-	if(arg0->type != IMPLIES || arg1->type != IMPLIES){
-		set_error("arguments must be implications");
-		error(1);
+	verified = arg0->verified && arg1->verified;
+	arg0_sentence = arg0->sentence_data;
+	arg1_sentence = arg1->sentence_data;
+
+	if(!sentence_equivalent(arg0_sentence->child0, arg1_sentence->child1) || !sentence_equivalent(arg0_sentence->child1, arg1_sentence->child0)){
+		error(ERROR_MISMATCHED_IMPLICATIONS);
 	}
 
-	if(!compare_statement(arg0->child0, arg1->child1) || !compare_statement(arg0->child1, arg1->child0)){
-		set_error("mismatched implications");
-		error(1);
-	}
-
-	free_statement(arg1);
-	arg0->type = BICOND;
+	free_expr_value(arg1);
+	arg0_sentence->type = BICOND;
+	arg0->verified = verified;
 
 	return arg0;
 }
 
-static void skip_branch_args(char **c){
-	skip_whitespace(c);
-	while(is_alphanumeric(**c) || **c == ','){
-		++*c;
-		skip_whitespace(c);
-	}
-}
+//Parse "branch" command
+expr_value *parse_branch(char **c){
+	expr_value *output;
+	expr_value *or_arg;
+	expr_value *returned_val;
+	sentence *or_sentence;
+	sentence *peeled;
+	char (*var_names)[256];
+	context *first_context;
+	context *next_context;
+	int max_vars;
+	int num_vars;
+	int current_arg = 1;
+	unsigned char verified;
 
-statement *parse_branch(char **c){
-	statement *or_statement;
-	statement *new;
-	statement *return_statement;
-	statement *old_return_statement = NULL;
-	variable *new_statement_var;
-	unsigned char arg_verified = 1;
-	char *arg_pointer;
-	char var_name[256];
-
-	or_statement = parse_statement_value(c, &arg_verified);
+	or_arg = parse_expr_value(c);
 	skip_whitespace(c);
-	if(!or_statement){
-		error(1);
-	}
-	if(!arg_verified){
-		set_error("first argument of 'branch' must be verified");
-		error(1);
-	}
 	if(**c != ','){
-		set_error("expected ','");
-		error(1);
+		error(ERROR_COMMA);
 	}
-	if(or_statement->num_bound_props || or_statement->num_bound_vars){
-		set_error("expected argument to have no bound variables or propositions");
-		error(1);
+	if(or_arg->type != SENTENCE){
+		error(ERROR_ARGUMENT_TYPE);
 	}
-	arg_pointer = *c;
-	++*c;
-
-	skip_branch_args(c);
-	if(**c != ')'){
-		set_error("expected ')'");
-		error(1);
+	if(!or_arg->verified){
+		error(ERROR_ARGUMENT_VERIFY);
 	}
-	++*c;
-	skip_whitespace(c);
-	if(**c != '{'){
-		set_error("expected '{'");
-		error(1);
+	or_sentence = or_arg->sentence_data;
+	if(or_sentence->num_bound_vars > 0){
+		error(ERROR_ARGUMENT_BOUND_VARIABLES);
+	}
+	if(or_sentence->num_bound_props > 0){
+		error(ERROR_ARGUMENT_BOUND_PROPOSITIONS);
 	}
 	++*c;
 	skip_whitespace(c);
 
-	while(*arg_pointer != ')'){
-		arg_pointer++;
-		skip_whitespace(&arg_pointer);
-		get_identifier(&arg_pointer, var_name, 256);
-		if(var_name[0] == '\0'){
-			set_error("expected identifier");
-			error(1);
-		}
-		skip_whitespace(&arg_pointer);
-		if(*arg_pointer != ',' && *arg_pointer != ')'){
-			*c = arg_pointer;
-			set_error("expected ',' or ')'");
-			error(1);
-		}
-		up_scope();
-		if(!or_statement){
-			*c = arg_pointer;
-			set_error("too many arguments to unpack");
-			error(1);
-		}
-		if(*arg_pointer == ','){
-			new = peel_or_left(&or_statement);
-		} else {
-			new = or_statement;
-		}
-		new_statement_var = create_statement_var(var_name, new);
-		new_statement_var->num_references++;
-		return_statement = verify_block(c, 0, NULL);
+	max_vars = count_or(or_sentence);
+	var_names = malloc(sizeof(char [256])*max_vars);
 
-		if(**c != '}'){
-			set_error("expected '}'");
-			error(1);
+	if(get_identifier(c, var_names[0], 256)){
+		error(ERROR_IDENTIFIER_LENGTH);
+	}
+	if(var_names[0][0] == '\0'){
+		error(ERROR_IDENTIFIER_EXPECTED);
+	}
+	skip_whitespace(c);
+	num_vars = 1;
+
+	if(**c != ','){
+		error(ERROR_COMMA);
+	}
+
+	while(**c != ')'){
+		if(**c != ','){
+			error(ERROR_PARENTHESES_OR_COMMA);
 		}
 		++*c;
-
-		if(!return_statement){
-			set_error("expected return statement");
-			error(1);
+		skip_whitespace(c);
+		if(num_vars >= max_vars){
+			error(ERROR_TOO_MANY_UNPACK);
 		}
-		if(max_statement_depth(return_statement) >= current_depth){
-			free_statement(return_statement);
-			set_error("returned statement depends on variables in its scope");
-			error(1);
+		if(get_identifier(c, var_names[num_vars], 256)){
+			error(ERROR_IDENTIFIER_LENGTH);
 		}
+		if(var_names[num_vars][0] == '\0'){
+			error(ERROR_IDENTIFIER_EXPECTED);
+		}
+		skip_whitespace(c);
+		num_vars++;
+	}
 
-		if(old_return_statement && !compare_statement(return_statement, old_return_statement)){
-			set_error("mismatched returned statements");
-			error(1);
-		} else if(!old_return_statement){
-			old_return_statement = return_statement;
+	++*c;
+	skip_whitespace(c);
+
+	if(**c != '{'){
+		error(ERROR_BEGIN_BRACE);
+	}
+	++*c;
+	skip_whitespace(c);
+	first_context = create_context(global_context);
+	peeled = peel_or_left(&or_sentence);
+	create_sentence_variable(var_names[0], peeled, 1, first_context);
+	global_context = first_context;
+	output = parse_context(c);
+	if(!output){
+		error(ERROR_RETURN_EXPECTED);
+	}
+	if(**c != '}'){
+		error(ERROR_END_BRACE);
+	}
+	++*c;
+	skip_whitespace(c);
+
+	global_context = global_context->parent;
+
+	if(strncmp(*c, "or", 2) || is_alphanumeric((*c)[2])){
+		error(ERROR_OR_EXPECTED);
+	}
+	*c += 2;
+	skip_whitespace(c);
+	while(current_arg < num_vars){
+		if(**c != '{'){
+			error(ERROR_BEGIN_BRACE);
+		}
+		++*c;
+		skip_whitespace(c);
+		next_context = create_context(global_context);
+		if(current_arg < num_vars - 1){
+			peeled = peel_or_left(&or_sentence);
 		} else {
-			free_statement(return_statement);
+			peeled = or_sentence;
 		}
-
-		drop_scope();
+		create_sentence_variable(var_names[current_arg], peeled, 1, next_context);
+		global_context = next_context;
+		returned_val = parse_context(c);
+		if(!returned_val){
+			error(ERROR_RETURN_EXPECTED);
+		}
+		if(**c != '}'){
+			error(ERROR_END_BRACE);
+		}
+		++*c;
 		skip_whitespace(c);
 
-		if(*arg_pointer == ','){
+		global_context = global_context->parent;
+
+		if(!sentence_equivalent(output->sentence_data, returned_val->sentence_data)){
+			error(ERROR_MISMATCHED_RETURN);
+		}
+		free_expr_value(returned_val);
+		free_context(next_context);
+		current_arg++;
+
+		if(current_arg < num_vars){
 			if(strncmp(*c, "or", 2) || is_alphanumeric((*c)[2])){
-				set_error("expected 'or'");
-				error(1);
+				error(ERROR_OR_EXPECTED);
 			}
 			*c += 2;
 			skip_whitespace(c);
-			if(**c != '{'){
-				set_error("expected '{'");
-				error(1);
-			}
-			++*c;
-			skip_whitespace(c);
 		}
 	}
 
-	return old_return_statement;
+	free_context(first_context);
+	free(var_names);
+	free(or_arg);
+
+	return output;
 }
 
-statement *parse_statement_value_builtin(char **c, unsigned char *is_verified){
+//Parse all built-in functions
+expr_value *parse_expr_value_builtin(char **c){
 	unsigned char is_and;
 
 	if(!strncmp(*c, "left", 4) && !is_alphanumeric((*c)[4])){
 		*c += 4;
 		skip_whitespace(c);
 		if(**c != '('){
-			return NULL;
+			error(ERROR_BEGIN_PARENTHESES);
 		}
 		++*c;
-		return parse_left(c, is_verified);
+		return parse_left(c);
 	} else if(!strncmp(*c, "right", 5) && !is_alphanumeric((*c)[5])){
 		*c += 5;
 		skip_whitespace(c);
 		if(**c != '('){
-			return NULL;
+			error(ERROR_BEGIN_PARENTHESES);
 		}
 		++*c;
-		return parse_right(c, is_verified);
+		return parse_right(c);
 	} else if((!strncmp(*c, "and", 3) && !is_alphanumeric((*c)[3])) || (!strncmp(*c, "or", 2) && !is_alphanumeric((*c)[2]))){
 		if(**c == 'a'){
 			*c += 3;
 			is_and = 1;
 		} else {
-			is_and = 0;
 			*c += 2;
+			is_and = 0;
 		}
 		skip_whitespace(c);
 		if(**c != '('){
-			return NULL;
+			error(ERROR_BEGIN_PARENTHESES);
 		}
 		++*c;
-		return parse_and_or(c, is_and, is_verified);
-	} else if(!strncmp(*c, "swap", 4) && !is_alphanumeric((*c)[4])){
-		*c += 4;
-		skip_whitespace(c);
-		if(**c != '('){
-			return NULL;
-		}
-		++*c;
-		return parse_swap(c, is_verified);
+		return parse_and_or(c, is_and);
 	} else if(!strncmp(*c, "expand", 6) && !is_alphanumeric((*c)[6])){
 		*c += 6;
 		skip_whitespace(c);
 		if(**c != '('){
-			return NULL;
+			error(ERROR_BEGIN_PARENTHESES);
 		}
 		++*c;
-		return parse_expand(c, is_verified);
+		return parse_expand(c);
 	} else if(!strncmp(*c, "iff", 3) && !is_alphanumeric((*c)[3])){
 		*c += 3;
 		skip_whitespace(c);
 		if(**c != '('){
-			return NULL;
+			error(ERROR_BEGIN_PARENTHESES);
 		}
 		++*c;
-		return parse_iff(c, is_verified);
+		return parse_iff(c);
 	} else if(!strncmp(*c, "branch", 6) && !is_alphanumeric((*c)[6])){
 		*c += 6;
 		skip_whitespace(c);
 		if(**c != '('){
-			return NULL;
+			error(ERROR_BEGIN_PARENTHESES);
 		}
 		++*c;
 		return parse_branch(c);
@@ -1206,188 +1273,218 @@ statement *parse_statement_value_builtin(char **c, unsigned char *is_verified){
 	return NULL;
 }
 
-statement *parse_statement_value_pipe(char **c, statement *output, unsigned char *is_verified){
-	statement *next_output;
+//Parse the '|' operation
+expr_value *parse_expr_value_pipe(char **c, expr_value *input){
+	expr_value *output;
+	sentence *input_sentence;
+	sentence *next_input_sentence;
 	variable *var;
 	char var_name[256];
 
-	if(output->num_bound_props || output->num_bound_vars){
-		set_error("expression has bound propositions or variables");
-		error(1);
+	if(input->type != SENTENCE){
+		error(ERROR_OPERAND_TYPE);
+	}
+	input_sentence = input->sentence_data;
+	if(input_sentence->num_bound_vars){
+		error(ERROR_OPERAND_BOUND_VARIABLES);
+	}
+	if(input_sentence->num_bound_props){
+		error(ERROR_OPERAND_BOUND_PROPOSITIONS);
+	}
+	if(!input->verified){
+		error(ERROR_OPERAND_VERIFY);
 	}
 	skip_whitespace(c);
 	if(**c == '|'){
-		set_error("expected variable");
-		error(1);
+		error(ERROR_IDENTIFIER_EXPECTED);
 	}
 	while(**c != '|'){
-		if(output->type != EXISTS){
-			set_error("expected '|'");
-			error(1);
+		if(input_sentence->type != EXISTS){
+			error(ERROR_TOO_MANY_UNPACK);
 		}
-		get_identifier(c, var_name, 256);
+		if(get_identifier(c, var_name, 256)){
+			error(ERROR_IDENTIFIER_LENGTH);
+		}
 		if(var_name[0] == '\0'){
-			set_error("expected identifier name");
-			error(1);
+			error(ERROR_IDENTIFIER_EXPECTED);
 		}
 		skip_whitespace(c);
-		var = create_object_var(var_name, current_depth);
-		if(!var){
-			set_error("failed to create variable");
-			error(1);
-		}
-		next_output = output->child0;
-		free(output);
-		if(!substitute_variable(next_output, 0, var)){
-			set_error("failed to substitute variable");
-			error(1);
-		}
-		output = next_output;
-		add_bound_variables(output, -1);
-
-		if(**c != ',' && **c != '|'){
-			set_error("expected ',' or '|'");
-			error(1);
+		var = create_object_variable(var_name, global_context);
+		next_input_sentence = input_sentence->child0;
+		free(input_sentence);
+		input_sentence = next_input_sentence;
+		input_sentence->parent = NULL;
+		substitute_variable(input_sentence, var);
+		if(**c != '|' && **c != ','){
+			error(ERROR_PIPE_OR_COMMA);
 		}
 		if(**c == ','){
 			++*c;
 			skip_whitespace(c);
+			if(**c == '|'){
+				error(ERROR_IDENTIFIER_EXPECTED);
+			}
 		}
 	}
+
 	++*c;
+	skip_whitespace(c);
+	free(input);
+	output = create_expr_value(SENTENCE);
+	output->verified = 1;
+	output->sentence_data = input_sentence;
 
 	return output;
 }
 
-statement *parse_statement_value_parentheses(char **c, statement *output, unsigned char *is_verified){
-	statement_type compare_type;
-	statement *next_output;
-	statement *arg;
+//Parse the '(' operation
+expr_value *parse_expr_value_parentheses(char **c, expr_value *input){
+	expr_value *output;
+	expr_value *arg;
+	sentence_type compare_type;
+	sentence *input_sentence;
+	sentence *next_input_sentence;
+	sentence *arg_sentence;
 	variable *var;
-	char var_name[256];
-	unsigned char is_child0;
+	unsigned char is_child0 = 0;
+	unsigned char verified;
 
-	if(output->num_bound_props || output->num_bound_vars){
-		set_error("expression has bound propositions or variables");
-		error(1);
+	if(input->type != SENTENCE){
+		error(ERROR_OPERAND_TYPE);
 	}
-	compare_type = output->type;
+	input_sentence = input->sentence_data;
+	if(input_sentence->num_bound_vars){
+		error(ERROR_OPERAND_BOUND_VARIABLES);
+	}
+	if(input_sentence->num_bound_props){
+		error(ERROR_OPERAND_BOUND_PROPOSITIONS);
+	}
+
+	compare_type = input_sentence->type;
 	skip_whitespace(c);
 	if(**c == ')'){
-		set_error("expected expression or variable");
-		error(1);
+		error(ERROR_EXPRESSION_OR_VARIABLE);
 	}
 	if(compare_type == IMPLIES || compare_type == BICOND || compare_type == NOT){
-		arg = parse_and_or(c, 1, is_verified);
+		arg = parse_and_or(c, 1);
+		arg_sentence = arg->sentence_data;
 		skip_whitespace(c);
 		if(compare_type == BICOND){
-			is_child0 = compare_statement(arg, output->child0);
-			if(!is_child0 && !compare_statement(arg, output->child1)){
-				set_error("mismatching statement type for operation");
-				error(1);
+			is_child0 = sentence_stronger(arg_sentence, input_sentence->child0);
+			if(!is_child0 && !sentence_stronger(arg_sentence, input_sentence->child1)){
+				error(ERROR_MISMATCHED_ARGUMENT);
 			}
 		} else {
-			if(!compare_statement(arg, output->child0)){
-				set_error("mismatching statement type for operation");
-				error(1);
+			if(!sentence_stronger(arg_sentence, input_sentence->child0)){
+				error(ERROR_MISMATCHED_ARGUMENT);
 			}
 		}
-		free_statement(arg);
+		verified = input->verified && arg->verified;
+		free_expr_value(arg);
 		if(compare_type == IMPLIES || (compare_type == BICOND && is_child0)){
-			free_statement(output->child0);
-			next_output = output->child1;
-			free(output);
-			output = next_output;
-			output->parent = NULL;
+			free_sentence(input_sentence->child0);
+			next_input_sentence = input_sentence->child1;
+			free(input_sentence);
+			input_sentence = next_input_sentence;
+			input_sentence->parent = NULL;
 		} else if(compare_type == BICOND && !is_child0){
-			free_statement(output->child1);
-			next_output = output->child0;
-			free(output);
-			output = next_output;
-			output->parent = NULL;
+			free_sentence(input_sentence->child1);
+			next_input_sentence = input_sentence->child0;
+			free(input_sentence);
+			input_sentence = next_input_sentence;
+			input_sentence->parent = NULL;
 		} else if(compare_type == NOT){
-			free_statement(output);
-			output = create_statement(FALSE, 0, 0);
+			free_sentence(input_sentence);
+			input_sentence = create_sentence(FALSE, 0, 0);
 		}
 	} else if(compare_type == FORALL){
+		verified = input->verified;
 		while(**c != ')'){
-			if(output->type != compare_type){
-				set_error("expected ')' before next arguments");
-				error(1);
+			if(input_sentence->type != FORALL){
+				error(ERROR_TOO_MANY_UNPACK);
 			}
-			get_identifier(c, var_name, 256);
-			if(var_name[0] == '\0'){
-				set_error("expected identifier name");
-				error(1);
-			}
+			arg = parse_expr_value(c);
 			skip_whitespace(c);
-			var = get_object_var(var_name, NULL);
-			if(!var){
-				set_error("failed to find object");
-				error(1);
+			if(arg->type != OBJECT){
+				error(ERROR_ARGUMENT_TYPE);
 			}
-			next_output = output->child0;
-			free(output);
-			if(!substitute_variable(next_output, 0, var)){
-				set_error("failed to substitute object");
-				error(1);
-			}
-			output = next_output;
-			output->parent = NULL;
-			add_bound_variables(output, -1);
-			if(**c != ',' && **c != ')'){
-				set_error("expected ',' or ')'");
-				error(1);
+			var = arg->var;
+			free_expr_value(arg);
+			next_input_sentence = input_sentence->child0;
+			free(input_sentence);
+			input_sentence = next_input_sentence;
+			input_sentence->parent = NULL;
+			substitute_variable(input_sentence, var);
+			if(**c != ')' && **c != ','){
+				error(ERROR_PARENTHESES_OR_COMMA);
 			}
 			if(**c == ','){
 				++*c;
 				skip_whitespace(c);
+				if(**c == ')'){
+					error(ERROR_EXPRESSION);
+				}
 			}
 		}
 		++*c;
 		skip_whitespace(c);
 	} else {
-		set_error("invalid statement type for parentheses operation");
-		error(1);
+		error(ERROR_OPERAND_TYPE);
 	}
+
+	free(input);
+	output = create_expr_value(SENTENCE);
+	output->verified = verified;
+	output->sentence_data = input_sentence;
 
 	return output;
 }
 
-static statement *parse_statement_brackets(char **c, statement *output){
-	statement *arg;
-	unsigned char foo_verified;
+//Parse the '[' operation
+expr_value *parse_expr_value_brackets(char **c, expr_value *input){
+	expr_value *arg;
+	sentence *arg_sentence;
+	sentence *input_sentence;
+
+	if(input->type != SENTENCE){
+		error(ERROR_OPERAND_TYPE);
+	}
+	input_sentence = input->sentence_data;
 
 	do{
-		if(!output->num_bound_props){
-			set_error("statement has no bound propositions");
-			error(1);
+		if(input_sentence->num_bound_props == 0){
+			error(ERROR_MORE_BOUND_PROPOSITIONS);
 		}
 		++*c;
 		skip_whitespace(c);
 
-		arg = parse_statement_value(c, &foo_verified);
-
-		if(!arg || arg->num_bound_props){
-			return NULL;
+		arg = parse_expr_value(c);
+		if(arg->type != SENTENCE){
+			error(ERROR_ARGUMENT_TYPE);
+		}
+		arg_sentence = arg->sentence_data;
+		if(arg_sentence->num_bound_props > 0){
+			error(ERROR_ARGUMENT_BOUND_PROPOSITIONS);
 		}
 
 		skip_whitespace(c);
-		if(**c != ',' && **c != ']'){
-			set_error("expected ',' or ']'");
-			error(1);
+		if(**c != ']' && **c != ','){
+			error(ERROR_BRACKET_OR_COMMA);
 		}
-		substitute_proposition(output, arg);
-		free_statement(arg);
-	} while(**c == ',');
+		substitute_proposition(input_sentence, arg_sentence);
+		free_expr_value(arg);
+	} while(**c != ']');
 
 	++*c;
 
-	return output;
+	return input;
 }
 
-statement *parse_anonymous_definition(char **c){
-	statement *output;
+//Parse anonymous definitions
+//They are of the form <A, B, C,... : P(A, B, C,...)>
+expr_value *parse_anonymous_definition(char **c){
+	expr_value *output;
+	sentence *output_sentence;
 	int *new_int;
 	int num_bound_vars = 0;
 	char name_buffer[256];
@@ -1395,87 +1492,77 @@ statement *parse_anonymous_definition(char **c){
 	clear_bound_variables();
 	skip_whitespace(c);
 	while(**c != ':'){
-		get_identifier(c, name_buffer, 256);
-		if(name_buffer[0] == '\0'){
-			set_error("expected identifier");
-			error(1);
+		if(get_identifier(c, name_buffer, 256)){
+			error(ERROR_IDENTIFIER_LENGTH);
 		}
-		if(read_dictionary(bound_variables, name_buffer, 0)){
-			set_error("duplicate identifier");
-			error(1);
+		if(name_buffer[0] == '\0'){
+			error(ERROR_IDENTIFIER_EXPECTED);
+		}
+		if(read_dictionary(global_bound_variables, name_buffer, 0)){
+			error(ERROR_DUPLICATE_IDENTIFIER);
 		}
 		new_int = malloc(sizeof(int));
 		*new_int = num_bound_vars;
-		write_dictionary(&bound_variables, name_buffer, new_int, 0);
+		write_dictionary(&global_bound_variables, name_buffer, new_int, 0);
 		num_bound_vars++;
 		skip_whitespace(c);
 		if(**c == ','){
 			++*c;
 			skip_whitespace(c);
+			if(**c == ':'){
+				error(ERROR_IDENTIFIER_EXPECTED);
+			}
 		} else if(**c != ':'){
-			set_error("expected ',' or ':'");
-			error(1);
+			error(ERROR_COLON_OR_COMMA);
 		}
 	}
 	++*c;
 	skip_whitespace(c);
-	output = parse_statement(c, num_bound_vars, 0);
+	output_sentence = parse_sentence(c, num_bound_vars, 0);
 	if(**c != '>'){
-		set_error("expected '>'");
-		error(1);
+		error(ERROR_GREATER_THAN);
 	}
 	++*c;
 	clear_bound_variables();
 
+	output = create_expr_value(SENTENCE);
+	output->sentence_data = output_sentence;
+	output->verified = 0;
+
 	return output;
 }
 
-static statement *parse_statement_value_recursive(char **c, unsigned char *is_verified){
-	statement *output;
+expr_value *parse_expr_value(char **c){
+	expr_value *output;
 
 	skip_whitespace(c);
-	if((output = parse_statement_value_builtin(c, is_verified))){
+	if((output = parse_expr_value_builtin(c))){
 		//pass
 	} else if(**c == '('){
 		++*c;
-		output = parse_statement_value_recursive(c, is_verified);
+		output = parse_expr_value(c);
 		if(**c != ')'){
-			if(output){
-				free_statement(output);
-			}
-			return NULL;
+			error(ERROR_END_PARENTHESES);
 		}
 		++*c;
 	} else if(**c == '<'){
 		++*c;
 		output = parse_anonymous_definition(c);
-		*is_verified = 0;
 	} else {
-		output = parse_statement_identifier(c, is_verified);
-		if(!output){
-			return NULL;
-		}
+		output = parse_expr_identifier(c);
 	}
 	skip_whitespace(c);
 	while(**c && **c != ';' && **c != ')' && **c != ',' && **c != ']' && **c != ':'){
 		if(**c == '['){
-			output = parse_statement_brackets(c, output);
-			if(!output){
-				return NULL;
-			}
+			output = parse_expr_value_brackets(c, output);
 		} else if(**c == '('){
 			++*c;
-			output = parse_statement_value_parentheses(c, output, is_verified);
+			output = parse_expr_value_parentheses(c, output);
 		} else if(**c == '|'){
-			if(!*is_verified){
-				set_error("cannot bind object in unverified statement");
-				error(1);
-			}
 			++*c;
-			output = parse_statement_value_pipe(c, output, is_verified);
+			output = parse_expr_value_pipe(c, output);
 		} else {
-			free_statement(output);
-			return NULL;
+			error(ERROR_OPERATION);
 		}
 		skip_whitespace(c);
 	}
@@ -1483,13 +1570,107 @@ static statement *parse_statement_value_recursive(char **c, unsigned char *is_ve
 	return output;
 }
 
-statement *parse_statement_value(char **c, unsigned char *is_verified){
-	statement *output;
-
-	set_error("could not parse statement value");
-	*is_verified = 1;
-	output = parse_statement_value_recursive(c, is_verified);
-
-	return output;
+void print_expr_value(expr_value *val){
+	if(val->type == SENTENCE){
+		if(val->verified){
+			printf("(verified)   ");
+		} else {
+			printf("(unverified) ");
+		}
+		print_sentence(val->sentence_data);
+	} else if(val->type == OBJECT){
+		printf("%s", val->var->name);
+	}
 }
 
+expr_value *get_expr_value(char *c){
+	global_program_start = c;
+	global_program_pointer = &c;
+	return parse_expr_value(&c);
+}
+
+int main3(int argc, char **argv){
+	definition *A;
+	definition *B;
+	definition *C;
+	context *c;
+	expr_value *val;
+	expr_value *val2;
+	sentence *s;
+
+	custom_malloc_init();
+
+	A = malloc(sizeof(definition));
+	B = malloc(sizeof(definition));
+	C = malloc(sizeof(definition));
+	A->name = malloc(sizeof(char)*2);
+	strcpy(A->name, "A");
+	A->sentence_data = NULL;
+	A->num_references = 0;
+	A->num_args = 1;
+
+	B->name = malloc(sizeof(char)*2);
+	strcpy(B->name, "B");
+	B->sentence_data = NULL;
+	B->num_references = 0;
+	B->num_args = 2;
+
+	C->name = malloc(sizeof(char)*2);
+	strcpy(C->name, "C");
+	C->sentence_data = NULL;
+	C->num_references = 0;
+	C->num_args = 1;
+
+	c = malloc(sizeof(context));
+	c->variables = create_dictionary(NULL);
+	c->definitions = create_dictionary(NULL);
+	c->relations = create_dictionary(NULL);
+	c->parent = NULL;
+	global_context = c;
+	write_dictionary(&c->definitions, "A", A, 0);
+	write_dictionary(&c->definitions, "B", B, 0);
+	write_dictionary(&c->definitions, "C", C, 0);
+
+	val = get_expr_value("<X: *Y(B(X, Y))>");
+	A->sentence_data = malloc(sizeof(sentence));
+	copy_sentence(A->sentence_data, val->sentence_data);
+	free_expr_value(val);
+
+	create_object_variable("N", global_context);
+
+	val = get_expr_value("<: *X(A(X))>");
+	s = malloc(sizeof(sentence));
+	copy_sentence(s, val->sentence_data);
+	create_sentence_variable("test", s, 1, global_context);
+	free_expr_value(val);
+
+	val = get_expr_value("<: *X(A(X) | C(X) -> B(X, X))>");
+	s = malloc(sizeof(sentence));
+	copy_sentence(s, val->sentence_data);
+	create_sentence_variable("test2", s, 1, global_context);
+	free_expr_value(val);
+
+	val = get_expr_value("<: *X^Y(B(X, Y))>");
+	s = malloc(sizeof(sentence));
+	copy_sentence(s, val->sentence_data);
+	create_sentence_variable("test3", s, 1, global_context);
+	free_expr_value(val);
+
+	val = get_expr_value("test(N)");
+	print_expr_value(val);
+	printf("\n");
+	free_expr_value(val);
+
+	val = get_expr_value("test3(N)|M|)");
+	print_expr_value(val);
+	printf("\n");
+	free_expr_value(val);
+
+	val = get_expr_value("test2(N)(test(N))");
+	print_expr_value(val);
+	printf("\n");
+	free_expr_value(val);
+
+	free_context(global_context);
+	custom_malloc_deinit();
+}

@@ -2,58 +2,81 @@
 #include <stdio.h>
 #include <string.h>
 #include "dictionary.h"
-#include "proposition.h"
+#include "predicate.h"
 #include "expression.h"
 #include "custom_malloc.h"
 
-void init_verifier(){
+//CORE Command Parser
+//Ben Jones
+
+void init_verifier(void){
 	int i;
 
-	current_depth = 0;
-	goal_depth = 0;
-	current_relation_id = 0;
-	bound_variables = create_dictionary(NULL);
-	bound_propositions = create_dictionary(NULL);
-
-	for(i = 0; i < MAX_DEPTH; i++){
-		variables[i] = create_dictionary(NULL);
-		definitions[i] = create_dictionary(NULL);
-		relations[i] = create_dictionary(NULL);
-		goals[i] = NULL;
-	}
+	global_context = create_context(NULL);
 }
 
-void up_scope(){
-	if(current_depth < MAX_DEPTH - 1){
-		current_depth++;
+void new_scope(void){
+	global_context = create_context(global_context);
+}
+
+void drop_scope(void){
+	context *next_context;
+
+	next_context = global_context->parent;
+	if(!next_context){
+		error(ERROR_PARENT_CONTEXT);
+	}
+	free_context(global_context);
+	global_context = next_context;
+}
+
+definition *create_definition(char *name, sentence *sentence_data, int num_args, context *parent_context){
+	definition *def;
+
+	if((def = read_dictionary(parent_context->definitions, name, 0))){
+		if(def->num_references == 0){
+			free_definition(def);
+		} else {
+			error(ERROR_DUPLICATE_DEFINITION);
+		}
+	}
+	def = malloc(sizeof(definition));
+	def->sentence_data = sentence_data;
+	def->name = malloc(sizeof(char)*(strlen(name) + 1));
+	strcpy(def->name, name);
+	def->num_args = num_args;
+	def->num_references = 0;
+	write_dictionary(&(parent_context->definitions), name, def, 0);
+
+	return def;
+}
+
+relation *create_relation(char *name, sentence *sentence_data, context *parent_context){
+	relation *rel;
+
+	if((rel = read_dictionary(parent_context->relations, name, 0))){
+		if(rel->num_references == 0){
+			free_relation(rel);
+		} else {
+			error(ERROR_DUPLICATE_RELATION);
+		}
+	}
+	rel = malloc(sizeof(relation));
+	if(sentence_data){
+		rel->sentence_data = malloc(sizeof(sentence));
+		copy_sentence(rel->sentence_data, sentence_data);
 	} else {
-		set_error("maximum scope depth reached");
-		error(1);
+		rel->sentence_data = NULL;
 	}
+	rel->name = malloc(sizeof(char)*(strlen(name) + 1));
+	strcpy(rel->name, name);
+	rel->num_references = 0;
+	write_dictionary(&(parent_context->relations), name, rel, 0);
+
+	return rel;
 }
 
-void drop_scope(){
-	if(current_depth){
-		iterate_dictionary(variables[current_depth], variable_decrement_references_void);
-		iterate_dictionary(definitions[current_depth], proposition_decrement_references_void);
-		free_dictionary(variables + current_depth, free_variable_void);
-		free_dictionary(definitions + current_depth, free_proposition_void);
-		free_dictionary(relations + current_depth, free_relation_void);
-		current_depth--;
-	} else {
-		fprintf(stderr, "WARNING: drop scope called when scope was 0\n");
-	}
-}
-
-void clear_bound_variables(){
-	free_dictionary(&bound_variables, free);
-}
-
-void clear_bound_propositions(){
-	free_dictionary(&bound_propositions, free);
-}
-
-char *load_file(char *file_name){
+static char *load_file(char *file_name){
 	FILE *fp;
 	size_t size;
 	size_t read_size;
@@ -79,48 +102,22 @@ char *load_file(char *file_name){
 	return output;
 }
 
-void write_goal(statement *goal){
-	statement *goal_copy;
-	proposition *goal_prop;
-
-	goal_copy = malloc(sizeof(statement));
-	copy_statement(goal_copy, goal);
-	goal_prop = malloc(sizeof(proposition));
-	goal_prop->name = malloc(sizeof(char)*(strlen("goal") + 1));
-	strcpy(goal_prop->name, "goal");
-	goal_prop->num_references = 1;
-	goal_prop->depth = current_depth;
-	goal_prop->num_args = 0;
-	goal_prop->statement_data = goal_copy;
-
-	write_dictionary(definitions + current_depth, "goal", goal_prop, 0);
-}
-
 int print_command(char **c){
-	statement *s;
-	unsigned char is_verified;
+	expr_value *val;
 
 	if(strncmp(*c, "print", 5) || is_alphanumeric((*c)[5])){
 		return 0;
 	}
 	*c += 5;
 	skip_whitespace(c);
-	s = parse_statement_value(c, &is_verified);
-	if(!s){
-		error(1);
-	}
-	if(is_verified){
-		printf("'%s' line %d   (verified): ", global_file_name, line_number);
-	} else {
-		printf("'%s' line %d (unverified): ", global_file_name, line_number);
-	}
-	print_statement(s);
+	val = parse_expr_value(c);
+	printf("'%s' line %d: ", global_file_name, global_line_number);
+	print_expr_value(val);
 	printf("\n");
-	free_statement(s);
+	free_expr_value(val);
 	skip_whitespace(c);
 	if(**c != ';'){
-		set_error("expected ';'");
-		error(1);
+		error(ERROR_SEMICOLON);
 	}
 	++*c;
 
@@ -137,44 +134,49 @@ int object_command(char **c){
 	*c += 6;
 	skip_whitespace(c);
 
-	get_identifier(c, var_name, 256);
-	if(var_name[0] == '\0'){
-		set_error("expected identifier");
-		error(1);
+	if(global_context->parent){
+		error(ERROR_GLOBAL_SCOPE);
 	}
 
-	create_object_var(var_name, current_depth);
+	if(get_identifier(c, var_name, 256)){
+		error(ERROR_IDENTIFIER_LENGTH);
+	}
+	if(var_name[0] == '\0'){
+		error(ERROR_IDENTIFIER_EXPECTED);
+	}
+
+	create_object_variable(var_name, global_context);
 
 	skip_whitespace(c);
 	while(**c == ','){
 		++*c;
 		skip_whitespace(c);
-		get_identifier(c, var_name, 256);
+		if(get_identifier(c, var_name, 256)){
+			error(ERROR_IDENTIFIER_LENGTH);
+		}
 		if(var_name[0] == '\0'){
-			set_error("expected identifier");
-			error(1);
+			error(ERROR_IDENTIFIER_EXPECTED);
 		}
 
-		create_object_var(var_name, current_depth);
+		create_object_variable(var_name, global_context);
 		skip_whitespace(c);
 	}
 
 	if(**c != ';'){
-		set_error("expected ',' or ';'");
-		error(1);
+		error(ERROR_SEMICOLON);
 	}
 
 	++*c;
 	return 1;
 }
 
-proposition *definition_command(char **c){
+definition *define_command(char **c){
 	int num_bound_vars = 0;
 	int *new_int;
-	char name_buffer[256];
-	char *def_name;
-	statement *s;
-	proposition *output;
+	char var_name[256];
+	char def_name[256];
+	sentence *s;
+	definition *output;
 
 	skip_whitespace(c);
 	if(strncmp(*c, "define", 6) || is_alphanumeric((*c)[6])){
@@ -182,45 +184,43 @@ proposition *definition_command(char **c){
 	}
 	*c += 6;
 	skip_whitespace(c);
-	
-	clear_bound_variables();
-	get_identifier(c, name_buffer, 256);
-	if(name_buffer[0] == '\0'){
-		set_error("expected identifier");
-		error(1);
+
+	if(get_identifier(c, def_name, 256)){
+		error(ERROR_IDENTIFIER_LENGTH);
+	}
+	if(def_name[0] == '\0'){
+		error(ERROR_IDENTIFIER_EXPECTED);
 	}
 
-	def_name = malloc(sizeof(char)*(strlen(name_buffer) + 1));
-	strcpy(def_name, name_buffer);
-
+	clear_bound_variables();
 	skip_whitespace(c);
 
 	if(**c == '('){
 		++*c;
 		skip_whitespace(c);
 		while(**c != ')'){
-			get_identifier(c, name_buffer, 256);
-			if(name_buffer[0] == '\0'){
-				free(def_name);
-				set_error("expected identifier");
-				error(1);
+			if(get_identifier(c, var_name, 256)){
+				error(ERROR_IDENTIFIER_LENGTH);
 			}
-			if(read_dictionary(bound_variables, name_buffer, 0)){
-				set_error("duplicate identifier");
-				error(1);
+			if(var_name[0] == '\0'){
+				error(ERROR_IDENTIFIER_EXPECTED);
+			}
+			if(read_dictionary(global_bound_variables, var_name, 0)){
+				error(ERROR_DUPLICATE_IDENTIFIER);
 			}
 			new_int = malloc(sizeof(int));
 			*new_int = num_bound_vars;
-			write_dictionary(&bound_variables, name_buffer, new_int, 0);
+			write_dictionary(&global_bound_variables, var_name, new_int, 0);
 			num_bound_vars++;
 			skip_whitespace(c);
 			if(**c == ','){
 				++*c;
 				skip_whitespace(c);
+				if(**c == ')'){
+					error(ERROR_IDENTIFIER_EXPECTED);
+				}
 			} else if(**c != ')'){
-				free(def_name);
-				set_error("expected ',' or ')'");
-				error(1);
+				error(ERROR_PARENTHESES_OR_COMMA);
 			}
 		}
 		++*c;
@@ -228,31 +228,20 @@ proposition *definition_command(char **c){
 	skip_whitespace(c);
 	if(**c == ';'){
 		++*c;
-		s = NULL;
+		output = create_definition(def_name, NULL, num_bound_vars, global_context);
 	} else if(**c == ':'){
 		++*c;
-		s = parse_statement(c, num_bound_vars, 0);
+		s = parse_sentence(c, num_bound_vars, 0);
 		if(**c != ';'){
-			free(def_name);
-			free_statement(s);
-			set_error("expected ';'");
-			error(1);
+			error(ERROR_SEMICOLON);
 		}
 		++*c;
+		output = create_definition(def_name, s, num_bound_vars, global_context);
 	} else {
-		free(def_name);
-		set_error("expected ':' or ';'");
-		error(1);
+		error(ERROR_COLON_OR_SEMICOLON);
 	}
-	output = malloc(sizeof(proposition));
-	output->name = def_name;
-	output->statement_data = s;
-	output->num_references = 0;
-	output->depth = current_depth;
-	output->num_args = num_bound_vars;
 
 	clear_bound_variables();
-
 	return output;
 }
 
@@ -261,45 +250,42 @@ variable *axiom_command(char **c){
 	int num_args;
 	bound_proposition *new_bound_prop;
 	char name_buffer[256];
-	char *axiom_name;
+	char axiom_name[256];
 	char *int_end;
 	variable *output;
-	statement *s;
+	sentence *s;
 
 	skip_whitespace(c);
 	if(strncmp(*c, "axiom", 5) || is_alphanumeric((*c)[5])){
 		return NULL;
 	}
-
 	*c += 5;
 	skip_whitespace(c);
 
+	if(global_context->parent){
+		error(ERROR_GLOBAL_SCOPE);
+	}
 	clear_bound_propositions();
-	get_identifier(c, name_buffer, 256);
-	if(name_buffer[0] == '\0'){
-		set_error("expected identifier");
-		error(1);
+	if(get_identifier(c, axiom_name, 256)){
+		error(ERROR_IDENTIFIER_LENGTH);
+	}
+	if(axiom_name[0] == '\0'){
+		error(ERROR_IDENTIFIER_EXPECTED);
 	}
 
-	axiom_name = malloc(sizeof(char)*(strlen(name_buffer) + 1));
-	strcpy(axiom_name, name_buffer);
-
 	skip_whitespace(c);
-
 	if(**c == '['){
 		++*c;
 		skip_whitespace(c);
 		while(**c != ']'){
-			get_identifier(c, name_buffer, 256);
-			if(name_buffer[0] == '\0'){
-				free(axiom_name);
-				set_error("expected identifier");
-				error(1);
+			if(get_identifier(c, name_buffer, 256)){
+				error(ERROR_IDENTIFIER_LENGTH);
 			}
-			if(read_dictionary(bound_propositions, name_buffer, 0)){
-				free(axiom_name);
-				set_error("duplicate identifier");
-				error(1);
+			if(name_buffer[0] == '\0'){
+				error(ERROR_IDENTIFIER_EXPECTED);
+			}
+			if(read_dictionary(global_bound_propositions, name_buffer, 0)){
+				error(ERROR_DUPLICATE_IDENTIFIER);
 			}
 			new_bound_prop = malloc(sizeof(bound_proposition));
 			skip_whitespace(c);
@@ -307,25 +293,16 @@ variable *axiom_command(char **c){
 				++*c;
 				skip_whitespace(c);
 				if(**c != ')' && !is_digit(**c)){
-					free(axiom_name);
-					free(new_bound_prop);
-					set_error("expected number of arguments");
-					error(1);
+					error(ERROR_NUM_ARGS);
 				} else if(is_digit(**c)){
 					num_args = strtol(*c, &int_end, 10);
 					*c = int_end;
 					if(num_args < 0){
-						free(axiom_name);
-						free(new_bound_prop);
-						set_error("expected a positive number of arguments");
-						error(1);
+						error(ERROR_NUM_ARGS);
 					}
 					skip_whitespace(c);
 					if(**c != ')'){
-						free(axiom_name);
-						free(new_bound_prop);
-						set_error("expected ')'");
-						error(1);
+						error(ERROR_PARENTHESES);
 					}
 					++*c;
 				} else {
@@ -337,46 +314,36 @@ variable *axiom_command(char **c){
 				new_bound_prop->num_args = 0;
 			}
 			new_bound_prop->prop_id = num_bound_props;
-			write_dictionary(&bound_propositions, name_buffer, new_bound_prop, 0);
+			write_dictionary(&global_bound_propositions, name_buffer, new_bound_prop, 0);
 			num_bound_props++;
 			skip_whitespace(c);
 			if(**c == ','){
 				++*c;
 				skip_whitespace(c);
+				if(**c == ']'){
+					error(ERROR_IDENTIFIER_EXPECTED);
+				}
 			} else if(**c != ']'){
-				free(axiom_name);
-				set_error("expected ',' or ']'");
-				error(1);
+				error(ERROR_BRACKET_OR_COMMA);
 			}
 		}
 		++*c;
 	}
 	skip_whitespace(c);
 	if(**c != ':'){
-		free(axiom_name);
-		set_error("expected ':'");
-		error(1);
+		error(ERROR_COLON);
 	}
 	++*c;
-	s = parse_statement(c, 0, num_bound_props);
+	skip_whitespace(c);
+	s = parse_sentence(c, 0, num_bound_props);
 	skip_whitespace(c);
 	if(**c != ';'){
-		free(axiom_name);
-		free_statement(s);
-		set_error("expected ';'");
-		error(1);
+		error(ERROR_SEMICOLON);
 	}
 	++*c;
 
 	clear_bound_propositions();
-
-	output = malloc(sizeof(variable));
-	output->name = axiom_name;
-	output->type = STATEMENT;
-	output->statement_data = s;
-	output->num_references = 0;
-	output->depth = current_depth;
-
+	output = create_sentence_variable(axiom_name, s, 1, global_context);
 	return output;
 }
 
@@ -402,7 +369,13 @@ static unsigned char get_assign_vars(char **c, char ***var_names, unsigned int *
 			*var_names = realloc(*var_names, sizeof(char *)*var_names_size);
 		}
 		(*var_names)[*current_var_name] = malloc(sizeof(char)*256);
-		get_identifier(c, (*var_names)[*current_var_name], 256);
+		if(get_identifier(c, (*var_names)[*current_var_name], 256)){
+			for(i = 0; i <= *current_var_name; i++){
+				free((*var_names)[i]);
+			}
+			free(*var_names);
+			return 1;
+		}
 		(*var_names)[*current_var_name] = realloc((*var_names)[*current_var_name], sizeof(char)*(strlen((*var_names)[*current_var_name]) + 1));
 		skip_whitespace(c);
 		if(!(*var_names)[*current_var_name][0]){
@@ -430,55 +403,50 @@ static unsigned char get_assign_vars(char **c, char ***var_names, unsigned int *
 }
 
 int assign_command(char **c){
-	unsigned char is_verified;
+	expr_value *val;
 	char *beginning;
 	char **var_names;
-	unsigned int num_var_names;
+	unsigned int num_vars;
 	unsigned int i;
-	statement *s;
-	statement *extracted;
+	sentence *s;
+	sentence *extracted;
 
 	beginning = *c;
-	if(get_assign_vars(c, &var_names, &num_var_names)){
+	if(get_assign_vars(c, &var_names, &num_vars)){
 		*c = beginning;
 		return 0;
 	}
 
-	s = parse_statement_value(c, &is_verified);
-	if(!s){
-		error(1);
+	val = parse_expr_value(c);
+	if(val->type != SENTENCE){
+		error(ERROR_ARGUMENT_TYPE);
 	}
+	s = val->sentence_data;
 	skip_whitespace(c);
 	if(**c != ';'){
-		set_error("expected ';'");
-		error(1);
+		error(ERROR_SEMICOLON);
 	}
-	if(!is_verified){
-		set_error("statement must be verified");
-		error(1);
-	}
-
 	++*c;
 
-	for(i = 0; i < num_var_names - 1; i++){
+	for(i = 0; i < num_vars - 1; i++){
 		if(!s){
-			set_error("not enough values to unpack");
-			error(1);
+			error(ERROR_TOO_MANY_UNPACK);
 		}
 		extracted = peel_and_left(&s);
 		extracted->parent = NULL;
-		create_statement_var(var_names[i], extracted);
+		create_sentence_variable(var_names[i], extracted, val->verified, global_context);
 	}
-	if(!s){
-		set_error("not enough values to unpack");
-		error(1);
-	}
-	create_statement_var(var_names[num_var_names - 1], s);
 
-	for(i = 0; i < num_var_names; i++){
+	if(!s){
+		error(ERROR_TOO_MANY_UNPACK);
+	}
+	create_sentence_variable(var_names[num_vars - 1], s, val->verified, global_context);
+
+	for(i = 0; i < num_vars; i++){
 		free(var_names[i]);
 	}
 	free(var_names);
+	free(val);
 
 	return 1;
 }
@@ -488,153 +456,143 @@ int relation_command(char **c){
 	char identifier1[256];
 	char identifier2[256];
 	char *name;
-	relation *relation_info;
 	int *new_int;
-	statement *s;
+	sentence *s;
 
 	skip_whitespace(c);
 	if(strncmp(*c, "relation", 8) || is_alphanumeric((*c)[8])){
 		return 0;
 	}
-
 	*c += 8;
 	skip_whitespace(c);
-	get_relation_identifier(c, identifier0, 256);
+	if(get_relation_identifier(c, identifier0, 256)){
+		error(ERROR_IDENTIFIER_LENGTH);
+	}
 	skip_whitespace(c);
 	if(**c == ';'){
 		if(identifier0[0] == '\0'){
-			set_error("expected relation name");
-			error(1);
+			error(ERROR_RELATION_IDENTIFIER);
 		}
 		++*c;
 
-		if(read_dictionary(relations[current_depth], identifier0, 0)){
-			set_error("duplicate relation name");
-			error(1);
+		if(read_dictionary(global_context->relations, identifier0, 0)){
+			error(ERROR_DUPLICATE_RELATION);
 		}
-
-		name = malloc(sizeof(char)*(strlen(identifier0) + 1));
-		strcpy(name, identifier0);
-		relation_info = malloc(sizeof(relation));
-		relation_info->relation_id = current_relation_id;
-		current_relation_id++;
-		relation_info->name = name;
-		relation_info->definition = NULL;
-		relation_info->depth = current_depth;
-
-		write_dictionary(relations + current_depth, identifier0, relation_info, 0);
-
+		if(global_context->parent){
+			error(ERROR_RELATION_CONTEXT);
+		}
+		create_relation(identifier0, NULL, global_context);
 		return 1;
 	} else {
 		if(!is_alpha(identifier0[0])){
-			set_error("expected identifier");
-			error(1);
+			error(ERROR_IDENTIFIER_EXPECTED);
 		}
-		get_relation_identifier(c, identifier1, 256);
+		if(get_relation_identifier(c, identifier1, 256)){
+			error(ERROR_IDENTIFIER_LENGTH);
+		}
 		if(identifier1[0] == '\0'){
-			set_error("expected relation name");
-			error(1);
+			error(ERROR_RELATION_IDENTIFIER);
 		}
 		skip_whitespace(c);
-		get_identifier(c, identifier2, 256);
-		if(identifier2[0] == '\0'){
-			set_error("expected identifier");
-			error(1);
+		if(get_identifier(c, identifier2, 256)){
+			error(ERROR_IDENTIFIER_LENGTH);
 		}
-		if(!strcmp(identifier1, identifier2)){
-			set_error("duplicate identifier");
-			error(1);
+		if(identifier2[0] == '\0'){
+			error(ERROR_IDENTIFIER_EXPECTED);
+		}
+		if(!strcmp(identifier0, identifier2)){
+			error(ERROR_DUPLICATE_IDENTIFIER);
 		}
 		skip_whitespace(c);
 		if(**c != ':'){
-			set_error("expected ':'");
-			error(1);
+			error(ERROR_COLON);
 		}
 		++*c;
 		new_int = malloc(sizeof(int));
 		*new_int = 0;
-		write_dictionary(&bound_variables, identifier0, new_int, 0);
+		write_dictionary(&global_bound_variables, identifier0, new_int, 0);
 		new_int = malloc(sizeof(int));
 		*new_int = 1;
-		write_dictionary(&bound_variables, identifier2, new_int, 0);
-		s = parse_statement(c, 2, 0);
+		write_dictionary(&global_bound_variables, identifier2, new_int, 0);
+		s = parse_sentence(c, 2, 0);
 		if(**c != ';'){
-			set_error("expected ';'");
-			error(1);
+			error(ERROR_SEMICOLON);
 		}
 		++*c;
 
 		clear_bound_variables();
-		name = malloc(sizeof(char)*(strlen(identifier1) + 1));
-		strcpy(name, identifier1);
-		relation_info = malloc(sizeof(relation));
-		relation_info->relation_id = current_relation_id;
-		current_relation_id++;
-		relation_info->name = name;
-		relation_info->definition = s;
-		relation_info->depth = current_depth;
-
-		write_dictionary(relations + current_depth, identifier1, relation_info, 0);
-
+		create_relation(identifier1, s, global_context);
 		return 1;
 	}
 }
 
-statement *return_command(char **c){
-	unsigned char is_verified = 1;
-	unsigned char arg_verified;
-	statement *output;
-	statement *last_parent = NULL;
-	statement *s;
-	statement *new;
+expr_value *return_command(char **c){
+	expr_value *output;
+	expr_value *arg;
+	sentence *arg_sentence;
+	sentence *output_sentence;
+	sentence *last_parent = NULL;
+	sentence *s;
+	sentence *new;
 
 	skip_whitespace(c);
 	if(strncmp(*c, "return", 6) || is_alphanumeric((*c)[6])){
 		return NULL;
 	}
-
 	*c += 6;
 	skip_whitespace(c);
 
-	output = parse_statement_value(c, &is_verified);
-	if(!output){
-		error(1);
+	arg = parse_expr_value(c);
+	if(arg->type != SENTENCE){
+		error(ERROR_ARGUMENT_TYPE);
 	}
-	if(output->num_bound_props || output->num_bound_vars){
-		free_statement(output);
-		set_error("expected operand to have no bound variables or propositions");
-		error(1);
+	output_sentence = arg->sentence_data;
+	if(output_sentence->num_bound_vars){
+		error(ERROR_ARGUMENT_BOUND_VARIABLES);
 	}
+	if(output_sentence->num_bound_props){
+		error(ERROR_ARGUMENT_BOUND_PROPOSITIONS);
+	}
+	if(!arg->verified){
+		error(ERROR_ARGUMENT_VERIFY);
+	}
+	free(arg);
 	skip_whitespace(c);
 
 	if(**c != ';' && **c != ','){
-		set_error("expected ';' or ','");
-		error(1);
+		error(ERROR_SEMICOLON_OR_COMMA);
 	}
 
 	while(**c != ';'){
 		++*c;
 		skip_whitespace(c);
-		s = parse_statement_value(c, &arg_verified);
-		if(!s){
-			error(1);
+		arg = parse_expr_value(c);
+		if(arg->type != SENTENCE){
+			error(ERROR_ARGUMENT_TYPE);
 		}
-		if(s->num_bound_props || s->num_bound_vars){
-			set_error("expected operand to have no bound variables or propositions");
-			error(1);
+		arg_sentence = arg->sentence_data;
+		if(arg_sentence->num_bound_vars){
+			error(ERROR_ARGUMENT_BOUND_VARIABLES);
 		}
-		is_verified = is_verified && arg_verified;
-		new = create_statement(AND, 0, 0);
+		if(arg_sentence->num_bound_props){
+			error(ERROR_ARGUMENT_BOUND_PROPOSITIONS);
+		}
+		if(!arg->verified){
+			error(ERROR_ARGUMENT_VERIFY);
+		}
+		free(arg);
+		skip_whitespace(c);
+		new = create_sentence(AND, 0, 0);
 		if(!last_parent){
 			last_parent = new;
-			last_parent->child0 = output;
-			last_parent->child1 = s;
+			last_parent->child0 = output_sentence;
+			last_parent->child1 = arg_sentence;
 			last_parent->child0->parent = last_parent;
 			last_parent->child1->parent = last_parent;
-			output = last_parent;
+			output_sentence = last_parent;
 		} else {
 			new->child0 = last_parent->child1;
-			new->child1 = s;
+			new->child1 = arg_sentence;
 			new->child0->parent = new;
 			new->child1->parent = new;
 			last_parent->child1 = new;
@@ -642,189 +600,123 @@ statement *return_command(char **c){
 			last_parent = new;
 		}
 
-		skip_whitespace(c);
 		if(**c != ';' && **c != ','){
-			free_statement(output);
-			set_error("expected ',' or ';'");
-			error(1);
+			error(ERROR_SEMICOLON_OR_COMMA);
 		}
 	}
 
 	++*c;
-
-	if(!is_verified){
-		free_statement(output);
-		set_error("statements must be verified");
-		error(1);
-	}
+	output = create_expr_value(SENTENCE);
+	output->sentence_data = output_sentence;
+	output->verified = 1;
 
 	return output;
 }
 
-int evaluate_command(char **c){
-	unsigned char is_verified;
-	statement *s;
-	char *beginning;
+void evaluate_command(char **c){
+	expr_value *val;
 
-	skip_whitespace(c);
-	beginning = *c;
-	s = parse_statement_value(c, &is_verified);
-	if(!s){
-		*c = beginning;
-		return 0;
-	}
-
-	skip_whitespace(c);
+	val = parse_expr_value(c);
+	free_expr_value(val);
 	if(**c != ';'){
-		free_statement(s);
-		set_error("expected ';'");
-		error(1);
-	}
-	if(!is_verified){
-		free_statement(s);
-		set_error("statement must be verified");
-		error(1);
+		error(ERROR_SEMICOLON);
 	}
 	++*c;
-	free_statement(s);
-
-	return 1;
 }
 
-int debug_command(char **c, statement *goal){
-	unsigned char is_verified;
-	statement *s;
-	statement *t;
+int debug_command(char **c){
+	expr_value *val;
 
 	skip_whitespace(c);
 	if(strncmp(*c, "debug", 5) || is_alphanumeric((*c)[5])){
 		return 0;
 	}
-
 	*c += 5;
 	skip_whitespace(c);
-	s = parse_statement_value(c, &is_verified);
-	if(!s){
-		error(1);
-	}
-
-	skip_whitespace(c);
-	
-	if(**c != ','){
-		set_error("expected ','");
-		error(1);
-	}
-	++*c;
-	skip_whitespace(c);
-	t = parse_statement_value(c, &is_verified);
-	if(!t){
-		error(1);
-	}
+	val = parse_expr_value(c);
+	printf("DEBUG: ");
+	print_expr_value(val);
+	printf("\n");
+	free_expr_value(val);
 	skip_whitespace(c);
 	if(**c != ';'){
-		free_statement(s);
-		set_error("expected ';'");
-		error(1);
+		error(ERROR_SEMICOLON);
 	}
 	++*c;
-	//Do stuff here
-	printf("DEBUG: %d\n", compare_statement(s, t));
-	free_statement(s);
-	free_statement(t);
-
 	return 1;
 }
 
 variable *prove_command(char **c){
 	int num_bound_props = 0;
 	int num_args;
-	int i;
-	int j;
+	int i, j;
 	bound_proposition *new_bound_prop;
-	proposition **prop_list = NULL;
-	unsigned int prop_list_size;
+	definition **definitions = NULL;
+	unsigned int definitions_size;
 	char name_buffer[256];
-	char *proof_name;
+	char proof_name[256];
 	char *int_end;
 	variable *output;
-	statement *result;
-	statement *goal;
-	statement *returned;
-	statement prop_statement;
+	expr_value *returned;
+	sentence *result;
+	sentence *goal;
+	sentence prop_sentence;
 
-	clear_bound_propositions();
 	skip_whitespace(c);
 	if(strncmp(*c, "prove", 5) || is_alphanumeric((*c)[5])){
 		return NULL;
 	}
-
 	*c += 5;
 	skip_whitespace(c);
 
-	get_identifier(c, name_buffer, 256);
-	if(name_buffer[0] == '\0'){
-		set_error("expected identifier");
-		error(1);
+	clear_bound_propositions();
+	if(get_identifier(c, proof_name, 256)){
+		error(ERROR_IDENTIFIER_LENGTH);
+	}
+	if(proof_name[0] == '\0'){
+		error(ERROR_IDENTIFIER_EXPECTED);
 	}
 
-	proof_name = malloc(sizeof(char)*(strlen(name_buffer) + 1));
-	strcpy(proof_name, name_buffer);
-	up_scope();
+	new_scope();
 
 	skip_whitespace(c);
 
 	if(**c == '['){
-		prop_list = malloc(sizeof(proposition *)*8);
-		prop_list_size = 8;
 		++*c;
 		skip_whitespace(c);
+		definitions = malloc(sizeof(definition *)*8);
+		definitions_size = 8;
 		while(**c != ']'){
-			get_identifier(c, name_buffer, 256);
+			if(get_identifier(c, name_buffer, 256)){
+				error(ERROR_IDENTIFIER_LENGTH);
+			}
 			if(name_buffer[0] == '\0'){
-				free(proof_name);
-				set_error("expected identifier");
-				error(1);
+				error(ERROR_IDENTIFIER_EXPECTED);
 			}
-			if(read_dictionary(bound_propositions, name_buffer, 0)){
-				free(proof_name);
-				set_error("duplicate identifier");
-				error(1);
+			if(read_dictionary(global_bound_propositions, name_buffer, 0)){
+				error(ERROR_DUPLICATE_IDENTIFIER);
 			}
-			if(num_bound_props >= prop_list_size){
-				prop_list_size += 8;
-				prop_list = realloc(prop_list, sizeof(proposition *)*prop_list_size);
-				if(!prop_list){
-					free(proof_name);
-					set_error("could not expand proposition list");
-					error(1);
-				}
+			if(num_bound_props >= definitions_size){
+				definitions_size += 8;
+				definitions = realloc(definitions, sizeof(definition *)*definitions_size);
 			}
-			prop_list[num_bound_props] = malloc(sizeof(proposition));
+			definitions[num_bound_props] = malloc(sizeof(definition));
 			new_bound_prop = malloc(sizeof(bound_proposition));
 			skip_whitespace(c);
 			if(**c == '('){
 				++*c;
 				skip_whitespace(c);
 				if(**c != ')' && !is_digit(**c)){
-					free(proof_name);
-					free(new_bound_prop);
-					set_error("expected number of arguments");
-					error(1);
+					error(ERROR_NUM_ARGS);
 				} else if(is_digit(**c)){
 					num_args = strtol(*c, &int_end, 10);
 					*c = int_end;
 					if(num_args < 0){
-						free(proof_name);
-						free(new_bound_prop);
-						set_error("expected a positive number of arguments");
-						error(1);
+						error(ERROR_NUM_ARGS);
 					}
 					skip_whitespace(c);
 					if(**c != ')'){
-						free(proof_name);
-						free(new_bound_prop);
-						set_error("expected ')'");
-						error(1);
+						error(ERROR_END_PARENTHESES);
 					}
 					++*c;
 				} else {
@@ -834,232 +726,221 @@ variable *prove_command(char **c){
 			} else {
 				num_args = 0;
 			}
-			prop_list[num_bound_props]->name = malloc(sizeof(char)*(strlen(name_buffer) + 1));
-			strcpy(prop_list[num_bound_props]->name, name_buffer);
-			prop_list[num_bound_props]->statement_data = NULL;
-			prop_list[num_bound_props]->num_references = 1;
-			prop_list[num_bound_props]->depth = current_depth;
-			prop_list[num_bound_props]->num_args = num_args;
+			definitions[num_bound_props]->name = malloc(sizeof(char)*(strlen(name_buffer) + 1));
+			strcpy(definitions[num_bound_props]->name, name_buffer);
+			definitions[num_bound_props]->sentence_data = NULL;
+			definitions[num_bound_props]->num_references = 1;
+			definitions[num_bound_props]->num_args = num_args;
 
-			new_bound_prop->num_args = num_args;
 			new_bound_prop->prop_id = num_bound_props;
-			write_dictionary(&bound_propositions, name_buffer, new_bound_prop, 0);
+			new_bound_prop->num_args = num_args;
+			write_dictionary(&global_bound_propositions, name_buffer, new_bound_prop, 0);
 
 			num_bound_props++;
 			skip_whitespace(c);
 			if(**c == ','){
 				++*c;
 				skip_whitespace(c);
+				if(**c == ']'){
+					error(ERROR_IDENTIFIER_EXPECTED);
+				}
 			} else if(**c != ']'){
-				free(proof_name);
-				set_error("expected ',' or ']'");
-				error(1);
+				error(ERROR_BRACKET_OR_COMMA);
 			}
 		}
 		++*c;
 	} else {
-		prop_list_size = 0;
+		definitions_size = 0;
 	}
 
 	for(i = 0; i < num_bound_props; i++){
-		write_dictionary(definitions + current_depth, prop_list[i]->name, prop_list[i], 0);
+		write_dictionary(&(global_context->definitions), definitions[i]->name, definitions[i], 0);
 	}
 	skip_whitespace(c);
 	if(**c != ':'){
-		free(proof_name);
-		set_error("expected ':'");
-		error(1);
+		error(ERROR_COLON);
 	}
 	++*c;
-	result = parse_statement(c, 0, num_bound_props);
+	skip_whitespace(c);
+	result = parse_sentence(c, 0, num_bound_props);
 	skip_whitespace(c);
 	if(**c != '{'){
-		free(proof_name);
-		free_statement(result);
-		set_error("expected '{'");
-		error(1);
+		error(ERROR_BEGIN_BRACE);
 	}
 	++*c;
 	skip_whitespace(c);
 
-	goal = malloc(sizeof(statement));
-	copy_statement(goal, result);
+	goal = malloc(sizeof(sentence));
+	copy_sentence(goal, result);
+	goal->parent = NULL;
 	for(i = 0; i < num_bound_props; i++){
-		prop_statement.type = PROPOSITION;
-		prop_statement.num_bound_vars = prop_list[i]->num_args;
-		prop_statement.num_bound_props = 0;
-		prop_statement.prop_args = malloc(sizeof(proposition_arg)*(prop_list[i]->num_args));
-		for(j = 0; j < prop_list[i]->num_args; j++){
-			prop_statement.prop_args[j].is_bound = 1;
-			prop_statement.prop_args[j].var_id = j;
+		prop_sentence.type = PROPOSITION;
+		prop_sentence.num_bound_vars = definitions[i]->num_args;
+		prop_sentence.num_bound_props = 0;
+		prop_sentence.parent = NULL;
+		prop_sentence.is_bound = 0;
+		prop_sentence.definition_data = definitions[i];
+		prop_sentence.num_args = definitions[i]->num_args;
+		prop_sentence.proposition_args = malloc(sizeof(proposition_arg)*(definitions[i]->num_args));
+		for(j = 0; j < definitions[i]->num_args; j++){
+			prop_sentence.proposition_args[j].is_bound = 1;
+			prop_sentence.proposition_args[j].var_id = j;
 		}
-		prop_statement.is_bound = 0;
-		prop_statement.prop = prop_list[i];
-		prop_statement.num_args = prop_list[i]->num_args;
-		substitute_proposition(goal, &prop_statement);
-		free(prop_statement.prop_args);
+		substitute_proposition(goal, &prop_sentence);
+		free(prop_sentence.proposition_args);
 	}
 
 	clear_bound_propositions();
-	write_goal(goal);
-	returned = verify_block(c, 1, goal);
+	create_sentence_variable("goal", goal, 0, global_context);
+	global_context->goal = malloc(sizeof(sentence));
+	copy_sentence(global_context->goal, goal);
+	global_context->goal->parent = NULL;
+	returned = parse_context(c);
 
 	if(**c != '}'){
-		set_error("expected '}'");
-		error(1);
+		error(ERROR_END_BRACE);
 	}
 	++*c;
-	
+
 	if(!returned){
-		free_statement(goal);
-		free_statement(result);
-		free(proof_name);
-		free(prop_list);
-		set_error("expected returned statement");
-		error(1);
+		error(ERROR_RETURN_EXPECTED);
 	}
-
-	if(!compare_statement(goal, returned)){
-		free_statement(returned);
-		free_statement(goal);
-		free_statement(result);
-		free(proof_name);
-		free(prop_list);
-		set_error("returned statement does not match goal");
-		error(1);
+	if(returned->type != SENTENCE){
+		error(ERROR_RETURN_TYPE);
 	}
-	free_statement(returned);
-	if(goal != returned){
-		free_statement(goal);
+	if(!returned->verified){
+		error(ERROR_RETURN_VERIFIED);
 	}
+	if(!sentence_stronger(returned->sentence_data, goal)){
+		error(ERROR_MISMATCHED_RETURN);
+	}
+	free_expr_value(returned);
 	drop_scope();
-	free(prop_list);
+	free(definitions);
 
-	clear_bound_propositions();
-
-	output = malloc(sizeof(variable));
-	output->name = proof_name;
-	output->type = STATEMENT;
-	output->statement_data = result;
-	output->num_references = 0;
-	output->depth = current_depth;
-
+	output = create_sentence_variable(proof_name, result, 1, global_context);
 	return output;
 }
 
-statement *given_command(char **c, statement *goal){
+expr_value *given_command(char **c){
 	unsigned char explicit_scope;
 	char name_buffer[256];
-	statement *next_goal = NULL;
-	statement *temp_goal;
-	statement *return_statement;
+	sentence *next_goal = NULL;
+	sentence *temp_goal;
 	variable *new_var;
+	expr_value *return_value;
+	expr_value *output_value;
 
 	skip_whitespace(c);
 	if(strncmp(*c, "given", 5) || is_alphanumeric((*c)[5])){
 		return NULL;
 	}
-
 	*c += 5;
 	skip_whitespace(c);
 
+	if(!global_context->goal){
+		error(ERROR_GOAL);
+	}
+
 	if(**c != '|'){
-		set_error("expected '|'");
-		error(1);
+		error(ERROR_PIPE);
 	}
 	++*c;
 	skip_whitespace(c);
 
 	if(!is_alpha(**c)){
-		set_error("expected identifier");
-		error(1);
+		error(ERROR_IDENTIFIER_EXPECTED);
 	}
-	
-	up_scope();
+
+	new_scope();
 	do{
 		if(**c == ','){
 			++*c;
 			skip_whitespace(c);
 		}
-		if((next_goal && next_goal->type != FORALL) || goal->type != FORALL){
-			set_error("incorrect goal type");
-			error(1);
+		if((next_goal && next_goal->type != FORALL) || global_context->parent->goal->type != FORALL){
+			error(ERROR_GOAL_TYPE);
 		}
-
-		get_identifier(c, name_buffer, 256);
+		if(get_identifier(c, name_buffer, 256)){
+			error(ERROR_IDENTIFIER_LENGTH);
+		}
 		if(name_buffer[0] == '\0'){
-			set_error("expected identifier");
-			error(1);
+			error(ERROR_IDENTIFIER_EXPECTED);
 		}
 
 		skip_whitespace(c);
 		if(**c != '|' && **c != ','){
-			set_error("expected '|'");
-			error(1);
+			error(ERROR_PIPE_OR_COMMA);
 		}
 		if(next_goal){
 			temp_goal = next_goal->child0;
 			free(next_goal);
 			next_goal = temp_goal;
+			next_goal->parent = NULL;
 		} else {
-			next_goal = malloc(sizeof(statement));
-			copy_statement(next_goal, goal->child0);
+			next_goal = malloc(sizeof(sentence));
+			copy_sentence(next_goal, global_context->parent->goal->child0);
+			next_goal->parent = NULL;
 		}
-		new_var = create_object_var(name_buffer, current_depth);
-		if(!substitute_variable(next_goal, 0, new_var)){
-			set_error("cannot substitute variable");
-			error(1);
-		}
-		add_bound_variables(next_goal, -1);
+		new_var = create_object_variable(name_buffer, global_context);
+		substitute_variable(next_goal, new_var);
 	} while(**c == ',');
 
 	++*c;
 	skip_whitespace(c);
 	if(**c != '{' && **c != ';'){
-		set_error("expected '{' or ';'");
-		error(1);
+		error(ERROR_BRACE_OR_SEMICOLON);
 	}
 
 	explicit_scope = (**c == '{');
 	++*c;
 	skip_whitespace(c);
 
-	write_goal(next_goal);
-	return_statement = verify_block(c, 1, next_goal);
+	create_sentence_variable("goal", next_goal, 0, global_context);
+	global_context->goal = malloc(sizeof(sentence));
+	copy_sentence(global_context->goal, next_goal);
+	global_context->goal->parent = NULL;
 
+	return_value = parse_context(c);
 	if(explicit_scope){
 		if(**c != '}'){
-			set_error("expected '}'");
-			error(1);
+			error(ERROR_END_BRACE);
 		}
 		++*c;
 	}
-
-	if(!return_statement){
-		set_error("expected returned statement");
-		error(1);
+	if(!return_value){
+		error(ERROR_RETURN_EXPECTED);
 	}
-
-	if(!compare_statement(next_goal, return_statement)){
-		set_error("returned statement does not match goal");
-		error(1);
+	if(return_value->type != SENTENCE){
+		error(ERROR_RETURN_TYPE);
 	}
-	free_statement(return_statement);
-	if(return_statement != next_goal){
-		free_statement(next_goal);
+	if(!return_value->verified){
+		error(ERROR_RETURN_VERIFIED);
 	}
+	if(!sentence_stronger(return_value->sentence_data, global_context->goal)){
+		error(ERROR_MISMATCHED_RETURN);
+	}
+	free_expr_value(return_value);
 	drop_scope();
 
-	return goal;
+	output_value = create_expr_value(SENTENCE);
+	output_value->sentence_data = malloc(sizeof(sentence));
+	copy_sentence(output_value->sentence_data, global_context->goal);
+	output_value->sentence_data->parent = NULL;
+	output_value->verified = 1;
+
+	return output_value;
 }
 
-statement *choose_command(char **c, statement *goal){
+expr_value *choose_command(char **c){
 	unsigned char explicit_scope;
 	char name_buffer[256];
-	statement *next_goal = NULL;
-	statement *temp_goal;
-	statement *return_statement;
+	sentence *next_goal = NULL;
+	sentence *temp_goal;
 	variable *var;
+	expr_value *arg_value;
+	expr_value *return_value;
+	expr_value *output_value;
 
 	skip_whitespace(c);
 	if(strncmp(*c, "choose", 6) || is_alphanumeric((*c)[6])){
@@ -1069,396 +950,318 @@ statement *choose_command(char **c, statement *goal){
 	*c += 6;
 	skip_whitespace(c);
 
-	if(!is_alpha(**c)){
-		set_error("expected identifier");
-		error(1);
+	if(!global_context->goal){
+		error(ERROR_GOAL);
 	}
 
-	up_scope();
-	next_goal = NULL;
+	if(!is_alpha(**c)){
+		error(ERROR_IDENTIFIER_EXPECTED);
+	}
+
+	new_scope();
 	do{
 		if(**c == ','){
 			++*c;
 			skip_whitespace(c);
 		}
-		if((next_goal && next_goal->type != EXISTS) || goal->type != EXISTS){
-			set_error("incorrect goal type");
-			error(1);
+		if((next_goal && next_goal->type != EXISTS) || global_context->parent->goal->type != EXISTS){
+			error(ERROR_GOAL_TYPE);
 		}
 
-		get_identifier(c, name_buffer, 256);
-		if(name_buffer[0] == '\0'){
-			set_error("expected identifier");
-			error(1);
+		arg_value = parse_expr_value(c);
+		if(arg_value->type != OBJECT){
+			error(ERROR_ARGUMENT_TYPE);
 		}
+		var = arg_value->var;
+		free_expr_value(arg_value);
 
 		skip_whitespace(c);
-		if(**c != '{' && **c != ';' && **c != ','){
-			set_error("expected '{' or ';'");
-			error(1);
+		if(**c != '{' &&  **c != ';' && **c != ','){
+			error(ERROR_BRACE_OR_SEMICOLON_OR_COMMA);
 		}
 		if(next_goal){
 			temp_goal = next_goal->child0;
 			free(next_goal);
 			next_goal = temp_goal;
 		} else {
-			next_goal = malloc(sizeof(statement));
-			copy_statement(next_goal, goal->child0);
+			next_goal = malloc(sizeof(sentence));
+			copy_sentence(next_goal, global_context->parent->goal->child0);
+			next_goal->parent = NULL;
 		}
-		var = get_object_var(name_buffer, NULL);
-		if(!var){
-			set_error("unknown object\n");
-			error(1);
-		}
-		if(!substitute_variable(next_goal, 0, var)){
-			set_error("cannot substitute object");
-			error(1);
-		}
-		add_bound_variables(next_goal, -1);
+		substitute_variable(next_goal, var);
 	} while(**c == ',');
 
 	explicit_scope = (**c == '{');
-	
+
 	++*c;
 	skip_whitespace(c);
 
-	write_goal(next_goal);
-	return_statement = verify_block(c, 1, next_goal);
+	create_sentence_variable("goal", next_goal, 0, global_context);
+	global_context->goal = malloc(sizeof(sentence));
+	copy_sentence(global_context->goal, next_goal);
+	global_context->goal->parent = NULL;
 
+	return_value = parse_context(c);
 	if(explicit_scope){
 		if(**c != '}'){
-			set_error("expected '}'");
-			error(1);
+			error(ERROR_END_BRACE);
 		}
 		++*c;
 	}
-
-	if(!return_statement){
-		set_error("expected returned statement");
-		error(1);
+	if(!return_value){
+		error(ERROR_RETURN_EXPECTED);
 	}
-
-	if(!compare_statement(next_goal, return_statement)){
-		set_error("returned statement does not match goal");
-		error(1);
+	if(return_value->type != SENTENCE){
+		error(ERROR_RETURN_TYPE);
 	}
-	free_statement(return_statement);
-	if(return_statement != next_goal){
-		free_statement(next_goal);
+	if(!return_value->verified){
+		error(ERROR_RETURN_VERIFIED);
 	}
+	if(!sentence_stronger(return_value->sentence_data, global_context->goal)){
+		error(ERROR_MISMATCHED_RETURN);
+	}
+	free_expr_value(return_value);
 	drop_scope();
 
-	return goal;
+	output_value = create_expr_value(SENTENCE);
+	output_value->sentence_data = malloc(sizeof(sentence));
+	copy_sentence(output_value->sentence_data, global_context->goal);
+	output_value->sentence_data->parent = NULL;
+	output_value->verified = 1;
+
+	return output_value;
 }
 
-statement *implies_command(char **c, statement *goal){
+expr_value *implies_command(char **c){
 	unsigned char explicit_scope;
 	char name_buffer[256];
-	statement *next_goal;
-	statement *goal_child0_copy;
-	statement *var_statement;
-	statement *return_statement;
+	sentence *next_goal;
+	sentence *goal_child0_copy;
+	sentence *var_sentence;
+	expr_value *return_value;
+	expr_value *output_value;
 
 	skip_whitespace(c);
 	if(strncmp(*c, "implies", 7) || is_alphanumeric((*c)[7])){
 		return NULL;
 	}
-
 	*c += 7;
 	skip_whitespace(c);
 
+	if(!global_context->goal){
+		error(ERROR_GOAL);
+	}
+
 	if(!is_alpha(**c)){
-		set_error("expected identifier");
-		error(1);
+		error(ERROR_IDENTIFIER_EXPECTED);
 	}
 
-	if(goal->type != IMPLIES){
-		set_error("incorrect goal type");
-		error(1);
+	if(global_context->goal->type != IMPLIES){
+		error(ERROR_GOAL_TYPE);
 	}
 
-	goal_child0_copy = malloc(sizeof(statement));
-	copy_statement(goal_child0_copy, goal->child0);
+	goal_child0_copy = malloc(sizeof(sentence));
+	copy_sentence(goal_child0_copy, global_context->goal->child0);
 	goal_child0_copy->parent = NULL;
 
-	up_scope();
+	new_scope();
 	do{
 		if(**c == ','){
 			++*c;
 			skip_whitespace(c);
 		}
-		get_identifier(c, name_buffer, 256);
+		if(get_identifier(c, name_buffer, 256)){
+			error(ERROR_IDENTIFIER_LENGTH);
+		}
 		if(name_buffer[0] == '\0'){
-			set_error("expected identifier");
-			error(1);
+			error(ERROR_IDENTIFIER_EXPECTED);
 		}
 
 		skip_whitespace(c);
 		if(**c != '{' && **c != ';' && **c != ','){
-			set_error("expected '{', ';', or ','");
-			error(1);
+			error(ERROR_BRACE_OR_SEMICOLON_OR_COMMA);
 		}
-
 		if(!goal_child0_copy){
-			set_error("not enough premises to unpack");
-			error(1);
+			error(ERROR_TOO_MANY_UNPACK);
 		}
-		if(**c == ';' || **c == '{'){
-			var_statement = goal_child0_copy;
+		if(**c == '{' || **c == ';'){
+			var_sentence = goal_child0_copy;
 		} else {
-			var_statement = peel_and_left(&goal_child0_copy);
+			var_sentence = peel_and_left(&goal_child0_copy);
 		}
-		create_statement_var(name_buffer, var_statement);
-	} while(**c != ';' && **c != '{');
+		var_sentence->parent = NULL;
+		create_sentence_variable(name_buffer, var_sentence, 1, global_context);
+	} while(**c == ',');
 
 	explicit_scope = (**c == '{');
 	++*c;
 	skip_whitespace(c);
 
-	next_goal = malloc(sizeof(statement));
-	copy_statement(next_goal, goal->child1);
-	write_goal(next_goal);
-	return_statement = verify_block(c, 1, next_goal);
+	next_goal = malloc(sizeof(sentence));
+	copy_sentence(next_goal, global_context->parent->goal->child1);
+	next_goal->parent = NULL;
+	create_sentence_variable("goal", next_goal, 0, global_context);
+	global_context->goal = malloc(sizeof(sentence));
+	copy_sentence(global_context->goal, next_goal);
+	global_context->goal->parent = NULL;
 
-	if(explicit_scope){
-		if(**c != '}'){
-			set_error("expected '}'");
-			error(1);
-		}
-		++*c;
+	return_value = parse_context(c);
+	if(!return_value){
+		error(ERROR_RETURN_EXPECTED);
 	}
-
-	if(!return_statement){
-		set_error("expected returned statement");
-		error(1);
+	if(return_value->type != SENTENCE){
+		error(ERROR_RETURN_TYPE);
 	}
-
-	if(!compare_statement(next_goal, return_statement)){
-		set_error("returned statement does not match goal");
-		error(1);
+	if(!return_value->verified){
+		error(ERROR_RETURN_VERIFIED);
 	}
-	free_statement(return_statement);
-	if(return_statement != next_goal){
-		free_statement(next_goal);
+	if(!sentence_stronger(return_value->sentence_data, global_context->goal)){
+		error(ERROR_MISMATCHED_RETURN);
 	}
+	free_expr_value(return_value);
 	drop_scope();
 
-	return goal;
+	output_value = create_expr_value(SENTENCE);
+	output_value->sentence_data = malloc(sizeof(sentence));
+	copy_sentence(output_value->sentence_data, global_context->goal);
+	output_value->sentence_data->parent = NULL;
+	output_value->verified = 1;
+
+	return output_value;
 }
 
-statement *not_command(char **c, statement *goal){
+expr_value *not_command(char **c){
 	unsigned char explicit_scope;
 	char name_buffer[256];
-	statement *next_goal;
-	statement *var_statement;
-	statement *return_statement;
+	sentence *next_goal;
+	sentence *var_sentence;
+	expr_value *return_value;
+	expr_value *output_value;
 
 	skip_whitespace(c);
 	if(strncmp(*c, "not", 3) || is_alphanumeric((*c)[3])){
 		return NULL;
 	}
-
 	*c += 3;
 	skip_whitespace(c);
 
-	if(goal->type != NOT){
-		set_error("incorrect goal type");
-		error(1);
+	if(!global_context->goal){
+		error(ERROR_GOAL);
 	}
 
-	get_identifier(c, name_buffer, 256);
+	if(global_context->goal->type != NOT){
+		error(ERROR_GOAL_TYPE);
+	}
+
+	if(get_identifier(c, name_buffer, 256)){
+		error(ERROR_IDENTIFIER_LENGTH);
+	}
 	if(name_buffer[0] == '\0'){
-		set_error("expected identifier");
-		error(1);
+		error(ERROR_IDENTIFIER_EXPECTED);
 	}
 
 	skip_whitespace(c);
 	if(**c != '{' && **c != ';'){
-		set_error("expected '{' or ';'");
-		error(1);
+		error(ERROR_BRACE_OR_SEMICOLON);
 	}
 
 	explicit_scope = (**c == '{');
 	++*c;
 	skip_whitespace(c);
 
-	up_scope();
-	var_statement = malloc(sizeof(statement));
-	copy_statement(var_statement, goal->child0);
-	create_statement_var(name_buffer, var_statement);
-	next_goal = create_statement(FALSE, 0, 0);
-	write_goal(next_goal);
-	return_statement = verify_block(c, 1, next_goal);
+	new_scope();
+	var_sentence = malloc(sizeof(sentence));
+	copy_sentence(var_sentence, global_context->parent->goal->child0);
+	var_sentence->parent = NULL;
+	create_sentence_variable(name_buffer, var_sentence, 1, global_context);
+	next_goal = create_sentence(FALSE, 0, 0);
+	create_sentence_variable("goal", next_goal, 0, global_context);
+	global_context->goal = malloc(sizeof(sentence));
+	copy_sentence(global_context->goal, next_goal);
+	global_context->goal->parent = NULL;
+	return_value = parse_context(c);
 
 	if(explicit_scope){
 		if(**c != '}'){
-			set_error("expected '}'");
-			error(1);
+			error(ERROR_END_BRACE);
 		}
 		++*c;
 	}
 
-	if(!return_statement){
-		set_error("expected returned statement");
-		error(1);
+	if(!return_value){
+		error(ERROR_RETURN_EXPECTED);
 	}
-
-	if(!compare_statement(next_goal, return_statement)){
-		set_error("returned statement does not match goal");
-		error(1);
+	if(return_value->type != SENTENCE){
+		error(ERROR_RETURN_TYPE);
 	}
-	free_statement(return_statement);
-	if(return_statement != next_goal){
-		free_statement(next_goal);
+	if(!return_value->verified){
+		error(ERROR_RETURN_VERIFIED);
 	}
+	if(!sentence_stronger(return_value->sentence_data, global_context->goal)){
+		error(ERROR_MISMATCHED_RETURN);
+	}
+	free_expr_value(return_value);
 	drop_scope();
 
-	return goal;
+	output_value = create_expr_value(SENTENCE);
+	output_value->sentence_data = malloc(sizeof(sentence));
+	copy_sentence(output_value->sentence_data, global_context->goal);
+	output_value->sentence_data->parent = NULL;
+	output_value->verified = 1;
+
+	return output_value;
 }
 
-int rename_command(char **c){
-	char name_buffer[256];
-	variable *var;
-	unsigned int depth;
-
-	skip_whitespace(c);
-	if(strncmp(*c, "rename", 6) || is_alphanumeric((*c)[6])){
-		return 0;
-	}
-
-	*c += 6;
-	skip_whitespace(c);
-	get_identifier(c, name_buffer, 256);
-	if(name_buffer[0] == '\0'){
-		set_error("expected identifier");
-		error(1);
-	}
-
-	skip_whitespace(c);
-	
-	var = get_object_var(name_buffer, &depth);
-	//Remove the object from the set of variables
-	write_dictionary(variables + depth, var->name, NULL, 0);
-	if(!var){
-		set_error("unknown object");
-		error(1);
-	}
-
-	if(**c != ':'){
-		set_error("expected ':'");
-		error(1);
-	}
-
-	++*c;
-	skip_whitespace(c);
-	get_identifier(c, name_buffer, 256);
-	if(name_buffer[0] == '\0'){
-		set_error("expected identifier");
-		error(1);
-	}
-
-	skip_whitespace(c);
-	if(**c != ';'){
-		set_error("expected ';'");
-		error(1);
-	}
-
-	++*c;
-
-	if(read_dictionary(variables[depth], name_buffer, 0)){
-		set_error("object already exists");
-		error(1);
-	}
-	var->name = realloc(var->name, sizeof(char)*(strlen(name_buffer) + 1));
-	strcpy(var->name, name_buffer);
-	write_dictionary(variables + depth, name_buffer, var, 0);
-
-	return 1;
-}
-
-statement *verify_command(char **c, unsigned char allow_proof_value, statement *goal){
-	proposition *def;
-	proposition *other_def;
+expr_value *parse_command(char **c){
+	definition *def;
 	variable *axiom;
-	variable *other_proof;
-	variable *proof;
-	statement *return_value;
+	variable *var;
+	expr_value *val;
+	expr_value *return_value;
 
-	if((def = definition_command(c))){
-		if((other_def = read_dictionary(definitions[current_depth], def->name, 0))){
-			if(other_def->num_references){
-				set_error("cannot overwrite bound definition");
-				error(1);
-			} else {
-				free_proposition(other_def);
-			}
-		}
-		write_dictionary(definitions + current_depth, def->name, def, 0);
+	if((def = define_command(c))){
+		//pass
 	} else if((axiom = axiom_command(c))){
-		if((other_proof = read_dictionary(variables[current_depth], axiom->name, 0))){
-			if(other_proof->num_references){
-				set_error("cannot overwrite bound proof");
-				error(1);
-			} else {
-				free_variable(other_proof);
-			}
-		}
-		write_dictionary(variables + current_depth, axiom->name, axiom, 0);
+		//pass
 	} else if(print_command(c)){
-		//Pass
+		//pass
 	} else if((return_value = return_command(c))){
 		return return_value;
-	} else if((proof = prove_command(c))){
-		if((other_proof = read_dictionary(variables[current_depth], proof->name, 0))){
-			if(other_proof->num_references){
-				set_error("cannot overwrite bound proof");
-				error(1);
-			} else {
-				free_variable(other_proof);
-			}
-		}
-		write_dictionary(variables + current_depth, proof->name, proof, 0);
-	} else if(allow_proof_value && (return_value = given_command(c, goal))){
-		return return_value;
-	} else if(allow_proof_value && (return_value = choose_command(c, goal))){
-		return return_value;
-	} else if(allow_proof_value && (return_value = implies_command(c, goal))){
-		return return_value;
-	} else if(allow_proof_value && (return_value = not_command(c, goal))){
-		return return_value;
-	} else if(debug_command(c, goal)){
-		//pass
 	} else if(object_command(c)){
 		//pass
-	} else if(rename_command(c)){
-		//pass
 	} else if(relation_command(c)){
-		//Pass
+		//pass
+	} else if(debug_command(c)){
+		//pass
+	} else if((var = prove_command(c))){
+		//pass
+	} else if((return_value = given_command(c))){
+		return return_value;
+	} else if((return_value = choose_command(c))){
+		return return_value;
+	} else if((return_value = implies_command(c))){
+		return return_value;
+	} else if((return_value = not_command(c))){
+		return return_value;
 	} else if(assign_command(c)){
-		//Pass
-	} else if(evaluate_command(c)){
-		//Pass
+		//pass
 	} else {
-		set_error("unknown command");
-		error(1);
+		evaluate_command(c);
 	}
 
 	return NULL;
 }
 
-statement *verify_block(char **c, unsigned char allow_proof_value, statement *goal){
-	statement *return_value = NULL;
+expr_value *parse_context(char **c){
+	expr_value *return_value = NULL;
 
-	skip_whitespace(c);
 	while(**c && **c != '}' && !return_value){
-		return_value = verify_command(c, allow_proof_value, goal);
+		return_value = parse_command(c);
 		skip_whitespace(c);
 	}
 
 	if(return_value && **c && **c != '}'){
-		free_statement(return_value);
-		set_error("expected '}' or EOF");
-		error(1);
+		error(ERROR_BRACE_OR_EOF);
 	}
 
 	return return_value;
@@ -1466,7 +1269,8 @@ statement *verify_block(char **c, unsigned char allow_proof_value, statement *go
 
 int main(int argc, char **argv){
 	char *program_start;
-	statement *return_value;
+	char *program_text;
+	expr_value *return_value;
 	int i;
 
 	if(argc < 2){
@@ -1479,41 +1283,36 @@ int main(int argc, char **argv){
 #endif
 
 	init_verifier();
-	
+
 	for(i = 1; i < argc; i++){
-		program_text = load_file(argv[i]);
-		program_start = program_text;
+		program_start = load_file(argv[i]);
+		program_text = program_start;
 		if(!program_text){
-			fprintf(stderr, "Error: could not read file '%s'\n", argv[i]);
+			fprintf(stderr, "Error: could not read file '%s'.", argv[i]);
 #ifdef USE_CUSTOM_ALLOC
 			custom_malloc_abort();
 #endif
 			return 1;
 		}
-
-		line_number = 1;
+		global_line_number = 1;
 		global_file_name = argv[i];
 		global_program_pointer = &program_text;
 		global_program_start = program_text;
-		return_value = verify_block(&program_text, 0, NULL);
+		return_value = parse_context(&program_text);
 		if(*program_text == '}'){
-			set_error("expected EOF");
-			error(1);
+			error(ERROR_EOF);
 		}
 		if(return_value){
-			printf("\nFile returned: ");
-			print_statement(return_value);
+			printf("file '%s' returned: ", global_file_name);
+			print_expr_value(return_value);
 			printf("\n");
-			free_statement(return_value);
+			free_expr_value(return_value);
 		}
-
 		free(program_start);
 	}
+	free_context(global_context);
 	clear_bound_variables();
 	clear_bound_propositions();
-	free_dictionary(variables, free_variable_void);
-	free_dictionary(definitions, free_proposition_void);
-	free_dictionary(relations, free_relation_void);
 
 #ifdef USE_CUSTOM_ALLOC
 	custom_malloc_deinit();

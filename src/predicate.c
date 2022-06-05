@@ -4,7 +4,7 @@
 #include <string.h>
 #include "dictionary.h"
 #include "predicate.h"
-#include "expression2.h"
+#include "expression.h"
 #include "custom_malloc.h"
 
 //CORE First Order Logic Parser
