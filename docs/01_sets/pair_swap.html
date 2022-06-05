@@ -6,11 +6,11 @@
 		<b style="color: blue;">given</b> <b style="color: red;">|</b>X<b style="color: red;">|</b>;
 		<b style="color: blue;">prove</b> lemma0: X in C <b style="color: red;">-&gt</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, B) <b style="color: red;">|</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A){
 			<b style="color: blue;">implies</b> X_in_C;
-			<b style="color: blue;">return</b> <b style="color: green;">swap</b>(pair_C(X)(X_in_C));
+			<b style="color: blue;">return</b> pair_C(X)(X_in_C);
 		}
 		<b style="color: blue;">prove</b> lemma1: <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, B) <b style="color: red;">|</b> <b style="cursor: pointer;" onclick="window.location.href = '../00_zf/equal_sets.html';" onmouseover="popup_window(this, 'equal_sets | 00_zf');" onmouseout="close_popup();">equal_sets</b>(X, A) <b style="color: red;">-&gt</b> X in C{
 			<b style="color: blue;">implies</b> both;
-			<b style="color: blue;">return</b> pair_C(X)(<b style="color: green;">swap</b>(both));
+			<b style="color: blue;">return</b> pair_C(X)(both);
 		}
 		<b style="color: blue;">return</b> <b style="color: green;">iff</b>(lemma0, lemma1);
 	}
