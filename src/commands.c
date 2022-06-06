@@ -10,8 +10,6 @@
 //Ben Jones
 
 void init_verifier(void){
-	int i;
-
 	global_context = create_context(NULL);
 }
 
@@ -455,7 +453,6 @@ int relation_command(char **c){
 	char identifier0[256];
 	char identifier1[256];
 	char identifier2[256];
-	char *name;
 	int *new_int;
 	sentence *s;
 
@@ -532,7 +529,6 @@ expr_value *return_command(char **c){
 	sentence *arg_sentence;
 	sentence *output_sentence;
 	sentence *last_parent = NULL;
-	sentence *s;
 	sentence *new;
 
 	skip_whitespace(c);
@@ -934,7 +930,6 @@ expr_value *given_command(char **c){
 
 expr_value *choose_command(char **c){
 	unsigned char explicit_scope;
-	char name_buffer[256];
 	sentence *next_goal = NULL;
 	sentence *temp_goal;
 	variable *var;
@@ -1106,6 +1101,12 @@ expr_value *implies_command(char **c){
 	global_context->goal->parent = NULL;
 
 	return_value = parse_context(c);
+	if(explicit_scope){
+		if(**c != '}'){
+			error(ERROR_END_BRACE);
+		}
+		++*c;
+	}
 	if(!return_value){
 		error(ERROR_RETURN_EXPECTED);
 	}
@@ -1216,7 +1217,6 @@ expr_value *parse_command(char **c){
 	definition *def;
 	variable *axiom;
 	variable *var;
-	expr_value *val;
 	expr_value *return_value;
 
 	if((def = define_command(c))){

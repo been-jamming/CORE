@@ -278,7 +278,6 @@ expr_value *relation_to_value(char *name){
 	sentence *sentence_data;
 	sentence *new;
 	context *current_context;
-	int i;
 
 	current_context = global_context;
 	while(current_context){
@@ -327,13 +326,10 @@ expr_value *relation_to_value(char *name){
 expr_value *parse_expr_identifier(char **c){
 	variable *var = NULL;
 	expr_value *output = NULL;
-	definition *def = NULL;
 	char name_buffer[256];
-	char *beginning = NULL;
 	context *current_context = NULL;
 
 	skip_whitespace(c);
-	beginning = *c;
 	if(**c == '#'){
 		++*c;
 		skip_whitespace(c);
@@ -764,7 +760,6 @@ variable *get_variable(char *var_name, context *parent_context){
 //Parse the "left" command
 expr_value *parse_left(char **c){
 	expr_value *expr;
-	expr_value *output;
 	sentence *sentence_data;
 	sentence *temp;
 
@@ -810,7 +805,6 @@ expr_value *parse_left(char **c){
 //Parse the "right" command
 expr_value *parse_right(char **c){
 	expr_value *expr;
-	expr_value *output;
 	sentence *sentence_data;
 
 	expr = parse_expr_value(c);
@@ -1013,10 +1007,8 @@ expr_value *parse_expand(char **c){
 expr_value *parse_iff(char **c){
 	expr_value *arg0;
 	expr_value *arg1;
-	expr_value *output;
 	sentence *arg0_sentence;
 	sentence *arg1_sentence;
-	sentence *output_sentence;
 	unsigned char verified;
 
 	arg0 = parse_expr_value(c);
@@ -1074,7 +1066,6 @@ expr_value *parse_branch(char **c){
 	int max_vars;
 	int num_vars;
 	int current_arg = 1;
-	unsigned char verified;
 
 	or_arg = parse_expr_value(c);
 	skip_whitespace(c);
@@ -1589,88 +1580,3 @@ expr_value *get_expr_value(char *c){
 	return parse_expr_value(&c);
 }
 
-int main3(int argc, char **argv){
-	definition *A;
-	definition *B;
-	definition *C;
-	context *c;
-	expr_value *val;
-	expr_value *val2;
-	sentence *s;
-
-	custom_malloc_init();
-
-	A = malloc(sizeof(definition));
-	B = malloc(sizeof(definition));
-	C = malloc(sizeof(definition));
-	A->name = malloc(sizeof(char)*2);
-	strcpy(A->name, "A");
-	A->sentence_data = NULL;
-	A->num_references = 0;
-	A->num_args = 1;
-
-	B->name = malloc(sizeof(char)*2);
-	strcpy(B->name, "B");
-	B->sentence_data = NULL;
-	B->num_references = 0;
-	B->num_args = 2;
-
-	C->name = malloc(sizeof(char)*2);
-	strcpy(C->name, "C");
-	C->sentence_data = NULL;
-	C->num_references = 0;
-	C->num_args = 1;
-
-	c = malloc(sizeof(context));
-	c->variables = create_dictionary(NULL);
-	c->definitions = create_dictionary(NULL);
-	c->relations = create_dictionary(NULL);
-	c->parent = NULL;
-	global_context = c;
-	write_dictionary(&c->definitions, "A", A, 0);
-	write_dictionary(&c->definitions, "B", B, 0);
-	write_dictionary(&c->definitions, "C", C, 0);
-
-	val = get_expr_value("<X: *Y(B(X, Y))>");
-	A->sentence_data = malloc(sizeof(sentence));
-	copy_sentence(A->sentence_data, val->sentence_data);
-	free_expr_value(val);
-
-	create_object_variable("N", global_context);
-
-	val = get_expr_value("<: *X(A(X))>");
-	s = malloc(sizeof(sentence));
-	copy_sentence(s, val->sentence_data);
-	create_sentence_variable("test", s, 1, global_context);
-	free_expr_value(val);
-
-	val = get_expr_value("<: *X(A(X) | C(X) -> B(X, X))>");
-	s = malloc(sizeof(sentence));
-	copy_sentence(s, val->sentence_data);
-	create_sentence_variable("test2", s, 1, global_context);
-	free_expr_value(val);
-
-	val = get_expr_value("<: *X^Y(B(X, Y))>");
-	s = malloc(sizeof(sentence));
-	copy_sentence(s, val->sentence_data);
-	create_sentence_variable("test3", s, 1, global_context);
-	free_expr_value(val);
-
-	val = get_expr_value("test(N)");
-	print_expr_value(val);
-	printf("\n");
-	free_expr_value(val);
-
-	val = get_expr_value("test3(N)|M|)");
-	print_expr_value(val);
-	printf("\n");
-	free_expr_value(val);
-
-	val = get_expr_value("test2(N)(test(N))");
-	print_expr_value(val);
-	printf("\n");
-	free_expr_value(val);
-
-	free_context(global_context);
-	custom_malloc_deinit();
-}

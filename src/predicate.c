@@ -378,7 +378,6 @@ sentence *parse_proposition(char **c, int num_bound_vars, int num_bound_props){
 	bound_proposition *bound_prop = NULL;
 	int *var_id = NULL;
 	variable *var = NULL;
-	int i;
 	unsigned int num_args;
 	unsigned int counted_args = 0;
 	proposition_arg *args = NULL;
@@ -929,10 +928,6 @@ void print_sentence(sentence *s){
 //Determines whether one sentence trivially implies another sentence
 //Returns 1 if it can determine that s0 implies s1, and 0 otherwise
 int sentence_stronger(sentence *s0, sentence *s1){
-	sentence *child0;
-	sentence *child1;
-	int stronger0;
-	int stronger1;
 	int i;
 
 	if(s0->num_bound_vars != s1->num_bound_vars || s0->num_bound_props != s1->num_bound_props){
