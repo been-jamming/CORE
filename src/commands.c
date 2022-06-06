@@ -60,12 +60,7 @@ relation *create_relation(char *name, sentence *sentence_data, context *parent_c
 		}
 	}
 	rel = malloc(sizeof(relation));
-	if(sentence_data){
-		rel->sentence_data = malloc(sizeof(sentence));
-		copy_sentence(rel->sentence_data, sentence_data);
-	} else {
-		rel->sentence_data = NULL;
-	}
+	rel->sentence_data = sentence_data;
 	rel->name = malloc(sizeof(char)*(strlen(name) + 1));
 	strcpy(rel->name, name);
 	rel->num_references = 0;
@@ -1213,6 +1208,51 @@ expr_value *not_command(char **c){
 	return output_value;
 }
 
+variable *context_command(char **c){
+	expr_value *return_value;
+	context *stored_context;
+	variable *output_var;
+	char name_buffer[256];
+
+	if(strncmp(*c, "context", 7) || is_alphanumeric((*c)[7])){
+		return NULL;
+	}
+	*c += 7;
+	skip_whitespace(c);
+
+	if(get_identifier(c, name_buffer, 256)){
+		error(ERROR_IDENTIFIER_LENGTH);
+	}
+	if(name_buffer[0] == '\0'){
+		error(ERROR_IDENTIFIER_EXPECTED);
+	}
+
+	skip_whitespace(c);
+	if(**c != '{'){
+		error(ERROR_BEGIN_BRACE);
+	}
+	++*c;
+	skip_whitespace(c);
+
+	new_scope();
+	return_value = parse_context(c);
+	if(return_value){
+		error(ERROR_UNEXPECTED_RETURN);
+	}
+
+	if(**c != '}'){
+		error(ERROR_END_BRACE);
+	}
+	++*c;
+	skip_whitespace(c);
+
+	stored_context = global_context;
+	global_context = global_context->parent;
+	output_var = create_context_variable(name_buffer, stored_context, global_context);
+
+	return output_var;
+}
+
 expr_value *parse_command(char **c){
 	definition *def;
 	variable *axiom;
@@ -1232,6 +1272,8 @@ expr_value *parse_command(char **c){
 	} else if(relation_command(c)){
 		//pass
 	} else if(debug_command(c)){
+		//pass
+	} else if((var = context_command(c))){
 		//pass
 	} else if((var = prove_command(c))){
 		//pass

@@ -25,6 +25,7 @@ syn keyword CORE_commands object
 syn keyword CORE_commands debug
 syn keyword CORE_commands rename
 syn keyword CORE_commands relation
+syn keyword CORE_commands context
 
 " Functions
 syn keyword CORE_functions left
@@ -33,8 +34,8 @@ syn keyword CORE_functions and
 syn keyword CORE_functions or
 syn keyword CORE_functions branch
 syn keyword CORE_functions expand
-syn keyword CORE_functions swap
 syn keyword CORE_functions iff
+syn keyword CORE_functions trivial
 
 " Comments
 syn match CORE_comment "\/\/.*$"

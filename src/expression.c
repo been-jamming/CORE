@@ -1201,6 +1201,27 @@ expr_value *parse_branch(char **c){
 	return output;
 }
 
+//Parse "trivial" command
+expr_value *parse_trivial(char **c){
+	expr_value *arg;
+
+	arg = parse_expr_value(c);
+	skip_whitespace(c);
+	if(**c != ')'){
+		error(ERROR_END_PARENTHESES);
+	}
+	++*c;
+	if(arg->type != SENTENCE){
+		error(ERROR_ARGUMENT_TYPE);
+	}
+	if(!sentence_trivially_true(arg->sentence_data)){
+		error(ERROR_ARGUMENT_TRUE);
+	}
+	arg->verified = 1;
+
+	return arg;
+}
+
 //Parse all built-in functions
 expr_value *parse_expr_value_builtin(char **c){
 	unsigned char is_and;
@@ -1259,6 +1280,14 @@ expr_value *parse_expr_value_builtin(char **c){
 		}
 		++*c;
 		return parse_branch(c);
+	} else if(!strncmp(*c, "trivial", 7) && !is_alphanumeric((*c)[7])){
+		*c += 7;
+		skip_whitespace(c);
+		if(**c != '('){
+			error(ERROR_BEGIN_PARENTHESES);
+		}
+		++*c;
+		return parse_trivial(c);
 	}
 
 	return NULL;

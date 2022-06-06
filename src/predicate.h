@@ -66,6 +66,8 @@
 #define ERROR_BRACE_OR_SEMICOLON 64
 #define ERROR_BRACE_OR_SEMICOLON_OR_COMMA 65
 #define ERROR_GOAL 66
+#define ERROR_UNEXPECTED_RETURN 67
+#define ERROR_ARGUMENT_TRUE 68
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;
@@ -237,6 +239,8 @@ void decrement_references_sentence(sentence *s);
 void print_sentence(sentence *s);
 int sentence_stronger(sentence *s0, sentence *s1);
 int sentence_equivalent(sentence *s0, sentence *s1);
+int sentence_trivially_true(sentence *s);
+int sentence_trivially_false(sentence *s);
 void copy_sentence(sentence *dest, sentence *s);
 sentence *peel_or_left(sentence **s);
 sentence *peel_and_left(sentence **s);

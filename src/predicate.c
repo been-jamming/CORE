@@ -91,7 +91,9 @@ static char *error_messages[] = {
 	"Incorrect goal type",
 	"Expected '{' or ';'",
 	"Expected '{', ';', or ','",
-	"No goal"
+	"No goal",
+	"Unexpected return value",
+	"Argument is not trivially true"
 };
 
 //Allocate a sentence structure
@@ -932,10 +934,6 @@ int sentence_stronger(sentence *s0, sentence *s1){
 
 	if(s0->num_bound_vars != s1->num_bound_vars || s0->num_bound_props != s1->num_bound_props){
 		return 0;
-	} else if(s0->type == FALSE){
-		return 1;
-	} else if(s1->type == TRUE){
-		return 1;
 	} else if(s0->type == OR){
 		return sentence_stronger(s0->child0, s1) && sentence_stronger(s0->child1, s1);
 	} else if(s1->type == AND){
@@ -949,13 +947,13 @@ int sentence_stronger(sentence *s0, sentence *s1){
 	} else if(s0->type == EXISTS && s1->type == EXISTS){
 		return sentence_stronger(s0->child0, s1->child0);
 	} else if(s0->type == BICOND && s1->type == BICOND){
-		if(sentence_equivalent(s0->child0, s0->child1) && sentence_equivalent(s1->child0, s1->child1)){
-			return 1;
-		}
 		if(sentence_equivalent(s0->child0, s1->child0) && sentence_equivalent(s0->child1, s1->child1)){
 			return 1;
 		}
 		if(sentence_equivalent(s0->child0, s1->child1) && sentence_equivalent(s0->child1, s1->child0)){
+			return 1;
+		}
+		if(sentence_equivalent(s0->child0, s0->child1) && sentence_equivalent(s1->child0, s1->child1)){
 			return 1;
 		}
 		return 0;
@@ -1021,6 +1019,10 @@ int sentence_stronger(sentence *s0, sentence *s1){
 			}
 		}
 		return 1;
+	} else if(sentence_trivially_false(s0)){
+		return 1;
+	} else if(sentence_trivially_true(s1)){
+		return 1;
 	} else {
 		if(s0->type == AND && (sentence_stronger(s0->child0, s1) || sentence_stronger(s0->child1, s1))){
 			return 1;
@@ -1035,6 +1037,61 @@ int sentence_stronger(sentence *s0, sentence *s1){
 //Determine if two sentences imply each other
 int sentence_equivalent(sentence *s0, sentence *s1){
 	return sentence_stronger(s0, s1) && sentence_stronger(s1, s0);
+}
+
+//Determine if a sentence is trivially true
+int sentence_trivially_true(sentence *s){
+	if(s->num_bound_vars > 0 || s->num_bound_props > 0){
+		return 0;
+	} else if(s->type == IMPLIES){
+		return sentence_stronger(s->child0, s->child1);
+	} else if(s->type == BICOND){
+		return sentence_equivalent(s->child0, s->child1);
+	} else if(s->type == AND){
+		return sentence_trivially_true(s->child0) && sentence_trivially_true(s->child1);
+	} else if(s->type == OR){
+		return sentence_trivially_true(s->child0) || sentence_trivially_true(s->child1);
+	} else if(s->type == FORALL){
+		return sentence_trivially_true(s->child0);
+	} else if(s->type == NOT){
+		return sentence_trivially_false(s->child0);
+	} else if(s->type == TRUE){
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+//Determine if a sentence is trivially false
+int sentence_trivially_false(sentence *s){
+	int true0;
+	int true1;
+	int false0;
+	int false1;
+
+	if(s->num_bound_vars > 0 || s->num_bound_props > 0){
+		return 0;
+	} else if(s->type == IMPLIES){
+		return sentence_trivially_true(s->child0) && sentence_trivially_false(s->child1);
+	} else if(s->type == BICOND){
+		true0 = sentence_trivially_true(s->child0);
+		false0 = sentence_trivially_false(s->child0);
+		true1 = sentence_trivially_true(s->child1);
+		false1 = sentence_trivially_false(s->child1);
+		return (true0 && false1) || (false0 && true1);
+	} else if(s->type == AND){
+		return sentence_trivially_false(s->child0) || sentence_trivially_false(s->child1);
+	} else if(s->type == OR){
+		return sentence_trivially_false(s->child0) && sentence_trivially_false(s->child1);
+	} else if(s->type == EXISTS || s->type == FORALL){
+		return sentence_trivially_false(s->child0);
+	} else if(s->type == NOT){
+		return sentence_trivially_true(s->child0);
+	} else if(s->type == FALSE){
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
 //Copies a sentence into the destination and allocates as needed
