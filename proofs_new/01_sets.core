@@ -20,7 +20,7 @@ prove empty_unique: *A*B(is_empty(A) & is_empty(B) -> A = B){
 		}
 		return iff(lemma0, lemma1);
 	}
-	return #[=](A, B)(A_eq_B);
+	return #=(A, B)(A_eq_B);
 }
 
 prove subset_reflexive: *A(A <= A){
@@ -31,7 +31,7 @@ prove subset_reflexive: *A(A <= A){
 		implies X_in_A;
 		return X_in_A;
 	}
-	return #[<=](A, A)(subset_def);
+	return #<=(A, A)(subset_def);
 }
 
 prove subset_transitive: *A*B*C(A <= B & B <= C -> A <= C){
@@ -43,7 +43,7 @@ prove subset_transitive: *A*B*C(A <= B & B <= C -> A <= C){
 		X_in_B = expand(A_subset_B)(X)(X_in_A);
 		return expand(B_subset_C)(X)(X_in_B);
 	}
-	return #[<=](A, C)(A_subset_C);
+	return #<=(A, C)(A_subset_C);
 }
 
 prove successor_subset: *A*B(successor(A, B) -> A <= B){
@@ -54,7 +54,7 @@ prove successor_subset: *A*B(successor(A, B) -> A <= B){
 		implies X_in_A;
 		return expand(successor_B)(X)(or(X_in_A, <: X = A>));
 	}
-	return #[<=](A, B)(A_subset_B);
+	return #<=(A, B)(A_subset_B);
 }
 
 //I need to prove that we can't have A in B & B in A
@@ -308,7 +308,7 @@ prove intersection_subset: *R*F*I(is_intersection(F, I) & *J(J in F -> R <= J) -
 		}
 		return expand(intersection_I)(X)(X_in_I);
 	}
-	return #[<=](R, I)(subset_def);
+	return #<=(R, I)(subset_def);
 }
 
 prove operation_uniqueness_lemma[P(1), Q(1)]: ^X(P(X)) & *X*Y(P(X) & P(Y) -> X = Y) -> (*X(P(X) -> Q(X)) <-> ^X(P(X) & Q(X))){
@@ -376,7 +376,7 @@ prove pairs: *A*B^P*X(X in P <-> ^Y^Z(Y in A & Z in B & is_pair(Y, Z, X))){
 				return replace[<K: K in U>](J, Z)(J_eq_Z)(Z_in_U);
 			};
 		}
-		X_subset_U = #[<=](X, U)(X_subset_U);
+		X_subset_U = #<=(X, U)(X_subset_U);
 		X_in_R = expand(power_set_R)(X)(X_subset_U);
 		return specified_P(X)(X_in_R, exists);
 	}

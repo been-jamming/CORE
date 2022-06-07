@@ -36,7 +36,7 @@ prove equiv_class_subset: *A*R*C(equiv_relation(A, R) & equiv_class(A, R, C) -> 
 		equal_P, equal_X = tuple_equal(P, X, OTHER_P, OTHER_X, T)(tuple_T, other_tuple_T);
 		return replace[<Q: Q in A>](X, OTHER_X)(equal_X)(OTHER_X_in_A);
 	}
-	return #[<=](C, A)(subset_def);
+	return #<=(C, A)(subset_def);
 }
 
 prove equiv_classes_exists: *A*R(equiv_relation(A, R) -> ^C(equiv_classes(A, R, C))){
@@ -100,7 +100,7 @@ prove equiv_classes_disjoint: *A*R*C*D*X(equiv_relation(A, R) & equiv_class(A, R
 		}
 		return iff(lemma0, lemma1);
 	}
-	return #[=](C, D)(C_eq_D);
+	return #=(C, D)(C_eq_D);
 }
 
 prove equiv_class_exists: *A*R*X(equiv_relation(A, R) & X in A -> ^C(equiv_class(A, R, C) & X in C)){
@@ -372,7 +372,7 @@ prove equiv_relation_sup: *A*R(relation_between(A, A, R) -> ^S(equiv_relation(A,
 			implies X_in_S;
 			return expand(intersection_S)(X)(X_in_S)(D)(D_in_F);
 		}
-		return #[<=](S, D)(subset_def);
+		return #<=(S, D)(subset_def);
 	}
 	S_between = #relation_between(A, A, S)(S_between);
 
@@ -397,7 +397,7 @@ prove equiv_relation_sup: *A*R(relation_between(A, A, R) -> ^S(equiv_relation(A,
 			implies X_in_S;
 			return expand(intersection_S)(X)(X_in_S)(T)(T_in_F);
 		}
-		return #[<=](S, T)(S_subset_T);
+		return #<=(S, T)(S_subset_T);
 	}
 
 	//Well this was longer than expected

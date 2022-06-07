@@ -218,26 +218,12 @@ void free_context(context *c){
 }
 
 //Convert a definition to the sentence describing it
-expr_value *definition_to_value(char *name){
-	definition *def;
+expr_value *definition_to_value(definition *def){
 	expr_value *output;
 	sentence *sentence_data;
 	sentence *new;
-	context *current_context;
 	int i;
 
-	current_context = global_context;
-	while(current_context){
-		def = read_dictionary(current_context->definitions, name, 0);
-		if(def){
-			break;
-		}
-		current_context = current_context->parent;
-	}
-
-	if(!def){
-		error(ERROR_DEFINITION_EXISTS);
-	}
 	if(!def->sentence_data){
 		error(ERROR_DEFINITION_EMPTY);
 	}
@@ -272,25 +258,11 @@ expr_value *definition_to_value(char *name){
 }
 
 //Convert a relation to the sentence describing it
-expr_value *relation_to_value(char *name){
-	relation *rel;
+expr_value *relation_to_value(relation *rel){
 	expr_value *output;
 	sentence *sentence_data;
 	sentence *new;
-	context *current_context;
 
-	current_context = global_context;
-	while(current_context){
-		rel = read_dictionary(current_context->relations, name, 0);
-		if(rel){
-			break;
-		}
-		current_context = current_context->parent;
-	}
-
-	if(!rel){
-		error(ERROR_RELATION_EXISTS);
-	}
 	if(!rel->sentence_data){
 		error(ERROR_RELATION_EMPTY);
 	}
@@ -322,9 +294,104 @@ expr_value *relation_to_value(char *name){
 	return output;
 }
 
+//Retrieve a variable by name
+variable *get_variable(char *var_name, context *parent_context){
+	variable *output = NULL;
+
+	while(parent_context){
+		output = read_dictionary(parent_context->variables, var_name, 0);
+		if(output){
+			break;
+		}
+		parent_context = parent_context->parent;
+	}
+
+	return output;
+}
+
+//Retrieve a definition or relation
+void get_definition_relation(char **c, definition **output_def, relation **output_rel){
+	char name_buffer[256];
+	variable *var = NULL;
+	variable *next_var = NULL;
+	definition *def = NULL;
+	relation *rel = NULL;
+	context *search_context;
+
+	skip_whitespace(c);
+	if(get_relation_identifier(c, name_buffer, 256)){
+		error(ERROR_IDENTIFIER_LENGTH);
+	}
+	if(name_buffer[0] == '\0'){
+		error(ERROR_RELATION_IDENTIFIER);
+	}
+	skip_whitespace(c);
+	search_context = global_context;
+	do{
+		var = read_dictionary(search_context->variables, name_buffer, 0);
+		if(var){
+			break;
+		}
+		def = read_dictionary(search_context->definitions, name_buffer, 0);
+		if(def){
+			break;
+		}
+		rel = read_dictionary(search_context->relations, name_buffer, 0);
+		if(rel){
+			break;
+		}
+		search_context = search_context->parent;
+	} while(search_context);
+	if(var){
+		do{
+			if(var->type != CONTEXT_VAR){
+				error(ERROR_ARGUMENT_TYPE);
+			}
+			if(**c != '.'){
+				error(ERROR_DOT_EXPECTED);
+			}
+			++*c;
+			skip_whitespace(c);
+			if(get_relation_identifier(c, name_buffer, 256)){
+				error(ERROR_IDENTIFIER_LENGTH);
+			}
+			if(name_buffer[0] == '\0'){
+				error(ERROR_RELATION_IDENTIFIER);
+			}
+			skip_whitespace(c);
+			next_var = read_dictionary(var->context_data->variables, name_buffer, 0);
+			if(next_var){
+				var = next_var;
+				continue;
+			}
+			def = read_dictionary(var->context_data->definitions, name_buffer, 0);
+			if(def){
+				break;
+			}
+			rel = read_dictionary(var->context_data->relations, name_buffer, 0);
+			if(rel){
+				break;
+			}
+			var = next_var;
+		} while(var);
+		if(!def && !rel){
+			error(ERROR_DEFINITION_EXISTS);
+		}
+	}
+	if(def){
+		*output_def = def;
+	} else if(rel){
+		*output_rel = rel;
+	} else {
+		error(ERROR_DEFINITION_EXISTS);
+	}
+}
+
 //Parse an identifier
 expr_value *parse_expr_identifier(char **c){
 	variable *var = NULL;
+	definition *def = NULL;
+	relation *rel = NULL;
 	expr_value *output = NULL;
 	char name_buffer[256];
 	context *current_context = NULL;
@@ -333,29 +400,11 @@ expr_value *parse_expr_identifier(char **c){
 	if(**c == '#'){
 		++*c;
 		skip_whitespace(c);
-		if(**c == '['){
-			++*c;
-			skip_whitespace(c);
-			if(get_relation_identifier(c, name_buffer, 256)){
-				error(ERROR_IDENTIFIER_LENGTH);
-			}
-			if(name_buffer[0] == '\0'){
-				error(ERROR_IDENTIFIER_EXPECTED);
-			}
-			skip_whitespace(c);
-			if(**c != ']'){
-				error(ERROR_BRACKET_EXPECTED);
-			}
-			++*c;
-			output = relation_to_value(name_buffer);
-		} else {
-			if(get_identifier(c, name_buffer, 256)){
-				error(ERROR_IDENTIFIER_LENGTH);
-			}
-			if(name_buffer[0] == '\0'){
-				error(ERROR_IDENTIFIER_EXPECTED);
-			}
-			output = definition_to_value(name_buffer);
+		get_definition_relation(c, &def, &rel);
+		if(def){
+			output = definition_to_value(def);
+		} else if(rel){
+			output = relation_to_value(rel);
 		}
 		return output;
 	} else {
@@ -738,21 +787,6 @@ variable *create_context_variable(char *var_name, context *context_data, context
 	output->context_data = context_data;
 
 	write_dictionary(&(parent_context->variables), var_name, output, 0);
-
-	return output;
-}
-
-//Retrieve a variable by name
-variable *get_variable(char *var_name, context *parent_context){
-	variable *output = NULL;
-
-	while(parent_context){
-		output = read_dictionary(parent_context->variables, var_name, 0);
-		if(output){
-			break;
-		}
-		parent_context = parent_context->parent;
-	}
 
 	return output;
 }

@@ -85,7 +85,7 @@ prove zero_minimum: *X(ZERO <= X){
 		Y_in_EMPTY = replace[<Q: Y in Q>](EMPTY, ZERO)(zero_definition)(Y_in_ZERO);
 		return absurdity[goal](empty_definition(Y)(Y_in_EMPTY));
 	}
-	return #[<=](ZERO, X)(subset_def);
+	return #<=(ZERO, X)(subset_def);
 }
 
 prove naturals_successor_closure: *X*Y(X in NATURALS & successor(X, Y) -> Y in NATURALS){
@@ -140,7 +140,7 @@ prove naturals_strong_induction[P(1)]: *X(X in NATURALS & *Y(Y < X -> P(Y)) -> P
 			given |K|;
 			implies K_lt_Z; K_in_Z = expand(K_lt_Z);
 			return branch(expand(successor_Z)(K)(K_in_Z), K_in_Y, K_eq_Y){
-				K_lt_Y = #[<](K, Y)(K_in_Y);
+				K_lt_Y = #<(K, Y)(K_in_Y);
 				return closure_Y(K)(K_lt_Y);
 			} or {
 				Q_K = replace[<B: Q(B)>](K, Y)(K_eq_Y)(Q_Y);
@@ -213,7 +213,7 @@ prove naturals_zero_dichotomy: *N(N in NATURALS -> ZERO < N | ZERO = N){
 		} or {
 			return expand(successor_M)(ZERO)(or(<: ZERO in N>, ZERO_eq_N));
 		};
-		return #Q(M)(or(#[<](ZERO, M)(ZERO_in_M), <: ZERO = M>));
+		return #Q(M)(or(#<(ZERO, M)(ZERO_in_M), <: ZERO = M>));
 	}
 
 	result = naturals_induction[<K: Q(K)>](Q_ZERO, Q_closure);
@@ -245,16 +245,16 @@ prove naturals_subset_lemma: *N*M*K(N in NATURALS & K in NATURALS & successor(N,
 			implies J_in_NATURALS, successor_K, J_lt_M;
 			J_in_M = expand(J_lt_M);
 			return branch(expand(successor_M)(J)(J_in_M), J_in_N, J_eq_N){
-				J_lt_N = #[<](J, N)(J_in_N);
+				J_lt_N = #<(J, N)(J_in_N);
 				K_lt_N_or_K_eq_N = N_condition(J, K)(J_in_NATURALS, successor_K, J_lt_N);
 				return branch(K_lt_N_or_K_eq_N, K_lt_N, K_eq_N){
 					K_in_N = expand(K_lt_N);
 					K_in_M = expand(successor_M)(K)(or(K_in_N, <: K = N>));
-					K_lt_M = #[<](K, M)(K_in_M);
+					K_lt_M = #<(K, M)(K_in_M);
 					return or(K_lt_M, <: K = M>);
 				} or {
 					K_in_M = expand(successor_M)(K)(or(<: K in N>, K_eq_N));
-					K_lt_M = #[<](K, M)(K_in_M);
+					K_lt_M = #<(K, M)(K_in_M);
 					return or(K_lt_M, <: K = M>);
 				};
 			} or {
@@ -372,7 +372,7 @@ prove naturals_subset: *N*M(N in NATURALS & M in NATURALS & N <= M -> N < M | N 
 					given |X|;
 					return iff(expand(ZERO_subset_M)(X), expand(M_subset_ZERO)(X));
 				}
-				M_eq_ZERO = #[=](M, ZERO)(M_eq_ZERO);
+				M_eq_ZERO = #=(M, ZERO)(M_eq_ZERO);
 				M_eq_Y = replace[<X: M = X>](Y, ZERO)(Y_eq_ZERO)(M_eq_ZERO);
 				return or(<: M < Y>, M_eq_Y);
 			} or {
@@ -406,7 +406,7 @@ prove naturals_dichotomy: *A*B(A in NATURALS & B in NATURALS -> A < B | B <= A){
 			return branch(X_closure(A)(A_in_NATURALS), A_lt_X, X_lteq_A){
 				A_in_X = expand(A_lt_X);
 				A_in_Y = expand(successor_Y)(A)(or(A_in_X, <: A = X>));
-				return or(#[<](A, Y)(A_in_Y), <: Y <= A>);
+				return or(#<(A, Y)(A_in_Y), <: Y <= A>);
 			} or {
 				
 			};

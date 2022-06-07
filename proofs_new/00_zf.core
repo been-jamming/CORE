@@ -30,7 +30,7 @@ prove equal_reflexive: *A(A = A){
 		}
 		return iff(lemma, lemma);
 	}
-	return #[=](A, A)(equal_def);
+	return #=(A, A)(equal_def);
 }
 
 prove equal_symmetric: *A*B(A = B -> B = A){
@@ -40,7 +40,7 @@ prove equal_symmetric: *A*B(A = B -> B = A){
 		given |X|;
 		return expand(A_eq_B)(X);
 	}
-	return #[=](B, A)(equal_def);
+	return #=(B, A)(equal_def);
 }
 
 prove equal_transitive: *A*B*C(A = B & B = C -> A = C){
@@ -84,7 +84,7 @@ prove definition_uniqueness_lemma[P(1)]: *A*B(*X(X in A <-> P(X)) & *X(X in B <-
 		}
 		return iff(lemma0, lemma1);
 	}
-	return #[=](A, B)(equal_def);
+	return #=(A, B)(equal_def);
 }
 
 prove pair: *A*B^C(is_pair(A, B, C)){
