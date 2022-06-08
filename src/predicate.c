@@ -258,110 +258,240 @@ sentence *parse_true_false(char **c, int num_bound_vars, int num_bound_props){
 	return NULL;
 }
 
+//Parse a relation symbol
+//The symbol may sit inside of another context stored in a variable
+relation *parse_relation_symbol(char **c){
+	char name_buffer[256];
+	context *search_context;
+	variable *var = NULL;
+	relation *rel = NULL;
+
+	skip_whitespace(c);
+	if(get_relation_identifier(c, name_buffer, 256)){
+		return NULL;
+	}
+	search_context = global_context;
+	while(search_context){
+		rel = read_dictionary(search_context->relations, name_buffer, 0);
+		if(!rel){
+			var = read_dictionary(search_context->variables, name_buffer, 0);
+			if(var){
+				break;
+			}
+		} else {
+			break;
+		}
+		search_context = search_context->parent;
+	}
+	if(rel){
+		return rel;
+	} else if(var){
+		if(var->type != CONTEXT_VAR){
+			return NULL;
+		}
+		search_context = var->context_data;
+		while(search_context){
+			skip_whitespace(c);
+			if(**c != '.'){
+				return NULL;
+			}
+			++*c;
+			skip_whitespace(c);
+			if(get_relation_identifier(c, name_buffer, 256)){
+				return NULL;
+			}
+			rel = read_dictionary(search_context->relations, name_buffer, 0);
+			if(!rel){
+				var = read_dictionary(search_context->variables, name_buffer, 0);
+				if(var && var->type == CONTEXT_VAR){
+					search_context = var->context_data;
+				} else {
+					return NULL;
+				}
+			} else {
+				return rel;
+			}
+		}
+	}
+
+	return NULL;
+}
+
+//Parse an object symbol
+//The object may sit inside of another context stored in a variable
+variable *parse_object_symbol(char **c, int **var_id){
+	char name_buffer[256];
+	context *search_context;
+	variable *var = NULL;
+
+	skip_whitespace(c);
+	if(get_identifier(c, name_buffer, 256)){
+		return NULL;
+	}
+	*var_id = read_dictionary(global_bound_variables, name_buffer, 0);
+	if(*var_id){
+		return NULL;
+	}
+	search_context = global_context;
+	while(search_context){
+		var = read_dictionary(search_context->variables, name_buffer, 0);
+		if(var){
+			break;
+		}
+		search_context = search_context->parent;
+	}
+	if(!var){
+		return NULL;
+	}
+	if(var->type == OBJECT_VAR){
+		return var;
+	} else {
+		if(var->type != CONTEXT_VAR){
+			return NULL;
+		}
+		search_context = var->context_data;
+		while(search_context){
+			skip_whitespace(c);
+			if(**c != '.'){
+				return NULL;
+			}
+			++*c;
+			skip_whitespace(c);
+			if(get_identifier(c, name_buffer, 256)){
+				return NULL;
+			}
+			var = read_dictionary(search_context->variables, name_buffer, 0);
+			if(!var){
+				return NULL;
+			}
+			if(var->type == CONTEXT_VAR){
+				search_context = var->context_data;
+			} else if(var->type == OBJECT_VAR){
+				return var;
+			} else {
+				return NULL;
+			}
+		}
+		return NULL;
+	}
+}
+
+//Parse a definition symbol
+//The symbol may sit inside of another context stored in a variable
+definition *parse_definition_symbol(char **c, bound_proposition **bound_prop){
+	char name_buffer[256];
+	context *search_context;
+	variable *var = NULL;
+	definition *def = NULL;
+
+	skip_whitespace(c);
+	if(get_identifier(c, name_buffer, 256)){
+		return NULL;
+	}
+	*bound_prop = read_dictionary(global_bound_propositions, name_buffer, 0);
+	if(*bound_prop){
+		return NULL;
+	}
+	search_context = global_context;
+	while(search_context){
+		def = read_dictionary(search_context->definitions, name_buffer, 0);
+		if(!def){
+			var = read_dictionary(search_context->variables, name_buffer, 0);
+			if(var){
+				break;
+			}
+		} else {
+			break;
+		}
+		search_context = search_context->parent;
+	}
+	if(def){
+		return def;
+	} else if(var){
+		if(var->type != CONTEXT_VAR){
+			return NULL;
+		}
+		search_context = var->context_data;
+		while(search_context){
+			skip_whitespace(c);
+			if(**c != '.'){
+				return NULL;
+			}
+			++*c;
+			skip_whitespace(c);
+			if(get_identifier(c, name_buffer, 256)){
+				return NULL;
+			}
+			def = read_dictionary(search_context->definitions, name_buffer, 0);
+			if(!def){
+				var = read_dictionary(search_context->variables, name_buffer, 0);
+				if(var && var->type == CONTEXT_VAR){
+					search_context = var->context_data;
+				} else {
+					return NULL;
+				}
+			} else {
+				printf("'%s'\n", name_buffer);
+				return def;
+			}
+		}
+	}
+
+	return NULL;
+}
+
 //Parse a relation
 //Allocates and returns a sentence structure when successful
 //Returns NULL when unsuccessful
 sentence *parse_relation(char **c, int num_bound_vars, int num_bound_props){
-	char var_name0[256];
-	char relation_name[256];
-	char var_name1[256];
 	int *var0_id = NULL;
 	int *var1_id = NULL;
 	variable *var0 = NULL;
 	variable *var1 = NULL;
 	relation *relation_data = NULL;
-	unsigned char is_bound0;
-	unsigned char is_bound1;
-	context *current_context;
 	sentence *output;
 	char *beginning;
 
 	skip_whitespace(c);
 	beginning = *c;
-	if(get_identifier(c, var_name0, 256)){
-		error(ERROR_IDENTIFIER_LENGTH);
-	}
-	if(var_name0[0] == '\0'){
+	var0 = parse_object_symbol(c, &var0_id);
+	if(!var0 && !var0_id){
 		*c = beginning;
 		return NULL;
 	}
 
 	skip_whitespace(c);
-	if(get_relation_identifier(c, relation_name, 256)){
-		error(ERROR_IDENTIFIER_LENGTH);
-	}
-	if(relation_name[0] == '\0'){
+	relation_data = parse_relation_symbol(c);
+	if(!relation_data){
 		*c = beginning;
 		return NULL;
 	}
 
 	skip_whitespace(c);
-	if(get_identifier(c, var_name1, 256)){
-		error(ERROR_IDENTIFIER_LENGTH);
-	}
-	if(var_name1[0] == '\0'){
+	var1 = parse_object_symbol(c, &var1_id);
+	if(!var1 && !var1_id){
 		*c = beginning;
 		return NULL;
-	}
-
-	var0_id = read_dictionary(global_bound_variables, var_name0, 0);
-	if(!var0_id){
-		is_bound0 = 0;
-		current_context = global_context;
-		while(current_context != NULL){
-			var0 = read_dictionary(current_context->variables, var_name0, 0);
-			if(var0){
-				break;
-			}
-			current_context = current_context->parent;
-		}
-	} else {
-		is_bound0 = 1;
-	}
-
-	current_context = global_context;
-	while(current_context != NULL){
-		relation_data = read_dictionary(current_context->relations, relation_name, 0);
-		if(relation_data){
-			break;
-		}
-		current_context = current_context->parent;
-	}
-
-	var1_id = read_dictionary(global_bound_variables, var_name1, 0);
-	if(!var1_id){
-		is_bound1 = 0;
-		current_context = global_context;
-		while(current_context != NULL){
-			var1 = read_dictionary(current_context->variables, var_name1, 0);
-
-			if(var1){
-				break;
-			}
-			current_context = current_context->parent;
-		}
-	} else {
-		is_bound1 = 1;
 	}
 
 	if((var0_id || var0) && (var1_id || var1) && relation_data){
 		output = create_sentence(RELATION, num_bound_vars, num_bound_props);
 		relation_data->num_references++;
 		output->relation_data = relation_data;
-		if(is_bound0){
+		if(var0_id){
 			output->var0_id = *var0_id;
 		} else {
 			output->var0 = var0;
 			output->var0->num_references++;
 		}
-		if(is_bound1){
+		if(var1_id){
 			output->var1_id = *var1_id;
 		} else {
 			output->var1 = var1;
 			output->var1->num_references++;
 		}
-		output->is_bound0 = is_bound0;
-		output->is_bound1 = is_bound1;
+		output->is_bound0 = (var0_id != NULL);
+		output->is_bound1 = (var1_id != NULL);
 		return output;
 	} else {
 		*c = beginning;
@@ -373,9 +503,6 @@ sentence *parse_relation(char **c, int num_bound_vars, int num_bound_props){
 //Allocates and returns a sentence structure when successful
 //Returns NULL when unsuccessful
 sentence *parse_proposition(char **c, int num_bound_vars, int num_bound_props){
-	char prop_name[256];
-	char var_name[256];
-	unsigned char is_bound;
 	definition *prop = NULL;
 	bound_proposition *bound_prop = NULL;
 	int *var_id = NULL;
@@ -385,43 +512,21 @@ sentence *parse_proposition(char **c, int num_bound_vars, int num_bound_props){
 	proposition_arg *args = NULL;
 	sentence *output = NULL;
 	char *beginning = NULL;
-	context *current_context = NULL;
 
 	skip_whitespace(c);
 	beginning = *c;
-	if(get_identifier(c, prop_name, 256)){
-		error(ERROR_IDENTIFIER_LENGTH);
-	}
-	if(prop_name[0] == '\0'){
+	prop = parse_definition_symbol(c, &bound_prop);
+	if(!prop && !bound_prop){
 		*c = beginning;
 		return NULL;
 	}
 
 	skip_whitespace(c);
-	bound_prop = read_dictionary(global_bound_propositions, prop_name, 0);
-	if(!bound_prop){
-		is_bound = 0;
-		current_context = global_context;
-		while(current_context){
-			prop = read_dictionary(current_context->definitions, prop_name, 0);
-			if(prop){
-				break;
-			}
-			current_context = current_context->parent;
-		}
-	} else {
-		is_bound = 1;
-	}
 
-	if(is_bound){
+	if(bound_prop){
 		num_args = bound_prop->num_args;
 	} else {
-		if(prop){
-			num_args = prop->num_args;
-		} else {
-			*c = beginning;
-			return NULL;
-		}
+		num_args = prop->num_args;
 	}
 
 	if(**c == '('){
@@ -438,36 +543,19 @@ sentence *parse_proposition(char **c, int num_bound_vars, int num_bound_props){
 			skip_whitespace(c);
 			while(**c != ')'){
 				skip_whitespace(c);
-				if(get_identifier(c, var_name, 256)){
-					error(ERROR_IDENTIFIER_LENGTH);
-				}
-				if(var_name[0] == '\0'){
+				var = parse_object_symbol(c, &var_id);
+				if(!var && !var_id){
 					*c = beginning;
 					free(args);
 					return NULL;
-				}
-				var_id = read_dictionary(global_bound_variables, var_name, 0);
-				if(!var_id){
-					current_context = global_context;
-					while(current_context){
-						var = read_dictionary(current_context->variables, var_name, 0);
-						if(var){
-							break;
-						}
-						current_context = current_context->parent;
-					}
 				}
 				if(var_id){
 					args[counted_args].is_bound = 1;
 					args[counted_args].var_id = *var_id;
-				} else if(var){
+				} else {
 					args[counted_args].is_bound = 0;
 					args[counted_args].var = var;
 					args[counted_args].var->num_references++;
-				} else {
-					*c = beginning;
-					free(args);
-					return NULL;
 				}
 				counted_args++;
 				skip_whitespace(c);
@@ -499,7 +587,7 @@ sentence *parse_proposition(char **c, int num_bound_vars, int num_bound_props){
 
 	if(bound_prop || prop){
 		output = create_sentence(PROPOSITION, num_bound_vars, num_bound_props);
-		if(is_bound){
+		if(bound_prop){
 			output->definition_id = bound_prop->prop_id;
 			output->proposition_args = args;
 		} else {
@@ -507,7 +595,7 @@ sentence *parse_proposition(char **c, int num_bound_vars, int num_bound_props){
 			output->proposition_args = args;
 			output->definition_data->num_references++;
 		}
-		output->is_bound = is_bound;
+		output->is_bound = (bound_prop != NULL);
 		output->num_args = num_args;
 		return output;
 	} else {
