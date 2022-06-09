@@ -9,10 +9,6 @@
 //CORE Command Parser
 //Ben Jones
 
-void init_verifier(void){
-	global_context = create_context(NULL);
-}
-
 void new_scope(void){
 	global_context = create_context(global_context);
 }
@@ -69,7 +65,7 @@ relation *create_relation(char *name, sentence *sentence_data, context *parent_c
 	return rel;
 }
 
-static char *load_file(char *file_name){
+char *load_file(char *file_name){
 	FILE *fp;
 	size_t size;
 	size_t read_size;
@@ -1309,6 +1305,8 @@ expr_value *parse_context(char **c){
 	return return_value;
 }
 
+/*
+
 int main(int argc, char **argv){
 	char *program_start;
 	char *program_text;
@@ -1363,4 +1361,5 @@ int main(int argc, char **argv){
 	printf("Proof verification successful.\n");
 	return 0;
 }
+*/
 

@@ -1,3 +1,6 @@
+#ifndef PREDICATE_INCLUDED
+#define PREDICATE_INCLUDED
+
 #define MAX_DEPTH 128
 
 #define ERROR_IDENTIFIER_LENGTH 1
@@ -68,6 +71,7 @@
 #define ERROR_GOAL 66
 #define ERROR_UNEXPECTED_RETURN 67
 #define ERROR_ARGUMENT_TRUE 68
+#define ERROR_FILE_READ 69
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;
@@ -118,6 +122,8 @@ struct definition{
 	sentence *sentence_data;
 	unsigned int num_references;
 	unsigned int num_args;
+	//Used to import definitions
+	definition *destination;
 };
 
 struct expr_value{
@@ -140,6 +146,8 @@ struct variable{
 			unsigned char verified;
 		};
 		context *context_data;
+		//Used to import objects
+		variable *destination;
 	};
 	unsigned int num_references;
 	context *parent_context;
@@ -163,6 +171,8 @@ struct relation{
 	char *name;
 	sentence *sentence_data;
 	unsigned int num_references;
+	//Used to import relations
+	relation *destination;
 };
 
 struct sentence{
@@ -247,3 +257,6 @@ sentence *peel_and_left(sentence **s);
 int count_or(sentence *s);
 
 expr_value *parse_context(char **c);
+
+#endif
+

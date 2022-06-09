@@ -15,11 +15,11 @@
 int global_relation_id;
 dictionary global_bound_variables;
 dictionary global_bound_propositions;
-unsigned int global_line_number;
-char *global_file_name;
-char **global_program_pointer;
-char *global_program_start;
-context *global_context;
+unsigned int global_line_number = 0;
+char *global_file_name = NULL;
+char **global_program_pointer = NULL;
+char *global_program_start = NULL;
+context *global_context = NULL;
 
 //Predicate parsing order of operations
 static int order_of_operations[4] = {3, 2, 1, 0};
@@ -93,7 +93,8 @@ static char *error_messages[] = {
 	"Expected '{', ';', or ','",
 	"No goal",
 	"Unexpected return value",
-	"Argument is not trivially true"
+	"Argument is not trivially true",
+	"Could not read file"
 };
 
 //Allocate a sentence structure
@@ -150,6 +151,14 @@ void error(int error_code){
 	char *place;
 
 	fprintf(stderr, "\033[31;1mError\033[0;1m: %s\033[0m\n", error_messages[error_code]);
+	if(error_code == ERROR_FILE_READ){
+		fprintf(stderr, "in '%s'\n", global_file_name);
+#ifdef USE_CUSTOM_ALLOC
+		custom_malloc_abort();
+#endif
+		exit(ERROR_FILE_READ);
+		return;
+	}
 	fprintf(stderr, "in '%s'\n%d ", global_file_name, global_line_number);
 	error_place = *global_program_pointer;
 	line_start = error_place;
