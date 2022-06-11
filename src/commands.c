@@ -4,6 +4,7 @@
 #include "dictionary.h"
 #include "predicate.h"
 #include "expression.h"
+#include "imports.h"
 #include "custom_malloc.h"
 
 //CORE Command Parser
@@ -115,6 +116,7 @@ int print_command(char **c){
 
 int object_command(char **c){
 	char var_name[256];
+	variable *var;
 
 	skip_whitespace(c);
 	if(strncmp(*c, "object", 6) || is_alphanumeric((*c)[6])){
@@ -147,7 +149,8 @@ int object_command(char **c){
 			error(ERROR_IDENTIFIER_EXPECTED);
 		}
 
-		create_object_variable(var_name, global_context);
+		var = create_object_variable(var_name, global_context);
+		add_object_dependency(var);
 		skip_whitespace(c);
 	}
 
@@ -218,6 +221,7 @@ definition *define_command(char **c){
 	if(**c == ';'){
 		++*c;
 		output = create_definition(def_name, NULL, num_bound_vars, global_context);
+		add_definition_dependency(output);
 	} else if(**c == ':'){
 		++*c;
 		s = parse_sentence(c, num_bound_vars, 0);
@@ -333,6 +337,7 @@ variable *axiom_command(char **c){
 
 	clear_bound_propositions();
 	output = create_sentence_variable(axiom_name, s, 1, global_context);
+	add_axiom_dependency(output);
 	return output;
 }
 
@@ -444,6 +449,7 @@ int relation_command(char **c){
 	char identifier0[256];
 	char identifier1[256];
 	char identifier2[256];
+	relation *rel;
 	int *new_int;
 	sentence *s;
 
@@ -469,7 +475,8 @@ int relation_command(char **c){
 		if(global_context->parent){
 			error(ERROR_RELATION_CONTEXT);
 		}
-		create_relation(identifier0, NULL, global_context);
+		rel = create_relation(identifier0, NULL, global_context);
+		add_relation_dependency(rel);
 		return 1;
 	} else {
 		if(!is_alpha(identifier0[0])){
@@ -1304,62 +1311,4 @@ expr_value *parse_context(char **c){
 
 	return return_value;
 }
-
-/*
-
-int main(int argc, char **argv){
-	char *program_start;
-	char *program_text;
-	expr_value *return_value;
-	int i;
-
-	if(argc < 2){
-		fprintf(stderr, "Error: no input files\n");
-		return 1;
-	}
-
-#ifdef USE_CUSTOM_ALLOC
-	custom_malloc_init();
-#endif
-
-	init_verifier();
-
-	for(i = 1; i < argc; i++){
-		program_start = load_file(argv[i]);
-		program_text = program_start;
-		if(!program_text){
-			fprintf(stderr, "Error: could not read file '%s'.", argv[i]);
-#ifdef USE_CUSTOM_ALLOC
-			custom_malloc_abort();
-#endif
-			return 1;
-		}
-		global_line_number = 1;
-		global_file_name = argv[i];
-		global_program_pointer = &program_text;
-		global_program_start = program_text;
-		return_value = parse_context(&program_text);
-		if(*program_text == '}'){
-			error(ERROR_EOF);
-		}
-		if(return_value){
-			printf("file '%s' returned: ", global_file_name);
-			print_expr_value(return_value);
-			printf("\n");
-			free_expr_value(return_value);
-		}
-		free(program_start);
-	}
-	free_context(global_context);
-	clear_bound_variables();
-	clear_bound_propositions();
-
-#ifdef USE_CUSTOM_ALLOC
-	custom_malloc_deinit();
-#endif
-
-	printf("Proof verification successful.\n");
-	return 0;
-}
-*/
 

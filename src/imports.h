@@ -34,3 +34,7 @@ struct import_entry{
 extern dictionary global_imports;
 extern import_entry *global_import_entry;
 
+void add_axiom_dependency(variable *var);
+void add_object_dependency(variable *var);
+void add_definition_dependency(definition *def);
+void add_relation_dependency(relation *rel);

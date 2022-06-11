@@ -440,7 +440,6 @@ definition *parse_definition_symbol(char **c, bound_proposition **bound_prop){
 					return NULL;
 				}
 			} else {
-				printf("'%s'\n", name_buffer);
 				return def;
 			}
 		}
