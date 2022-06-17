@@ -72,6 +72,9 @@
 #define ERROR_UNEXPECTED_RETURN 67
 #define ERROR_ARGUMENT_TRUE 68
 #define ERROR_FILE_READ 69
+#define ERROR_IMPORT_OBJECT 70
+#define ERROR_IMPORT_RELATION 71
+#define ERROR_IMPORT_DEFINITION 72
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;
@@ -257,6 +260,8 @@ sentence *peel_and_left(sentence **s);
 int count_or(sentence *s);
 
 expr_value *parse_context(char **c);
+definition *create_definition(char *name, sentence *sentence_data, int num_args, context *parent_context);
+relation *create_relation(char *name, sentence *sentence_data, context *parent_context);
 
 #endif
 

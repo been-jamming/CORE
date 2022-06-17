@@ -38,3 +38,9 @@ void add_axiom_dependency(variable *var);
 void add_object_dependency(variable *var);
 void add_definition_dependency(definition *def);
 void add_relation_dependency(relation *rel);
+
+sentence *transfer_sentence(sentence *s, sentence *parent);
+variable *transfer_object(variable *obj);
+relation *transfer_relation(relation *rel);
+definition *transfer_definition(definition *def);
+

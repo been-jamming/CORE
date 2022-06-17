@@ -150,34 +150,6 @@ void print_dependencies(import_entry *entry){
 	}
 }
 
-//Add dependencies for each definition, relation, and object
-//in a sentence
-static void add_sentence_dependencies(sentence *s){
-	int i;
-
-	if(s->type == PROPOSITION && !s->is_bound){
-		add_definition_dependency(s->definition_data);
-		for(i = 0; i < s->num_args; i++){
-			if(!s->proposition_args[i].is_bound){
-				add_object_dependency(s->proposition_args[i].var);
-			}
-		}
-	} else if(s->type == RELATION){
-		add_relation_dependency(s->relation_data);
-		if(!s->is_bound0){
-			add_object_dependency(s->var0);
-		}
-		if(!s->is_bound1){
-			add_object_dependency(s->var1);
-		}
-	} else if(s->type == NOT || s->type == EXISTS || s->type == FORALL){
-		add_sentence_dependencies(s->child0);
-	} else if(s->type == AND || s->type == OR || s->type == IMPLIES || s->type == BICOND){
-		add_sentence_dependencies(s->child0);
-		add_sentence_dependencies(s->child1);
-	}
-}
-
 void add_axiom_dependency(variable *var){
 	dependency *next;
 
@@ -220,6 +192,148 @@ void add_relation_dependency(relation *rel){
 	next->rel->num_references++;
 	next->next = global_import_entry->dependencies;
 	global_import_entry->dependencies = next;
+}
+
+void reset_destination_variable(variable *var){
+	if(var->type == OBJECT_VAR){
+		var->destination = NULL;
+	}
+}
+
+void reset_destination_variable_void(void *v){
+	reset_destination_variable(v);
+}
+
+void reset_destination_definition(definition *def){
+	def->destination = NULL;
+}
+
+void reset_destination_definition_void(void *v){
+	reset_destination_definition(v);
+}
+
+void reset_destination_relation(relation *rel){
+	rel->destination = NULL;
+}
+
+void reset_destination_relation_void(void *v){
+	reset_destination_relation(v);
+}
+
+void reset_definitions(context *c){
+	iterate_dictionary(c->variables, reset_destination_variable_void);
+	iterate_dictionary(c->definitions, reset_destination_definition_void);
+	iterate_dictionary(c->relations, reset_destination_relation_void);
+}
+
+variable *transfer_object(variable *obj){
+	variable *output;
+
+	output = obj->destination;
+	if(!output){
+		//Error if the object already exists but is not the destination
+		output = read_dictionary(global_context->variables, obj->name, 0);
+		if(output){
+			error(ERROR_IMPORT_OBJECT);
+		}
+		output = create_object_variable(obj->name, global_context);
+		obj->destination = output;
+	}
+
+	return output;
+}
+
+relation *transfer_relation(relation *rel){
+	relation *output;
+
+	output = rel->destination;
+	if(!output){
+		//Error if the relation already exists but is not the destination
+		output = read_dictionary(global_context->relations, rel->name, 0);
+		if(output){
+			error(ERROR_IMPORT_RELATION);
+		}
+		output = create_relation(rel->name, transfer_sentence(rel->sentence_data, NULL), global_context);
+		rel->destination = output;
+	}
+
+	return output;
+}
+
+definition *transfer_definition(definition *def){
+	definition *output;
+
+	output = def->destination;
+	if(!output){
+		//Error if the definition already exists but is not the destination
+		output = read_dictionary(global_context->definitions, def->name, 0);
+		if(output){
+			error(ERROR_IMPORT_DEFINITION);
+		}
+		output = create_definition(def->name, transfer_sentence(def->sentence_data, NULL), def->num_args, global_context);
+		def->destination = output;
+	}
+
+	return output;
+}
+
+sentence *transfer_sentence(sentence *s, sentence *parent){
+	sentence *output;
+	int i;
+
+	output = create_sentence(s->type, s->num_bound_vars, s->num_bound_props);
+	output->parent = parent;
+	switch(s->type){
+		case AND:
+		case OR:
+		case IMPLIES:
+		case BICOND:
+			output->child0 = transfer_sentence(s->child0, output);
+			output->child1 = transfer_sentence(s->child1, output);
+			break;
+		case NOT:
+		case EXISTS:
+		case FORALL:
+			output->child0 = transfer_sentence(s->child0, output);
+			break;
+		case RELATION:
+			output->relation_data = transfer_relation(s->relation_data);
+			output->is_bound0 = s->is_bound0;
+			if(s->is_bound0){
+				output->var0_id = s->var0_id;
+			} else {
+				output->var0 = transfer_object(s->var0);
+			}
+			output->is_bound1 = s->is_bound1;
+			if(s->is_bound1){
+				output->var1_id = s->var1_id;
+			} else {
+				output->var1 = transfer_object(s->var1);
+			}
+			break;
+		case PROPOSITION:
+			output->is_bound = s->is_bound;
+			if(s->is_bound){
+				output->definition_id = s->definition_id;
+			} else {
+				output->definition_data = transfer_definition(s->definition_data);
+			}
+			output->num_args = s->num_args;
+			output->proposition_args = malloc(sizeof(proposition_arg)*output->num_args);
+			for(i = 0; i < output->num_args; i++){
+				output->proposition_args[i].is_bound = s->proposition_args[i].is_bound;
+				if(s->proposition_args[i].is_bound){
+					output->proposition_args[i].var_id = s->proposition_args[i].var_id;
+				} else {
+					output->proposition_args[i].var = transfer_object(s->proposition_args[i].var);
+				}
+			}
+			break;
+		default:
+			break;
+	}
+
+	return output;
 }
 
 int main(int argc, char **argv){

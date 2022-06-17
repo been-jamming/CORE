@@ -94,7 +94,10 @@ static char *error_messages[] = {
 	"No goal",
 	"Unexpected return value",
 	"Argument is not trivially true",
-	"Could not read file"
+	"Could not read file",
+	"Failed to import object",
+	"Failed to import relation",
+	"Failed to import definition"
 };
 
 //Allocate a sentence structure
