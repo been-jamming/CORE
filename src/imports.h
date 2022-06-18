@@ -21,6 +21,7 @@ struct dependency{
 		relation *rel;
 	};
 	dependency *next;
+	dependency *previous;
 };
 
 typedef struct import_entry import_entry;

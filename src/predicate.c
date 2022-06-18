@@ -97,7 +97,10 @@ static char *error_messages[] = {
 	"Could not read file",
 	"Failed to import object",
 	"Failed to import relation",
-	"Failed to import definition"
+	"Failed to import definition",
+	"Incompatible axiom",
+	"Incompatible object",
+	"Incompatible definition"
 };
 
 //Allocate a sentence structure

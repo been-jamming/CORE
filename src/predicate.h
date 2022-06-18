@@ -75,6 +75,9 @@
 #define ERROR_IMPORT_OBJECT 70
 #define ERROR_IMPORT_RELATION 71
 #define ERROR_IMPORT_DEFINITION 72
+#define ERROR_AXIOM_INCOMPATIBLE 73
+#define ERROR_OBJECT_INCOMPATIBLE 74
+#define ERROR_DEFINITION_INCOMPATIBLE 75
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;

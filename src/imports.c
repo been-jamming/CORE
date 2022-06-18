@@ -10,6 +10,9 @@
 #include "commands.h"
 #include "imports.h"
 
+//CORE import system
+//Ben Jones
+
 dictionary global_imports;
 import_entry *global_import_entry = NULL;
 
@@ -158,6 +161,10 @@ void add_axiom_dependency(variable *var){
 	next->var = var;
 	next->var->num_references++;
 	next->next = global_import_entry->dependencies;
+	next->previous = NULL;
+	if(next->next){
+		next->next->previous = next;
+	}
 	global_import_entry->dependencies = next;
 }
 
@@ -169,6 +176,10 @@ void add_object_dependency(variable *var){
 	next->var = var;
 	next->var->num_references++;
 	next->next = global_import_entry->dependencies;
+	next->previous = NULL;
+	if(next->next){
+		next->next->previous = next;
+	}
 	global_import_entry->dependencies = next;
 }
 
@@ -180,6 +191,10 @@ void add_definition_dependency(definition *def){
 	next->def = def;
 	next->def->num_references++;
 	next->next = global_import_entry->dependencies;
+	next->previous = NULL;
+	if(next->next){
+		next->next->previous = next;
+	}
 	global_import_entry->dependencies = next;
 }
 
@@ -191,6 +206,10 @@ void add_relation_dependency(relation *rel){
 	next->rel = rel;
 	next->rel->num_references++;
 	next->next = global_import_entry->dependencies;
+	next->previous = NULL;
+	if(next->next){
+		next->next->previous = next;
+	}
 	global_import_entry->dependencies = next;
 }
 
@@ -226,6 +245,7 @@ void reset_definitions(context *c){
 	iterate_dictionary(c->relations, reset_destination_relation_void);
 }
 
+//Transfer functions increment the number of references
 variable *transfer_object(variable *obj){
 	variable *output;
 
@@ -239,6 +259,7 @@ variable *transfer_object(variable *obj){
 		output = create_object_variable(obj->name, global_context);
 		obj->destination = output;
 	}
+	output->num_references++;
 
 	return output;
 }
@@ -256,6 +277,7 @@ relation *transfer_relation(relation *rel){
 		output = create_relation(rel->name, transfer_sentence(rel->sentence_data, NULL), global_context);
 		rel->destination = output;
 	}
+	output->num_references++;
 
 	return output;
 }
@@ -273,6 +295,7 @@ definition *transfer_definition(definition *def){
 		output = create_definition(def->name, transfer_sentence(def->sentence_data, NULL), def->num_args, global_context);
 		def->destination = output;
 	}
+	output->num_references++;
 
 	return output;
 }
@@ -334,6 +357,113 @@ sentence *transfer_sentence(sentence *s, sentence *parent){
 	}
 
 	return output;
+}
+
+void check_axiom_dependency(variable *var){
+	sentence *new_sentence;
+	variable *check_var;
+
+	check_var = get_variable(var->name, global_context);
+	if(!check_var){
+		error(ERROR_VARIABLE_NOT_FOUND);
+	}
+	if(check_var->type != SENTENCE_VAR){
+		error(ERROR_AXIOM_INCOMPATIBLE);
+	}
+	new_sentence = transfer_sentence(var->sentence_data, NULL);
+	if(!sentence_stronger(check_var->sentence_data, new_sentence)){
+		error(ERROR_AXIOM_INCOMPATIBLE);
+	}
+	free_sentence(new_sentence);
+	var->destination = check_var;
+}
+
+void check_object_dependency(variable *var){
+	variable *check_var;
+
+	check_var = get_variable(var->name, global_context);
+	if(!check_var){
+		error(ERROR_VARIABLE_NOT_FOUND);
+	}
+	if(check_var->type != OBJECT_VAR){
+		error(ERROR_OBJECT_INCOMPATIBLE);
+	}
+	var->destination = check_var;
+}
+
+void check_definition_dependency(definition *def){
+	definition *check_definition;
+	context *search_context;
+
+	search_context = global_context;
+	while(search_context){
+		check_definition = read_dictionary(search_context->definitions, def->name, 0);
+		if(check_definition){
+			break;
+		}
+		search_context = search_context->parent;
+	}
+
+	if(!check_definition){
+		error(ERROR_DEFINITION_EXISTS);
+	}
+	if(def->num_args != check_definition->num_args){
+		error(ERROR_DEFINITION_INCOMPATIBLE);
+	}
+	def->destination = check_definition;
+}
+
+void check_relation_dependency(relation *rel){
+	relation *check_relation;
+	context *search_context;
+
+	search_context = global_context;
+	while(search_context){
+		check_relation = read_dictionary(search_context->relations, rel->name, 0);
+
+		if(check_relation){
+			break;
+		}
+		search_context = search_context->parent;
+	}
+
+	if(!check_relation){
+		error(ERROR_RELATION_EXISTS);
+	}
+	rel->destination = check_relation;
+}
+
+void check_dependency(dependency *dep){
+	switch(dep->type){
+		case AXIOM_DEPEND:
+			check_axiom_dependency(dep->var);
+			break;
+		case OBJECT_DEPEND:
+			check_object_dependency(dep->var);
+			break;
+		case DEFINITION_DEPEND:
+			check_definition_dependency(dep->def);
+			break;
+		case RELATION_DEPEND:
+			check_relation_dependency(dep->rel);
+			break;
+	}
+}
+
+void check_dependencies(import_entry *entry){
+	dependency *search_dependency;
+
+	search_dependency = entry->dependencies;
+	if(!search_dependency){
+		return;
+	}
+	while(search_dependency->next){
+		search_dependency = search_dependency->next;
+	}
+	while(search_dependency){
+		check_dependency(search_dependency);
+		search_dependency = search_dependency->previous;
+	}
 }
 
 int main(int argc, char **argv){
