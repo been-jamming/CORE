@@ -102,7 +102,8 @@ static char *error_messages[] = {
 	"Incompatible object",
 	"Incompatible definition",
 	"Expected '\"'",
-	"Maximum path size reached"
+	"Maximum path size reached",
+	"Incompatible relation"
 };
 
 //Allocate a sentence structure
@@ -1057,7 +1058,9 @@ int sentence_stronger(sentence *s0, sentence *s1){
 		if(sentence_equivalent(s0->child0, s1->child1) && sentence_equivalent(s0->child1, s1->child0)){
 			return 1;
 		}
-		if(sentence_equivalent(s0->child0, s0->child1) && sentence_equivalent(s1->child0, s1->child1)){
+		//Used to also check here if s0->child0 and s0->child1 are equivalent
+		//But since it's an implication, we only care about s1
+		if(sentence_equivalent(s1->child0, s1->child1)){
 			return 1;
 		}
 		return 0;
@@ -1145,9 +1148,7 @@ int sentence_equivalent(sentence *s0, sentence *s1){
 
 //Determine if a sentence is trivially true
 int sentence_trivially_true(sentence *s){
-	if(s->num_bound_vars > 0 || s->num_bound_props > 0){
-		return 0;
-	} else if(s->type == IMPLIES){
+	if(s->type == IMPLIES){
 		return sentence_stronger(s->child0, s->child1);
 	} else if(s->type == BICOND){
 		return sentence_equivalent(s->child0, s->child1);
@@ -1173,9 +1174,7 @@ int sentence_trivially_false(sentence *s){
 	int false0;
 	int false1;
 
-	if(s->num_bound_vars > 0 || s->num_bound_props > 0){
-		return 0;
-	} else if(s->type == IMPLIES){
+	if(s->type == IMPLIES){
 		return sentence_trivially_true(s->child0) && sentence_trivially_false(s->child1);
 	} else if(s->type == BICOND){
 		true0 = sentence_trivially_true(s->child0);

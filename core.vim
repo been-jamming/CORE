@@ -26,6 +26,8 @@ syn keyword CORE_commands debug
 syn keyword CORE_commands rename
 syn keyword CORE_commands relation
 syn keyword CORE_commands context
+syn keyword CORE_commands import
+syn keyword CORE_commands dependent
 
 " Functions
 syn keyword CORE_functions left

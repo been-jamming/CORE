@@ -171,10 +171,24 @@ definition *define_command(char **c){
 	char def_name[256];
 	sentence *s;
 	definition *output;
+	char *beginning;
+	unsigned char is_dependent;
 
 	skip_whitespace(c);
-	if(strncmp(*c, "define", 6) || is_alphanumeric((*c)[6])){
-		return NULL;
+	beginning = *c;
+	if(strncmp(*c, "dependent", 9) || is_alphanumeric((*c)[9])){
+		is_dependent = 0;
+		if(strncmp(*c, "define", 6) || is_alphanumeric((*c)[6])){
+			return NULL;
+		}
+	} else {
+		is_dependent = 1;
+		*c += 9;
+		skip_whitespace(c);
+		if(strncmp(*c, "define", 6) || is_alphanumeric((*c)[6])){
+			*c = beginning;
+			return NULL;
+		}
 	}
 	*c += 6;
 	skip_whitespace(c);
@@ -220,7 +234,13 @@ definition *define_command(char **c){
 		++*c;
 	}
 	skip_whitespace(c);
+	if(is_dependent && global_context->parent){
+		error(ERROR_GLOBAL_SCOPE);
+	}
 	if(**c == ';'){
+		if(global_context->parent){
+			error(ERROR_GLOBAL_SCOPE);
+		}
 		++*c;
 		output = create_definition(def_name, NULL, num_bound_vars, global_context);
 		add_definition_dependency(output);
@@ -232,6 +252,9 @@ definition *define_command(char **c){
 		}
 		++*c;
 		output = create_definition(def_name, s, num_bound_vars, global_context);
+		if(is_dependent){
+			add_definition_dependency(output);
+		}
 	} else {
 		error(ERROR_COLON_OR_SEMICOLON);
 	}
@@ -454,22 +477,43 @@ int relation_command(char **c){
 	relation *rel;
 	int *new_int;
 	sentence *s;
+	char *beginning;
+	unsigned char is_dependent;
 
 	skip_whitespace(c);
-	if(strncmp(*c, "relation", 8) || is_alphanumeric((*c)[8])){
-		return 0;
+	beginning = *c;
+	if(strncmp(*c, "dependent", 9) || is_alphanumeric((*c)[9])){
+		is_dependent = 0;
+		if(strncmp(*c, "relation", 8) || is_alphanumeric((*c)[8])){
+			return 0;
+		}
+	} else {
+		is_dependent = 1;
+		*c += 9;
+		skip_whitespace(c);
+		if(strncmp(*c, "relation", 8) || is_alphanumeric((*c)[8])){
+			*c = beginning;
+			return 0;
+		}
 	}
 	*c += 8;
 	skip_whitespace(c);
+
 	if(get_relation_identifier(c, identifier0, 256)){
 		error(ERROR_IDENTIFIER_LENGTH);
 	}
 	skip_whitespace(c);
+	if(is_dependent && global_context->parent){
+		error(ERROR_GLOBAL_SCOPE);
+	}
 	if(**c == ';'){
 		if(identifier0[0] == '\0'){
 			error(ERROR_RELATION_IDENTIFIER);
 		}
 		++*c;
+		if(global_context->parent){
+			error(ERROR_GLOBAL_SCOPE);
+		}
 
 		if(read_dictionary(global_context->relations, identifier0, 0)){
 			error(ERROR_DUPLICATE_RELATION);
@@ -518,7 +562,10 @@ int relation_command(char **c){
 		++*c;
 
 		clear_bound_variables();
-		create_relation(identifier1, s, global_context);
+		rel = create_relation(identifier1, s, global_context);
+		if(is_dependent){
+			add_relation_dependency(rel);
+		}
 		return 1;
 	}
 }

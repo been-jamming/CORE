@@ -80,6 +80,7 @@
 #define ERROR_DEFINITION_INCOMPATIBLE 75
 #define ERROR_QUOTE 76
 #define ERROR_PATH_SIZE 77
+#define ERROR_RELATION_INCOMPATIBLE 78
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;

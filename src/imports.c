@@ -439,6 +439,7 @@ void check_object_dependency(variable *var){
 void check_definition_dependency(definition *def){
 	definition *check_definition;
 	context *search_context;
+	sentence *new_sentence;
 
 	search_context = global_context;
 	while(search_context){
@@ -455,12 +456,23 @@ void check_definition_dependency(definition *def){
 	if(def->num_args != check_definition->num_args){
 		error(ERROR_DEFINITION_INCOMPATIBLE);
 	}
+	if(def->sentence_data && !check_definition->sentence_data){
+		error(ERROR_DEFINITION_INCOMPATIBLE);
+	}
+	if(def->sentence_data){
+		new_sentence = transfer_sentence(def->sentence_data, NULL);
+		if(!sentence_equivalent(new_sentence, check_definition->sentence_data)){
+			error(ERROR_DEFINITION_INCOMPATIBLE);
+		}
+		free_sentence(new_sentence);
+	}
 	def->destination = check_definition;
 }
 
 void check_relation_dependency(relation *rel){
 	relation *check_relation;
 	context *search_context;
+	sentence *new_sentence;
 
 	search_context = global_context;
 	while(search_context){
@@ -474,6 +486,16 @@ void check_relation_dependency(relation *rel){
 
 	if(!check_relation){
 		error(ERROR_RELATION_EXISTS);
+	}
+	if(rel->sentence_data && !check_relation->sentence_data){
+		error(ERROR_RELATION_INCOMPATIBLE);
+	}
+	if(rel->sentence_data){
+		new_sentence = transfer_sentence(rel->sentence_data, NULL);
+		if(!sentence_equivalent(new_sentence, check_relation->sentence_data)){
+			error(ERROR_RELATION_INCOMPATIBLE);
+		}
+		free_sentence(new_sentence);
 	}
 	rel->destination = check_relation;
 }
