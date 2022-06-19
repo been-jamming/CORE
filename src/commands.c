@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <linux/limits.h>
 #include "dictionary.h"
 #include "predicate.h"
 #include "expression.h"
@@ -136,7 +137,8 @@ int object_command(char **c){
 		error(ERROR_IDENTIFIER_EXPECTED);
 	}
 
-	create_object_variable(var_name, global_context);
+	var = create_object_variable(var_name, global_context);
+	add_object_dependency(var);
 
 	skip_whitespace(c);
 	while(**c == ','){
@@ -1256,6 +1258,44 @@ variable *context_command(char **c){
 	return output_var;
 }
 
+int import_command(char **c){
+	char file_name[PATH_MAX];
+	unsigned int file_name_size = 0;
+	import_entry *entry;
+
+	if(strncmp(*c, "import", 6) || is_alphanumeric((*c)[6])){
+		return 0;
+	}
+	*c += 6;
+	skip_whitespace(c);
+	if(**c != '"'){
+		error(ERROR_QUOTE);
+	}
+	++*c;
+
+	while(**c != '"' && file_name_size < PATH_MAX - 1){
+		file_name[file_name_size] = **c;
+		++*c;
+		file_name_size++;
+	}
+	if(**c != '"'){
+		error(ERROR_PATH_SIZE);
+	}
+	file_name[file_name_size] = '\0';
+	++*c;
+	skip_whitespace(c);
+	if(**c != ';'){
+		error(ERROR_SEMICOLON);
+	}
+	entry = get_import_entry(file_name);
+	reset_destinations(entry->import_context);
+	check_dependencies(entry);
+	import_context(entry->import_context);
+	++*c;
+
+	return 1;
+}
+
 expr_value *parse_command(char **c){
 	definition *def;
 	variable *axiom;
@@ -1277,6 +1317,8 @@ expr_value *parse_command(char **c){
 	} else if(debug_command(c)){
 		//pass
 	} else if((var = context_command(c))){
+		//pass
+	} else if(import_command(c)){
 		//pass
 	} else if((var = prove_command(c))){
 		//pass

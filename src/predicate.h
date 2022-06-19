@@ -72,12 +72,14 @@
 #define ERROR_UNEXPECTED_RETURN 67
 #define ERROR_ARGUMENT_TRUE 68
 #define ERROR_FILE_READ 69
-#define ERROR_IMPORT_OBJECT 70
+#define ERROR_IMPORT_VARIABLE 70
 #define ERROR_IMPORT_RELATION 71
 #define ERROR_IMPORT_DEFINITION 72
 #define ERROR_AXIOM_INCOMPATIBLE 73
 #define ERROR_OBJECT_INCOMPATIBLE 74
 #define ERROR_DEFINITION_INCOMPATIBLE 75
+#define ERROR_QUOTE 76
+#define ERROR_PATH_SIZE 77
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;
@@ -152,10 +154,10 @@ struct variable{
 			unsigned char verified;
 		};
 		context *context_data;
-		//Used to import objects
-		variable *destination;
 	};
 	unsigned int num_references;
+	//Used for imports
+	variable *destination;
 	context *parent_context;
 };
 

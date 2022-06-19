@@ -35,13 +35,19 @@ struct import_entry{
 extern dictionary global_imports;
 extern import_entry *global_import_entry;
 
+import_entry *get_import_entry(char *file_name);
+void reset_destinations(context *c);
+
 void add_axiom_dependency(variable *var);
 void add_object_dependency(variable *var);
 void add_definition_dependency(definition *def);
 void add_relation_dependency(relation *rel);
 
 sentence *transfer_sentence(sentence *s, sentence *parent);
-variable *transfer_object(variable *obj);
+variable *transfer_variable(variable *var);
 relation *transfer_relation(relation *rel);
 definition *transfer_definition(definition *def);
+context *transfer_context(context *c);
 
+void check_dependencies(import_entry *entry);
+void import_context(context *c);

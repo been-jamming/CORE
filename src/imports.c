@@ -84,7 +84,6 @@ import_entry *get_import_entry(char *file_name){
 		global_file_name = old_file_name;
 		return output;
 	} else {
-		old_file_name = global_file_name;
 		old_program_pointer = global_program_pointer;
 		old_program_start = global_program_start;
 		old_context = global_context;
@@ -143,7 +142,7 @@ void print_dependencies(import_entry *entry){
 				printf("object %s\n", dep->var->name);
 				break;
 			case DEFINITION_DEPEND:
-				printf("definition %s(%d)\n", dep->def->name, dep->def->sentence_data->num_bound_vars);
+				printf("definition %s(%d)\n", dep->def->name, dep->def->num_args);
 				break;
 			case RELATION_DEPEND:
 				printf("relation %s\n", dep->rel->name);
@@ -214,9 +213,7 @@ void add_relation_dependency(relation *rel){
 }
 
 void reset_destination_variable(variable *var){
-	if(var->type == OBJECT_VAR){
-		var->destination = NULL;
-	}
+	var->destination = NULL;
 }
 
 void reset_destination_variable_void(void *v){
@@ -239,29 +236,37 @@ void reset_destination_relation_void(void *v){
 	reset_destination_relation(v);
 }
 
-void reset_definitions(context *c){
+void reset_destinations(context *c){
 	iterate_dictionary(c->variables, reset_destination_variable_void);
 	iterate_dictionary(c->definitions, reset_destination_definition_void);
 	iterate_dictionary(c->relations, reset_destination_relation_void);
 }
 
-//Transfer functions increment the number of references
-variable *transfer_object(variable *obj){
+variable *transfer_variable(variable *var){
 	variable *output;
 
-	output = obj->destination;
+	output = var->destination;
 	if(!output){
-		//Error if the object already exists but is not the destination
-		output = read_dictionary(global_context->variables, obj->name, 0);
-		if(output){
-			error(ERROR_IMPORT_OBJECT);
+		//Error if the variable already exists but is not compatible
+		output = read_dictionary(global_context->variables, var->name, 0);
+		if(output && (var->type != SENTENCE_VAR || output->type != SENTENCE_VAR)){
+			error(ERROR_IMPORT_VARIABLE);
 		}
-		output = create_object_variable(obj->name, global_context);
-		obj->destination = output;
+		if(var->type == OBJECT_VAR){
+			output = create_object_variable(var->name, global_context);
+		} else if(var->type == SENTENCE_VAR){
+			output = create_sentence_variable(var->name, transfer_sentence(var->sentence_data, NULL), var->verified, global_context);
+		} else if(var->type == CONTEXT_VAR){
+			output = create_context_variable(var->name, transfer_context(var->context_data), global_context);
+		}
+		var->destination = output;
 	}
-	output->num_references++;
-
+	
 	return output;
+}
+
+void transfer_variable_void(void *v){
+	transfer_variable(v);
 }
 
 relation *transfer_relation(relation *rel){
@@ -277,9 +282,12 @@ relation *transfer_relation(relation *rel){
 		output = create_relation(rel->name, transfer_sentence(rel->sentence_data, NULL), global_context);
 		rel->destination = output;
 	}
-	output->num_references++;
 
 	return output;
+}
+
+void transfer_relation_void(void *v){
+	transfer_relation(v);
 }
 
 definition *transfer_definition(definition *def){
@@ -295,7 +303,39 @@ definition *transfer_definition(definition *def){
 		output = create_definition(def->name, transfer_sentence(def->sentence_data, NULL), def->num_args, global_context);
 		def->destination = output;
 	}
-	output->num_references++;
+
+	return output;
+}
+
+void transfer_definition_void(void *v){
+	transfer_definition(v);
+}
+
+void transfer_variable_no_context_void(void *v){
+	if(((variable *) v)->type != CONTEXT_VAR){
+		transfer_variable(v);
+	}
+}
+
+void transfer_variable_context_void(void *v){
+	if(((variable *) v)->type == CONTEXT_VAR){
+		transfer_variable(v);
+	}
+}
+
+context *transfer_context(context *c){
+	context *output;
+	context *parent_context;
+
+	reset_destinations(c);
+	parent_context = global_context;
+	output = create_context(parent_context);
+	global_context = output;
+	iterate_dictionary(c->variables, transfer_variable_no_context_void);
+	iterate_dictionary(c->relations, transfer_relation_void);
+	iterate_dictionary(c->definitions, transfer_definition_void);
+	iterate_dictionary(c->variables, transfer_variable_context_void);
+	global_context = parent_context;
 
 	return output;
 }
@@ -321,17 +361,20 @@ sentence *transfer_sentence(sentence *s, sentence *parent){
 			break;
 		case RELATION:
 			output->relation_data = transfer_relation(s->relation_data);
+			output->relation_data->num_references++;
 			output->is_bound0 = s->is_bound0;
 			if(s->is_bound0){
 				output->var0_id = s->var0_id;
 			} else {
-				output->var0 = transfer_object(s->var0);
+				output->var0 = transfer_variable(s->var0);
+				output->var0->num_references++;
 			}
 			output->is_bound1 = s->is_bound1;
 			if(s->is_bound1){
 				output->var1_id = s->var1_id;
 			} else {
-				output->var1 = transfer_object(s->var1);
+				output->var1 = transfer_variable(s->var1);
+				output->var1->num_references++;
 			}
 			break;
 		case PROPOSITION:
@@ -340,6 +383,7 @@ sentence *transfer_sentence(sentence *s, sentence *parent){
 				output->definition_id = s->definition_id;
 			} else {
 				output->definition_data = transfer_definition(s->definition_data);
+				output->definition_data->num_references++;
 			}
 			output->num_args = s->num_args;
 			output->proposition_args = malloc(sizeof(proposition_arg)*output->num_args);
@@ -348,7 +392,8 @@ sentence *transfer_sentence(sentence *s, sentence *parent){
 				if(s->proposition_args[i].is_bound){
 					output->proposition_args[i].var_id = s->proposition_args[i].var_id;
 				} else {
-					output->proposition_args[i].var = transfer_object(s->proposition_args[i].var);
+					output->proposition_args[i].var = transfer_variable(s->proposition_args[i].var);
+					output->proposition_args[i].var->num_references++;
 				}
 			}
 			break;
@@ -464,6 +509,13 @@ void check_dependencies(import_entry *entry){
 		check_dependency(search_dependency);
 		search_dependency = search_dependency->previous;
 	}
+}
+
+void import_context(context *c){
+	iterate_dictionary(c->variables, transfer_variable_no_context_void);
+	iterate_dictionary(c->relations, transfer_relation_void);
+	iterate_dictionary(c->definitions, transfer_definition_void);
+	iterate_dictionary(c->variables, transfer_variable_context_void);
 }
 
 int main(int argc, char **argv){

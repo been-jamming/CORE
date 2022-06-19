@@ -95,12 +95,14 @@ static char *error_messages[] = {
 	"Unexpected return value",
 	"Argument is not trivially true",
 	"Could not read file",
-	"Failed to import object",
+	"Failed to import variable",
 	"Failed to import relation",
 	"Failed to import definition",
 	"Incompatible axiom",
 	"Incompatible object",
-	"Incompatible definition"
+	"Incompatible definition",
+	"Expected '\"'",
+	"Maximum path size reached"
 };
 
 //Allocate a sentence structure
