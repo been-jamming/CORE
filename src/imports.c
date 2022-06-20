@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <linux/limits.h>
+#include <libgen.h>
 #include "custom_malloc.h"
 #include "dictionary.h"
 #include "predicate.h"
@@ -57,9 +58,12 @@ void deinit_verifier(void){
 }
 
 import_entry *get_import_entry(char *file_name){
-	char full_path[PATH_MAX];
-	char *path_return;
 	char *path;
+	char *dirc;
+	char *basec;
+	char *dname;
+	char *bname;
+	char working_directory[PATH_MAX];
 	import_entry *output;
 	char *program_text;
 	char *program_start;
@@ -73,24 +77,43 @@ import_entry *get_import_entry(char *file_name){
 
 	old_file_name = global_file_name;
 	global_file_name = file_name;
-	path_return = realpath(file_name, full_path);
-	if(!path_return){
-		error(ERROR_FILE_READ);
+	path = realpath(file_name, NULL);
+	if(!path){
+		error(ERROR_PARSE_PATH);
 	}
-	path = malloc(sizeof(char)*(strlen(full_path) + 1));
-	strcpy(path, full_path);
+	custom_register(path, 0);
 	output = read_dictionary(global_imports, path, 0);
 	if(output){
 		global_file_name = old_file_name;
+		free(path);
 		return output;
 	} else {
+		dirc = strdup(path);
+		if(!dirc){
+			error(ERROR_PARSE_PATH);
+		}
+		custom_register(dirc, 0);
+		basec = strdup(path);
+		if(!basec){
+			error(ERROR_PARSE_PATH);
+		}
+		custom_register(basec, 0);
+		dname = dirname(dirc);
+		bname = basename(basec);
+		if(!getcwd(working_directory, PATH_MAX)){
+			error(ERROR_GET_WORKING_DIRECTORY);
+		}
+		if(chdir(dname)){
+			error(ERROR_CHANGE_DIRECTORY);
+		}
+
 		old_program_pointer = global_program_pointer;
 		old_program_start = global_program_start;
 		old_context = global_context;
 		old_line_number = global_line_number;
 		old_import_entry = global_import_entry;
 
-		program_start = load_file(file_name);
+		program_start = load_file(bname);
 		if(!program_start){
 			error(ERROR_FILE_READ);
 		}
@@ -120,7 +143,13 @@ import_entry *get_import_entry(char *file_name){
 		global_context = old_context;
 		global_line_number = old_line_number;
 		global_import_entry = old_import_entry;
+
 		free(program_start);
+		free(dirc);
+		free(basec);
+		if(chdir(working_directory)){
+			error(ERROR_CHANGE_DIRECTORY);
+		}
 
 		return output;
 	}

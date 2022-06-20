@@ -81,6 +81,9 @@
 #define ERROR_QUOTE 76
 #define ERROR_PATH_SIZE 77
 #define ERROR_RELATION_INCOMPATIBLE 78
+#define ERROR_CHANGE_DIRECTORY 79
+#define ERROR_GET_WORKING_DIRECTORY 80
+#define ERROR_PARSE_PATH 81
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;

@@ -1,2 +1,0 @@
-relation in;
-define all_member(X): *Y(X in Y);

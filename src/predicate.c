@@ -103,7 +103,10 @@ static char *error_messages[] = {
 	"Incompatible definition",
 	"Expected '\"'",
 	"Maximum path size reached",
-	"Incompatible relation"
+	"Incompatible relation",
+	"Failed to change directory",
+	"Failed to get working directory",
+	"Failed to parse path"
 };
 
 //Allocate a sentence structure

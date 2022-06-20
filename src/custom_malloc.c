@@ -51,6 +51,44 @@ static cmalloc_node *seek_parent(uintptr_t *ptr_num){
 	return parent_node;
 }
 
+void custom_register(void *pointer, size_t size){
+#ifdef USE_CUSTOM_ALLOC
+	uintptr_t ptr_num;
+	cmalloc_node *current_node;
+	cmalloc_node *parent_node;
+
+	ptr_num = (uintptr_t) pointer;
+
+	parent_node = seek_parent(&ptr_num);
+	if(!parent_node){
+#ifdef CMALLOC_PRINT_ERRORS
+		fprintf(stderr, "cmalloc error: failed to register pointer (%p)\n", pointer);
+#endif
+		return;
+	}
+
+	current_node = malloc(sizeof(cmalloc_node));
+	if(!current_node){
+#ifdef CMALLOC_PRINT_ERRORS
+		fprintf(stderr, "cmalloc error: malloc returned NULL\n");
+#endif
+		return;
+	}
+	if(ptr_num&1){
+		parent_node->child1 = current_node;
+	} else {
+		parent_node->child0 = current_node;
+	}
+	current_node->parent = parent_node;
+	current_node->value = pointer;
+	current_node->block_size = size;
+	current_node->child0 = NULL;
+	current_node->child1 = NULL;
+
+	total_allocated += size;
+#endif
+}
+
 void *custom_malloc(size_t size){
 	void *output;
 	uintptr_t ptr_num;
