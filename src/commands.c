@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <linux/limits.h>
+#include <libgen.h>
 #include "dictionary.h"
 #include "predicate.h"
 #include "expression.h"
@@ -1343,6 +1345,91 @@ int import_command(char **c){
 	return 1;
 }
 
+int include_command(char **c, expr_value **return_value){
+	char file_name[PATH_MAX];
+	char dirc[PATH_MAX];
+	char basec[PATH_MAX];
+	char working_directory[PATH_MAX];
+	char *dname;
+	char *bname;
+	char *program_text;
+	char *program_start;
+	char *old_file_name;
+	char **old_program_pointer;
+	char *old_program_start;
+	unsigned int old_line_number;
+	unsigned int file_name_size = 0;
+
+	if(strncmp(*c, "include", 7) || is_alphanumeric((*c)[7])){
+		return 0;
+	}
+	*c += 7;
+	skip_whitespace(c);
+	if(**c != '"'){
+		error(ERROR_QUOTE);
+	}
+	++*c;
+
+	while(**c != '"' && file_name_size < PATH_MAX - 1){
+		file_name[file_name_size] = **c;
+		++*c;
+		file_name_size++;
+	}
+	if(**c != '"'){
+		error(ERROR_PATH_SIZE);
+	}
+	file_name[file_name_size] = '\0';
+	++*c;
+	skip_whitespace(c);
+	if(**c != ';'){
+		error(ERROR_SEMICOLON);
+	}
+	++*c;
+	strcpy(dirc, file_name);
+	strcpy(basec, file_name);
+	dname = dirname(dirc);
+	bname = basename(basec);
+	if(!getcwd(working_directory, PATH_MAX)){
+		error(ERROR_GET_WORKING_DIRECTORY);
+	}
+	if(chdir(dname)){
+		error(ERROR_CHANGE_DIRECTORY);
+	}
+
+	old_file_name = global_file_name;
+	old_program_pointer = global_program_pointer;
+	old_program_start = global_program_start;
+	old_line_number = global_line_number;
+
+	program_start = load_file(bname);
+	if(!program_start){
+		error(ERROR_FILE_READ);
+	}
+	program_text = program_start;
+
+	global_file_name = bname;
+	global_line_number = 1;
+	global_program_pointer = &program_text;
+	global_program_start = program_start;
+	*return_value = parse_context(&program_text);
+	if(*program_text == '}'){
+		error(ERROR_EOF);
+	}
+	free(program_start);
+
+	global_file_name = old_file_name;
+	global_program_pointer = old_program_pointer;
+	global_program_start = old_program_start;
+	global_line_number = old_line_number;
+
+	skip_whitespace(c);
+	if(**c && *return_value){
+		error(ERROR_EOF);
+	}
+
+	return 1;
+}
+
 expr_value *parse_command(char **c){
 	definition *def;
 	variable *axiom;
@@ -1367,6 +1454,10 @@ expr_value *parse_command(char **c){
 		//pass
 	} else if(import_command(c)){
 		//pass
+	} else if(include_command(c, &return_value)){
+		if(return_value){
+			return return_value;
+		}
 	} else if((var = prove_command(c))){
 		//pass
 	} else if((return_value = given_command(c))){
