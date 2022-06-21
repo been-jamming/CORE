@@ -1248,6 +1248,12 @@ expr_value *parse_trivial(char **c){
 	if(arg->type != SENTENCE){
 		error(ERROR_ARGUMENT_TYPE);
 	}
+	if(arg->sentence_data->num_bound_vars > 0){
+		error(ERROR_ARGUMENT_BOUND_VARIABLES);
+	}
+	if(arg->sentence_data->num_bound_props > 0){
+		error(ERROR_ARGUMENT_BOUND_PROPOSITIONS);
+	}
 	if(!sentence_trivially_true(arg->sentence_data)){
 		error(ERROR_ARGUMENT_TRUE);
 	}

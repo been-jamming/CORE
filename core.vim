@@ -27,6 +27,7 @@ syn keyword CORE_commands rename
 syn keyword CORE_commands relation
 syn keyword CORE_commands context
 syn keyword CORE_commands import
+syn keyword CORE_commands include
 syn keyword CORE_commands dependent
 
 " Functions
@@ -42,7 +43,7 @@ syn keyword CORE_functions trivial
 " Comments
 syn match CORE_comment "\/\/.*$"
 
-"Operators
+" Operators
 syn match CORE_operator "\V~"
 syn match CORE_operator "\V*"
 syn match CORE_operator "\V^"
@@ -53,10 +54,14 @@ syn match CORE_operator "\V<->"
 syn match CORE_operator "\V#"
 syn match CORE_operator "\V="
 
+" Strings
+syn region CORE_string start=/\v"/ end=/\v"/
+
 let b:current_syntax = "core"
 
 hi def link CORE_commands Statement
 hi def link CORE_functions Function
 hi def link CORE_comment Comment
 hi def link CORE_operator Operator
+hi link CORE_string String
 

@@ -1417,6 +1417,9 @@ int include_command(char **c, expr_value **return_value){
 	}
 	free(program_start);
 
+	if(chdir(working_directory)){
+		error(ERROR_CHANGE_DIRECTORY);
+	}
 	global_file_name = old_file_name;
 	global_program_pointer = old_program_pointer;
 	global_program_start = old_program_start;
