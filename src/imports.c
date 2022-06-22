@@ -16,6 +16,7 @@
 
 dictionary global_imports;
 import_entry *global_import_entry = NULL;
+dependency **global_dependencies = NULL;
 
 import_entry *create_import_entry(char *import_path, context *import_context){
 	import_entry *output;
@@ -72,6 +73,7 @@ import_entry *get_import_entry(char *file_name){
 	char *old_program_start;
 	context *old_context;
 	import_entry *old_import_entry;
+	dependency **old_dependencies;
 	unsigned int old_line_number;
 	expr_value *return_value;
 
@@ -112,6 +114,7 @@ import_entry *get_import_entry(char *file_name){
 		old_context = global_context;
 		old_line_number = global_line_number;
 		old_import_entry = global_import_entry;
+		old_dependencies = global_dependencies;
 
 		program_start = load_file(bname);
 		if(!program_start){
@@ -124,6 +127,7 @@ import_entry *get_import_entry(char *file_name){
 		global_program_pointer = &program_text;
 		global_program_start = program_start;
 		global_import_entry = create_import_entry(path, global_context);
+		global_dependencies = &(global_import_entry->dependencies);
 		return_value = parse_context(&program_text);
 		if(*program_text == '}'){
 			error(ERROR_EOF);
@@ -143,6 +147,7 @@ import_entry *get_import_entry(char *file_name){
 		global_context = old_context;
 		global_line_number = old_line_number;
 		global_import_entry = old_import_entry;
+		global_dependencies = old_dependencies;
 
 		free(program_start);
 		free(dirc);
@@ -176,6 +181,9 @@ void print_dependencies(import_entry *entry){
 			case RELATION_DEPEND:
 				printf("relation %s\n", dep->rel->name);
 				break;
+			case CONTEXT_DEPEND:
+				printf("context %s\n", dep->var->name);
+				break;
 		}
 		dep = dep->next;
 	}
@@ -188,12 +196,13 @@ void add_axiom_dependency(variable *var){
 	next->type = AXIOM_DEPEND;
 	next->var = var;
 	next->var->num_references++;
-	next->next = global_import_entry->dependencies;
+	next->next = *global_dependencies;
 	next->previous = NULL;
+	next->children = NULL;
 	if(next->next){
 		next->next->previous = next;
 	}
-	global_import_entry->dependencies = next;
+	*global_dependencies = next;
 }
 
 void add_object_dependency(variable *var){
@@ -203,12 +212,13 @@ void add_object_dependency(variable *var){
 	next->type = OBJECT_DEPEND;
 	next->var = var;
 	next->var->num_references++;
-	next->next = global_import_entry->dependencies;
+	next->next = *global_dependencies;
 	next->previous = NULL;
+	next->children = NULL;
 	if(next->next){
 		next->next->previous = next;
 	}
-	global_import_entry->dependencies = next;
+	*global_dependencies = next;
 }
 
 void add_definition_dependency(definition *def){
@@ -218,12 +228,13 @@ void add_definition_dependency(definition *def){
 	next->type = DEFINITION_DEPEND;
 	next->def = def;
 	next->def->num_references++;
-	next->next = global_import_entry->dependencies;
+	next->next = *global_dependencies;
 	next->previous = NULL;
+	next->children = NULL;
 	if(next->next){
 		next->next->previous = next;
 	}
-	global_import_entry->dependencies = next;
+	*global_dependencies = next;
 }
 
 void add_relation_dependency(relation *rel){
@@ -233,16 +244,36 @@ void add_relation_dependency(relation *rel){
 	next->type = RELATION_DEPEND;
 	next->rel = rel;
 	next->rel->num_references++;
-	next->next = global_import_entry->dependencies;
+	next->next = *global_dependencies;
+	next->previous = NULL;
+	next->children = NULL;
+	if(next->next){
+		next->next->previous = next;
+	}
+	*global_dependencies = next;
+}
+
+dependency *add_context_dependency(context *con){
+	dependency *next;
+
+	next = malloc(sizeof(dependency));
+	next->type = CONTEXT_DEPEND;
+	next->children = NULL;
+	next->next = *global_dependencies;
 	next->previous = NULL;
 	if(next->next){
 		next->next->previous = next;
 	}
-	global_import_entry->dependencies = next;
+	*global_dependencies = next;
+
+	return next;
 }
 
 void reset_destination_variable(variable *var){
 	var->destination = NULL;
+	if(var->type == CONTEXT_VAR){
+		reset_destinations(var->context_data);
+	}
 }
 
 void reset_destination_variable_void(void *v){
@@ -266,6 +297,7 @@ void reset_destination_relation_void(void *v){
 }
 
 void reset_destinations(context *c){
+	c->destination = NULL;
 	iterate_dictionary(c->variables, reset_destination_variable_void);
 	iterate_dictionary(c->definitions, reset_destination_definition_void);
 	iterate_dictionary(c->relations, reset_destination_relation_void);
@@ -277,16 +309,19 @@ variable *transfer_variable(variable *var){
 	output = var->destination;
 	if(!output){
 		//Error if the variable already exists but is not compatible
-		output = read_dictionary(global_context->variables, var->name, 0);
+		output = read_dictionary(transfer_context(var->parent_context)->variables, var->name, 0);
 		if(output && (var->type != SENTENCE_VAR || output->type != SENTENCE_VAR)){
 			error(ERROR_IMPORT_VARIABLE);
 		}
 		if(var->type == OBJECT_VAR){
-			output = create_object_variable(var->name, global_context);
+			output = create_object_variable(var->name, transfer_context(var->parent_context));
 		} else if(var->type == SENTENCE_VAR){
-			output = create_sentence_variable(var->name, transfer_sentence(var->sentence_data, NULL), var->verified, global_context);
+			output = create_sentence_variable(var->name, transfer_sentence(var->sentence_data, NULL), var->verified, transfer_context(var->parent_context));
 		} else if(var->type == CONTEXT_VAR){
-			output = create_context_variable(var->name, transfer_context(var->context_data), global_context);
+			output = create_context_variable(var->name, transfer_context(var->context_data), transfer_context(var->parent_context));
+			iterate_dictionary(var->context_data->variables, transfer_variable_void);
+			iterate_dictionary(var->context_data->relations, transfer_relation_void);
+			iterate_dictionary(var->context_data->definitions, transfer_definition_void);
 		}
 		var->destination = output;
 	}
@@ -304,11 +339,11 @@ relation *transfer_relation(relation *rel){
 	output = rel->destination;
 	if(!output){
 		//Error if the relation already exists but is not the destination
-		output = read_dictionary(global_context->relations, rel->name, 0);
+		output = read_dictionary(transfer_context(rel->parent_context)->relations, rel->name, 0);
 		if(output){
 			error(ERROR_IMPORT_RELATION);
 		}
-		output = create_relation(rel->name, transfer_sentence(rel->sentence_data, NULL), global_context);
+		output = create_relation(rel->name, transfer_sentence(rel->sentence_data, NULL), transfer_context(rel->parent_context));
 		rel->destination = output;
 	}
 
@@ -325,11 +360,11 @@ definition *transfer_definition(definition *def){
 	output = def->destination;
 	if(!output){
 		//Error if the definition already exists but is not the destination
-		output = read_dictionary(global_context->definitions, def->name, 0);
+		output = read_dictionary(transfer_context(def->parent_context)->definitions, def->name, 0);
 		if(output){
 			error(ERROR_IMPORT_DEFINITION);
 		}
-		output = create_definition(def->name, transfer_sentence(def->sentence_data, NULL), def->num_args, global_context);
+		output = create_definition(def->name, transfer_sentence(def->sentence_data, NULL), def->num_args, transfer_context(def->parent_context));
 		def->destination = output;
 	}
 
@@ -340,32 +375,18 @@ void transfer_definition_void(void *v){
 	transfer_definition(v);
 }
 
-void transfer_variable_no_context_void(void *v){
-	if(((variable *) v)->type != CONTEXT_VAR){
-		transfer_variable(v);
-	}
-}
-
-void transfer_variable_context_void(void *v){
-	if(((variable *) v)->type == CONTEXT_VAR){
-		transfer_variable(v);
-	}
-}
-
 context *transfer_context(context *c){
 	context *output;
-	context *parent_context;
 
-	reset_destinations(c);
-	parent_context = global_context;
-	output = create_context(parent_context);
-	global_context = output;
-	iterate_dictionary(c->variables, transfer_variable_no_context_void);
-	iterate_dictionary(c->relations, transfer_relation_void);
-	iterate_dictionary(c->definitions, transfer_definition_void);
-	iterate_dictionary(c->variables, transfer_variable_context_void);
-	global_context = parent_context;
-
+	output = c->destination;
+	if(!output){
+		if(c->parent == NULL){
+			output = global_context;
+		} else {
+			output = create_context(transfer_context(c->parent));
+		}
+		c->destination = output;
+	}
 	return output;
 }
 
@@ -437,7 +458,7 @@ void check_axiom_dependency(variable *var){
 	sentence *new_sentence;
 	variable *check_var;
 
-	check_var = get_variable(var->name, global_context);
+	check_var = get_variable(var->name, global_context, var->parent_context->dependent);
 	if(!check_var){
 		error(ERROR_VARIABLE_NOT_FOUND);
 	}
@@ -455,7 +476,7 @@ void check_axiom_dependency(variable *var){
 void check_object_dependency(variable *var){
 	variable *check_var;
 
-	check_var = get_variable(var->name, global_context);
+	check_var = get_variable(var->name, global_context, var->parent_context->dependent);
 	if(!check_var){
 		error(ERROR_VARIABLE_NOT_FOUND);
 	}
@@ -471,13 +492,13 @@ void check_definition_dependency(definition *def){
 	sentence *new_sentence;
 
 	search_context = global_context;
-	while(search_context){
+	do{
 		check_definition = read_dictionary(search_context->definitions, def->name, 0);
 		if(check_definition){
 			break;
 		}
 		search_context = search_context->parent;
-	}
+	} while(search_context && !def->parent_context->dependent);
 
 	if(!check_definition){
 		error(ERROR_DEFINITION_EXISTS);
@@ -490,7 +511,7 @@ void check_definition_dependency(definition *def){
 	}
 	if(def->sentence_data){
 		new_sentence = transfer_sentence(def->sentence_data, NULL);
-		if(!sentence_equivalent(new_sentence, check_definition->sentence_data)){
+		if(!check_definition->sentence_data || !sentence_equivalent(new_sentence, check_definition->sentence_data)){
 			error(ERROR_DEFINITION_INCOMPATIBLE);
 		}
 		free_sentence(new_sentence);
@@ -504,14 +525,14 @@ void check_relation_dependency(relation *rel){
 	sentence *new_sentence;
 
 	search_context = global_context;
-	while(search_context){
+	do{
 		check_relation = read_dictionary(search_context->relations, rel->name, 0);
 
 		if(check_relation){
 			break;
 		}
 		search_context = search_context->parent;
-	}
+	} while(search_context && !rel->parent_context->dependent);
 
 	if(!check_relation){
 		error(ERROR_RELATION_EXISTS);
@@ -521,12 +542,30 @@ void check_relation_dependency(relation *rel){
 	}
 	if(rel->sentence_data){
 		new_sentence = transfer_sentence(rel->sentence_data, NULL);
-		if(!sentence_equivalent(new_sentence, check_relation->sentence_data)){
+		if(!check_relation->sentence_data || !sentence_equivalent(new_sentence, check_relation->sentence_data)){
 			error(ERROR_RELATION_INCOMPATIBLE);
 		}
 		free_sentence(new_sentence);
 	}
 	rel->destination = check_relation;
+}
+
+void check_context_dependency(variable *var, dependency *children){
+	context *old_context;
+	variable *check_variable;
+
+	check_variable = get_variable(var->name, global_context, var->parent_context->dependent);
+	if(!check_variable){
+		error(ERROR_VARIABLE_NOT_FOUND);
+	}
+	if(check_variable->type != CONTEXT_VAR){
+		error(ERROR_CONTEXT_INCOMPATIBLE);
+	}
+	var->destination = check_variable;
+	old_context = global_context;
+	global_context = check_variable->context_data;
+	check_dependencies(children);
+	global_context = old_context;
 }
 
 void check_dependency(dependency *dep){
@@ -543,13 +582,13 @@ void check_dependency(dependency *dep){
 		case RELATION_DEPEND:
 			check_relation_dependency(dep->rel);
 			break;
+		case CONTEXT_DEPEND:
+			check_context_dependency(dep->var, dep->children);
+			break;
 	}
 }
 
-void check_dependencies(import_entry *entry){
-	dependency *search_dependency;
-
-	search_dependency = entry->dependencies;
+void check_dependencies(dependency *search_dependency){
 	if(!search_dependency){
 		return;
 	}
@@ -563,10 +602,9 @@ void check_dependencies(import_entry *entry){
 }
 
 void import_context(context *c){
-	iterate_dictionary(c->variables, transfer_variable_no_context_void);
+	iterate_dictionary(c->variables, transfer_variable_void);
 	iterate_dictionary(c->relations, transfer_relation_void);
 	iterate_dictionary(c->definitions, transfer_definition_void);
-	iterate_dictionary(c->variables, transfer_variable_context_void);
 }
 
 int main(int argc, char **argv){

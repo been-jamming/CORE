@@ -84,6 +84,7 @@
 #define ERROR_CHANGE_DIRECTORY 79
 #define ERROR_GET_WORKING_DIRECTORY 80
 #define ERROR_PARSE_PATH 81
+#define ERROR_CONTEXT_INCOMPATIBLE 82
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;
@@ -136,6 +137,7 @@ struct definition{
 	unsigned int num_args;
 	//Used to import definitions
 	definition *destination;
+	context *parent_context;
 };
 
 struct expr_value{
@@ -185,6 +187,7 @@ struct relation{
 	unsigned int num_references;
 	//Used to import relations
 	relation *destination;
+	context *parent_context;
 };
 
 struct sentence{
@@ -234,6 +237,9 @@ struct context{
 	dictionary relations;
 	context *parent;
 	sentence *goal;
+	//Used to import contexts
+	context *destination;
+	unsigned char dependent;
 };
 
 sentence *create_sentence(sentence_type type, int num_bound_vars, int num_bound_props);

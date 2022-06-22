@@ -5,7 +5,8 @@ typedef enum{
 	AXIOM_DEPEND,
 	OBJECT_DEPEND,
 	DEFINITION_DEPEND,
-	RELATION_DEPEND
+	RELATION_DEPEND,
+	CONTEXT_DEPEND
 } dependency_type;
 
 typedef struct dependency dependency;
@@ -13,7 +14,7 @@ typedef struct dependency dependency;
 struct dependency{
 	dependency_type type;
 	union{
-		//Axiom and object
+		//Axiom, object, and context
 		variable *var;
 		//Definition
 		definition *def;
@@ -22,6 +23,8 @@ struct dependency{
 	};
 	dependency *next;
 	dependency *previous;
+	//Context
+	dependency *children;
 };
 
 typedef struct import_entry import_entry;
@@ -34,6 +37,7 @@ struct import_entry{
 
 extern dictionary global_imports;
 extern import_entry *global_import_entry;
+extern dependency **global_dependencies;
 
 import_entry *get_import_entry(char *file_name);
 void reset_destinations(context *c);
@@ -43,11 +47,14 @@ void add_object_dependency(variable *var);
 void add_definition_dependency(definition *def);
 void add_relation_dependency(relation *rel);
 
+void transfer_variable_void(void *v);
+void transfer_relation_void(void *v);
+void transfer_definition_void(void *v);
 sentence *transfer_sentence(sentence *s, sentence *parent);
 variable *transfer_variable(variable *var);
 relation *transfer_relation(relation *rel);
 definition *transfer_definition(definition *def);
 context *transfer_context(context *c);
 
-void check_dependencies(import_entry *entry);
+void check_dependencies(dependency *search_dependency);
 void import_context(context *c);

@@ -37,7 +37,7 @@ void substitute_proposition(sentence *s, sentence *child);
 variable *create_object_variable(char *var_name, context *parent_context);
 variable *create_sentence_variable(char *var_name, sentence *sentence_data, unsigned char verified, context *parent_context);
 variable *create_context_variable(char *var_name, context *context_data, context *parent_context);
-variable *get_variable(char *var_name, context *parent_context);
+variable *get_variable(char *var_name, context *parent_context, unsigned char dependent);
 
 expr_value *parse_left(char **c);
 expr_value *parse_right(char **c);

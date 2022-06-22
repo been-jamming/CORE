@@ -106,7 +106,8 @@ static char *error_messages[] = {
 	"Incompatible relation",
 	"Failed to change directory",
 	"Failed to get working directory",
-	"Failed to parse path"
+	"Failed to parse path",
+	"Incompatible context"
 };
 
 //Allocate a sentence structure

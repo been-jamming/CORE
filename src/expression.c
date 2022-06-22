@@ -30,6 +30,12 @@ context *create_context(context *parent){
 	output->relations = create_dictionary(NULL);
 	output->parent = parent;
 	output->goal = NULL;
+	output->destination = NULL;
+	if(parent){
+		output->dependent = parent->dependent;
+	} else {
+		output->dependent = 0;
+	}
 
 	return output;
 }
@@ -295,16 +301,16 @@ expr_value *relation_to_value(relation *rel){
 }
 
 //Retrieve a variable by name
-variable *get_variable(char *var_name, context *parent_context){
+variable *get_variable(char *var_name, context *parent_context, unsigned char dependent){
 	variable *output = NULL;
 
-	while(parent_context){
+	do{
 		output = read_dictionary(parent_context->variables, var_name, 0);
 		if(output){
 			break;
 		}
 		parent_context = parent_context->parent;
-	}
+	} while(parent_context && !dependent);
 
 	return output;
 }
@@ -722,7 +728,7 @@ variable *create_object_variable(char *var_name, context *parent_context){
 	variable *var;
 
 	var = read_dictionary(parent_context->variables, var_name, 0);
-	if(var && !var->num_references){
+	if(var && var->type != CONTEXT_VAR && !var->num_references){
 		free_variable(var);
 	} else if(var){
 		error(ERROR_VARIABLE_OVERWRITE);
@@ -746,7 +752,7 @@ variable *create_sentence_variable(char *var_name, sentence *sentence_data, unsi
 	variable *var;
 
 	var = read_dictionary(parent_context->variables, var_name, 0);
-	if(var && !var->num_references){
+	if(var && var->type != CONTEXT_VAR && !var->num_references){
 		free_variable(var);
 	} else if(var){
 		error(ERROR_VARIABLE_OVERWRITE);
@@ -772,7 +778,7 @@ variable *create_context_variable(char *var_name, context *context_data, context
 	variable *var;
 
 	var = read_dictionary(parent_context->variables, var_name, 0);
-	if(var && !var->num_references){
+	if(var && var->type != CONTEXT_VAR && !var->num_references){
 		free_variable(var);
 	} else if(var){
 		error(ERROR_VARIABLE_OVERWRITE);

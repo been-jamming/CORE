@@ -44,6 +44,8 @@ definition *create_definition(char *name, sentence *sentence_data, int num_args,
 	strcpy(def->name, name);
 	def->num_args = num_args;
 	def->num_references = 0;
+	def->destination = NULL;
+	def->parent_context = parent_context;
 	write_dictionary(&(parent_context->definitions), name, def, 0);
 
 	return def;
@@ -64,6 +66,8 @@ relation *create_relation(char *name, sentence *sentence_data, context *parent_c
 	rel->name = malloc(sizeof(char)*(strlen(name) + 1));
 	strcpy(rel->name, name);
 	rel->num_references = 0;
+	rel->destination = NULL;
+	rel->parent_context = parent_context;
 	write_dictionary(&(parent_context->relations), name, rel, 0);
 
 	return rel;
@@ -776,6 +780,8 @@ variable *prove_command(char **c){
 			definitions[num_bound_props]->sentence_data = NULL;
 			definitions[num_bound_props]->num_references = 1;
 			definitions[num_bound_props]->num_args = num_args;
+			definitions[num_bound_props]->parent_context = global_context;
+			definitions[num_bound_props]->destination = NULL;
 
 			new_bound_prop->prop_id = num_bound_props;
 			new_bound_prop->num_args = num_args;
@@ -1338,7 +1344,7 @@ int import_command(char **c){
 	}
 	entry = get_import_entry(file_name);
 	reset_destinations(entry->import_context);
-	check_dependencies(entry);
+	check_dependencies(entry->dependencies);
 	import_context(entry->import_context);
 	++*c;
 
