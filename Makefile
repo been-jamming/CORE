@@ -3,34 +3,34 @@ DEL = rm
 FLAGS = -Wall -pedantic -DUSE_CUSTOM_ALLOC -g
 #FLAGS = -Wall -pedantic -g
 
-core: commands.o custom_malloc.o dictionary.o predicate.o expression.o imports.o
-	$(CC) commands.o expression.o predicate.o dictionary.o custom_malloc.o imports.o $(FLAGS) -o core
+core: build/commands.o build/custom_malloc.o build/dictionary.o build/predicate.o build/expression.o build/imports.o
+	$(CC) build/commands.o build/expression.o build/predicate.o build/dictionary.o build/custom_malloc.o build/imports.o $(FLAGS) -o core
 
-custom_malloc.o: src/custom_malloc.c
-	$(CC) src/custom_malloc.c -c $(FLAGS)
+build/custom_malloc.o: src/custom_malloc.c
+	$(CC) src/custom_malloc.c -c -o build/custom_malloc.o $(FLAGS)
 
-dictionary.o: src/dictionary.c
-	$(CC) src/dictionary.c -c $(FLAGS)
+build/dictionary.o: src/dictionary.c
+	$(CC) src/dictionary.c -c -o build/dictionary.o $(FLAGS)
 
-predicate.o: src/predicate.c
-	$(CC) src/predicate.c -c $(FLAGS)
+build/predicate.o: src/predicate.c
+	$(CC) src/predicate.c -c -o build/predicate.o $(FLAGS)
 
-expression.o: src/expression.c
-	$(CC) src/expression.c -c $(FLAGS)
+build/expression.o: src/expression.c
+	$(CC) src/expression.c -c -o build/expression.o $(FLAGS)
 
-imports.o: src/imports.c
-	$(CC) src/imports.c -c $(FLAGS)
+build/imports.o: src/imports.c
+	$(CC) src/imports.c -c -o build/imports.o $(FLAGS)
 
-commands.o: src/commands.c
-	$(CC) src/commands.c -c $(FLAGS)
+build/commands.o: src/commands.c
+	$(CC) src/commands.c -c -o build/commands.o $(FLAGS)
 
 clean:
-	$(DEL) custom_malloc.o
-	$(DEL) dictionary.o
-	$(DEL) predicate.o
-	$(DEL) expression.o
-	$(DEL) imports.o
-	$(DEL) commands.o
+	$(DEL) build/custom_malloc.o
+	$(DEL) build/dictionary.o
+	$(DEL) build/predicate.o
+	$(DEL) build/expression.o
+	$(DEL) build/imports.o
+	$(DEL) build/commands.o
 	$(DEL) core
 
 compile_proofs:
