@@ -107,7 +107,8 @@ static char *error_messages[] = {
 	"Failed to change directory",
 	"Failed to get working directory",
 	"Failed to parse path",
-	"Incompatible context"
+	"Incompatible context",
+	"Scope is dependent"
 };
 
 //Allocate a sentence structure

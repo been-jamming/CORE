@@ -107,6 +107,11 @@ int print_command(char **c){
 	}
 	*c += 5;
 	skip_whitespace(c);
+
+	if(global_context->dependent){
+		error(ERROR_DEPENDENT_SCOPE);
+	}
+
 	val = parse_expr_value(c);
 	printf("'%s' line %d: ", global_file_name, global_line_number);
 	print_expr_value(val);
@@ -132,7 +137,7 @@ int object_command(char **c){
 	*c += 6;
 	skip_whitespace(c);
 
-	if(global_context->parent){
+	if(global_context->parent && !global_context->dependent){
 		error(ERROR_GLOBAL_SCOPE);
 	}
 
@@ -240,11 +245,11 @@ definition *define_command(char **c){
 		++*c;
 	}
 	skip_whitespace(c);
-	if(is_dependent && global_context->parent){
+	if(is_dependent && global_context->parent && !global_context->dependent){
 		error(ERROR_GLOBAL_SCOPE);
 	}
 	if(**c == ';'){
-		if(global_context->parent){
+		if(global_context->parent && !global_context->dependent){
 			error(ERROR_GLOBAL_SCOPE);
 		}
 		++*c;
@@ -258,6 +263,9 @@ definition *define_command(char **c){
 		}
 		++*c;
 		output = create_definition(def_name, s, num_bound_vars, global_context);
+		if(!is_dependent && global_context->dependent){
+			error(ERROR_DEPENDENT_SCOPE);
+		}
 		if(is_dependent){
 			add_definition_dependency(output);
 		}
@@ -286,7 +294,7 @@ variable *axiom_command(char **c){
 	*c += 5;
 	skip_whitespace(c);
 
-	if(global_context->parent){
+	if(global_context->parent && !global_context->dependent){
 		error(ERROR_GLOBAL_SCOPE);
 	}
 	clear_bound_propositions();
@@ -465,6 +473,11 @@ int assign_command(char **c){
 	if(!s){
 		error(ERROR_TOO_MANY_UNPACK);
 	}
+
+	if(global_context->dependent){
+		error(ERROR_DEPENDENT_SCOPE);
+	}
+
 	create_sentence_variable(var_names[num_vars - 1], s, val->verified, global_context);
 
 	for(i = 0; i < num_vars; i++){
@@ -509,7 +522,7 @@ int relation_command(char **c){
 		error(ERROR_IDENTIFIER_LENGTH);
 	}
 	skip_whitespace(c);
-	if(is_dependent && global_context->parent){
+	if(is_dependent && global_context->parent && !global_context->dependent){
 		error(ERROR_GLOBAL_SCOPE);
 	}
 	if(**c == ';'){
@@ -517,15 +530,12 @@ int relation_command(char **c){
 			error(ERROR_RELATION_IDENTIFIER);
 		}
 		++*c;
-		if(global_context->parent){
+		if(global_context->parent && !global_context->dependent){
 			error(ERROR_GLOBAL_SCOPE);
 		}
 
 		if(read_dictionary(global_context->relations, identifier0, 0)){
 			error(ERROR_DUPLICATE_RELATION);
-		}
-		if(global_context->parent){
-			error(ERROR_RELATION_CONTEXT);
 		}
 		rel = create_relation(identifier0, NULL, global_context);
 		add_relation_dependency(rel);
@@ -569,6 +579,9 @@ int relation_command(char **c){
 
 		clear_bound_variables();
 		rel = create_relation(identifier1, s, global_context);
+		if(!is_dependent && global_context->dependent){
+			error(ERROR_DEPENDENT_SCOPE);
+		}
 		if(is_dependent){
 			add_relation_dependency(rel);
 		}
@@ -590,6 +603,10 @@ expr_value *return_command(char **c){
 	}
 	*c += 6;
 	skip_whitespace(c);
+
+	if(global_context->dependent){
+		error(ERROR_DEPENDENT_SCOPE);
+	}
 
 	arg = parse_expr_value(c);
 	if(arg->type != SENTENCE){
@@ -675,6 +692,7 @@ void evaluate_command(char **c){
 
 int debug_command(char **c){
 	expr_value *val;
+	expr_value *val2;
 
 	skip_whitespace(c);
 	if(strncmp(*c, "debug", 5) || is_alphanumeric((*c)[5])){
@@ -682,11 +700,27 @@ int debug_command(char **c){
 	}
 	*c += 5;
 	skip_whitespace(c);
+
+	if(global_context->dependent){
+		error(ERROR_DEPENDENT_SCOPE);
+	}
+
 	val = parse_expr_value(c);
-	printf("DEBUG: ");
-	print_expr_value(val);
-	printf("\n");
+	if(**c != ','){
+		error(ERROR_COMMA);
+	}
+	++*c;
+	skip_whitespace(c);
+	val2 = parse_expr_value(c);
+	if(val->type == SENTENCE && val2->type == SENTENCE){
+		printf("DEBUG: %d\n", sentence_equivalent(val->sentence_data, val2->sentence_data));
+	} else if(val->type == OBJECT && val2->type == OBJECT){
+		printf("DEBUG: %d\n", val->var == val2->var);
+	} else {
+		printf("DEBUG: 0\n");
+	}
 	free_expr_value(val);
+	free_expr_value(val2);
 	skip_whitespace(c);
 	if(**c != ';'){
 		error(ERROR_SEMICOLON);
@@ -717,6 +751,10 @@ variable *prove_command(char **c){
 	}
 	*c += 5;
 	skip_whitespace(c);
+
+	if(global_context->dependent){
+		error(ERROR_DEPENDENT_SCOPE);
+	}
 
 	clear_bound_propositions();
 	if(get_identifier(c, proof_name, 256)){
@@ -1270,15 +1308,38 @@ expr_value *not_command(char **c){
 
 variable *context_command(char **c){
 	expr_value *return_value;
-	context *stored_context;
 	variable *output_var;
+	dependency *context_dep;
+	dependency **old_dependencies;
 	char name_buffer[256];
+	char *beginning;
+	unsigned char is_dependent;
 
-	if(strncmp(*c, "context", 7) || is_alphanumeric((*c)[7])){
-		return NULL;
+	skip_whitespace(c);
+	beginning = *c;
+	if(strncmp(*c, "dependent", 9) || is_alphanumeric((*c)[9])){
+		is_dependent = 0;
+		if(strncmp(*c, "context", 7) || is_alphanumeric((*c)[7])){
+			return NULL;
+		}
+	} else {
+		is_dependent = 1;
+		*c += 9;
+		skip_whitespace(c);
+		if(strncmp(*c, "context", 7) || is_alphanumeric((*c)[7])){
+			*c = beginning;
+			return NULL;
+		}
 	}
 	*c += 7;
 	skip_whitespace(c);
+
+	if(!is_dependent && global_context->dependent){
+		error(ERROR_DEPENDENT_SCOPE);
+	}
+	if(is_dependent && global_context->parent && !global_context->dependent){
+		error(ERROR_GLOBAL_SCOPE);
+	}
 
 	if(get_identifier(c, name_buffer, 256)){
 		error(ERROR_IDENTIFIER_LENGTH);
@@ -1295,6 +1356,13 @@ variable *context_command(char **c){
 	skip_whitespace(c);
 
 	new_scope();
+	global_context->dependent = is_dependent;
+	output_var = create_context_variable(name_buffer, global_context, global_context->parent);
+	if(is_dependent){
+		context_dep = add_context_dependency(output_var);
+		old_dependencies = global_dependencies;
+		global_dependencies = &(context_dep->children);
+	}
 	return_value = parse_context(c);
 	if(return_value){
 		error(ERROR_UNEXPECTED_RETURN);
@@ -1306,9 +1374,10 @@ variable *context_command(char **c){
 	++*c;
 	skip_whitespace(c);
 
-	stored_context = global_context;
 	global_context = global_context->parent;
-	output_var = create_context_variable(name_buffer, stored_context, global_context);
+	if(is_dependent){
+		global_dependencies = old_dependencies;
+	}
 
 	return output_var;
 }
@@ -1317,12 +1386,18 @@ int import_command(char **c){
 	char file_name[PATH_MAX];
 	unsigned int file_name_size = 0;
 	import_entry *entry;
+	context *old_root_context;
 
 	if(strncmp(*c, "import", 6) || is_alphanumeric((*c)[6])){
 		return 0;
 	}
 	*c += 6;
 	skip_whitespace(c);
+
+	if(global_context->dependent){
+		error(ERROR_DEPENDENT_SCOPE);
+	}
+
 	if(**c != '"'){
 		error(ERROR_QUOTE);
 	}
@@ -1343,9 +1418,12 @@ int import_command(char **c){
 		error(ERROR_SEMICOLON);
 	}
 	entry = get_import_entry(file_name);
+	old_root_context = global_root_context;
+	global_root_context = global_context;
 	reset_destinations(entry->import_context);
 	check_dependencies(entry->dependencies);
 	import_context(entry->import_context);
+	global_root_context = old_root_context;
 	++*c;
 
 	return 1;
@@ -1480,6 +1558,9 @@ expr_value *parse_command(char **c){
 	} else if(assign_command(c)){
 		//pass
 	} else {
+		if(global_context->dependent){
+			error(ERROR_DEPENDENT_SCOPE);
+		}
 		evaluate_command(c);
 	}
 

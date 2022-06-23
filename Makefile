@@ -3,8 +3,8 @@ DEL = rm
 FLAGS = -Wall -pedantic -DUSE_CUSTOM_ALLOC -g
 #FLAGS = -Wall -pedantic -g
 
-core: src/commands.c custom_malloc.o dictionary.o predicate.o expression.o imports.o
-	$(CC) src/commands.c expression.o predicate.o dictionary.o custom_malloc.o imports.o $(FLAGS) -o core
+core: commands.o custom_malloc.o dictionary.o predicate.o expression.o imports.o
+	$(CC) commands.o expression.o predicate.o dictionary.o custom_malloc.o imports.o $(FLAGS) -o core
 
 custom_malloc.o: src/custom_malloc.c
 	$(CC) src/custom_malloc.c -c $(FLAGS)
@@ -21,12 +21,16 @@ expression.o: src/expression.c
 imports.o: src/imports.c
 	$(CC) src/imports.c -c $(FLAGS)
 
+commands.o: src/commands.c
+	$(CC) src/commands.c -c $(FLAGS)
+
 clean:
 	$(DEL) custom_malloc.o
 	$(DEL) dictionary.o
 	$(DEL) predicate.o
 	$(DEL) expression.o
 	$(DEL) imports.o
+	$(DEL) commands.o
 	$(DEL) core
 
 compile_proofs:

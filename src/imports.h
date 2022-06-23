@@ -38,6 +38,7 @@ struct import_entry{
 extern dictionary global_imports;
 extern import_entry *global_import_entry;
 extern dependency **global_dependencies;
+extern context *global_root_context;
 
 import_entry *get_import_entry(char *file_name);
 void reset_destinations(context *c);
@@ -46,6 +47,7 @@ void add_axiom_dependency(variable *var);
 void add_object_dependency(variable *var);
 void add_definition_dependency(definition *def);
 void add_relation_dependency(relation *rel);
+dependency *add_context_dependency(variable *var);
 
 void transfer_variable_void(void *v);
 void transfer_relation_void(void *v);

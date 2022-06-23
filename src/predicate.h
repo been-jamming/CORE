@@ -85,6 +85,7 @@
 #define ERROR_GET_WORKING_DIRECTORY 80
 #define ERROR_PARSE_PATH 81
 #define ERROR_CONTEXT_INCOMPATIBLE 82
+#define ERROR_DEPENDENT_SCOPE 83
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;

@@ -17,6 +17,7 @@
 dictionary global_imports;
 import_entry *global_import_entry = NULL;
 dependency **global_dependencies = NULL;
+context *global_root_context = NULL;
 
 import_entry *create_import_entry(char *import_path, context *import_context){
 	import_entry *output;
@@ -29,16 +30,21 @@ import_entry *create_import_entry(char *import_path, context *import_context){
 	return output;
 }
 
-void free_import_entry(import_entry *entry){
-	dependency *current_dependency;
+void free_dependencies(dependency *depends){
 	dependency *next_dependency;
 
-	current_dependency = entry->dependencies;
-	while(current_dependency){
-		next_dependency = current_dependency->next;
-		free(current_dependency);
-		current_dependency = next_dependency;
+	while(depends){
+		if(depends->type == CONTEXT_DEPEND){
+			free_dependencies(depends->children);
+		}
+		next_dependency = depends->next;
+		free(depends);
+		depends = next_dependency;
 	}
+}
+
+void free_import_entry(import_entry *entry){
+	free_dependencies(entry->dependencies);
 	free(entry->import_path);
 	free_context(entry->import_context);
 	free(entry);
@@ -203,6 +209,8 @@ void add_axiom_dependency(variable *var){
 		next->next->previous = next;
 	}
 	*global_dependencies = next;
+
+	var->num_references++;
 }
 
 void add_object_dependency(variable *var){
@@ -219,6 +227,8 @@ void add_object_dependency(variable *var){
 		next->next->previous = next;
 	}
 	*global_dependencies = next;
+
+	var->num_references++;
 }
 
 void add_definition_dependency(definition *def){
@@ -235,6 +245,8 @@ void add_definition_dependency(definition *def){
 		next->next->previous = next;
 	}
 	*global_dependencies = next;
+
+	def->num_references++;
 }
 
 void add_relation_dependency(relation *rel){
@@ -251,20 +263,25 @@ void add_relation_dependency(relation *rel){
 		next->next->previous = next;
 	}
 	*global_dependencies = next;
+
+	rel->num_references++;
 }
 
-dependency *add_context_dependency(context *con){
+dependency *add_context_dependency(variable *var){
 	dependency *next;
 
 	next = malloc(sizeof(dependency));
 	next->type = CONTEXT_DEPEND;
 	next->children = NULL;
+	next->var = var;
 	next->next = *global_dependencies;
 	next->previous = NULL;
 	if(next->next){
 		next->next->previous = next;
 	}
 	*global_dependencies = next;
+
+	var->num_references++;
 
 	return next;
 }
@@ -381,7 +398,7 @@ context *transfer_context(context *c){
 	output = c->destination;
 	if(!output){
 		if(c->parent == NULL){
-			output = global_context;
+			output = global_root_context;
 		} else {
 			output = create_context(transfer_context(c->parent));
 		}
