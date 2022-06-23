@@ -35,7 +35,7 @@ Since the language currently lacks documentation, let's go over an example progr
 
 ```
 prove negate_exists[P(1)]: ~^X(P(X)) -> *X(~P(X)){
-	implies not_exists;
+	assume not_exists;
 	given |X|;
 	not P_X;
 	prove exists: ^X(P(X)){
@@ -62,12 +62,12 @@ of them; instead, statements can refer to objects by name. The types of variable
 instantiates a variable, the type of data the variable is storing is already defined by the operation.
 
 ```
-implies not_exists;
+assume not_exists;
 ```
 
 When we begin our proof, our goal is to prove `~^X(P(X)) -> *X(~P(X))`. The language interprets this quite literally: proving no other statement will suffice.
-However, it is often possible to transform the goal into something which is easier to prove. This is precisely what the `implies` command does. In order
-to prove a statement which looks like `A -> B`, one can assume that `A` is true and prove `B`. In this case, `A` is `~^X(P(X))` and `B` is `*X(~P(X))`. `implies`
+However, it is often possible to transform the goal into something which is easier to prove. This is precisely what the `assume` command does. In order
+to prove a statement which looks like `A -> B`, one can assume that `A` is true and prove `B`. In this case, `A` is `~^X(P(X))` and `B` is `*X(~P(X))`. `assume`
 assigns to `not_exists` the statement `~^X(P(X))`, and our new goal becomes to prove that `*X(~P(X))`. 
 By assigning `A` to `not_exists`, the language is allowing us to assume that `A` is true in order to prove that `B` is true.
 
@@ -76,7 +76,7 @@ given |X|;
 ```
 
 Now our goal looks like proving "for all X", something is true. The typical strategy for doing this is to assume you are given an arbitrary object, and to prove
-that the statement is true for that object. This is what `given` does: we are given an object `X` and we now must prove that `~P(X)`. Unlike with `implies`, 
+that the statement is true for that object. This is what `given` does: we are given an object `X` and we now must prove that `~P(X)`. Unlike with `assume`, 
 `X` is a variable that is created as an *object*, not a *statement*. Notice that in order for this object to have any meaning, there must be some other statements
 which refer to the object `X`. In fact, our new goal, to prove that `~P(X)`, gives this object meaning.
 

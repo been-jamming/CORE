@@ -8,9 +8,6 @@ if exists("b:current_syntax")
 endif
 
 " Commands
-syn keyword CORE_commands return or
-syn keyword CORE_commands define axiom prove given choose implies not print debug
-
 syn keyword CORE_commands return
 syn keyword CORE_commands or
 syn keyword CORE_commands define
@@ -18,7 +15,7 @@ syn keyword CORE_commands axiom
 syn keyword CORE_commands prove
 syn keyword CORE_commands given
 syn keyword CORE_commands choose
-syn keyword CORE_commands implies
+syn keyword CORE_commands assume
 syn keyword CORE_commands not
 syn keyword CORE_commands print
 syn keyword CORE_commands object

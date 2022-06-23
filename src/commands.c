@@ -1120,7 +1120,7 @@ expr_value *choose_command(char **c){
 	return output_value;
 }
 
-expr_value *implies_command(char **c){
+expr_value *assume_command(char **c){
 	unsigned char explicit_scope;
 	char name_buffer[256];
 	sentence *next_goal;
@@ -1130,10 +1130,10 @@ expr_value *implies_command(char **c){
 	expr_value *output_value;
 
 	skip_whitespace(c);
-	if(strncmp(*c, "implies", 7) || is_alphanumeric((*c)[7])){
+	if(strncmp(*c, "assume", 6) || is_alphanumeric((*c)[6])){
 		return NULL;
 	}
-	*c += 7;
+	*c += 6;
 	skip_whitespace(c);
 
 	if(!global_context->goal){
@@ -1551,7 +1551,7 @@ expr_value *parse_command(char **c){
 		return return_value;
 	} else if((return_value = choose_command(c))){
 		return return_value;
-	} else if((return_value = implies_command(c))){
+	} else if((return_value = assume_command(c))){
 		return return_value;
 	} else if((return_value = not_command(c))){
 		return return_value;
