@@ -1,28 +1,32 @@
 CC = gcc
 DEL = rm
+DIR = mkdir
 FLAGS = -Wall -pedantic -DUSE_CUSTOM_ALLOC -g
 #FLAGS = -Wall -pedantic -g
 
-core: build/commands.o build/custom_malloc.o build/dictionary.o build/predicate.o build/expression.o build/imports.o
+core: build build/commands.o build/custom_malloc.o build/dictionary.o build/predicate.o build/expression.o build/imports.o
 	$(CC) build/commands.o build/expression.o build/predicate.o build/dictionary.o build/custom_malloc.o build/imports.o $(FLAGS) -o core
 
-build/custom_malloc.o: src/custom_malloc.c
+build/custom_malloc.o: build src/custom_malloc.c
 	$(CC) src/custom_malloc.c -c -o build/custom_malloc.o $(FLAGS)
 
-build/dictionary.o: src/dictionary.c
+build/dictionary.o: build src/dictionary.c
 	$(CC) src/dictionary.c -c -o build/dictionary.o $(FLAGS)
 
-build/predicate.o: src/predicate.c
+build/predicate.o: build src/predicate.c
 	$(CC) src/predicate.c -c -o build/predicate.o $(FLAGS)
 
-build/expression.o: src/expression.c
+build/expression.o: build src/expression.c
 	$(CC) src/expression.c -c -o build/expression.o $(FLAGS)
 
-build/imports.o: src/imports.c
+build/imports.o: build src/imports.c
 	$(CC) src/imports.c -c -o build/imports.o $(FLAGS)
 
-build/commands.o: src/commands.c
+build/commands.o: build src/commands.c
 	$(CC) src/commands.c -c -o build/commands.o $(FLAGS)
+
+build:
+	$(DIR) build
 
 clean:
 	$(DEL) build/custom_malloc.o
