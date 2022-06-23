@@ -1,43 +1,40 @@
 CC = gcc
-DEL = rm
-DIR = mkdir
+DEL = rm -r
+DIR = mkdir -p
 FLAGS = -Wall -pedantic -DUSE_CUSTOM_ALLOC -g
 #FLAGS = -Wall -pedantic -g
+OBJS = $(addprefix build/, commands.o custom_malloc.o dictionary.o predicate.o expression.o imports.o)
 
-core: build build/commands.o build/custom_malloc.o build/dictionary.o build/predicate.o build/expression.o build/imports.o
-	$(CC) build/commands.o build/expression.o build/predicate.o build/dictionary.o build/custom_malloc.o build/imports.o $(FLAGS) -o core
+core: $(OBJS)
+	$(CC) $(OBJS) $(FLAGS) -o core
 
-build/custom_malloc.o: build src/custom_malloc.c
+build/custom_malloc.o: src/custom_malloc.c | build
 	$(CC) src/custom_malloc.c -c -o build/custom_malloc.o $(FLAGS)
 
-build/dictionary.o: build src/dictionary.c
+build/dictionary.o: src/dictionary.c | build
 	$(CC) src/dictionary.c -c -o build/dictionary.o $(FLAGS)
 
-build/predicate.o: build src/predicate.c
+build/predicate.o: src/predicate.c | build
 	$(CC) src/predicate.c -c -o build/predicate.o $(FLAGS)
 
-build/expression.o: build src/expression.c
+build/expression.o: src/expression.c | build
 	$(CC) src/expression.c -c -o build/expression.o $(FLAGS)
 
-build/imports.o: build src/imports.c
+build/imports.o: src/imports.c | build
 	$(CC) src/imports.c -c -o build/imports.o $(FLAGS)
 
-build/commands.o: build src/commands.c
+build/commands.o: src/commands.c | build
 	$(CC) src/commands.c -c -o build/commands.o $(FLAGS)
 
 build:
 	$(DIR) build
 
 clean:
-	$(DEL) build/custom_malloc.o
-	$(DEL) build/dictionary.o
-	$(DEL) build/predicate.o
-	$(DEL) build/expression.o
-	$(DEL) build/imports.o
-	$(DEL) build/commands.o
+	$(DEL) build
 	$(DEL) core
 
 compile_proofs:
 	./core proofs/*
 	rm -rf docs/*
 	python generate_docs.py
+
