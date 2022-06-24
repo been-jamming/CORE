@@ -1,0 +1,45 @@
+include "zfc_axioms.core";
+//Dependencies for using 'zfc.core'
+
+object EMPTY;
+axiom empty_def: *X(~X in EMPTY);
+axiom exists[P(1)]: *X(P(X) -> ^Y(P(Y)));
+axiom equal_reflexive: *A(A = A);
+axiom copy_set: *A^B(A = B);
+axiom equal_symmetric: *A*B(A = B <-> B = A);
+axiom equal_transitive: *A*B*C(A = B & B = C -> A = C);
+axiom definition_uniqueness_lemma[P(1)]: *A*B(*X(X in A <-> P(X)) & *X(X in B <-> P(X)) -> A = B);
+axiom empty_unique: *A(A = EMPTY <-> *X(~X in A));
+axiom subset_reflexive: *A(A <= A);
+axiom subset_transitive: *A*B*C(A <= B & B <= C -> A <= C);
+axiom subset_antisymmetric: *A*B(A <= B & B <= A -> A = B);
+axiom successor_subset: *A*B(successor(B, A) -> A <= B);
+dependent define power_set(A, B): *X(X in A <-> X <= B);
+axiom power_set: *B^A(power_set(A, B));
+axiom power_set_unique: *A*B*C(power_set(A, C) & power_set(B, C) -> A = B);
+dependent define pair(A, B, C): *X(X in A <-> X = B | X = C);
+axiom pair: *B*C^A(pair(A, B, C));
+axiom pair_unique: *A*B*C*D(pair(A, C, D) & pair(B, C, D) -> A = B);
+axiom pair_subset: *A*B*C*D(pair(A, B, C) & B in D & C in D -> A <= D);
+dependent define pairs(A, B): *X(X in A <-> ^C^D(C in B & D in B & pair(X, C, D)));
+axiom pairs: *B^A(pairs(A, B));
+axiom pairs_unique: *A*B*C(pairs(A, C) & pairs(B, C) -> A = B);
+dependent define tuple(A, B, C): *X(X in A <-> pair(X, B, B) | pair(X, B, C));
+axiom tuple: *B*C^A(tuple(A, B, C));
+axiom tuple_unique: *A*B*C*D(tuple(A, C, D) & tuple(B, C, D) -> A = B);
+axiom tuple_equal: *A*B*C*D*E(tuple(A, B, C) & tuple(A, D, E) -> B = D & C = E);
+axiom tuple_subset: *A*B*C*D*E(tuple(A, B, C) & B in D & C in D & power_set(E, D) -> A <= E);
+dependent define union(A, B): *X(X in A <-> ^C(C in B & X in C));
+axiom union: *B^A(union(A, B));
+axiom union_unique: *A*B*C(union(A, C) & union(B, C) -> A = B);
+axiom successor: *A^B(successor(B, A));
+axiom successor_unique: *A*B*C(successor(A, C) & successor(B, C) -> A = B);
+dependent define intersection(A, B): *X(X in A <-> *C(C in B -> X in C));
+axiom intersection: *B(^C(C in B) -> ^A(intersection(A, B)));
+axiom intersection_unique: *A*B*C(intersection(A, C) & intersection(B, C) -> A = B);
+axiom no_recursive_membership: *A*B(~B in A | ~A in B);
+dependent define cross_product(A, B, C): *X(X in A <-> ^Y^Z(tuple(X, Y, Z) & Y in B & Z in C));
+axiom cross_product: *B*C^A(cross_product(A, B, C));
+axiom cross_product_unique: *A*B*C*D(cross_product(A, C, D) & cross_product(B, C, D) -> A = B);
+axiom cross_product_member: *A*B*C*D*E*F(cross_product(A, B, C) & tuple(D, E, F) & D in A -> E in B & F in C);
+

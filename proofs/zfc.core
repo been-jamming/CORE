@@ -1,0 +1,633 @@
+//Basic proofs using zf axioms
+//Ben Jones - 6/20/2022
+
+include "zfc_axioms.core";
+
+//Useful for proving existence in a pinch
+prove exists[P(1)]: *X(P(X) -> ^Y(P(Y))){
+	given |X|;
+	assume P_X;
+	choose X;
+	return P_X;
+}
+
+//Equality is reflexive
+prove equal_reflexive: *A(A = A){
+	given |A|;
+	return #=(A, A)(trivial(<: *X(X in A <-> X in A)>));
+}
+
+//Just for copying a set
+prove copy_set: *A^B(A = B){
+	given |A|;
+	choose A;
+	return equal_reflexive(A);
+}
+
+//Equality is symmetric
+prove equal_symmetric: *A*B(A = B <-> B = A){
+	prove lemma: *A*B(A = B -> B = A){
+		given |A, B|;
+		assume A_eq_B;
+		return #=(B, A)(expand(A_eq_B));
+	}
+	given |A, B|;
+	return iff(lemma(A, B), lemma(B, A));
+}
+
+//Equality is transitive
+prove equal_transitive: *A*B*C(A = B & B = C -> A = C){
+	given |A, B, C|;
+	assume A_eq_B, B_eq_C;
+	prove A_eq_C: *X(X in A <-> X in C){
+		given |X|;
+		prove lemma0: X in A -> X in C{
+			assume X_in_A;
+			return expand(B_eq_C)(X)(expand(A_eq_B)(X)(X_in_A));
+		}
+		prove lemma1: X in C -> X in A{
+			assume X_in_C;
+			return expand(A_eq_B)(X)(expand(B_eq_C)(X)(X_in_C));
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #=(A, C)(A_eq_C);
+}
+
+//A set only depends on its members
+//So if a set's membership only depends on a predicate,
+//the parent set is unique
+prove definition_uniqueness_lemma[P(1)]: *A*B(*X(X in A <-> P(X)) & *X(X in B <-> P(X)) -> A = B){
+	given |A, B|;
+	assume A_def, B_def;
+	prove equal_def: *X(X in A <-> X in B){
+		given |X|;
+		prove lemma0: X in A -> X in B{
+			assume X_in_A;
+			return B_def(X)(A_def(X)(X_in_A));
+		}
+		prove lemma1: X in B -> X in A{
+			assume X_in_B;
+			return A_def(X)(B_def(X)(X_in_B));
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #=(A, B)(equal_def);
+}
+
+//Construction of the empty set and inductive set
+empty_exists, successor_closure = axiom_infinity|INDUCTIVE_SET|;
+empty_in_INDUCTIVE_SET, empty_def = empty_exists|EMPTY|;
+
+//Uniqueness of the empty set
+prove empty_unique: *A(A = EMPTY <-> *X(~X in A)){
+	given |A|;
+	prove lemma0: A = EMPTY -> *X(~X in A){
+		assume A_eq_EMPTY;
+		return replace[<Q: *X(~X in Q)>](A, EMPTY)(A_eq_EMPTY)(empty_def);
+	}
+	prove lemma1: *X(~X in A) -> A = EMPTY{
+		assume A_def;
+		prove equal: *Y(Y in A <-> Y in EMPTY){
+			given |Y|;
+			prove lemma0: Y in A -> Y in EMPTY{
+				assume Y_in_A;
+				return A_def(Y)(Y_in_A);
+			}
+			prove lemma1: Y in EMPTY -> Y in A{
+				assume Y_in_EMPTY;
+				return empty_def(Y)(Y_in_EMPTY);
+			}
+			return iff(lemma0, lemma1);
+		}
+		return #=(A, EMPTY)(equal);
+	}
+	return iff(lemma0, lemma1);
+}
+
+//Every set is a subset of itself
+prove subset_reflexive: *A(A <= A){
+	given |A|;
+	return #<=(A, A)(trivial(<: *X(X in A -> X in A)>));
+}
+
+//Subset relation is transitive
+prove subset_transitive: *A*B*C(A <= B & B <= C -> A <= C){
+	given |A, B, C|;
+	assume A_subset_B, B_subset_C;
+	prove A_subset_C: *X(X in A -> X in C){
+		given |X|;
+		assume X_in_A;
+		return expand(B_subset_C)(X)(expand(A_subset_B)(X)(X_in_A));
+	}
+	return #<=(A, C)(A_subset_C);
+}
+
+//Subset relation is antisymmetric
+prove subset_antisymmetric: *A*B(A <= B & B <= A -> A = B){
+	given |A, B|;
+	assume A_subset_B, B_subset_A;
+	prove A_eq_B: *X(X in A <-> X in B){
+		given |X|;
+		return iff(expand(A_subset_B)(X), expand(B_subset_A)(X));
+	}
+	return #=(A, B)(A_eq_B);
+}
+
+//A set is a subset of its successor
+prove successor_subset: *A*B(successor(B, A) -> A <= B){
+	given |A, B|;
+	assume successor_B;
+	prove A_subset_B: *X(X in A -> X in B){
+		given |X|;
+		assume X_in_A;
+		return expand(successor_B)(X)(X_in_A);
+	}
+	return #<=(A, B)(A_subset_B);
+}
+
+//Define the power set
+define power_set(A, B): *X(X in A <-> X <= B);
+
+//The power set of a set exists
+prove power_set: *B^A(power_set(A, B)){
+	given |B|;
+	P_def = axiom_power_set(B)|P|;
+	A_def = specify[<X: X <= B>](P)|A|;
+	choose A;
+	prove A_power_set_B: *X(X in A <-> X <= B){
+		given |X|;
+		prove lemma0: X in A -> X <= B{
+			assume X_in_A;
+			return A_def(X)(X_in_A);
+		}
+		prove lemma1: X <= B -> X in A{
+			assume X_subset_B;
+			X_in_P = P_def(X)(X_subset_B);
+			return A_def(X)(X_in_P, X_subset_B);
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #power_set(A, B)(A_power_set_B);
+}
+
+//The power set is unique
+prove power_set_unique: *A*B*C(power_set(A, C) & power_set(B, C) -> A = B){
+	given |A, B, C|;
+	assume A_power_set_C, B_power_set_C;
+	return definition_uniqueness_lemma[<X: X <= C>](A, B)(expand(A_power_set_C), expand(B_power_set_C));
+}
+
+//Define a pair of sets
+define pair(A, B, C): *X(X in A <-> X = B | X = C);
+
+//Pairs of sets exist
+prove pair: *B*C^A(pair(A, B, C)){
+	given |B, C|;
+	B_in_P, C_in_P = axiom_pairing(B, C)|P|;
+	A_def = specify[<X: X = B | X = C>](P)|A|;
+	choose A;
+	prove pair_def: *X(X in A <-> X = B | X = C){
+		given |X|;
+		prove lemma0: X in A -> X = B | X = C{
+			assume X_in_A;
+			return A_def(X)(X_in_A);
+		}
+		prove lemma1: X = B | X = C -> X in A{
+			assume either;
+			X_in_P = branch(either, X_eq_B, X_eq_C){
+				return replace[<Q: Q in P>](X, B)(X_eq_B)(B_in_P);
+			} or {
+				return replace[<Q: Q in P>](X, C)(X_eq_C)(C_in_P);
+			};
+			return A_def(X)(X_in_P, either);
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #pair(A, B, C)(pair_def);
+}
+
+//Pairs are unique
+prove pair_unique: *A*B*C*D(pair(A, C, D) & pair(B, C, D) -> A = B){
+	given |A, B, C, D|;
+	assume pair_A, pair_B;
+	return definition_uniqueness_lemma[<X: X = C | X = D>](A, B)(expand(pair_A), expand(pair_B));
+}
+
+//Pairs are subsets of a set from which the elements come
+prove pair_subset: *A*B*C*D(pair(A, B, C) & B in D & C in D -> A <= D){
+	given |A, B, C, D|;
+	assume pair_A, B_in_D, C_in_D;
+	prove subset_A: *X(X in A -> X in D){
+		given |X|;
+		assume X_in_A;
+		return branch(expand(pair_A)(X)(X_in_A), X_eq_B, X_eq_C){
+			return replace[<Q: Q in D>](X, B)(X_eq_B)(B_in_D);
+		} or {
+			return replace[<Q: Q in D>](X, C)(X_eq_C)(C_in_D);
+		};
+	}
+	return #<=(A, D)(subset_A);
+}
+
+//Define the set of all pairs with members belonging to a set
+define pairs(A, B): *X(X in A <-> ^C^D(C in B & D in B & pair(X, C, D)));
+
+//The set of pairs exists
+prove pairs: *B^A(pairs(A, B)){
+	given |B|;
+	P_def = expand(power_set(B)|P|);
+	A_def = specify[<X: ^C^D(C in B & D in B & pair(X, C, D))>](P)|A|;
+	choose A;
+	prove pairs_def: *X(X in A <-> ^C^D(C in B & D in B & pair(X, C, D))){
+		given |X|;
+		prove lemma0: X in A -> ^C^D(C in B & D in B & pair(X, C, D)){
+			assume X_in_A;
+			return A_def(X)(X_in_A);
+		}
+		prove lemma1: ^C^D(C in B & D in B & pair(X, C, D)) -> X in A{
+			assume exists;
+			C_in_B, D_in_B, pair_X = exists|C, D|;
+			prove subset: *Y(Y in X -> Y in B){
+				given |Y|;
+				assume Y_in_X;
+				return branch(expand(pair_X)(Y)(Y_in_X), Y_eq_C, Y_eq_D){
+					return replace[<Q: Q in B>](Y, C)(Y_eq_C)(C_in_B);
+				} or {
+					return replace[<Q: Q in B>](Y, D)(Y_eq_D)(D_in_B);
+				};
+			}
+			X_subset_B = #<=(X, B)(subset);
+			X_in_P = P_def(X)(X_subset_B);
+			return A_def(X)(X_in_P, exists);
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #pairs(A, B)(pairs_def);
+}
+
+//The set of pairs is unique
+prove pairs_unique: *A*B*C(pairs(A, C) & pairs(B, C) -> A = B){
+	given |A, B, C|;
+	assume A_pair, B_pair;
+	return definition_uniqueness_lemma[<X: ^J^K(J in C & K in C & pair(X, J, K))>](A, B)(expand(A_pair), expand(B_pair));
+}
+
+//Define a tuple, which depends on the order of its members
+define tuple(A, B, C): *X(X in A <-> pair(X, B, B) | pair(X, B, C));
+
+//Tuples exist
+prove tuple: *B*C^A(tuple(A, B, C)){
+	given |B, C|;
+	P_def = expand(pair(B, C)|P|);
+	U_def = expand(pairs(P)|U|);
+	A_def = specify[<X: pair(X, B, B) | pair(X, B, C)>](U)|A|;
+	choose A;
+	B_in_P = P_def(B)(equal_reflexive(B));
+	C_in_P = P_def(C)(equal_reflexive(C));
+	prove tuple_def: *X(X in A <-> pair(X, B, B) | pair(X, B, C)){
+		given |X|;
+		prove lemma0: X in A -> pair(X, B, B) | pair(X, B, C){
+			assume X_in_A;
+			return A_def(X)(X_in_A);
+		}
+		prove lemma1: pair(X, B, B) | pair(X, B, C) -> X in A{
+			assume either;
+			X_in_U = branch(either, pair_BB, pair_BC){
+				prove U_member: ^J^K(J in P & K in P & pair(X, J, K)){
+					choose B, B;
+					return B_in_P, B_in_P, pair_BB;
+				}
+				return U_def(X)(U_member);
+			} or {
+				prove U_member: ^J^K(J in P & K in P & pair(X, J, K)){
+					choose B, C;
+					return B_in_P, C_in_P, pair_BC;
+				}
+				return U_def(X)(U_member);
+			};
+			return A_def(X)(X_in_U, either);
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #tuple(A, B, C)(tuple_def);
+}
+
+//Tuples are unique
+prove tuple_unique: *A*B*C*D(tuple(A, C, D) & tuple(B, C, D) -> A = B){
+	given |A, B, C, D|;
+	assume tuple_A, tuple_B;
+	return definition_uniqueness_lemma[<X: pair(X, C, C) | pair(X, C, D)>](A, B)(expand(tuple_A), expand(tuple_B));
+}
+
+//Tuples which are equal have equal members
+//This is the property which characterizes tuples
+prove tuple_equal: *A*B*C*D*E(tuple(A, B, C) & tuple(A, D, E) -> B = D & C = E){
+	given |A, B, C, D, E|;
+	assume tuple_BC, tuple_DE;
+	F_pair_BC = pair(B, C)|F|;
+	G_pair_DE = pair(D, E)|G|;
+	H_pair_DD = pair(D, D)|H|;
+	B_in_F = expand(F_pair_BC)(B)(equal_reflexive(B));
+	C_in_F = expand(F_pair_BC)(C)(equal_reflexive(C));
+	D_in_G = expand(G_pair_DE)(D)(equal_reflexive(D));
+	E_in_G = expand(G_pair_DE)(E)(equal_reflexive(E));
+	D_in_H = expand(H_pair_DD)(D)(equal_reflexive(D));
+	F_in_A = expand(tuple_BC)(F)(F_pair_BC);
+	G_in_A = expand(tuple_DE)(G)(G_pair_DE);
+	H_in_A = expand(tuple_DE)(H)(H_pair_DD);
+	return branch(expand(tuple_DE)(F)(F_in_A), F_pair_DD, F_pair_DE){
+		B_eq_D = expand(F_pair_DD)(B)(B_in_F);
+		C_eq_D = expand(F_pair_DD)(C)(C_in_F);
+		D_eq_C = equal_symmetric(C, D)(C_eq_D);
+		B_eq_C = equal_transitive(B, D, C)(B_eq_D, D_eq_C);
+		E_eq_B_or_C = branch(expand(tuple_BC)(G)(G_in_A), G_pair_BB, G_pair_BC){
+			E_eq_B = expand(G_pair_BB)(E)(E_in_G);
+			return or(trivial(<: E = B | E = B -> E = B>)(E_eq_B), <: E = C>);
+		} or {
+			return expand(G_pair_BC)(E)(E_in_G);
+		};
+		E_eq_C = branch(E_eq_B_or_C, E_eq_B, E_eq_C){
+			return equal_transitive(E, B, C)(E_eq_B, B_eq_C);
+		} or {
+			return E_eq_C;
+		};
+		C_eq_E = equal_symmetric(E, C)(E_eq_C);
+		return B_eq_D, C_eq_E;
+	} or {
+		B_eq_D_or_E = expand(F_pair_DE)(B)(B_in_F);
+		return branch(B_eq_D_or_E, B_eq_D, B_eq_E){
+			C_eq_D_or_E = expand(F_pair_DE)(C)(C_in_F);
+			return branch(C_eq_D_or_E, C_eq_D, C_eq_E){
+				D_eq_C = equal_symmetric(C, D)(C_eq_D);
+				B_eq_C = equal_transitive(B, D, C)(B_eq_D, D_eq_C);
+				E_eq_B_or_C = branch(expand(tuple_BC)(G)(G_in_A), G_pair_BB, G_pair_BC){
+					E_eq_B = expand(G_pair_BB)(E)(E_in_G);
+					return or(trivial(<: E = B | E = B -> E = B>)(E_eq_B), <: E = C>);
+				} or {
+					return expand(G_pair_BC)(E)(E_in_G);
+				};
+				E_eq_C = branch(E_eq_B_or_C, E_eq_B, E_eq_C){
+					return equal_transitive(E, B, C)(E_eq_B, B_eq_C);
+				} or {
+					return E_eq_C;
+				};
+				C_eq_E = equal_symmetric(E, C)(E_eq_C);
+				return B_eq_D, C_eq_E;
+			} or {
+				return B_eq_D, C_eq_E;
+			};
+		} or {
+			C_eq_D_or_E = expand(F_pair_DE)(C)(C_in_F);
+			return branch(C_eq_D_or_E, C_eq_D, C_eq_E){
+				B_in_H = branch(expand(tuple_BC)(H)(H_in_A), H_pair_BB, H_pair_BC){
+					return expand(H_pair_BB)(B)(equal_reflexive(B));
+				} or {
+					return expand(H_pair_BC)(B)(equal_reflexive(B));
+				};
+				B_eq_D = trivial(<: B = D | B = D -> B = D>)(expand(H_pair_DD)(B)(B_in_H));
+				D_eq_B = equal_symmetric(B, D)(B_eq_D);
+				C_eq_B = equal_transitive(C, D, B)(C_eq_D, D_eq_B);
+				C_eq_E = equal_transitive(C, B, E)(C_eq_B, B_eq_E);
+				return B_eq_D, C_eq_E;
+			} or {
+				E_eq_B = equal_symmetric(B, E)(B_eq_E);
+				C_eq_B = equal_transitive(C, E, B)(C_eq_E, E_eq_B);
+				D_eq_B_or_C = branch(expand(tuple_BC)(G)(G_in_A), G_pair_BB, G_pair_BC){
+					D_eq_B = expand(G_pair_BB)(D)(D_in_G);
+					return or(trivial(<: D = B | D = B -> D = B>)(D_eq_B), <: D = C>);
+				} or {
+					return expand(G_pair_BC)(D)(D_in_G);
+				};
+				D_eq_B = branch(D_eq_B_or_C, D_eq_B, D_eq_C){
+					return D_eq_B;
+				} or {
+					return equal_transitive(D, C, B)(D_eq_C, C_eq_B);
+				};
+				B_eq_D = equal_symmetric(D, B)(D_eq_B);
+				return B_eq_D, C_eq_E;
+			};
+		};
+	};
+}
+
+//Tuples are subsets of a more complicated set
+prove tuple_subset: *A*B*C*D*E(tuple(A, B, C) & B in D & C in D & power_set(E, D) -> A <= E){
+	given |A, B, C, D, E|;
+	assume tuple_A, B_in_D, C_in_D, power_set_E;
+	prove subset_A: *X(X in A -> X in E){
+		given |X|;
+		assume X_in_A;
+		X_subset_D = branch(expand(tuple_A)(X)(X_in_A), X_pair_B_B, X_pair_B_C){
+			return pair_subset(X, B, B, D)(X_pair_B_B, B_in_D);
+		} or {
+			return pair_subset(X, B, C, D)(X_pair_B_C, B_in_D, C_in_D);
+		};
+		return expand(power_set_E)(X)(X_subset_D);
+	}
+	return #<=(A, E)(subset_A);
+}
+
+//Define when a set is a union of a family of sets
+define union(A, B): *X(X in A <-> ^C(C in B & X in C));
+
+//Unions always exist
+prove union: *B^A(union(A, B)){
+	given |B|;
+	P_def = axiom_union(B)|P|;
+	A_def = specify[<X: ^C(C in B & X in C)>](P)|A|;
+	choose A;
+	prove union_def: *X(X in A <-> ^C(C in B & X in C)){
+		given |X|;
+		prove lemma0: X in A -> ^C(C in B & X in C){
+			assume X_in_A;
+			return A_def(X)(X_in_A);
+		}
+		prove lemma1: ^C(C in B & X in C) -> X in A{
+			assume premise;
+			C_in_B, X_in_C = premise|C|;
+			X_in_P = P_def(C, X)(C_in_B, X_in_C);
+			return A_def(X)(X_in_P, premise);
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #union(A, B)(union_def);
+}
+
+//Unions are unique
+prove union_unique: *A*B*C(union(A, C) & union(B, C) -> A = B){
+	given |A, B, C|;
+	assume union_A, union_B;
+	return definition_uniqueness_lemma[<X: ^D(D in C & X in D)>](A, B)(expand(union_A), expand(union_B));
+}
+
+//Finally, we shall construct the successor setA
+prove successor: *A^B(successor(B, A)){
+	given |A|;
+	S_def = pair(A, A)|S|;
+	P_def = pair(A, S)|P|;
+	B_def = union(P)|B|;
+	choose B;
+	prove successor_B: *X(X in B <-> X in A | X = A){
+		given |X|;
+		prove lemma0: X in B -> X in A | X = A{
+			assume X_in_B;
+			C_in_P, X_in_C = expand(B_def)(X)(X_in_B)|C|;
+			return branch(expand(P_def)(C)(C_in_P), C_eq_A, C_eq_S){
+				X_in_A = replace[<Q: X in Q>](C, A)(C_eq_A)(X_in_C);
+				return or(X_in_A, <: X = A>);
+			} or {
+				X_in_S = replace[<Q: X in Q>](C, S)(C_eq_S)(X_in_C);
+				return branch(expand(S_def)(X)(X_in_S), X_eq_A, X_eq_A){
+					return or(<: X in A>, X_eq_A);
+				} or {
+					return or(<: X in A>, X_eq_A);
+				};
+			};
+		}
+		prove lemma1: X in A | X = A -> X in B{
+			assume either;
+			return branch(either, X_in_A, X_eq_A){
+				prove exists: ^C(C in P & X in C){
+					choose A;
+					return expand(P_def)(A)(equal_reflexive(A)), X_in_A;
+				}
+				return expand(B_def)(X)(exists);
+			} or {
+				prove exists: ^C(C in P & X in C){
+					choose S;
+					return expand(P_def)(S)(equal_reflexive(S)), expand(S_def)(X)(X_eq_A);
+				}
+				return expand(B_def)(X)(exists);
+			};
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #successor(B, A)(successor_B);
+}
+
+//The successor is unique
+prove successor_unique: *A*B*C(successor(A, C) & successor(B, C) -> A = B){
+	given |A, B, C|;
+	assume successor_A, successor_B;
+	return definition_uniqueness_lemma[<X: X in C | X = C>](A, B)(expand(successor_A), expand(successor_B));
+}
+
+//Define when a set is the intersection of a family of sets
+define intersection(A, B): *X(X in A <-> *C(C in B -> X in C));
+
+//Intersections exist when the family of sets is not empty
+prove intersection: *B(^C(C in B) -> ^A(intersection(A, B))){
+	given |B|;
+	assume B_not_empty;
+	C_in_B = B_not_empty|C|;
+	A_def = specify[<X: *D(D in B -> X in D)>](C)|A|;
+	choose A;
+	prove intersection_def: *X(X in A <-> *D(D in B -> X in D)){
+		given |X|;
+		prove lemma0: X in A -> *D(D in B -> X in D){
+			assume X_in_A;
+			return A_def(X)(X_in_A);
+		}
+		prove lemma1: *D(D in B -> X in D) -> X in A{
+			assume premise;
+			X_in_C = premise(C)(C_in_B);
+			return A_def(X)(X_in_C, premise);
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #intersection(A, B)(intersection_def);
+}
+
+//Intersections are unique
+prove intersection_unique: *A*B*C(intersection(A, C) & intersection(B, C) -> A = B){
+	given |A, B, C|;
+	assume intersection_A, intersection_B;
+	return definition_uniqueness_lemma[<X: *D(D in C -> X in D)>](A, B)(expand(intersection_A), expand(intersection_B));
+}
+
+//No pair of sets can be contained in each other
+prove no_recursive_membership: *A*B(~B in A | ~A in B){
+	given |A, B|;
+	pair_C = pair(A, B)|C|;
+	A_in_C = expand(pair_C)(A)(or(equal_reflexive(A), <: A = B>));
+	B_in_C = expand(pair_C)(B)(or(<: B = A>, equal_reflexive(B)));
+	prove C_not_empty: ^X(X in C){
+		choose A;
+		return A_in_C;
+	}
+	X_in_C, disjoint = axiom_regularity(C)(C_not_empty)|X|;
+	return branch(expand(pair_C)(X)(X_in_C), X_eq_A, X_eq_B){
+		return branch(disjoint(B), B_not_in_X, B_not_in_C){
+			return or(replace[<Q: ~B in Q>](X, A)(X_eq_A)(B_not_in_X), <: ~A in B>);
+		} or {
+			contradiction = B_not_in_C(B_in_C);
+			return trivial(<: false -> ~B in A | ~A in B>)(contradiction);
+		};
+	} or {
+		return branch(disjoint(A), A_not_in_X, A_not_in_C){
+			return or(<: ~B in A>, replace[<Q: ~A in Q>](X, B)(X_eq_B)(A_not_in_X));
+		} or {
+			contradiction = A_not_in_C(A_in_C);
+			return trivial(<: false -> ~B in A | ~A in B>)(contradiction);
+		};
+	};
+}
+
+//Define the cross product of two sets
+define cross_product(A, B, C): *X(X in A <-> ^Y^Z(tuple(X, Y, Z) & Y in B & Z in C));
+
+//Cross products exist
+prove cross_product: *B*C^A(cross_product(A, B, C)){
+	given |B, C|;
+	P_def = pair(B, C)|P|;
+	U_def = union(P)|U|;
+	Q_def = power_set(U)|Q|;
+	R_def = power_set(Q)|R|;
+	A_def = specify[<K: ^Y^Z(tuple(K, Y, Z) & Y in B & Z in C)>](R)|A|;
+	choose A;
+	prove cross_product_A: *X(X in A <-> ^Y^Z(tuple(X, Y, Z) & Y in B & Z in C)){
+		given |X|;
+		prove lemma0: X in A -> ^Y^Z(tuple(X, Y, Z) & Y in B & Z in C){
+			assume X_in_A;
+			return A_def(X)(X_in_A);
+		}
+		prove lemma1: ^Y^Z(tuple(X, Y, Z) & Y in B & Z in C) -> X in A{
+			assume premise;
+			tuple_X, Y_in_B, Z_in_C = premise|Y, Z|;
+			prove Y_in_U: ^J(J in P & Y in J){
+				choose B;
+				return Y_in_B, expand(P_def)(B)(equal_reflexive(B));
+			}
+			Y_in_U = expand(U_def)(Y)(Y_in_U);
+			prove Z_in_U: ^J(J in P & Z in J){
+				choose C;
+				return Z_in_C, expand(P_def)(C)(equal_reflexive(C));
+			}
+			Z_in_U = expand(U_def)(Z)(Z_in_U);
+			X_subset_Q = tuple_subset(X, Y, Z, U, Q)(tuple_X, Y_in_U, Z_in_U, Q_def);
+			X_in_R = expand(R_def)(X)(X_subset_Q);
+			return A_def(X)(X_in_R, premise);
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #cross_product(A, B, C)(cross_product_A);
+}
+
+//Cross products are unique
+prove cross_product_unique: *A*B*C*D(cross_product(A, C, D) & cross_product(B, C, D) -> A = B){
+	given |A, B, C, D|;
+	assume cross_product_A, cross_product_B;
+	return definition_uniqueness_lemma[<Q: ^Y^Z(tuple(Q, Y, Z) & Y in C & Z in D)>](A, B)(expand(cross_product_A), expand(cross_product_B));
+}
+
+//More convenient cross product membership result
+prove cross_product_member: *A*B*C*D*E*F(cross_product(A, B, C) & tuple(D, E, F) & D in A -> E in B & F in C){
+	given |A, B, C, D, E, F|;
+	assume cross_product_A, tuple_D, D_in_A;
+	exists = expand(cross_product_A)(D)(D_in_A);
+	other_tuple_D, E2_in_B, F2_in_C = exists|E2, F2|;
+	E_eq_E2, F_eq_F2 = tuple_equal(D, E, F, E2, F2)(tuple_D, other_tuple_D);
+	return replace[<Q: Q in B>](E, E2)(E_eq_E2)(E2_in_B), replace[<Q: Q in C>](F, F2)(F_eq_F2)(F2_in_C);
+}
+

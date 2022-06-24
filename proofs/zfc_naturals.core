@@ -1,0 +1,111 @@
+//Natural numbers construction in zfc
+//Ben Jones - 6/21/2022
+
+include "zfc_depend.core";
+
+//Dependencies
+object INDUCTIVE_SET;
+axiom empty_in_INDUCTIVE_SET: EMPTY in INDUCTIVE_SET;
+axiom successor_closure: *X*Y(X in INDUCTIVE_SET & successor(Y, X) -> Y in INDUCTIVE_SET);
+dependent define is_relation(A);
+dependent define related(X, Y, A);
+dependent define function(A): is_relation(A) & *X*Y*Z(related(X, Y, A) & related(X, Z, A) -> Y = Z);
+axiom relation_exists[P(2)]: *A*B^R(is_relation(R) & *X*Y(related(X, Y, R) <-> P(X, Y) & X in A & Y in B));
+
+//An inductive set is one which contains the empty set and all successors
+define inductive_set(I): EMPTY in I & *X*Y(X in I & successor(Y, X) -> Y in I);
+INDUCTIVE_SET_inductive = #inductive_set(INDUCTIVE_SET)(empty_in_INDUCTIVE_SET, successor_closure);
+
+context naturals{
+	//The naturals are the intersection of all inductive sets
+	naturals_def = specify[<X: *I(inductive_set(I) -> X in I)>](INDUCTIVE_SET)|NATURALS|;
+	zero_def = copy_set(EMPTY)|ZERO|;
+	zero_in_INDUCTIVE_SET = replace[<Q: Q in INDUCTIVE_SET>](EMPTY, ZERO)(zero_def)(empty_in_INDUCTIVE_SET);
+	prove zero_natural: *I(inductive_set(I) -> ZERO in I){
+		given |I|;
+		assume inductive_I;
+		empty_in_I, closure_I = expand(inductive_I);
+		return replace[<Q: Q in I>](EMPTY, ZERO)(zero_def)(empty_in_I);
+	}
+	zero_natural = naturals_def(ZERO)(zero_in_INDUCTIVE_SET, zero_natural);
+
+	//Naturals are an inductive set
+	prove successor_natural: *X*Y(X in NATURALS & successor(Y, X) -> Y in NATURALS){
+		given |X, Y|;
+		assume natural_X, successor_Y;
+		X_in_INDUCTIVE_SET, X_in_all = naturals_def(X)(natural_X);
+		Y_in_INDUCTIVE_SET = successor_closure(X, Y)(X_in_INDUCTIVE_SET, successor_Y);
+		prove Y_in_all: *I(inductive_set(I) -> Y in I){
+			given |I|;
+			assume inductive_I;
+			empty_in_I, closure_I = expand(inductive_I);
+			X_in_I = X_in_all(I)(inductive_I);
+			return closure_I(X, Y)(X_in_I, successor_Y);
+		}
+		return naturals_def(Y)(Y_in_INDUCTIVE_SET, Y_in_all);
+	}
+	empty_natural = replace[<X: X in NATURALS>](EMPTY, ZERO)(zero_def)(zero_natural);
+	inductive = #inductive_set(NATURALS)(empty_natural, successor_natural);
+	
+	//Induction holds on NATURALS
+	prove induction[P(1)]: P(ZERO) & *X*Y(P(X) & successor(Y, X) -> P(Y)) -> *N(N in NATURALS -> P(N)){
+		assume zero_P, closure_P;
+		empty_natural, natural_closure = expand(inductive);
+		I_def = specify[<X: P(X)>](NATURALS)|I|;
+		zero_in_I = I_def(ZERO)(zero_natural, zero_P);
+		empty_in_I = replace[<X: X in I>](EMPTY, ZERO)(zero_def)(zero_in_I);
+		prove closure_I: *X*Y(X in I & successor(Y, X) -> Y in I){
+			given |X, Y|;
+			assume X_in_I, successor_Y;
+			natural_X, P_X = I_def(X)(X_in_I);
+			P_Y = closure_P(X, Y)(P_X, successor_Y);
+			natural_Y = natural_closure(X, Y)(natural_X, successor_Y);
+			return I_def(Y)(natural_Y, P_Y);
+		}
+		inductive_I = #inductive_set(I)(empty_in_I, closure_I);
+		given |N|;
+		assume N_in_NATURALS;
+		N_in_INDUCTIVE_SET, N_in_all = naturals_def(N)(N_in_NATURALS);
+		N_in_I = N_in_all(I)(inductive_I);
+		return I_def(N)(N_in_I);
+	}
+
+	//ZERO is not the successor of any natural number
+	prove zero_not_successor: *X*Y(successor(X, Y) -> ~X = ZERO){
+		given |X, Y|;
+		assume successor_X;
+		not X_eq_zero;
+		Y_in_X = expand(successor_X)(Y)(equal_reflexive(Y));
+		zero_eq_X = equal_symmetric(X, ZERO)(X_eq_zero);
+		empty_eq_X = equal_transitive(EMPTY, ZERO, X)(zero_def, zero_eq_X);
+		Y_in_empty = replace[<Q: Y in Q>](EMPTY, X)(empty_eq_X)(Y_in_X);
+		return empty_def(Y)(Y_in_empty);
+	}
+
+	//Finally, I must prove that the successor function is injective
+	prove successor_injective: *X*Y*Z(successor(X, Y) & successor(X, Z) -> Y = Z){
+		given |X, Y, Z|;
+		assume successor_X_Y, successor_X_Z;
+		Y_in_X = expand(successor_X_Y)(Y)(equal_reflexive(Y));
+		Y_in_Z_or_eq_Z = expand(successor_X_Z)(Y)(Y_in_X);
+		return branch(Y_in_Z_or_eq_Z, Y_in_Z, Y_eq_Z){
+			Z_in_X = expand(successor_X_Z)(Z)(equal_reflexive(Z));
+			Z_in_Y_or_eq_Y = expand(successor_X_Y)(Z)(Z_in_X);
+			return branch(Z_in_Y_or_eq_Y, Z_in_Y, Z_eq_Y){
+				contradiction = branch(no_recursive_membership(Y, Z), Z_not_in_Y, Y_not_in_Z){
+					return Z_not_in_Y(Z_in_Y);
+				} or {
+					return Y_not_in_Z(Y_in_Z);
+				};
+				return trivial(<: false -> Y = Z>)(contradiction);
+			} or {
+				return equal_symmetric(Z, Y)(Z_eq_Y);
+			};
+		} or {
+			return Y_eq_Z;
+		};
+	}
+
+	import "naturals.core";
+}
+

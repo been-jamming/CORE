@@ -1,0 +1,6 @@
+include "zfc_axioms.core";
+import "zfc.core";
+import "relations.core";
+import "zfc_naturals.core";
+
+print naturals.two_natural;

@@ -1,0 +1,33 @@
+//CORE ZF Implementation Mark 4
+//Import/include revision
+
+//The relation for set membership
+dependent relation in;
+//The relation for set equality
+dependent relation A = B: *X(X in A <-> X in B);
+//The relation for subset
+dependent relation A <= B: *X(X in A -> X in B);
+
+//Axiom for replacing sets with equal sets
+axiom replace[P(1)]: *X*Y(X = Y -> (P(X) <-> P(Y)));
+//Axiom for regularity of sets
+axiom axiom_regularity: *A(^X(X in A) -> ^B(B in A & *C(~C in B | ~C in A)));
+//Axiom for specifying subsets of a set
+axiom specify[P(1)]: *A^B*X(X in B <-> X in A & P(X));
+//Axiom for creating a set with two members
+axiom axiom_pairing: *A*B^C(A in C & B in C);
+//Axiom for taking the union of a collection of sets
+axiom axiom_union: *F^A*Y*X((Y in F & X in Y) -> X in A);
+//The replacement axiom is just hard to explain
+axiom axiom_replacement[P(2)]: *A(*X(X in A -> ^Y(P(X, Y) & *Z(P(X, Z) -> Y = Z))) -> ^B*Y(Y in B <-> ^X(X in A & P(X, Y))));
+
+//The axiom of infinity requires the following definition of the successor
+dependent define successor(A, B): *X(X in A <-> X in B | X = B);
+
+//Axiom asserting the existence of a set containing the empty set and all successors
+axiom axiom_infinity: ^X(^E(E in X & *Y(~Y in E)) & *Y*Z(Y in X & successor(Z, Y) -> Z in X));
+//Axiom asserting the existence of the power set of any set
+axiom axiom_power_set: *X^Y*Z(Z <= X -> Z in Y);
+//Axiom of choice
+axiom axiom_choice: *A(*X(X in A -> ^Y(Y in X)) -> ^B(*Y(Y in A -> ^X(X in B & X in Y)) & *X*Y*Z(X in B & Y in A & Z in A & X in Y & X in Z -> Y = Z)));
+

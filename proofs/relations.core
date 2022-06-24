@@ -1,0 +1,68 @@
+include "zfc_axioms.core";
+
+axiom equal_reflexive: *A(A = A);
+axiom equal_symmetric: *A*B(A = B <-> B = A);
+axiom equal_transitive: *A*B*C(A = B & B = C -> A = C);
+
+dependent define tuple(A, B, C);
+axiom tuple: *B*C^A(tuple(A, B, C));
+axiom tuple_unique: *A*B*C*D(tuple(A, C, D) & tuple(B, C, D) -> A = B);
+axiom tuple_equal: *A*B*C*D*E(tuple(A, B, C) & tuple(A, D, E) -> B = D & C = E);
+
+dependent define cross_product(A, B, C): *X(X in A <-> ^Y^Z(tuple(X, Y, Z) & Y in B & Z in C));
+axiom cross_product: *B*C^A(cross_product(A, B, C));
+axiom cross_product_unique: *A*B*C*D(cross_product(A, C, D) & cross_product(B, C, D) -> A = B);
+axiom cross_product_member: *A*B*C*D*E*F(cross_product(A, B, C) & tuple(D, E, F) & D in A -> E in B & F in C);
+
+define is_relation(A): *B(B in A -> ^X^Y(tuple(B, X, Y)));
+define related(X, Y, A): *T(tuple(T, X, Y) -> T in A);
+define function(A): is_relation(A) & *X*Y*Z(related(X, Y, A) & related(X, Z, A) -> Y = Z);
+
+prove relation_exists[P(2)]: *A*B^R(is_relation(R) & *X*Y(related(X, Y, R) <-> P(X, Y) & X in A & Y in B)){
+	given |A, B|;
+	C_def = cross_product(A, B)|C|;
+	R_def = specify[<Q: *X*Y(tuple(Q, X, Y) -> P(X, Y))>](C)|R|;
+	choose R;
+	prove relation_R: *T(T in R -> ^X^Y(tuple(T, X, Y))){
+		given |T|;
+		assume T_in_R;
+		T_in_C, R_cond = R_def(T)(T_in_R);
+		return expand(C_def)(T)(T_in_C);
+	}
+	relation_R = #is_relation(R)(relation_R);
+	prove condition: *X*Y(related(X, Y, R) <-> P(X, Y) & X in A & Y in B){
+		given |X, Y|;
+		prove lemma0: related(X, Y, R) -> P(X, Y) & X in A & Y in B{
+			assume X_related_Y;
+			tuple_T = tuple(X, Y)|T|;
+			T_in_R = expand(X_related_Y)(T)(tuple_T);
+			T_in_C, R_cond = R_def(T)(T_in_R);
+			P_X_Y = R_cond(X, Y)(tuple_T);
+			return P_X_Y, cross_product_member(C, A, B, T, X, Y)(C_def, tuple_T, T_in_C);
+		}
+		prove lemma1: P(X, Y) & X in A & Y in B -> related(X, Y, R){
+			assume P_X_Y, X_in_A, Y_in_B;
+			prove X_related_Y: *T(tuple(T, X, Y) -> T in R){
+				given |T|;
+				assume tuple_T;
+				prove T_in_C: ^X^Y(tuple(T, X, Y) & X in A & Y in B){
+					choose X, Y;
+					return tuple_T, X_in_A, Y_in_B;
+				}
+				T_in_C = expand(C_def)(T)(T_in_C);
+				prove R_cond: *X2*Y2(tuple(T, X2, Y2) -> P(X2, Y2)){
+					given |X2, Y2|;
+					assume other_tuple_T;
+					X_eq_X2, Y_eq_Y2 = tuple_equal(T, X, Y, X2, Y2)(tuple_T, other_tuple_T);
+					result = replace[<Q: P(Q, Y)>](X, X2)(X_eq_X2)(P_X_Y);
+					return replace[<Q: P(X2, Q)>](Y, Y2)(Y_eq_Y2)(result);
+				}
+				return R_def(T)(T_in_C, R_cond);
+			}
+			return #related(X, Y, R)(X_related_Y);
+		}
+		return iff(lemma0, lemma1);
+	}
+	return relation_R, condition;
+}
+
