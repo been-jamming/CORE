@@ -23,65 +23,143 @@ one_natural = successor_natural(ZERO, ONE)(zero_natural, one_def);
 two_def = successor(ONE)|TWO|;
 two_natural = successor_natural(ONE, TWO)(one_natural, two_def);
 
+//First I need to prove that the predecessor of a natural number exists
+prove predecessor: *M(M in NATURALS & ~M = ZERO -> ^N(N in NATURALS & successor(M, N))){
+	//The proposition to induct on
+	define P(M): M in NATURALS & (~M = ZERO -> ^N(N in NATURALS & successor(M, N)));
+	prove base_case: ~ZERO = ZERO -> ^N(N in NATURALS & successor(ZERO, N)){
+		assume not_reflexive;
+		return zero_natural, not_reflexive(equal_reflexive(ZERO));
+	}
+	base_case = #P(ZERO)(zero_natural, base_case);
+	prove inductive_case: *M*L(P(M) & successor(L, M) -> P(L)){
+		given |M, L|;
+		assume P_M, successor_L;
+		M_natural, M_cond = expand(P_M);
+		L_natural = successor_natural(M, L)(M_natural, successor_L);
+		prove L_cond: ~L = ZERO -> ^N(N in NATURALS & successor(L, N)){
+			assume L_not_zero;
+			choose M;
+			return M_natural, successor_L;
+		}
+		return #P(L)(L_natural, L_cond);
+	}
+	result = induction[<M: P(M)>](base_case, inductive_case);
+	given |M|;
+	assume M_natural, M_not_zero;
+	M_natural, M_cond = expand(result(M)(M_natural));
+	return M_cond(M_not_zero);
+}
+
+//Now I will prove that the predecessor of a natural number is natural
+prove predecessor_natural: *N*M(M in NATURALS & successor(M, N) -> N in NATURALS){
+	given |N, M|;
+	assume M_natural, successor_M;
+	prove M_not_zero: ~M = ZERO{
+		not M_eq_ZERO;
+		successor_zero = replace[<Q: successor(Q, N)>](M, ZERO)(M_eq_ZERO)(successor_M);
+		return zero_not_successor(N)(successor_zero);
+	}
+	N2_natural, successor_M_N2 = predecessor(M)(M_natural, M_not_zero)|N2|;
+	N_eq_N2 = successor_injective(M, N, N2)(successor_M, successor_M_N2);
+	return replace[<Q: Q in NATURALS>](N, N2)(N_eq_N2)(N2_natural);
+}
+
 //We'll see how this goes
-//prove recursion: *F*D*S(function(F) & domain(D, F) & codomain(D, F) & S in D -> ^G(function(G) & domain(NATURALS, G) & codomain(D, G) & related(ZERO, S, G) & *N*Y*M*Z(successor(M, N) & related(N, Y, G) & related(M, Z, G) -> related(Y, Z, F)))){
-//	given |F, D, S|;
-//	assume function_F, F_domain_D, F_codomain_D, S_in_D;
-//	//These will be kind of like "partial functions"
-//	define recursive_part(A): is_relation(A) & related(ZERO, S, A) & *N*Y*M*Z(successor(M, N) & related(N, Y, A) & related(M, Z, A) -> related(Y, Z, F));
-//	relation_G, G_def = relation_exists[<N, Y: ^A(recursive_part(A) & related(N, Y, A))>](NATURALS, D)|G|;
-//	choose G;
-//	//We've already constructed G, now we just have to prove that it is the function we want
-//
-//	//We need to show that the codomain of G is D
-//	prove G_codomain_D: *N*Y(related(N, Y, G) -> Y in D){
-//		given |N, Y|;
-//		assume N_related_Y;
-//		return G_def(N, Y)(N_related_Y);
-//	}
-//
-//	//The simplest recursive part is the one which only defines the value at zero
-//	//I will first construct this
-//	relation_INITIAL, INITIAL_def = relation_exists[<N, Y: N = ZERO & Y = S>](NATURALS, D)|INITIAL|;
-//	ZERO_related_S_INITIAL = INITIAL_def(ZERO, S)(equal_reflexive(ZERO), equal_reflexive(S), zero_natural, S_in_D);
-//	//The recursion for this simplest recursive part is vacuously true
-//	prove INITIAL_recursion: *N*Y*M*Z(successor(M, N) & related(N, Y, INITIAL) & related(M, Z, INITIAL) -> related(Y, Z, F)){
-//		given |N, Y, M, Z|;
-//		assume successor_M, N_related_Y, M_related_Z;
-//		M_eq_ZERO, Z_eq_S, M_in_NATURALS, Z_in_D = INITIAL_def(M, Z)(M_related_Z);
-//		return zero_not_successor(M, N)(successor_M)(M_eq_ZERO);
-//	}
-//	recursive_INITIAL = #recursive_part(INITIAL)(relation_INITIAL, ZERO_related_S_INITIAL, INITIAL_recursion);
-//
-//	//We now need to show that every natural number is related by G
-//	prove G_naturals_related: *N(N in NATURALS -> ^Y(related(N, Y, G))){
-//		//Using induction
-//		zero_exists = exists[<A: recursive_part(A) & related(ZERO, S, A)>](INITIAL)(recursive_INITIAL, ZERO_related_S_INITIAL);
-//		zero_related_S = G_def(ZERO, S)(zero_exists, zero_natural, S_in_D);
-//		prove successor_related: *N*M(^Y(related(N, Y, G)) & successor(M, N) -> ^Z(related(M, Z, G))){
-//			given |N, M|;
-//			assume Y_exists, successor_M;
-//			N_related_Y = Y_exists|Y|;
-//			recursive_exists, N_in_NATURALS, Y_in_D = G_def(N, Y)(N_related_Y);
-//			recursive_P, N_related_Y_P = recursive_exists|P|;
-//			relation_P, ZERO_related_S_P, recursion_P = expand(recursive_P);
-//			Y_related_Z = expand(F_domain_D)(Y)(Y_in_D)|Z|;
-//			Z_in_D = expand(F_codomain_D)(Y, Z)(Y_related_Z);
-//			choose Z;
-//			//Now we must define a new recursive part which includes the value for M
-//			relation_NEXT, NEXT_def = relation_exists[<R, W: related(R, W, P) | (R = M & W = Z)>](NATURALS, D)|NEXT|;
-//			//Now I must actually prove that NEXT is a recursive part
-//			ZERO_related_S_NEXT = NEXT_def(ZERO, S)(ZERO_related_S_P, zero_natural, S_in_D);
-//			prove next_recursion: *A*B*C*E(successor(C, A) & related(A, B, NEXT) & related(C, E, NEXT) -> related(B, E, F)){
-//				given |A, B, C, E|;
-//				assume successor_C, A_related_B, C_related_E;
-//				either, A_in_NATURALS, B_in_D = NEXT_def(A, B)(A_related_B);
-//				return branch(either, A_related_B_P, A_eq_M_B_eq_Z){
-//					print recursion_P;
-//				} or {
-//					//I messed up my definition of a recursive part
-//				};
-//			}
-//		}
-//	}
-//}
+//Attempt number 2
+prove recursion: *F*D*S(function(F) & domain(D, F) & codomain(D, F) & S in D -> ^G(function(G) & domain(NATURALS, G) & codomain(D, G) & *X(related(ZERO, X, G) <-> X = S) & *N*M*Y(successor(M, N) & related(M, Y, G) -> ^X(related(N, X, G) & related(X, Y, F))))){
+	given |F, D, S|;
+	assume function_F, F_domain_D, F_codomain_D, S_in_D;
+	//Define the partial versions of G as "recursive parts"
+	define recursive_part(A): is_relation(A) & *X(related(ZERO, X, A) -> X = S) & *N*M*Y(successor(M, N) & related(M, Y, A) -> ^X(related(N, X, A) & related(X, Y, F)));
+	//Now X and Y are related under G if they are related by some recursive part
+	relation_G, G_def = relation_exists[<X, Y: ^A(recursive_part(A) & related(X, Y, A))>](NATURALS, D)|G|;
+	choose G;
+
+	//We have to construct the simplest non-trivial recursive part manually
+	//It relates 0 and S
+	relation_INITIAL, INITIAL_def = relation_exists[<X, Y: X = ZERO & Y = S>](NATURALS, D)|INITIAL|;
+	//Prove that zero is only related to S
+	prove initial_zero: *X(related(ZERO, X, INITIAL) -> X = S){
+		given |X|;
+		assume zero_related_X;
+		return INITIAL_def(ZERO, X)(zero_related_X);
+	}
+	//Prove that INITIAL is recursive
+	prove initial_recursive: *N*M*Y(successor(M, N) & related(M, Y, INITIAL) -> ^X(related(N, X, INITIAL) & related(X, Y, F))){
+		given |N, M, Y|;
+		assume successor_M, M_related_Y;
+		M_eq_zero, Y_eq_S, M_in_NATURALS, Y_in_D = INITIAL_def(M, Y)(M_related_Y);
+		successor_zero = replace[<Q: successor(Q, N)>](M, ZERO)(M_eq_zero)(successor_M);
+		return zero_not_successor(N)(successor_zero);
+	}
+	recursive_part_INITIAL = #recursive_part(INITIAL)(relation_INITIAL, initial_zero, initial_recursive);
+	zero_related_S_INITIAL = INITIAL_def(ZERO, S)(equal_reflexive(ZERO), equal_reflexive(S), zero_natural, S_in_D);
+
+	//Now for each natural number, we need to prove that G relates it
+	prove G_relates_naturals: *N(N in NATURALS -> ^X(related(N, X, G))){
+		initial_exists = exists[<Q: recursive_part(Q) & related(ZERO, S, Q)>](INITIAL)(recursive_part_INITIAL, zero_related_S_INITIAL);
+		zero_related_S_G = G_def(ZERO, S)(initial_exists, zero_natural, S_in_D);
+		zero_related_exists = exists[<Q: related(ZERO, Q, G)>](S)(zero_related_S_G);
+
+		//Now we have to prove that if N is related, N + 1 is
+		prove inductive_step: *N*M(^X(related(N, X, G)) & successor(M, N) -> ^Y(related(M, Y, G))){
+			given |N, M|;
+			assume X_exists, successor_M;
+			N_related_X = X_exists|X|;
+			P_exists, N_natural, X_in_D = G_def(N, X)(N_related_X);
+			M_natural = successor_natural(N, M)(N_natural, successor_M);
+			recursive_P, N_related_X_P = P_exists|P|;
+			relation_P, zero_P, recursion_P = expand(recursive_P);
+			X_related_Y_F = expand(F_domain_D)(X)(X_in_D)|Y|;
+			Y_in_D = expand(F_codomain_D)(X, Y)(X_related_Y_F);
+			choose Y;
+			//I will define a new recursive part which relates M to Y and uses P for everything else
+			relation_Q, Q_def = relation_exists[<L, Z: related(L, Z, P) | L = M & Z = Y>](NATURALS, D)|Q|;
+			N_related_X_Q = Q_def(N, X)(N_related_X_P, N_natural, X_in_D);
+			M_related_Y_Q = Q_def(M, Y)(equal_reflexive(M), equal_reflexive(Y), M_natural, Y_in_D);
+			//Now I must prove that zero is only related to S
+			prove Q_zero: *Z(related(ZERO, Z, Q) -> Z = S){
+				given |Z|;
+				assume zero_related_Z;
+				either, zero_natural, Z_in_D = Q_def(ZERO, Z)(zero_related_Z);
+				return branch(either, zero_related_Z_P, both){
+					return zero_P(Z)(zero_related_Z_P);
+				} or {
+					zero_eq_M, Z_eq_Y = both;
+					successor_zero = replace[<Q: successor(Q, N)>](ZERO, M)(zero_eq_M)(successor_M);
+					return trivial(<: false -> Z = S>)(zero_not_successor(N)(successor_zero));
+				};
+			}
+			//And next I need that Q is recursive
+			prove Q_recursive: *L*R*V(successor(R, L) & related(R, V, Q) -> ^U(related(L, U, Q) & related(U, V, F))){
+				given |L, R, V|;
+				assume successor_R, R_related_V_Q;
+				either, R_natural, V_in_D = Q_def(R, V)(R_related_V_Q);
+				return branch(either, R_related_V_P, both){
+					L_related_U_P, U_related_V_F = recursion_P(L, R, V)(successor_R, R_related_V_P)|U|;
+					L_natural = predecessor_natural(L, R)(R_natural, successor_R);
+					exist = exists[<C: related(U, C, F)>](V)(U_related_V_F);
+					U_in_D = expand(F_domain_D)(U)(exist);
+					L_related_U_Q = Q_def(L, U)(L_related_U_P, L_natural, U_in_D);
+					return exists[<C: related(L, C, Q) & related(C, V, F)>](U)(L_related_U_Q, U_related_V_F);
+				} or {
+					R_eq_M, V_eq_Y = both;
+					successor_M_other = replace[<T: successor(T, L)>](R, M)(R_eq_M)(successor_R);
+					N_eq_L = successor_injective(M, N, L)(successor_M, successor_M_other);
+					prove exist: ^X(related(L, X, Q) & related(X, V, F)){
+						choose X;
+						return replace[<T: related(T, X, Q)>](N, L)(N_eq_L)(N_related_X_Q), replace[<T: related(X, T, F)>](V, Y)(V_eq_Y)(X_related_Y_F);
+					}
+					return exist;
+				};
+			}
+			//Now we know that Q is a recursive part!
+			Q_recursive = #recursive_part(Q)(relation_Q, Q_zero, Q_recursive);
+			exist = exists[<C: recursive_part(C) & related(M, Y, C)>](Q)(Q_recursive, M_related_Y_Q);
+			return G_def(M, Y)(exist, M_natural, Y_in_D);
+		}
+		//Completing the induction
+		return induction[<N: ^X(related(N, X, G))>](zero_related_exists, inductive_step);
+	}
+}
