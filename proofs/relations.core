@@ -1,5 +1,6 @@
 include "zfc_axioms.core";
 
+axiom exists[P(1)]: *X(P(X) -> ^Y(P(Y)));
 axiom equal_reflexive: *A(A = A);
 axiom equal_symmetric: *A*B(A = B <-> B = A);
 axiom equal_transitive: *A*B*C(A = B & B = C -> A = C);
@@ -13,6 +14,7 @@ dependent define cross_product(A, B, C): *X(X in A <-> ^Y^Z(tuple(X, Y, Z) & Y i
 axiom cross_product: *B*C^A(cross_product(A, B, C));
 axiom cross_product_unique: *A*B*C*D(cross_product(A, C, D) & cross_product(B, C, D) -> A = B);
 axiom cross_product_member: *A*B*C*D*E*F(cross_product(A, B, C) & tuple(D, E, F) & D in A -> E in B & F in C);
+axiom definition_uniqueness_lemma[P(1)]: *A*B(*X(X in A <-> P(X)) & *X(X in B <-> P(X)) -> A = B);
 
 define is_relation(A): *B(B in A -> ^X^Y(tuple(B, X, Y)));
 define related(X, Y, A): *T(tuple(T, X, Y) -> T in A);
@@ -64,5 +66,113 @@ prove relation_exists[P(2)]: *A*B^R(is_relation(R) & *X*Y(related(X, Y, R) <-> P
 		return iff(lemma0, lemma1);
 	}
 	return relation_R, condition;
+}
+
+//A symmetric relation
+define symmetric(A): *X*Y(related(X, Y, A) <-> related(Y, X, A));
+//A transitive relation
+define transitive(A): *X*Y*Z(related(X, Y, A) & related(Y, Z, A) -> related(X, Z, A));
+//When a relation is reflexive with respect to another set
+define reflexive(A, B): *X(X in B -> related(X, X, A));
+//Define the domain and codomain
+define domain(A, B): *X(X in A <-> ^Y(related(X, Y, B)));
+define codomain(A, B): *X*Y(related(X, Y, B) -> Y in A);
+
+//Define an equivalence relation on a set
+define equivalence(A, B): is_relation(A) & domain(B, A) & codomain(B, A) & symmetric(A) & transitive(A) & reflexive(A, B);
+//Define an equivalence class
+define equivalence_class(A, B): ^C(C in A & *X(X in A <-> related(X, C, B)));
+
+//Convenient result on membership in domain
+prove domain_related: *A*B*X*Y(domain(B, A) & related(X, Y, A) -> X in B){
+	given |A, B, X, Y|;
+	assume domain_B, X_related_Y;
+	premise = exists[<Y: related(X, Y, A)>](Y)(X_related_Y);
+	return expand(domain_B)(X)(premise);
+}
+
+//Every member of the domain of an equivalence relation has an equivalence class
+prove equivalence_class: *A*B*C(equivalence(A, B) & C in B -> ^D(C in D & equivalence_class(D, A))){
+	given |A, B, C|;
+	assume equivalence_A, C_in_B;
+	D_def = specify[<X: related(X, C, A)>](B)|D|;
+	choose D;
+	relation_A, domain_B, codomain_B, symmetric_A, transitive_A, reflexive_A = expand(equivalence_A);
+	C_related_C = expand(reflexive_A)(C)(C_in_B);
+	C_in_D = D_def(C)(C_related_C, C_in_B);
+	prove equivalence_class_D: ^C(C in D & *X(X in D <-> related(X, C, A))){
+		choose C;
+		prove condition: *X(X in D <-> related(X, C, A)){
+			given |X|;
+			prove lemma0: X in D -> related(X, C, A){
+				assume X_in_D;
+				return D_def(X)(X_in_D);
+			}
+			prove lemma1: related(X, C, A) -> X in D{
+				assume X_related_C;
+				X_in_B = domain_related(A, B, X, C)(domain_B, X_related_C);
+				return D_def(X)(X_related_C, X_in_B);
+			}
+			return iff(lemma0, lemma1);
+		}
+		return C_in_D, condition;
+	}
+	return C_in_D, #equivalence_class(D, A)(equivalence_class_D);
+}
+
+//Equivalence classes are unique
+prove equivalence_class_disjoint: *A*B*C*D*E(equivalence_class(A, C) & equivalence_class(B, C) & equivalence(C, D) & E in A & E in B -> A = B){
+	given |A, B, C, D, E|;
+	assume class_A, class_B, equivalence_C, E_in_A, E_in_B;
+	REP_A_in_A, A_def = expand(class_A)|REP_A|;
+	REP_B_in_B, B_def = expand(class_B)|REP_B|;
+	E_related_REP_A = A_def(E)(E_in_A);
+	E_related_REP_B = B_def(E)(E_in_B);
+	relation_C, domain_D, codomain_D, symmetric_C, transitive_C, reflexive_C = expand(equivalence_C);
+	symmetric_C = expand(symmetric_C);
+	transitive_C = expand(transitive_C);
+	REP_A_related_E = symmetric_C(E, REP_A)(E_related_REP_A);
+	REP_A_related_REP_B = transitive_C(REP_A, E, REP_B)(REP_A_related_E, E_related_REP_B);
+	REP_B_related_REP_A = symmetric_C(REP_A, REP_B)(REP_A_related_REP_B);
+	prove A_eq_B: *X(X in A <-> X in B){
+		given |X|;
+		prove lemma0: X in A -> X in B{
+			assume X_in_A;
+			X_related_REP_A = A_def(X)(X_in_A);
+			X_related_REP_B = transitive_C(X, REP_A, REP_B)(X_related_REP_A, REP_A_related_REP_B);
+			return B_def(X)(X_related_REP_B);
+		}
+		prove lemma1: X in B -> X in A{
+			assume X_in_B;
+			X_related_REP_B = B_def(X)(X_in_B);
+			X_related_REP_A = transitive_C(X, REP_B, REP_A)(X_related_REP_B, REP_B_related_REP_A);
+			return A_def(X)(X_related_REP_A);
+		}
+		return iff(lemma0, lemma1);
+	}
+	return #=(A, B)(A_eq_B);
+}
+
+//More convenient definition for membership of an equivalence relation
+prove equivalence_class_member: *A*B*C*X(equivalence_class(A, B) & equivalence(B, C) & X in A -> *Y(Y in A <-> related(X, Y, B))){
+	given |A, B, C, X|;
+	assume class_A, equivalence_B, X_in_A;
+	relation_B, domain_C, codomain_C, symmetric_B, transitive_B, reflexive_B = expand(equivalence_B);
+	REP_A_in_A, A_def = expand(class_A)|REP_A|;
+	X_related_REP_A = A_def(X)(X_in_A);
+	given |Y|;
+	prove lemma0: Y in A -> related(X, Y, B){
+		assume Y_in_A;
+		Y_related_REP_A = A_def(Y)(Y_in_A);
+		REP_A_related_Y = expand(symmetric_B)(Y, REP_A)(Y_related_REP_A);
+		return expand(transitive_B)(X, REP_A, Y)(X_related_REP_A, REP_A_related_Y);
+	}
+	prove lemma1: related(X, Y, B) -> Y in A{
+		assume X_related_Y;
+		Y_related_X = expand(symmetric_B)(X, Y)(X_related_Y);
+		Y_related_REP_A = expand(transitive_B)(Y, X, REP_A)(Y_related_X, X_related_REP_A);
+		return A_def(Y)(Y_related_REP_A);
+	}
+	return iff(lemma0, lemma1);
 }
 

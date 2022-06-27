@@ -1,11 +1,7 @@
 include "zfc_axioms.core";
+include "relations_axioms.core";
 
-dependent define is_relation(A);
-dependent define related(X, Y, A);
-dependent define function(A): is_relation(A) & *X*Y*Z(related(X, Y, A) & related(X, Z, A) -> Y = Z);
-axiom relation_exists[P(2)]: *A*B^R(is_relation(R) & *X*Y(related(X, Y, R) <-> P(X, Y) & X in A & Y in B));
-
-//Here are the peano arithmetic axioms
+axiom exists[P(1)]: *X(P(X) -> ^Y(P(Y)));
 axiom equal_reflexive: *A(A = A);
 axiom equal_symmetric: *A*B(A = B <-> B = A);
 axiom equal_transitive: *A*B*C(A = B & B = C -> A = C);
@@ -18,7 +14,7 @@ axiom successor: *A^B(successor(B, A));
 axiom successor_unique: *A*B*C(successor(A, C) & successor(B, C) -> A = B);
 axiom successor_natural: *X*Y(X in NATURALS & successor(Y, X) -> Y in NATURALS);
 axiom successor_injective: *X*Y*Z(successor(X, Y) & successor(X, Z) -> Y = Z);
-axiom zero_not_successor: *X*Y(successor(X, Y) -> ~X = ZERO);
+axiom zero_not_successor: *X(~successor(ZERO, X));
 //Since we're working in ZFC, this axiom is strong enough
 axiom induction[P(1)]: P(ZERO) & *X*Y(P(X) & successor(Y, X) -> P(Y)) -> *N(N in NATURALS -> P(N));
 
@@ -27,3 +23,65 @@ one_natural = successor_natural(ZERO, ONE)(zero_natural, one_def);
 two_def = successor(ONE)|TWO|;
 two_natural = successor_natural(ONE, TWO)(one_natural, two_def);
 
+//We'll see how this goes
+//prove recursion: *F*D*S(function(F) & domain(D, F) & codomain(D, F) & S in D -> ^G(function(G) & domain(NATURALS, G) & codomain(D, G) & related(ZERO, S, G) & *N*Y*M*Z(successor(M, N) & related(N, Y, G) & related(M, Z, G) -> related(Y, Z, F)))){
+//	given |F, D, S|;
+//	assume function_F, F_domain_D, F_codomain_D, S_in_D;
+//	//These will be kind of like "partial functions"
+//	define recursive_part(A): is_relation(A) & related(ZERO, S, A) & *N*Y*M*Z(successor(M, N) & related(N, Y, A) & related(M, Z, A) -> related(Y, Z, F));
+//	relation_G, G_def = relation_exists[<N, Y: ^A(recursive_part(A) & related(N, Y, A))>](NATURALS, D)|G|;
+//	choose G;
+//	//We've already constructed G, now we just have to prove that it is the function we want
+//
+//	//We need to show that the codomain of G is D
+//	prove G_codomain_D: *N*Y(related(N, Y, G) -> Y in D){
+//		given |N, Y|;
+//		assume N_related_Y;
+//		return G_def(N, Y)(N_related_Y);
+//	}
+//
+//	//The simplest recursive part is the one which only defines the value at zero
+//	//I will first construct this
+//	relation_INITIAL, INITIAL_def = relation_exists[<N, Y: N = ZERO & Y = S>](NATURALS, D)|INITIAL|;
+//	ZERO_related_S_INITIAL = INITIAL_def(ZERO, S)(equal_reflexive(ZERO), equal_reflexive(S), zero_natural, S_in_D);
+//	//The recursion for this simplest recursive part is vacuously true
+//	prove INITIAL_recursion: *N*Y*M*Z(successor(M, N) & related(N, Y, INITIAL) & related(M, Z, INITIAL) -> related(Y, Z, F)){
+//		given |N, Y, M, Z|;
+//		assume successor_M, N_related_Y, M_related_Z;
+//		M_eq_ZERO, Z_eq_S, M_in_NATURALS, Z_in_D = INITIAL_def(M, Z)(M_related_Z);
+//		return zero_not_successor(M, N)(successor_M)(M_eq_ZERO);
+//	}
+//	recursive_INITIAL = #recursive_part(INITIAL)(relation_INITIAL, ZERO_related_S_INITIAL, INITIAL_recursion);
+//
+//	//We now need to show that every natural number is related by G
+//	prove G_naturals_related: *N(N in NATURALS -> ^Y(related(N, Y, G))){
+//		//Using induction
+//		zero_exists = exists[<A: recursive_part(A) & related(ZERO, S, A)>](INITIAL)(recursive_INITIAL, ZERO_related_S_INITIAL);
+//		zero_related_S = G_def(ZERO, S)(zero_exists, zero_natural, S_in_D);
+//		prove successor_related: *N*M(^Y(related(N, Y, G)) & successor(M, N) -> ^Z(related(M, Z, G))){
+//			given |N, M|;
+//			assume Y_exists, successor_M;
+//			N_related_Y = Y_exists|Y|;
+//			recursive_exists, N_in_NATURALS, Y_in_D = G_def(N, Y)(N_related_Y);
+//			recursive_P, N_related_Y_P = recursive_exists|P|;
+//			relation_P, ZERO_related_S_P, recursion_P = expand(recursive_P);
+//			Y_related_Z = expand(F_domain_D)(Y)(Y_in_D)|Z|;
+//			Z_in_D = expand(F_codomain_D)(Y, Z)(Y_related_Z);
+//			choose Z;
+//			//Now we must define a new recursive part which includes the value for M
+//			relation_NEXT, NEXT_def = relation_exists[<R, W: related(R, W, P) | (R = M & W = Z)>](NATURALS, D)|NEXT|;
+//			//Now I must actually prove that NEXT is a recursive part
+//			ZERO_related_S_NEXT = NEXT_def(ZERO, S)(ZERO_related_S_P, zero_natural, S_in_D);
+//			prove next_recursion: *A*B*C*E(successor(C, A) & related(A, B, NEXT) & related(C, E, NEXT) -> related(B, E, F)){
+//				given |A, B, C, E|;
+//				assume successor_C, A_related_B, C_related_E;
+//				either, A_in_NATURALS, B_in_D = NEXT_def(A, B)(A_related_B);
+//				return branch(either, A_related_B_P, A_eq_M_B_eq_Z){
+//					print recursion_P;
+//				} or {
+//					//I messed up my definition of a recursive part
+//				};
+//			}
+//		}
+//	}
+//}

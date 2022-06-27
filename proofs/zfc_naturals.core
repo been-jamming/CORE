@@ -2,15 +2,12 @@
 //Ben Jones - 6/21/2022
 
 include "zfc_depend.core";
+include "relations_axioms.core";
 
 //Dependencies
 object INDUCTIVE_SET;
 axiom empty_in_INDUCTIVE_SET: EMPTY in INDUCTIVE_SET;
 axiom successor_closure: *X*Y(X in INDUCTIVE_SET & successor(Y, X) -> Y in INDUCTIVE_SET);
-dependent define is_relation(A);
-dependent define related(X, Y, A);
-dependent define function(A): is_relation(A) & *X*Y*Z(related(X, Y, A) & related(X, Z, A) -> Y = Z);
-axiom relation_exists[P(2)]: *A*B^R(is_relation(R) & *X*Y(related(X, Y, R) <-> P(X, Y) & X in A & Y in B));
 
 //An inductive set is one which contains the empty set and all successors
 define inductive_set(I): EMPTY in I & *X*Y(X in I & successor(Y, X) -> Y in I);
@@ -71,15 +68,12 @@ context naturals{
 	}
 
 	//ZERO is not the successor of any natural number
-	prove zero_not_successor: *X*Y(successor(X, Y) -> ~X = ZERO){
-		given |X, Y|;
-		assume successor_X;
-		not X_eq_zero;
-		Y_in_X = expand(successor_X)(Y)(equal_reflexive(Y));
-		zero_eq_X = equal_symmetric(X, ZERO)(X_eq_zero);
-		empty_eq_X = equal_transitive(EMPTY, ZERO, X)(zero_def, zero_eq_X);
-		Y_in_empty = replace[<Q: Y in Q>](EMPTY, X)(empty_eq_X)(Y_in_X);
-		return empty_def(Y)(Y_in_empty);
+	prove zero_not_successor: *X(~successor(ZERO, X)){
+		given |X|;
+		not successor_zero;
+		X_in_zero = expand(successor_zero)(X)(equal_reflexive(X));
+		X_in_empty = replace[<Q: X in Q>](EMPTY, ZERO)(zero_def)(X_in_zero);
+		return empty_def(X)(X_in_empty);
 	}
 
 	//Finally, I must prove that the successor function is injective

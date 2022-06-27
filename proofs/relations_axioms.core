@@ -1,0 +1,17 @@
+dependent define is_relation(A);
+dependent define related(X, Y, A);
+dependent define function(A): is_relation(A) & *X*Y*Z(related(X, Y, A) & related(X, Z, A) -> Y = Z);
+dependent define symmetric(A): *X*Y(related(X, Y, A) <-> related(Y, X, A));
+dependent define transitive(A): *X*Y*Z(related(X, Y, A) & related(Y, Z, A) -> related(X, Z, A));
+dependent define reflexive(A, B): *X(X in B -> related(X, X, A));
+dependent define domain(A, B): *X(X in A <-> ^Y(related(X, Y, B)));
+dependent define codomain(A, B): *X*Y(related(X, Y, B) -> Y in A);
+dependent define equivalence(A, B): is_relation(A) & domain(B, A) & codomain(B, A) & symmetric(A) & transitive(A) & reflexive(A, B);
+dependent define equivalence_class(A, B): ^C(C in A & *X(X in A <-> related(X, C, B)));
+
+axiom relation_exists[P(2)]: *A*B^R(is_relation(R) & *X*Y(related(X, Y, R) <-> P(X, Y) & X in A & Y in B));
+axiom domain_related: *A*B*X*Y(domain(B, A) & related(X, Y, A) -> X in B);
+axiom equivalence_class: *A*B*C(equivalence(A, B) & C in B -> ^D(C in D & equivalence_class(D, A)));
+axiom equivalence_class_disjoint: *A*B*C*D*E(equivalence_class(A, C) & equivalence_class(B, C) & equivalence(C, D) & E in A & E in B -> A = B);
+axiom equivalence_class_member: *A*B*C*X(equivalence_class(A, B) & equivalence(B, C) & X in A -> *Y(Y in A <-> related(X, Y, B)));
+
