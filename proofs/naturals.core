@@ -95,11 +95,11 @@ prove recursion: *F*D*S(function(F) & domain(D, F) & codomain(D, F) & S in D -> 
 	}
 	recursive_part_INITIAL = #recursive_part(INITIAL)(relation_INITIAL, initial_zero, initial_recursive);
 	zero_related_S_INITIAL = INITIAL_def(ZERO, S)(equal_reflexive(ZERO), equal_reflexive(S), zero_natural, S_in_D);
+	initial_exists = exists[<Q: recursive_part(Q) & related(ZERO, S, Q)>](INITIAL)(recursive_part_INITIAL, zero_related_S_INITIAL);
+	zero_related_S_G = G_def(ZERO, S)(initial_exists, zero_natural, S_in_D);
 
 	//Now for each natural number, we need to prove that G relates it
 	prove G_relates_naturals: *N(N in NATURALS -> ^X(related(N, X, G))){
-		initial_exists = exists[<Q: recursive_part(Q) & related(ZERO, S, Q)>](INITIAL)(recursive_part_INITIAL, zero_related_S_INITIAL);
-		zero_related_S_G = G_def(ZERO, S)(initial_exists, zero_natural, S_in_D);
 		zero_related_exists = exists[<Q: related(ZERO, Q, G)>](S)(zero_related_S_G);
 
 		//Now we have to prove that if N is related, N + 1 is
@@ -162,4 +162,122 @@ prove recursion: *F*D*S(function(F) & domain(D, F) & codomain(D, F) & S in D -> 
 		//Completing the induction
 		return induction[<N: ^X(related(N, X, G))>](zero_related_exists, inductive_step);
 	}
+
+	//I must prove there is at most one object related to each natural
+	prove function_G: *N*X*Y(related(N, X, G) & related(N, Y, G) -> X = Y){
+		//By induction
+		prove base_case: *X*Y(related(ZERO, X, G) & related(ZERO, Y, G) -> X = Y){
+			given |X, Y|;
+			assume zero_related_X, zero_related_Y;
+			P_exists, zero_natural, X_in_D = G_def(ZERO, X)(zero_related_X);
+			recursive_P, zero_related_X_P = P_exists|P|;
+			relation_P, zero_P, recursion_P = expand(recursive_P);
+			X_eq_S = zero_P(X)(zero_related_X_P);
+			Q_exists, zero_natural, Y_in_D = G_def(ZERO, Y)(zero_related_Y);
+			recursive_Q, zero_related_Y_Q = Q_exists|Q|;
+			relation_Q, zero_Q, recursion_Q = expand(recursive_Q);
+			Y_eq_S = zero_Q(Y)(zero_related_Y_Q);
+			S_eq_Y = equal_symmetric(Y, S)(Y_eq_S);
+			return equal_transitive(X, S, Y)(X_eq_S, S_eq_Y);
+		}
+		prove inductive_step: *N*M(*X*Y(related(N, X, G) & related(N, Y, G) -> X = Y) & successor(M, N) -> *X*Y(related(M, X, G) & related(M, Y, G) -> X = Y)){
+			given |N, M|;
+			assume unique_N, successor_M;
+			given |X, Y|;
+			assume M_related_X, M_related_Y;
+
+			P_exists, M_natural, X_in_D = G_def(M, X)(M_related_X);
+			recursive_P, M_related_X_P = P_exists|P|;
+			relation_P, zero_P, recursion_P = expand(recursive_P);
+			N_related_U_P, U_related_X_F = recursion_P(N, M, X)(successor_M, M_related_X_P)|U|;
+			exist = exists[<C: related(U, C, F)>](X)(U_related_X_F);
+			U_in_D = expand(F_domain_D)(U)(exist);
+			N_natural = predecessor_natural(N, M)(M_natural, successor_M);
+			exist = exists[<C: recursive_part(C) & related(N, U, C)>](P)(recursive_P, N_related_U_P);
+			N_related_U = G_def(N, U)(exist, N_natural, U_in_D);
+
+			Q_exists, M_natural, Y_in_D = G_def(M, Y)(M_related_Y);
+			recursive_Q, M_related_Y_Q = Q_exists|Q|;
+			relation_Q, zero_Q, recursion_Q = expand(recursive_Q);
+			N_related_V_Q, V_related_Y_F = recursion_Q(N, M, Y)(successor_M, M_related_Y_Q)|V|;
+			exist = exists[<C: related(V, C, F)>](Y)(V_related_Y_F);
+			V_in_D = expand(F_domain_D)(V)(exist);
+			exist = exists[<C: recursive_part(C) & related(N, V, C)>](Q)(recursive_Q, N_related_V_Q);
+			N_related_V = G_def(N, V)(exist, N_natural, V_in_D);
+
+			//Here is where we are using the inductive hypothesis
+			U_eq_V = unique_N(U, V)(N_related_U, N_related_V);
+			U_related_Y_F = replace[<C: related(C, Y, F)>](U, V)(U_eq_V)(V_related_Y_F);
+			relation_F, unique_output = expand(function_F);
+			return unique_output(U, X, Y)(U_related_X_F, U_related_Y_F);
+		}
+
+		result = induction[<N: *X*Y(related(N, X, G) & related(N, Y, G) -> X = Y)>](base_case, inductive_step);
+		given |N, X, Y|;
+		assume N_related_X, N_related_Y;
+		exist, N_natural, X_in_D = G_def(N, X)(N_related_X);
+		return result(N)(N_natural)(X, Y)(N_related_X, N_related_Y);
+	}
+
+	//We've proven G is a function!
+	//This is the hardest part (I think)
+	function_G = #function(G)(relation_G, function_G);
+
+	//Next we prove the domain of G is the naturals
+	prove domain_naturals: *N(N in NATURALS <-> ^X(related(N, X, G))){
+		given |N|;
+		prove lemma: ^X(related(N, X, G)) -> N in NATURALS{
+			assume exist;
+			N_related_X = exist|X|;
+			exist, N_natural, X_in_D = G_def(N, X)(N_related_X);
+			return N_natural;
+		}
+		return iff(G_relates_naturals(N), lemma);
+	}
+	domain_naturals = #domain(NATURALS, G)(domain_naturals);
+
+	//And we prove the codomain of G is D
+	prove codomain_D: *X*Y(related(X, Y, G) -> Y in D){
+		given |X, Y|;
+		assume X_related_Y;
+		exist, X_natural, Y_in_D = G_def(X, Y)(X_related_Y);
+		return Y_in_D;
+	}
+	codomain_D = #codomain(D, G)(codomain_D);
+
+	//Now we show what objects are related to zero by G
+	prove zero_G: *X(related(ZERO, X, G) <-> X = S){
+		given |X|;
+		prove lemma0: related(ZERO, X, G) -> X = S{
+			assume zero_related_X;
+			relation_G, function_G = expand(function_G);
+			return function_G(ZERO, X, S)(zero_related_X, zero_related_S_G);
+		}
+		prove lemma1: X = S -> related(ZERO, X, G){
+			assume X_eq_S;
+			return replace[<C: related(ZERO, C, G)>](X, S)(X_eq_S)(zero_related_S_G);
+		}
+		return iff(lemma0, lemma1);
+	}
+
+	//Finally, we show that G(n) is F applied n times
+	prove recursion_G: *N*M*Y(successor(M, N) & related(M, Y, G) -> ^X(related(N, X, G) & related(X, Y, F))){
+		given |N, M, Y|;
+		assume successor_M, M_related_Y;
+		exist, M_natural, Y_in_D = G_def(M, Y)(M_related_Y);
+		recursive_P, M_related_Y_P = exist|P|;
+		relation_P, zero_P, recursion_P = expand(recursive_P);
+		N_related_X_P, X_related_Y_F = recursion_P(N, M, Y)(successor_M, M_related_Y_P)|X|;
+		choose X;
+		exist = exists[<C: related(X, C, F)>](Y)(X_related_Y_F);
+		X_in_D = expand(F_domain_D)(X)(exist);
+		N_natural = predecessor_natural(N, M)(M_natural, successor_M);
+		exist = exists[<C: recursive_part(C) & related(N, X, C)>](P)(recursive_P, N_related_X_P);
+		N_related_X = G_def(N, X)(exist, N_natural, X_in_D);
+		return N_related_X, X_related_Y_F;
+	}
+
+	//Finally!
+	return function_G, domain_naturals, codomain_D, zero_G, recursion_G;
 }
+
