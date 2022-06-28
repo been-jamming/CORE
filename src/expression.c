@@ -1268,6 +1268,150 @@ expr_value *parse_trivial(char **c){
 	return arg;
 }
 
+//Some utility functions for the next built in commands
+static int int_max(int a, int b){
+	if(a > b){
+		return a;
+	} else {
+		return b;
+	}
+}
+
+static int bound_prop_args(sentence *s){
+	switch(s->type){
+		case AND:
+		case OR:
+		case IMPLIES:
+		case BICOND:
+			return int_max(bound_prop_args(s->child0), bound_prop_args(s->child1));
+		case EXISTS:
+		case FORALL:
+		case NOT:
+			return bound_prop_args(s->child0);
+		case PROPOSITION:
+			if(s->is_bound && s->definition_id == 0){
+				return s->num_args;
+			} else {
+				return 0;
+			}
+		default:
+			return 0;
+	}
+}
+
+static void increment_bound_prop_id(sentence *s){
+	switch(s->type){
+		case AND:
+		case OR:
+		case IMPLIES:
+		case BICOND:
+			increment_bound_prop_id(s->child0);
+			increment_bound_prop_id(s->child1);
+			break;
+		case EXISTS:
+		case FORALL:
+		case NOT:
+			increment_bound_prop_id(s->child0);
+			break;
+		case PROPOSITION:
+			if(s->is_bound){
+				s->definition_id++;
+			}
+			break;
+		default:
+			break;
+	}
+}
+
+//Parse substitute command
+expr_value *parse_substitute(char **c){
+	expr_value *arg;
+	sentence *s0;
+	sentence *s1;
+	sentence *conclusion;
+	sentence *premise;
+	sentence *next_premise;
+	sentence *out_sentence;
+	int num_args;
+	int i;
+
+	arg = parse_expr_value(c);
+	skip_whitespace(c);
+	if(**c != ')'){
+		error(ERROR_END_PARENTHESES);
+	}
+	++*c;
+	if(arg->type != SENTENCE){
+		error(ERROR_ARGUMENT_TYPE);
+	}
+	if(arg->sentence_data->num_bound_vars > 0){
+		error(ERROR_ARGUMENT_BOUND_VARIABLES);
+	}
+	if(arg->sentence_data->num_bound_props != 1){
+		error(ERROR_ONE_BOUND_PROP);
+	}
+	num_args = bound_prop_args(arg->sentence_data);
+	s0 = arg->sentence_data;
+	set_num_bound_props(s0, 2);
+	s1 = malloc(sizeof(sentence));
+	copy_sentence(s1, s0);
+	s1->parent = NULL;
+	increment_bound_prop_id(s1);
+	conclusion = create_sentence(BICOND, 0, 2);
+	conclusion->child0 = s0;
+	conclusion->child1 = s1;
+	conclusion->child0->parent = conclusion;
+	conclusion->child1->parent = conclusion;
+
+	s0 = create_sentence(PROPOSITION, num_args, 2);
+	s0->is_bound = 1;
+	s0->definition_id = 0;
+	s0->num_args = num_args;
+	s0->proposition_args = malloc(sizeof(proposition_arg)*num_args);
+
+	for(i = 0; i < num_args; i++){
+		s0->proposition_args[i].is_bound = 1;
+		s0->proposition_args[i].replaced = 0;
+		s0->proposition_args[i].var_id = i;
+	}
+
+	s1 = create_sentence(PROPOSITION, num_args, 2);
+	s1->is_bound = 1;
+	s1->definition_id = 1;
+	s1->num_args = num_args;
+	s1->proposition_args = malloc(sizeof(proposition_arg)*num_args);
+
+	for(i = 0; i < num_args; i++){
+		s1->proposition_args[i].is_bound = 1;
+		s1->proposition_args[i].replaced = 0;
+		s1->proposition_args[i].var_id = i;
+	}
+
+	premise = create_sentence(BICOND, num_args, 2);
+	premise->child0 = s0;
+	premise->child1 = s1;
+	premise->child0->parent = premise;
+	premise->child1->parent = premise;
+
+	for(i = num_args - 1; i >= 0; i--){
+		next_premise = create_sentence(FORALL, i, 2);
+		next_premise->child0 = premise;
+		next_premise->child0->parent = next_premise;
+		premise = next_premise;
+	}
+
+	out_sentence = create_sentence(IMPLIES, 0, 2);
+	out_sentence->child0 = premise;
+	out_sentence->child1 = conclusion;
+	out_sentence->child0->parent = out_sentence;
+	out_sentence->child1->parent = out_sentence;
+
+	arg->sentence_data = out_sentence;
+	arg->verified = 1;
+
+	return arg;
+}
+
 //Parse all built-in functions
 expr_value *parse_expr_value_builtin(char **c){
 	unsigned char is_and;
@@ -1334,6 +1478,14 @@ expr_value *parse_expr_value_builtin(char **c){
 		}
 		++*c;
 		return parse_trivial(c);
+	} else if(!strncmp(*c, "substitute", 10) && !is_alphanumeric((*c)[10])){
+		*c += 10;
+		skip_whitespace(c);
+		if(**c != '('){
+			error(ERROR_BEGIN_PARENTHESES);
+		}
+		++*c;
+		return parse_substitute(c);
 	}
 
 	return NULL;

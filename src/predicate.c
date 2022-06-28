@@ -108,7 +108,8 @@ static char *error_messages[] = {
 	"Failed to get working directory",
 	"Failed to parse path",
 	"Incompatible context",
-	"Scope is dependent"
+	"Scope is dependent",
+	"Argument must have 1 bound proposition"
 };
 
 //Allocate a sentence structure

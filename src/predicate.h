@@ -86,6 +86,7 @@
 #define ERROR_PARSE_PATH 81
 #define ERROR_CONTEXT_INCOMPATIBLE 82
 #define ERROR_DEPENDENT_SCOPE 83
+#define ERROR_ONE_BOUND_PROP 84
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;

@@ -36,6 +36,7 @@ syn keyword CORE_functions branch
 syn keyword CORE_functions expand
 syn keyword CORE_functions iff
 syn keyword CORE_functions trivial
+syn keyword CORE_functions substitute
 
 " Comments
 syn match CORE_comment "\/\/.*$"
