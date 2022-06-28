@@ -1552,10 +1552,15 @@ expr_value *parse_anonymous_definition(char **c){
 	expr_value *output;
 	sentence *output_sentence;
 	int *new_int;
+	bound_proposition *new_prop;
 	int num_bound_vars = 0;
+	int num_bound_props = 0;
+	int num_args;
 	char name_buffer[256];
+	char *int_end;
 
 	clear_bound_variables();
+	clear_bound_propositions();
 	skip_whitespace(c);
 	while(**c != ':'){
 		if(get_identifier(c, name_buffer, 256)){
@@ -1564,14 +1569,44 @@ expr_value *parse_anonymous_definition(char **c){
 		if(name_buffer[0] == '\0'){
 			error(ERROR_IDENTIFIER_EXPECTED);
 		}
-		if(read_dictionary(global_bound_variables, name_buffer, 0)){
-			error(ERROR_DUPLICATE_IDENTIFIER);
-		}
-		new_int = malloc(sizeof(int));
-		*new_int = num_bound_vars;
-		write_dictionary(&global_bound_variables, name_buffer, new_int, 0);
-		num_bound_vars++;
 		skip_whitespace(c);
+		if(**c == '('){
+			if(read_dictionary(global_bound_propositions, name_buffer, 0)){
+				error(ERROR_DUPLICATE_IDENTIFIER);
+			}
+			++*c;
+			skip_whitespace(c);
+			if(is_digit(**c)){
+				num_args = strtol(*c, &int_end, 10);
+				*c = int_end;
+				if(num_args < 0){
+					error(ERROR_NUM_ARGS);
+				}
+				skip_whitespace(c);
+			} else if(**c == ')'){
+				num_args = 0;
+			} else {
+				error(ERROR_NUM_ARGS);
+			}
+			if(**c != ')'){
+				error(ERROR_END_PARENTHESES);
+			}
+			++*c;
+			skip_whitespace(c);
+			new_prop = malloc(sizeof(bound_proposition));
+			new_prop->prop_id = num_bound_props;
+			new_prop->num_args = num_args;
+			write_dictionary(&global_bound_propositions, name_buffer, new_prop, 0);
+			num_bound_props++;
+		} else {
+			if(read_dictionary(global_bound_variables, name_buffer, 0)){
+				error(ERROR_DUPLICATE_IDENTIFIER);
+			}
+			new_int = malloc(sizeof(int));
+			*new_int = num_bound_vars;
+			write_dictionary(&global_bound_variables, name_buffer, new_int, 0);
+			num_bound_vars++;
+		}
 		if(**c == ','){
 			++*c;
 			skip_whitespace(c);
@@ -1584,12 +1619,13 @@ expr_value *parse_anonymous_definition(char **c){
 	}
 	++*c;
 	skip_whitespace(c);
-	output_sentence = parse_sentence(c, num_bound_vars, 0);
+	output_sentence = parse_sentence(c, num_bound_vars, num_bound_props);
 	if(**c != '>'){
 		error(ERROR_GREATER_THAN);
 	}
 	++*c;
 	clear_bound_variables();
+	clear_bound_propositions();
 
 	output = create_expr_value(SENTENCE);
 	output->sentence_data = output_sentence;
