@@ -281,3 +281,66 @@ prove recursion: *F*D*S(function(F) & domain(D, F) & codomain(D, F) & S in D -> 
 	return function_G, domain_naturals, codomain_D, zero_G, recursion_G;
 }
 
+//Construct the successor function as an object
+SUCCESSOR_relation, SUCCESSOR_def = relation_exists[<X, Y: successor(Y, X)>](NATURALS, NATURALS)|SUCCESSOR|;
+
+//This function's domain is the naturals
+prove successor_domain_naturals: *N(N in NATURALS <-> ^M(related(N, M, SUCCESSOR))){
+	given |N|;
+	prove lemma0: N in NATURALS -> ^M(related(N, M, SUCCESSOR)){
+		assume N_natural;
+		successor_M = successor(N)|M|;
+		choose M;
+		M_natural = successor_natural(N, M)(N_natural, successor_M);
+		return SUCCESSOR_def(N, M)(successor_M, N_natural, M_natural);
+	}
+	prove lemma1: ^M(related(N, M, SUCCESSOR)) -> N in NATURALS{
+		assume exist;
+		N_related_M = exist|M|;
+		return SUCCESSOR_def(N, M)(N_related_M);
+	}
+	return iff(lemma0, lemma1);
+}
+successor_domain_naturals = #domain(NATURALS, SUCCESSOR)(successor_domain_naturals);
+
+//The codomain is also the naturals
+prove successor_codomain_naturals: *N*M(related(N, M, SUCCESSOR) -> M in NATURALS){
+	given |N, M|;
+	assume N_related_M;
+	return SUCCESSOR_def(N, M)(N_related_M);
+}
+successor_codomain_naturals = #codomain(NATURALS, SUCCESSOR)(successor_codomain_naturals);
+
+//Proving it's a function
+prove successor_function: *N*M*L(related(N, M, SUCCESSOR) & related(N, L, SUCCESSOR) -> M = L){
+	given |N, M, L|;
+	assume N_related_M, N_related_L;
+	successor_M, N_natural, M_natural = SUCCESSOR_def(N, M)(N_related_M);
+	successor_L, N_natural, L_natural = SUCCESSOR_def(N, L)(N_related_L);
+	return successor_unique(M, L, N)(successor_M, successor_L);
+}
+successor_function = #function(SUCCESSOR)(SUCCESSOR_relation, successor_function);
+
+define addition_function(F, N): function(F) & domain(NATURALS, F) & codomain(NATURALS, F) & related(ZERO, N, F) & *M*Y*L*Z(successor(L, M) & related(M, Y, F) & related(L, Z, F) -> successor(Z, Y));
+
+define sum(A, B, C): *F(addition_function(F, B) -> related(C, A, F));
+
+prove addition_function_exists: *N(N in NATURALS -> ^F(addition_function(F, N))){
+	given |N|;
+	assume N_natural;
+	F_def = recursion(SUCCESSOR, NATURALS, N)(successor_function, successor_domain_naturals, successor_codomain_naturals, N_natural)|F|;
+	choose F;
+	function_F, domain_naturals, codomain_naturals, F_zero, F_recursion = F_def;
+	relation_F, function_F_def = expand(function_F);
+	ZERO_related_N = F_zero(N)(equal_reflexive(N));
+	prove recursion: *M*Y*L*Z(successor(L, M) & related(M, Y, F) & related(L, Z, F) -> successor(Z, Y)){
+		given |M, Y, L, Z|;
+		assume successor_L, M_related_Y, L_related_Z;
+		M_related_Y2, Y2_related_Z_successor = F_recursion(M, L, Z)(successor_L, L_related_Z)|Y2|;
+		Y_eq_Y2 = function_F_def(M, Y, Y2)(M_related_Y, M_related_Y2);
+		Y_related_Z_successor = replace[<C: related(C, Z, SUCCESSOR)>](Y, Y2)(Y_eq_Y2)(Y2_related_Z_successor);
+		return SUCCESSOR_def(Y, Z)(Y_related_Z_successor);
+	}
+	return #addition_function(F, N)(function_F, domain_naturals, codomain_naturals, ZERO_related_N, recursion);
+}
+
