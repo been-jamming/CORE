@@ -7,6 +7,7 @@ Build
 -----
 
 With ``make`` installed, clone the official `repository`_ first. Navigate into the directory ``CORE``, and run the following:
+
 .. code-block:: console
 	make
 
