@@ -7,5 +7,7 @@ The principal data type in CORE is a first-order sentence.
 	:maxdepth: 2
 	
 	Objects <objects>
+	Constants <constants>
 	Predicates <predicates>
+	Connectives <connectives>
 

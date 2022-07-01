@@ -9,6 +9,7 @@ Build
 With ``make`` installed, clone the official `repository`_ first. Navigate into the directory ``CORE``, and run the following:
 
 .. code-block:: console
+
 	make
 
 The binary ``CORE/core`` is created. A directory ``CORE/build`` is created containing intermediate object files used during the build process.

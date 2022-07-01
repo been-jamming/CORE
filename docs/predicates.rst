@@ -14,7 +14,7 @@ Creation
 
 Bound predicates are created in the scope of a :ref:`proof schema <proofschema>`. Bound predicates have no sentence definition.
 
-Predicates can also be created in any scope using the :doc:`definition <definition` command.
+Predicates can also be created in any scope using the :doc:`definition <definition>` command.
 
 Examples
 --------
@@ -29,16 +29,17 @@ In CORE's syntax, this sentence would be written as:
 
 .. code-block::
 	
-	\*X\*Y(subset(X, Y) <-> \*Z(Z in X -> Z in Y))
+	*X*Y(subset(X, Y) <-> *Z(Z in X -> Z in Y))
 
 Then the sentence
 
 .. code-block::
 
-	\*X(subset(X, X))
+	*X(subset(X, X))
 
 would mean:
 
 .. code-block::
 
-	\*X\*Z(Z in X -> Z in X)
+	*X*Z(Z in X -> Z in X)
+
