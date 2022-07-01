@@ -8,7 +8,7 @@ And
 
 The logical connective ``&`` represents "and." If ``{A}`` and ``{B}`` represent well formed sentences, then ``{A} & {B}`` is a well formed sentence. ``{A} & {B}`` is interpreted to be true if and only if ``{A}`` is true and ``{B}`` is true.
 
-Sentences composed with the ``&`` logical connective can be constructed using the built-in function :doc:`and <andfunc>`. A sentence composed with the ``&`` connective can be deconstructed into its constituent sentences using `variable assignment <varassign>`. A sentence ``{C}`` is stronger than the sentence ``{A} & {B}`` if ``{C}`` is stronger than both ``{A}`` and ``{B}``. The sentence ``{A} & {B}`` is stronger than a sentence ``{C}`` if either ``{A}`` or ``{B}`` is stonger than ``{C}``. See :ref:`Trivial Implication <trivialimp>` for more information.
+Sentences composed with the ``&`` logical connective can be constructed using the built-in function :doc:`and <andfunc>`. A sentence composed with the ``&`` connective can be deconstructed into its constituent sentences using :doc:`variable assignment <varassign>`. A sentence ``{C}`` is stronger than the sentence ``{A} & {B}`` if ``{C}`` is stronger than both ``{A}`` and ``{B}``. The sentence ``{A} & {B}`` is stronger than a sentence ``{C}`` if either ``{A}`` or ``{B}`` is stonger than ``{C}``. See :ref:`Trivial Implication <trivialimp>` for more information.
 
 Or
 ---
@@ -34,7 +34,7 @@ Sentences composed with the ``<->`` logical connective can be constructed from i
 Connective Precedence
 ---------------------
 
-Connectives are assiciated according to precedence. Connectives are in the following list in order from highest precedence to lowest precedence:
+Connectives are associated according to precedence. Connectives are in the following list in order from highest precedence to lowest precedence:
 
 #. ``&``
 #. ``|``
