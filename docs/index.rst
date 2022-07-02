@@ -10,7 +10,8 @@ Contents
 --------
 
 .. toctree::
+	:titlesonly:
 
 	Install <install>
 	Predicate Logic <logic>
-
+	Expressions <expressions>

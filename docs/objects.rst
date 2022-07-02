@@ -1,9 +1,9 @@
 Objects
 =======
 
-An object is an symbol which may be referenced by :doc:`predicates <predicates>` or :doc:`relations <relations>` in a :doc:`sentence <sentences>`. Objects may be quantified, or created by the programmer. 
+An object is an symbol which may be referenced by :doc:`predicates <predicates>` or :doc:`relations <relations>` in a :doc:`sentence <sentences>`. Objects may be quantified, or created by the programmer. Objects cannot be overwritten if they are referenced in any :ref:`sentence expression value <expressionvalues>`.
 
-An object identifier must begin with a letter or an underscore, and may subsequently contain letters, digits, and underscores. By convention, object identifiers use only upper-case letters.
+An object identifier must begin with a letter or an underscore, and may subsequently contain letters, digits, and underscores. By convention, object identifiers use only upper-case letters. Objects share the same namespace as :doc:`variables <variables>`.
 
 In the default library of proofs, objects represent sets in `ZFC set theory`_. However, objects may represent anything the axioms describe.
 

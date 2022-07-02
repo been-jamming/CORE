@@ -15,5 +15,5 @@ The ``(`` character marks the beginning of a parentheses term. The rest of the p
 
 	P(Z) & *X*Y(P(X) & P(Y) -> X = Y) -> *X(P(X) <-> X = Z)
 
-Sentences may have any number of *unbound predicates* and *unbound variables*. These sentences have conditional truth values; the truth of the sentence depends on what propositions or variables are substituted.
+Sentences may have any number of *unbound predicates* and *unbound objects*. These sentences have conditional truth values; the truth of the sentence depends on what propositions or objects are substituted.
 
