@@ -11,7 +11,6 @@ Contents
 
 .. toctree::
 
-	:maxdepth: 2
 	Install <install>
 	Predicate Logic <logic>
 
