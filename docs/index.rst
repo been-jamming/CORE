@@ -6,9 +6,6 @@ CORE is a proof verifier for predicate logic. See :doc:`install` for build and i
 .. note::
 	This project is under active development.
 
-Contents
---------
-
 .. toctree::
 	:titlesonly:
 

@@ -31,6 +31,8 @@ The logical connective ``|`` represents "or." If ``{A}`` and ``{B}`` represent w
 
 Sentences composed with the ``|`` logical connective can be constructed using the built-in function :doc:`or <orfunc>`. A sentence composed with the ``|`` connective can be used in a proof to :doc:`branch <branchfunc>` an argument. A sentence ``{C}`` is stronger than the sentence ``{A} | {B}`` if ``{C}`` is stronger than either ``{A}`` or ``{B}``. The sentence ``{A} | {B}`` is stronger than a sentence ``{C}`` if both ``{A}`` and ``{B}`` are stronger than ``{C}``. See :ref:`Trivial Implication <trivialimp>` for more information.
 
+.. _implication:
+
 Implies
 -------
 

@@ -3,6 +3,8 @@ Variables
 
 CORE has two types of variables: sentence variables and context variables. Variables share the same namespace as :doc:`objects <objects>`, so a variable and an object can't share the same name in the same scope.
 
+.. _`sentencevariable`:
+
 Sentence Variables
 ------------------
 

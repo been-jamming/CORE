@@ -13,6 +13,8 @@ Syntax
 
 The universal and existential quantifiers are denoted by ``*`` and ``^`` respectively. After a quantifier follows a :ref:`sentence term <sentenceterm>` which may refer to the variable bound by the quantifier.
 
+.. _universal:
+
 Universal Quantifiers
 ---------------------
 
