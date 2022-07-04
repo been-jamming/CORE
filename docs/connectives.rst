@@ -5,17 +5,21 @@ Logical connectives create new :doc:`sentences <sentences>` from two or more con
 
 .. _negation:
 
+.. _not:
+
 Negation
 --------
 
 The logical connective ``~`` represents negation. Unlike the other four connectives, this is a unary connective. If ``A`` represents a well formed sentence, then ``~A`` is a well formed sentence. The sentence ``~A`` should be interpreted to mean that ``A`` is not true.
 
-Sentences composed with the ``~`` connective can be proven using the :doc:`not <not>` command. A sentence of the form ``~A`` is logically equivalent to the sentence ``A -> false``. Given ``A`` and ``~A``, one can :ref:`deduce <deduction>` ``false``.
+Sentences composed with the ``~`` connective can be proven using the :doc:`not <not>` command. A sentence of the form ``~A`` is logically equivalent to the sentence ``A -> false``. Given ``A`` and ``~A``, one can :doc:`deduce <deduction>` ``false``.
 
 .. note::
 	Since CORE uses a kind of `intuitionistic logic`_, it is not true in general that ``A | ~A`` for any sentence of the form ``A``. Additionally, ``~~A`` is generally weaker than the sentence ``A``. One can model classical logic by adding the law of excluded middle as an :doc:`axiom <axiom>`.
 
 .. _`intuitionistic logic`: https://en.wikipedia.org/wiki/Intuitionistic_logic
+
+.. _and:
 
 And
 ---
@@ -38,14 +42,16 @@ Implies
 
 The logical connective ``->`` represents implication. If ``{A}`` and ``{B}`` represent well formed sentences, then ``{A} -> {B}`` is a well formed sentence. ``{A} -> {B}`` is interpreted to be true if and only if whenever one can prove ``{A}``, one can prove ``{B}``.
 
-Verified sentences ``{A} -> {B}`` and ``{A}`` can be used to :ref:`deduce <deduction>` the verified sentence ``{B}``.
+Verified sentences ``{A} -> {B}`` and ``{A}`` can be used to :doc:`deduce <deduction>` the verified sentence ``{B}``.
+
+.. _biconditional:
 
 Biconditional
 -------------
 
 The logical connective ``<->`` represents the biconditonal connective. If ``{A}`` and ``{B}`` represent well formed sentences, then ``{A} <-> {B}`` is a well formed sentences. ``{A} <-> {B}`` is logically equivalent to ``({A} -> {B}) & ({B} -> {A})``.
 
-Sentences composed with the ``<->`` logical connective can be constructed from implications using the built-in function :doc:`iff <ifffunc>`. Verified sentences ``{A} <-> {B}`` and ``{A}`` can be used to :ref:`deduce <deduction>` the verified sentence ``{B}``. In addition, verified sentences ``{A} <-> {B}`` and ``{B}`` can be used to :ref:`deduce <deduction>` ``{A}``.
+Sentences composed with the ``<->`` logical connective can be constructed from implications using the built-in function :doc:`iff <ifffunc>`. Verified sentences ``{A} <-> {B}`` and ``{A}`` can be used to :doc:`deduce <deduction>` the verified sentence ``{B}``. In addition, verified sentences ``{A} <-> {B}`` and ``{B}`` can be used to :doc:`deduce <deduction>` ``{A}``.
 
 .. _`connective precedence`:
 

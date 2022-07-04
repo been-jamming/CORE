@@ -11,6 +11,7 @@ Expressions allow the programmer to combine expression values to obtain new expr
 	Object Substitution <objectsubstitution>
 	Pipe Operator <pipe>
 	Deduction <deduction>
+	Sentence Constants <sentenceconstants>
 
 .. _`expressionvalues`:
 

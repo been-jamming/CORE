@@ -12,3 +12,4 @@ The principal data type in CORE is a first-order sentence.
 	Relations <relations>
 	Connectives <connectives>
 	Quantifiers <quantifiers>
+	Trivial Truth <trivialtruth>
