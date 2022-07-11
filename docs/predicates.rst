@@ -5,6 +5,8 @@ A predicate is a symbol which may reference :doc:`objects <objects>` in a :doc:`
 
 A *sentence definition* is a sentence used to define a predicate. If a predicate depends on ``n`` arguments, the sentence definition has ``n`` unbound variables. A predicate applied to ``n`` objects is a sentence logically equivalent to substituting in order those ``n`` objects for the unbound variables in the sentence definition.
 
+.. _predicateidentifier:
+
 A predicate identifier must begin with either a letter or an underscore, and may subsequently contain letters, digits, and underscores.
 
 Predicates are quantified only by :ref:`axiom schema <axiomschema>` and :ref:`proof schema <proofschema>`.

@@ -12,6 +12,7 @@ Expressions allow the programmer to combine expression values to obtain new expr
 	Pipe Operator <pipe>
 	Deduction <deduction>
 	Sentence Constants <sentenceconstants>
+	Expression Brackets <brackets>
 
 .. _`expressionvalues`:
 
