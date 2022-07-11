@@ -1,7 +1,7 @@
 Trivial Truth
 =============
 
-In order to balance convenience for the programmer with precision, CORE has a notion of when a sentence is *trivially true*
+In order to balance convenience for the programmer with precision, CORE has a notion of when a sentence is *trivially true*.
 
 Trivially True
 --------------
