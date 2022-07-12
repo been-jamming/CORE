@@ -13,6 +13,7 @@ Expressions allow the programmer to combine expression values to obtain new expr
 	Deduction <deduction>
 	Sentence Constants <sentenceconstants>
 	Expression Brackets <brackets>
+	Built-in Functions <builtin>
 
 .. _`expressionvalues`:
 

@@ -28,6 +28,8 @@ The logical connective ``&`` represents "and." If ``{A}`` and ``{B}`` represent 
 
 Sentences composed with the ``&`` logical connective can be constructed using the built-in function :doc:`and <andfunc>`. A sentence composed with the ``&`` connective can be deconstructed into its constituent sentences using :doc:`variable assignment <varassign>`. A sentence ``{C}`` is stronger than the sentence ``{A} & {B}`` if ``{C}`` is stronger than both ``{A}`` and ``{B}``. The sentence ``{A} & {B}`` is stronger than a sentence ``{C}`` if either ``{A}`` or ``{B}`` is stonger than ``{C}``. See :ref:`Trivial Implication <trivialimp>` for more information.
 
+.. _or:
+
 Or
 ---
 
