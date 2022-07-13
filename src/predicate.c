@@ -987,9 +987,9 @@ static void print_sentence_recursive(int precedence, sentence *s){
 			if(precedence > order_of_operations[IMPLIES]){
 				printf("(");
 			}
-			print_sentence_recursive(order_of_operations[IMPLIES], s->child0);
+			print_sentence_recursive(2, s->child0);
 			printf(" -> ");
-			print_sentence_recursive(order_of_operations[IMPLIES], s->child1);
+			print_sentence_recursive(2, s->child1);
 			if(precedence > order_of_operations[IMPLIES]){
 				printf(")");
 			}
@@ -998,9 +998,9 @@ static void print_sentence_recursive(int precedence, sentence *s){
 			if(precedence > order_of_operations[BICOND]){
 				printf("(");
 			}
-			print_sentence_recursive(order_of_operations[BICOND], s->child0);
+			print_sentence_recursive(2, s->child0);
 			printf(" <-> ");
-			print_sentence_recursive(order_of_operations[BICOND], s->child1);
+			print_sentence_recursive(2, s->child1);
 			if(precedence > order_of_operations[BICOND]){
 				printf(")");
 			}
