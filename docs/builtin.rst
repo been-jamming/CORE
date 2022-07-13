@@ -10,4 +10,5 @@ There are a few built-in functions for manipulating :ref:`expression values <exp
 	right <right>
 	and <and>
 	or <or>
-
+	iff <iff>
+	trivial <trivial>

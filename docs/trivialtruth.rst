@@ -62,3 +62,9 @@ Suppose ``P`` and ``Q`` are sentences. To determine whether ``P`` *trivially imp
 
 Regardless of the number of unbound variables of ``A`` and ``B``, one should interpret "``A`` trivially implies ``B``" to mean that no matter which objects are substituted for the unbound variables, one can easily prove that ``A`` implies ``B``.
 
+.. _trivialequivalence:
+
+Trivial Equivalence
+-------------------
+
+Suppose ``P`` and ``Q`` are sentences. To determine whether ``P`` is *trivially equivalent* to ``Q``, determine whether ``P`` trivially implies ``Q`` and ``Q`` trivially implies ``P``. If so, then ``P`` is trivially equivalent to ``Q``, otherwise ``P`` is not trivially equivalent to ``Q``.
