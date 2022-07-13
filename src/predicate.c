@@ -955,63 +955,79 @@ void decrement_references_sentence(sentence *s){
 	}
 }
 
-//Print a sentence recursively
-void print_sentence(sentence *s){
+//Prints a sentence recursively
+//Used internally by print_sentence
+static void print_sentence_recursive(int precedence, sentence *s){
 	int i;
 
-	if(s->type != FORALL && s->type != EXISTS){
-		printf("(");
-	}
 	switch(s->type){
 		case AND:
-			print_sentence(s->child0);
-			printf("&");
-			print_sentence(s->child1);
+			if(precedence > order_of_operations[AND]){
+				printf("(");
+			}
+			print_sentence_recursive(order_of_operations[AND], s->child0);
+			printf(" & ");
+			print_sentence_recursive(order_of_operations[AND], s->child1);
+			if(precedence > order_of_operations[AND]){
+				printf(")");
+			}
 			break;
 		case OR:
-			print_sentence(s->child0);
-			printf("|");
-			print_sentence(s->child1);
-			break;
-		case PROPOSITION:
-			if(s->is_bound){
-				printf("P%d(", s->definition_id);
-			} else {
-				printf("%s(", s->definition_data->name);
+			if(precedence > order_of_operations[OR]){
+				printf("(");
 			}
-			for(i = 0; i < s->num_args; i++){
-				if(i){
-					printf(", ");
-				}
-				if(s->proposition_args[i].is_bound){
-					printf("%d", s->proposition_args[i].var_id);
-				} else {
-					printf("%s", s->proposition_args[i].var->name);
-				}
+			print_sentence_recursive(order_of_operations[OR], s->child0);
+			printf(" | ");
+			print_sentence_recursive(order_of_operations[OR], s->child1);
+			if(precedence > order_of_operations[OR]){
+				printf(")");
 			}
-			printf(")");
-			break;
-		case FORALL:
-			printf("*%d", s->num_bound_vars);
-			print_sentence(s->child0);
-			break;
-		case EXISTS:
-			printf("^%d", s->num_bound_vars);
-			print_sentence(s->child0);
 			break;
 		case IMPLIES:
-			print_sentence(s->child0);
-			printf("->");
-			print_sentence(s->child1);
+			if(precedence > order_of_operations[IMPLIES]){
+				printf("(");
+			}
+			print_sentence_recursive(order_of_operations[IMPLIES], s->child0);
+			printf(" -> ");
+			print_sentence_recursive(order_of_operations[IMPLIES], s->child1);
+			if(precedence > order_of_operations[IMPLIES]){
+				printf(")");
+			}
 			break;
 		case BICOND:
-			print_sentence(s->child0);
-			printf("<->");
-			print_sentence(s->child1);
+			if(precedence > order_of_operations[BICOND]){
+				printf("(");
+			}
+			print_sentence_recursive(order_of_operations[BICOND], s->child0);
+			printf(" <-> ");
+			print_sentence_recursive(order_of_operations[BICOND], s->child1);
+			if(precedence > order_of_operations[BICOND]){
+				printf(")");
+			}
 			break;
 		case NOT:
 			printf("~");
-			print_sentence(s->child0);
+			print_sentence_recursive(4, s->child0);
+			break;
+		case FORALL:
+			printf("*%d", s->num_bound_vars);
+			if(s->child0->type == NOT || s->child0->type == FALSE || s->child0->type == TRUE || s->child0->type == RELATION || s->child0->type == PROPOSITION){
+				printf("(");
+			}
+			print_sentence_recursive(4, s->child0);
+			if(s->child0->type == NOT || s->child0->type == FALSE || s->child0->type == TRUE || s->child0->type == RELATION || s->child0->type == PROPOSITION){
+				printf(")");
+			}
+			break;
+		case EXISTS:
+			printf("^%d", s->num_bound_vars);
+			if(s->child0->type == NOT || s->child0->type == FALSE || s->child0->type == TRUE || s->child0->type == RELATION || s->child0->type == PROPOSITION){
+				printf("(");
+			}
+			print_sentence_recursive(4, s->child0);
+			if(s->child0->type == NOT || s->child0->type == FALSE || s->child0->type == TRUE || s->child0->type == RELATION || s->child0->type == PROPOSITION){
+				printf(")");
+			}
 			break;
 		case FALSE:
 			printf("false");
@@ -1032,10 +1048,30 @@ void print_sentence(sentence *s){
 				printf("%s", s->var1->name);
 			}
 			break;
+		case PROPOSITION:
+			if(s->is_bound){
+				printf("P%d(", s->definition_id);
+			} else {
+				printf("%s(", s->definition_data->name);
+			}
+			for(i = 0; i < s->num_args; i++){
+				if(i){
+					printf(", ");
+				}
+				if(s->proposition_args[i].is_bound){
+					printf("%d", s->proposition_args[i].var_id);
+				} else {
+					printf("%s", s->proposition_args[i].var->name);
+				}
+			}
+			printf(")");
+			break;
 	}
-	if(s->type != FORALL && s->type != EXISTS){
-		printf(")");
-	}
+}
+
+//Print a sentence recursively
+void print_sentence(sentence *s){
+	print_sentence_recursive(-1, s);
 }
 
 //Determines whether one sentence trivially implies another sentence
