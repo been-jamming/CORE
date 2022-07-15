@@ -1085,8 +1085,14 @@ int sentence_stronger(sentence *s0, sentence *s1){
 		return sentence_stronger(s0->child0, s1) && sentence_stronger(s0->child1, s1);
 	} else if(s1->type == AND){
 		return sentence_stronger(s0, s1->child0) && sentence_stronger(s0, s1->child1);
+	} else if(sentence_trivially_false(s0)){
+		return 1;
+	} else if(sentence_trivially_true(s1)){
+		return 1;
 	} else if(s0->type == NOT && s1->type == NOT){
 		return sentence_stronger(s1->child0, s0->child0);
+	} else if(s1->type == NOT && s1->child0->type == NOT){
+		return sentence_stronger(s0, s1->child0->child0);
 	} else if(s0->type == IMPLIES && s1->type == IMPLIES){
 		return sentence_stronger(s1->child0, s0->child0) && sentence_stronger(s0->child1, s1->child1);
 	} else if(s0->type == FORALL && s1->type == FORALL){
@@ -1167,10 +1173,6 @@ int sentence_stronger(sentence *s0, sentence *s1){
 				}
 			}
 		}
-		return 1;
-	} else if(sentence_trivially_false(s0)){
-		return 1;
-	} else if(sentence_trivially_true(s1)){
 		return 1;
 	} else {
 		if(s0->type == AND && (sentence_stronger(s0->child0, s1) || sentence_stronger(s0->child1, s1))){

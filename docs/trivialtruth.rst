@@ -43,7 +43,10 @@ Suppose ``P`` and ``Q`` are sentences. To determine whether ``P`` *trivially imp
 #. If ``P`` and ``Q`` have mismatching numbers of unbound variables or predicates, then ``P`` does not trivially imply ``Q``.
 #. If ``P`` is of the form ``A | B``, ``P`` trivially implies ``Q`` if ``A`` trivially implies ``Q`` and ``B`` trivially implies ``Q``.
 #. If ``Q`` is of the form ``A & B``, ``P`` trivially implies ``Q`` if ``P`` trivially implies ``A`` and ``P`` trivially implies ``B``.
+#. If ``P`` is trivially false, then ``P`` trivially implies ``Q``.
+#. If ``Q`` is trivially true, then ``P`` trivially implies ``Q``.
 #. If ``P`` is of the form ``~A`` and ``Q`` is of the form ``~B``, ``P`` trivially implies ``Q`` if ``B`` trivially implies ``A``.
+#. If ``Q`` is of the form ``~~A``, ``P`` trivially implies ``Q`` if ``P`` trivially implies ``A``.
 #. If ``P`` is of the form ``A -> B`` and ``Q`` is of the form ``C -> D``, then ``P`` trivially implies ``Q`` if ``C`` trivially implies ``A`` and ``B`` trivially implies ``D``.
 #. If ``P`` is of the form ``*X(A(X))`` and ``Q`` is of the form ``*X(B(X)``, then ``P`` trivially implies ``Q`` if ``A`` trivially implies ``B``.
 #. If ``P`` is of the form ``^X(A(X))`` and ``Q`` is of the form ``^X(B(X))``, then ``P`` trivially implies ``Q`` if ``A`` trivially implies ``B``.
@@ -51,11 +54,8 @@ Suppose ``P`` and ``Q`` are sentences. To determine whether ``P`` *trivially imp
 	- If ``A`` trivially implies ``C``, ``C`` trivially implies ``A``, ``B`` trivially implies ``D``, and ``D`` trivially implies ``B``, then ``P`` trivially implies ``Q``.
 	- If ``A`` trivially implies ``D``, ``D`` trivially implies ``A``, ``B`` trivially implies ``C``, and ``C`` trivially implies ``B``, then ``P`` trivially implies ``Q``.
 	- If ``C`` trivially implies ``D`` and ``D`` trivially implies ``C``, then ``P`` trivially implies ``Q``.
-#. If ``Q`` is of the form ``A <-> B``, ``P`` trivially implies ``Q`` if ``A`` trivially implies ``B`` and ``B`` trivially implies ``A``.
 #. If ``P`` and ``Q`` are identical :doc:`relation <relations>` :ref:`sentence terms <sentenceterm>`, then ``P`` trivially implies ``Q``.
 #. If ``P`` and ``Q`` are identical :doc:`predicate <predicates>` :ref:`sentence terms <sentenceterm>`, then ``P`` trivially implies ``Q``.
-#. If ``P`` is trivially false, then ``P`` trivially implies ``Q``.
-#. If ``Q`` is trivially true, then ``P`` trivially implies ``Q``.
 #. Otherwise, apply any of the following rules:
 	- If ``P`` is of the form ``A & B`` and either ``A`` trivially implies ``Q`` or ``B`` trivially implies ``Q``, then ``P`` trivially implies ``Q``.
 	- If ``Q`` is of the form ``A | B`` and either ``P`` trivially implies ``A`` or ``P`` trivially implies ``B``, then ``P`` trivially implies ``Q``.
