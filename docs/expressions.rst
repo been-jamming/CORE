@@ -12,6 +12,7 @@ Expressions allow the programmer to combine expression values to obtain new expr
 	Pipe Operator <pipe>
 	Deduction <deduction>
 	Sentence Constants <sentenceconstants>
+	Predicate Definitions <predicatedefinitions>
 	Expression Brackets <brackets>
 	Built-in Functions <builtin>
 

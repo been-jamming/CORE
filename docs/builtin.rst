@@ -12,3 +12,6 @@ There are a few built-in functions for manipulating :ref:`expression values <exp
 	or <or>
 	iff <iff>
 	trivial <trivial>
+	expand <expand>
+	substitute <substitute>
+	branch <branch>
