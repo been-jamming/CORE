@@ -1,0 +1,188 @@
+//Ordinal Arithmetic by Julian J. Schloder was used as a reference
+
+//Dependencies
+include "zfc_depend.core";
+
+//First we define < on ordinals
+relation X < Y: X in Y;
+
+//Each ordinal is the set of all ordinals smaller than it.
+//If X is an ordinal, Y < X, and Z < Y, then we must have that Z < X.
+//Thus if Y is a member of X and Z is a member of Y, then Z is a member of X.
+//This is called transitivity of a set.
+define transitive(X): *Y*Z(Y < X & Z < Y -> Z < X);
+
+//All of the members of an ordinal must be an ordinal, so they must be transitive.
+//Requiring the members of a transitive set to be transitive is enough to ensure that
+//the set and its members are ordinals, as we will see.
+define ordinal(X): transitive(X) & *Y(Y in X -> transitive(Y));
+
+//Every member of an ordinal is an ordinal
+prove member: *X*Y(ordinal(X) & Y in X -> ordinal(Y)){
+	given |X, Y|;
+	assume ordinal_X, Y_in_X;
+	transitive_X, X_member = expand(ordinal_X);
+	transitive_Y = X_member(Y)(Y_in_X);
+	prove Y_member: *Z(Z in Y -> transitive(Z)){
+		given |Z|;
+		assume Z_in_Y;
+		Z_lt_Y = #<(Z, Y)(Z_in_Y);
+		Y_lt_X = #<(Y, X)(Y_in_X);
+		Z_in_X = expand(expand(transitive_X)(Y, Z)(Y_lt_X, Z_lt_Y));
+		return X_member(Z)(Z_in_X);
+	}
+	return #ordinal(Y)(transitive_Y, Y_member);
+}
+
+//If a set is less than an ordinal, than that set is an ordinal
+prove less_than: *X*Y(ordinal(X) & Y < X -> ordinal(Y)){
+	given |X, Y|;
+	assume ordinal_X, Y_lt_X;
+	Y_in_X = expand(Y_lt_X);
+	return member(X, Y)(ordinal_X, Y_in_X);
+}
+
+//The successor of an ordinal is an ordinal
+prove successor_ordinal: *X*Y(ordinal(Y) & successor(X, Y) -> ordinal(X)){
+	given |X, Y|;
+	assume ordinal_Y, successor_X;
+	transitive_Y, member_Y = expand(ordinal_Y);
+	prove transitive_X: *Z*W(Z < X & W < Z -> W < X){
+		given |Z, W|;
+		assume Z_lt_X, W_lt_Z;
+		Z_in_X = expand(Z_lt_X);
+		W_in_Z = expand(W_lt_Z);
+		Z_in_Y_Z_eq_Y = expand(successor_X)(Z)(Z_in_X);
+		W_in_Y = branch(Z_in_Y_Z_eq_Y, Z_in_Y, Z_eq_Y){
+			Z_lt_Y = #<(Z, Y)(Z_in_Y);
+			return expand(expand(transitive_Y)(Z, W)(Z_lt_Y, W_lt_Z));
+		} or {
+			return replace[<Q: W in Q>](Z, Y)(Z_eq_Y)(W_in_Z);
+		};
+		return #<(W, X)(expand(successor_X)(W)(W_in_Y));
+	}
+	transitive_X = #transitive(X)(transitive_X);
+	prove member_X: *Z(Z in X -> transitive(Z)){
+		given |Z|;
+		assume Z_in_X;
+		return branch(expand(successor_X)(Z)(Z_in_X), Z_in_Y, Z_eq_Y){
+			return member_Y(Z)(Z_in_Y);
+		} or {
+			return replace[<Q: transitive(Q)>](Z, Y)(Z_eq_Y)(transitive_Y);
+		};
+	}
+	return #ordinal(X)(transitive_X, member_X);
+}
+
+//Now I will show that the ordinals are well ordered
+prove well_order[P(1)]: ^X(ordinal(X) & P(X)) -> ^X(ordinal(X) & P(X) & *Y(Y < X -> ~P(Y))){
+	assume not_empty;
+	//E is an example of an ordinal for which P(E)
+	ordinal_E, P_E = not_empty|E|;
+	transitive_E, member_E = expand(ordinal_E);
+	//F is the subset of all ordinals less than E for which P holds
+	F_def = specify[<Q: P(Q)>](E)|F|;
+
+	//Now there are two cases: either F is empty or F is not empty.
+	return branch(excluded_middle[<: ^X(X in F)>], X_exists, X_not_exists){
+		prove result: ^X(ordinal(X) & P(X) & *Y(Y < X -> ~P(Y))){
+			//If F is not empty, we use the axiom of regularity (foundation).
+			//The disjoint member will end up being the smallest by transitivity.
+			X_in_F, X_disjoint_F = axiom_regularity(F)(X_exists)|X|;
+			choose X;
+			X_in_E, P_X = F_def(X)(X_in_F);
+			X_lt_E = #<(X, E)(X_in_E);
+			ordinal_X = member(E, X)(ordinal_E, X_in_E);
+			//Proving that X is indeed the least
+			prove least: *Y(Y < X -> ~P(Y)){
+				given |Y|;
+				assume Y_lt_X;
+				not P_Y;
+				//Applying transitivity of E
+				Y_lt_E = expand(transitive_E)(X, Y)(X_lt_E, Y_lt_X);
+				Y_in_E = expand(Y_lt_E);
+				Y_in_F = F_def(Y)(Y_in_E, P_Y);
+				Y_in_X = expand(Y_lt_X);
+				//Since Y in F and Y in X, this is a contradiction.
+				return branch(X_disjoint_F(Y), not_X, not_F){return not_X(Y_in_X);} or {return not_F(Y_in_F);};
+			}
+			return ordinal_X, P_X, least;
+		}
+		return result;
+	} or {
+		//If F is empty, then E is the least element!
+		prove result: ^X(ordinal(X) & P(X) & *Y(Y < X -> ~P(Y))){
+			choose E;
+			prove least: *Y(Y < E -> ~P(Y)){
+				given |Y|;
+				assume Y_lt_E;
+				not P_Y;
+				//Otherwise any other least element would be a member of F.
+				Y_in_E = expand(Y_lt_E);
+				Y_in_F = F_def(Y)(Y_in_E, P_Y);
+				exist = exists[<Q: Q in F>](Y)(Y_in_F);
+				return X_not_exists(exist);
+			}
+			return ordinal_E, P_E, least;
+		}
+		return result;
+	};
+}
+
+//Using well-ordering, we can prove transfinite induction.
+prove induction[P(1)]: *X(*Y(Y < X -> P(Y)) -> P(X)) -> *X(ordinal(X) -> P(X)){
+	assume premise;
+
+	//The idea of the proof is that there either is an ordinal which fails, or not.
+	return branch(excluded_middle[<: ^X(ordinal(X) & ~P(X))>], counter_exists, true_all){
+		//Select the ordinal which fails as X.
+		ordinal_X, not_P_X = counter_exists|X|;
+		//Set T to be the successor of X.
+		successor_T = successor(X)|T|;
+		//T is an ordinal.
+		ordinal_T = successor_ordinal(T, X)(ordinal_X, successor_T);
+		transitive_T, member_T = expand(ordinal_T);
+		//There does exist an ordinal smaller than T such that P is not true for it.
+		prove exist: ^X(ordinal(X) & X < T & ~P(X)){
+			choose X;
+			X_in_T = expand(successor_T)(X)(equal_reflexive(X));
+			return ordinal_X, #<(X, T)(X_in_T), not_P_X;
+		}
+		//Thus we can select the least such ordinal.
+		least = well_order[<Q: Q < T & ~P(Q)>](exist);
+		//Set L to be the least ordinal less than T such that P is not true.
+		ordinal_L, L_lt_T, not_P_L, least = least|L|;
+		//Since P is true for every ordinal less than L, P must be true for L.
+		prove P_less_than_L: *Y(Y < L -> P(Y)){
+			given |Y|;
+			assume Y_lt_L;
+			not_both = least(Y)(Y_lt_L);
+			Y_lt_T = expand(transitive_T)(L, Y)(L_lt_T, Y_lt_L);
+			return branch(excluded_middle[<: P(Y)>], P_Y, not_P_Y){
+				return P_Y;
+			} or {
+				contradiction = not_both(Y_lt_T, not_P_Y);
+				return trivial(<: false -> P(Y)>)(contradiction);
+			};
+		}
+		P_L = premise(L)(P_less_than_L);
+		//And we reach a contradiction.
+		contradiction = not_P_L(P_L);
+		return trivial(<: false -> *W(ordinal(W) -> P(W))>)(contradiction);
+	} or {
+		//If there is no ordinal which fails, then all ordinals succeed.
+		prove result: *W(ordinal(W) -> P(W)){
+			given |W|;
+			assume ordinal_W;
+			return branch(excluded_middle[<: P(W)>], P_W, not_P_W){
+				return P_W;
+			} or {
+				exist = exists[<Q: ordinal(Q) & ~P(Q)>](W)(ordinal_W, not_P_W);
+				contradiction = true_all(exist);
+				return trivial(<: false -> P(W)>)(contradiction);
+			};
+		}
+		return result;
+	};
+}
+

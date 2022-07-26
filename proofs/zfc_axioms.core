@@ -31,3 +31,6 @@ axiom axiom_power_set: *X^Y*Z(Z <= X -> Z in Y);
 //Axiom of choice
 axiom axiom_choice: *A(*X(X in A -> ^Y(Y in X)) -> ^B(*Y(Y in A -> ^X(X in B & X in Y)) & *X*Y*Z(X in B & Y in A & Z in A & X in Y & X in Z -> Y = Z)));
 
+//Axiom of excluded middle
+axiom excluded_middle[P]: P | ~P;
+

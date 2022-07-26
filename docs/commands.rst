@@ -10,3 +10,4 @@ Commands in CORE run inside of :doc:`scopes <scopes>`. Commands may change the s
 	print <print>
 	object <object>
 	axiom <axiom>
+	define <define>
