@@ -1,0 +1,5 @@
+include "zfc_depend.core";
+
+context ordinals{
+	import "ordinals.core";
+}

@@ -1,5 +1,7 @@
 include "zfc_axioms.core";
 import "zfc.core";
+import "zfc_ordinals.core";
 import "relations.core";
 import "zfc_naturals.core";
 
+print ordinals.induction;
