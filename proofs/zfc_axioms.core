@@ -19,7 +19,7 @@ axiom axiom_pairing: *A*B^C(A in C & B in C);
 //Axiom for taking the union of a collection of sets
 axiom axiom_union: *F^A*Y*X((Y in F & X in Y) -> X in A);
 //The replacement axiom is just hard to explain
-axiom axiom_replacement[P(2)]: *A(*X(X in A -> ^Y(P(X, Y) & *Z(P(X, Z) -> Y = Z))) -> ^B*Y(Y in B <-> ^X(X in A & P(X, Y))));
+axiom axiom_replacement[P(2)]: *A(*X(X in A -> ^Y*Z(P(X, Z) <-> Z = Y)) -> ^B*Y(Y in B <-> ^X(X in A & P(X, Y))));
 
 //The axiom of infinity requires the following definition of the successor
 dependent define successor(A, B): *X(X in A <-> X in B | X = B);

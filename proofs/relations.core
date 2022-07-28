@@ -176,3 +176,39 @@ prove equivalence_class_member: *A*B*C*X(equivalence_class(A, B) & equivalence(B
 	return iff(lemma0, lemma1);
 }
 
+//Relations which relate the same inputs are unique
+prove relation_unique: *R*S(is_relation(R) & is_relation(S) & *X*Y(related(X, Y, R) <-> related(X, Y, S)) -> R = S){
+	prove lemma: *R*S(is_relation(R) & is_relation(S) & *X*Y(related(X, Y, R) <-> related(X, Y, S)) -> R <= S){
+		given |R, S|;
+		assume relation_R, relation_S, relate_same;
+		prove subset_def: *Z(Z in R -> Z in S){
+			given |Z|;
+			assume Z_in_R;
+			tuple_Z = expand(relation_R)(Z)(Z_in_R)|X, Y|;
+			prove X_related_Y: *Z1(tuple(Z1, X, Y) -> Z1 in R){
+				given |Z1|;
+				assume tuple_Z1;
+				Z_eq_Z1 = tuple_unique(Z, Z1, X, Y)(tuple_Z, tuple_Z1);
+				return replace[<Q: Q in R>](Z, Z1)(Z_eq_Z1)(Z_in_R);
+			}
+			X_related_Y_R = #related(X, Y, R)(X_related_Y);
+			X_related_Y_S = relate_same(X, Y)(X_related_Y_R);
+			return expand(X_related_Y_S)(Z)(tuple_Z);
+		}
+		return #<=(R, S)(subset_def);
+	}
+
+	given |R, S|;
+	assume relation_R, relation_S, relate_same;
+
+	R_subset_S = lemma(R, S)(relation_R, relation_S, relate_same);
+	S_subset_R = lemma(S, R)(relation_S, relation_R, relate_same);
+
+	prove equal_def: *Z(Z in R <-> Z in S){
+		given |Z|;
+		return iff(expand(R_subset_S)(Z), expand(S_subset_R)(Z));
+	}
+
+	return #=(R, S)(equal_def);
+}
+

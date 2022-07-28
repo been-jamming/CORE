@@ -1,5 +1,7 @@
 include "zfc_depend.core";
+include "relations_axioms.core";
 
 context ordinals{
 	import "ordinals.core";
 }
+
