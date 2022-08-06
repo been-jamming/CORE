@@ -16,7 +16,7 @@ Creation
 
 Bound predicates are created in the scope of a :ref:`proof schema <proofschema>`. Bound predicates have no sentence definition.
 
-Predicates can also be created in any scope using the :doc:`definition <definition>` command.
+Predicates can also be created in any scope using the :doc:`define <definh>` command.
 
 Examples
 --------

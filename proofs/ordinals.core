@@ -195,29 +195,29 @@ prove induction[P(1)]: *X(*Y(Y < X -> P(Y)) -> P(X)) -> *X(ordinal(X) -> P(X)){
 }
 
 //Now it's time to prove transfinite recursion.
-prove recursion[P(2)]: *X^Y*Z(P(X, Z) <-> Z = Y) -> *X(ordinal(X) -> ^F*G((function(G) & domain(X, G) & *A*B(related(A, B, G) <-> ^C(P(C, B) & *Y(Y in C <-> ^Z(Z < X & related(Z, Y, G)))))) <-> G = F)){
+//I will start by first constructing a relation satisfying the recursive property.
+//Afterwards I will prove that it must be in fact a function.
+prove recursion_relation[P(2)]: *X^Y*Z(P(X, Z) <-> Z = Y) -> *X(ordinal(X) -> ^F(is_relation(F) & domain(X, F) & *A*B(related(A, B, F) <-> *C(*W(W in C <-> ^V(V < A & related(V, W, F))) -> P(C, B))))){
 	assume function_P;
-	//We will use transfinite induction to prove result_ordinal for all ordinals X
-	define result_ordinal(X, F): *G((function(G) & domain(X, G) & *A*B(related(A, B, G) <-> ^C(P(C, B) & *Y(Y in C <-> ^Z(Z < X & related(Z, Y, G)))))) <-> G = F);
 
-	//Now we just need to prove the induction hypothesis
-	prove inductive_hypothesis: *X(*Y(Y < X -> ^F(result_ordinal(Y, F))) -> ^F(result_ordinal(X, F))){
+	//We must use transfinite induction
+	//I will be inducting on the following statement
+	//The statement includes that there are domains and codomains for the relation, which will be helpful
+	define Q(F, S, T, X)
+	defin Q(X): *SX(successor(SX, X) -> ^F^S^T(is_relation(F) & domain(SX, F) & *A*B(related(A, B, F) <-> A in S & B in T & *C(*W(W in C <-> ^V(V < A & related(V, W, F))) -> P(C, B)))));
+
+	//Now we need to prove our inductive hypothesis for Q
+	prove inductive_hypothesis: *X(*Y(Y < X -> Q(Y)) -> Q(X)){
 		given |X|;
-		assume all_members;
+		assume premise;
 
-		//I will define Q to be the F on smaller ordinals
-		define Q(A, B): ^Y^F(Y < X & result_ordinal(Y, F) & related(A, B, F));
+		//I need to use the axiom of choice to construct S and T
+		print choice_hypothesis: *Y(Y in X -> ^
+		print axiom_choice;
 
-		//In order to construct F, we need to first construct the new output of F
-		//It will be the image of the set of other outputs of F under P
-		//We will need to use the axiom of replacement
-		prove replacement_hypothesis: *W(W in X -> ^V*U(Q(W, U) <-> U = V)){
-			given |W|;
-			assume W_in_X;
-			W_lt_X = #<(W, X)(W_in_X);
-			F_result = all_members(W)(W_lt_X)|F|;
-			function_F, domain_W_F, F_def = expand(F_result)(F)(equal_reflexive(F));
-			print expand(domain_W_F);
+		//We will prove Q by definition
+		prove Q_def: ^F^S^T(is_relation(F) & *A*B(related(A, B, F) <-> A in S & B in T & *C(*W(W in C <-> ^V(V < A & related(V, W, F))) -> P(C, B)))){
+			
 		}
 	}
 }

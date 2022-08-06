@@ -29,7 +29,7 @@ axiom axiom_infinity: ^X(^E(E in X & *Y(~Y in E)) & *Y*Z(Y in X & successor(Z, Y
 //Axiom asserting the existence of the power set of any set
 axiom axiom_power_set: *X^Y*Z(Z <= X -> Z in Y);
 //Axiom of choice
-axiom axiom_choice: *A(*X(X in A -> ^Y(Y in X)) -> ^B(*Y(Y in A -> ^X(X in B & X in Y)) & *X*Y*Z(X in B & Y in A & Z in A & X in Y & X in Z -> Y = Z)));
+axiom axiom_choice[P(2)]: *A(*X(X in A -> ^Y(P(X, Y))) -> ^B*X(X in A -> ^Y*Z(Z in B & P(X, Z) <-> Z = Y)));
 
 //Axiom of excluded middle
 axiom excluded_middle[P]: P | ~P;

@@ -11,3 +11,5 @@ Commands in CORE run inside of :doc:`scopes <scopes>`. Commands may change the s
 	object <object>
 	axiom <axiom>
 	define <define>
+	assignment <assignment>
+	prove <prove>
