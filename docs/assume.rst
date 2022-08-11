@@ -21,7 +21,7 @@ Starting from the first identifier, the left-most sentence in ``A`` connected us
 
 If the commands in the new scope are verified successfully and the goal is *proven*, then the goal is proven in the parent scope. No commands can follow the ``assume`` command in the parent scope.
 
-If ``assume`` command is terminated with a ``;`` character, the new scope and parent scope end with the next unmatched ``}`` character. Otherwise, only the new scope ends with the next numatched ``}`` character.
+If ``assume`` command is terminated with a ``;`` character, the new scope and parent scope end with the next unmatched ``}`` character. Otherwise, only the new scope ends with the next unmatched ``}`` character.
 
 Examples
 --------

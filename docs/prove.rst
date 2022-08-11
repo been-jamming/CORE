@@ -36,5 +36,6 @@ The following commands only run in a scope with a *goal*:
 	:titlesonly:
 
 	assume <assume>
+	not <not>
 	given <given>
 	choose <choose>
