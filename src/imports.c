@@ -19,6 +19,10 @@ import_entry *global_import_entry = NULL;
 dependency **global_dependencies = NULL;
 context *global_root_context = NULL;
 
+//&RECURSIVE_IMPORT will be stored in global_imports to represent when an import entry
+//is being created. This will prevent recursive imports.
+static import_entry RECURSIVE_IMPORT;
+
 import_entry *create_import_entry(char *import_path, context *import_context){
 	import_entry *output;
 
@@ -54,16 +58,22 @@ void free_import_entry_void(void *v){
 	free_import_entry(v);
 }
 
+void free_none(void *v){
+
+}
+
 void init_verifier(void){
 	static char *pointer = "";
 
 	global_imports = create_dictionary(NULL);
+	global_recursive_include = create_dictionary(NULL);
 	global_program_pointer = &pointer;
 	global_program_start = pointer;
 }
 
 void deinit_verifier(void){
 	free_dictionary(&global_imports, free_import_entry_void);
+	free_dictionary(&global_recursive_include, free_none);
 	clear_bound_variables();
 	clear_bound_propositions();
 }
@@ -93,9 +103,11 @@ import_entry *get_import_entry(char *file_name){
 	}
 	custom_register(path, 0);
 	output = read_dictionary(global_imports, path, 0);
-	if(output){
+	if(output && output != &RECURSIVE_IMPORT){
 		free(path);
 		return output;
+	} else if(output == &RECURSIVE_IMPORT){
+		error(ERROR_RECURSIVE_IMPORT);
 	} else {
 		dirc = strdup(path);
 		if(!dirc){
@@ -138,6 +150,9 @@ import_entry *get_import_entry(char *file_name){
 		global_dependencies = &(global_import_entry->dependencies);
 		global_file_name = file_name;
 
+		//This write prevents recursive imports
+		write_dictionary(&global_imports, path, &RECURSIVE_IMPORT, 0);
+
 		return_value = parse_context(&program_text);
 		if(*program_text == '}'){
 			error(ERROR_EOF);
@@ -168,6 +183,9 @@ import_entry *get_import_entry(char *file_name){
 
 		return output;
 	}
+
+	//Execution never reaches this return
+	return NULL;
 }
 
 void print_dependencies(import_entry *entry){

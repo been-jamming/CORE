@@ -87,10 +87,13 @@
 #define ERROR_CONTEXT_INCOMPATIBLE 82
 #define ERROR_DEPENDENT_SCOPE 83
 #define ERROR_ONE_BOUND_PROP 84
+#define ERROR_RECURSIVE_IMPORT 85
+#define ERROR_RECURSIVE_INCLUDE 86
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;
 extern dictionary global_bound_propositions;
+extern dictionary global_recursive_include;
 extern unsigned int global_line_number;
 extern char *global_file_name;
 extern char **global_program_pointer;

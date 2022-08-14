@@ -110,7 +110,9 @@ static char *error_messages[] = {
 	"Failed to parse path",
 	"Incompatible context",
 	"Scope is dependent",
-	"Argument must have 1 bound proposition"
+	"Argument must have 1 bound proposition",
+	"Recursive import",
+	"Recursive include"
 };
 
 //Allocate a sentence structure

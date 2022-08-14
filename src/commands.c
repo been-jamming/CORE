@@ -13,6 +13,11 @@
 //CORE Command Parser
 //Ben Jones
 
+//This dictionary prevents recursive includes
+dictionary global_recursive_include;
+//&RECURSIVE_INCLUDE will be stored to prevent recursive includes
+static int RECURSIVE_INCLUDE;
+
 void new_scope(void){
 	global_context = create_context(global_context);
 }
@@ -1469,6 +1474,12 @@ int include_command(char **c, expr_value **return_value){
 		error(ERROR_SEMICOLON);
 	}
 	++*c;
+
+	//Prevent recursive includes
+	if(read_dictionary(global_recursive_include, file_name, 0) == &RECURSIVE_INCLUDE){
+		error(ERROR_RECURSIVE_INCLUDE);
+	}
+
 	strcpy(dirc, file_name);
 	strcpy(basec, file_name);
 	dname = dirname(dirc);
@@ -1485,6 +1496,9 @@ int include_command(char **c, expr_value **return_value){
 	old_program_start = global_program_start;
 	old_line_number = global_line_number;
 
+	//This write prevents recursive includes
+	write_dictionary(&global_recursive_include, file_name, &RECURSIVE_INCLUDE, 0);
+
 	program_start = load_file(bname);
 	if(!program_start){
 		error(ERROR_FILE_READ);
@@ -1495,6 +1509,7 @@ int include_command(char **c, expr_value **return_value){
 	global_line_number = 1;
 	global_program_pointer = &program_text;
 	global_program_start = program_start;
+
 	*return_value = parse_context(&program_text);
 	if(*program_text == '}'){
 		error(ERROR_EOF);
@@ -1508,6 +1523,9 @@ int include_command(char **c, expr_value **return_value){
 	global_program_pointer = old_program_pointer;
 	global_program_start = old_program_start;
 	global_line_number = old_line_number;
+
+	//Reset include dictionary
+	write_dictionary(&global_recursive_include, file_name, NULL, 0);
 
 	skip_whitespace(c);
 	if(**c && *return_value){
