@@ -95,6 +95,7 @@ extern unsigned int global_line_number;
 extern char *global_file_name;
 extern char **global_program_pointer;
 extern char *global_program_start;
+extern char *global_error_arg0;
 
 typedef enum{
 	AND,
@@ -248,6 +249,7 @@ sentence *create_sentence(sentence_type type, int num_bound_vars, int num_bound_
 unsigned char is_whitespace(char *c);
 void skip_whitespace(char **c);
 void error(int error_code);
+void custom_error(int error_code, char *error_message, unsigned char print_file_name);
 int is_digit(char c);
 int is_alpha(char c);
 int is_alphanumeric(char c);

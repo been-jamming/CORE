@@ -20,6 +20,7 @@ char *global_file_name = NULL;
 char **global_program_pointer = NULL;
 char *global_program_start = NULL;
 context *global_context = NULL;
+char *global_error_arg0 = NULL;
 
 //Predicate parsing order of operations
 static int order_of_operations[4] = {3, 2, 1, 0};
@@ -42,7 +43,7 @@ static char *error_messages[] = {
 	"Cannot apply '.'",
 	"Sentence has no bound variables",
 	"Cannot overwrite referenced variable",
-	"Variable not found",
+	"Variable '%s' not found",
 	"Invalid argument type",
 	"Argument has bound variables",
 	"Argument has bound propositions",
@@ -95,12 +96,12 @@ static char *error_messages[] = {
 	"Unexpected return value",
 	"Argument is not trivially true",
 	"Could not read file",
-	"Failed to import variable",
-	"Failed to import relation",
-	"Failed to import definition",
-	"Incompatible axiom",
-	"Incompatible object",
-	"Incompatible definition",
+	"Failed to import variable '%s'",
+	"Failed to import relation '%s'",
+	"Failed to import definition '%s'",
+	"Incompatible axiom '%s'",
+	"Incompatible object '%s'",
+	"Incompatible definition '%s'",
 	"Expected '\"'",
 	"Maximum path size reached",
 	"Incompatible relation",
@@ -165,27 +166,34 @@ void error(int error_code){
 	char *line_start;
 	char *place;
 
-	fprintf(stderr, "\033[31;1mError\033[0;1m: %s\033[0m\n", error_messages[error_code]);
-	if(error_code == ERROR_FILE_READ){
-		fprintf(stderr, "in '%s'\n", global_file_name);
-#ifdef USE_CUSTOM_ALLOC
-		custom_malloc_abort();
-#endif
-		exit(ERROR_FILE_READ);
-		return;
+	fprintf(stderr, "\033[31;1mError\033[0;1m: ");
+	fprintf(stderr, error_messages[error_code], global_error_arg0);
+	fprintf(stderr, "\033[0m\n");
+	if(global_file_name){
+		fprintf(stderr, "in '%s'\n%d ", global_file_name, global_line_number);
+		error_place = *global_program_pointer;
+		line_start = error_place;
+		while(line_start != global_program_start && line_start[-1] != '\n'){
+			line_start--;
+		}
+		skip_whitespace(&line_start);
+		for(place = line_start; *place && *place != '\n'; place++){
+			fputc(*place, stderr);
+		}
+		fprintf(stderr, "\n%*c^\n", (int) (error_place - line_start + num_digits_uint(global_line_number) + 1), ' ');
 	}
-	fprintf(stderr, "in '%s'\n%d ", global_file_name, global_line_number);
-	error_place = *global_program_pointer;
-	line_start = error_place;
-	while(line_start != global_program_start && line_start[-1] != '\n'){
-		line_start--;
-	}
-	skip_whitespace(&line_start);
-	for(place = line_start; *place && *place != '\n'; place++){
-		fputc(*place, stderr);
-	}
-	fprintf(stderr, "\n%*c^\n", (int) (error_place - line_start + num_digits_uint(global_line_number) + 1), ' ');
 
+#ifdef USE_CUSTOM_ALLOC
+	custom_malloc_abort();
+#endif
+	exit(error_code);
+}
+
+void custom_error(int error_code, char *error_message, unsigned char print_file_name){
+	fprintf(stderr, "\033[31;1mError\033[-;1m: %s\033[0m\n", error_message);
+	if(print_file_name){
+		fprintf(stderr, "in '%s'\n", global_file_name);
+	}
 #ifdef USE_CUSTOM_ALLOC
 	custom_malloc_abort();
 #endif

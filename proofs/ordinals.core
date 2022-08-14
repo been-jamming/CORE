@@ -9,7 +9,7 @@ dependent define domain(A, B): *X(X in A <-> ^Y(related(X, Y, B)));
 dependent define codomain(A, B): *X*Y(related(X, Y, B) -> Y in A);
 axiom relation_exists[P(2)]: *A*B^R(is_relation(R) & *X*Y(related(X, Y, R) <-> P(X, Y) & X in A & Y in B));
 axiom domain_related: *A*B*X*Y(domain(B, A) & related(X, Y, A) -> X in B);
-axiom relation_unique: *R*S(is_relation(R) & is_relation(S) & *X*Y(related(X, Y, R) <-> related(X, Y, S)) -> R = S);
+//axiom relation_unique: *R*S(is_relation(R) & is_relation(S) & *X*Y(related(X, Y, R) <-> related(X, Y, S)) -> R = S);
 
 //First we define < on ordinals
 relation X < Y: X in Y;
@@ -197,27 +197,27 @@ prove induction[P(1)]: *X(*Y(Y < X -> P(Y)) -> P(X)) -> *X(ordinal(X) -> P(X)){
 //Now it's time to prove transfinite recursion.
 //I will start by first constructing a relation satisfying the recursive property.
 //Afterwards I will prove that it must be in fact a function.
-prove recursion_relation[P(2)]: *X^Y*Z(P(X, Z) <-> Z = Y) -> *X(ordinal(X) -> ^F(is_relation(F) & domain(X, F) & *A*B(related(A, B, F) <-> *C(*W(W in C <-> ^V(V < A & related(V, W, F))) -> P(C, B))))){
-	assume function_P;
-
-	//We must use transfinite induction
-	//I will be inducting on the following statement
-	//The statement includes that there are domains and codomains for the relation, which will be helpful
-	define Q(F, S, T, X)
-	defin Q(X): *SX(successor(SX, X) -> ^F^S^T(is_relation(F) & domain(SX, F) & *A*B(related(A, B, F) <-> A in S & B in T & *C(*W(W in C <-> ^V(V < A & related(V, W, F))) -> P(C, B)))));
-
-	//Now we need to prove our inductive hypothesis for Q
-	prove inductive_hypothesis: *X(*Y(Y < X -> Q(Y)) -> Q(X)){
-		given |X|;
-		assume premise;
-
-		//I need to use the axiom of choice to construct S and T
-		print choice_hypothesis: *Y(Y in X -> ^
-		print axiom_choice;
-
-		//We will prove Q by definition
-		prove Q_def: ^F^S^T(is_relation(F) & *A*B(related(A, B, F) <-> A in S & B in T & *C(*W(W in C <-> ^V(V < A & related(V, W, F))) -> P(C, B)))){
-			
-		}
-	}
-}
+//prove recursion_relation[P(2)]: *X^Y*Z(P(X, Z) <-> Z = Y) -> *X(ordinal(X) -> ^F(is_relation(F) & domain(X, F) & *A*B(related(A, B, F) <-> *C(*W(W in C <-> ^V(V < A & related(V, W, F))) -> P(C, B))))){
+//	assume function_P;
+//
+//	//We must use transfinite induction
+//	//I will be inducting on the following statement
+//	//The statement includes that there are domains and codomains for the relation, which will be helpful
+//	define Q(F, S, T, X)
+//	defin Q(X): *SX(successor(SX, X) -> ^F^S^T(is_relation(F) & domain(SX, F) & *A*B(related(A, B, F) <-> A in S & B in T & *C(*W(W in C <-> ^V(V < A & related(V, W, F))) -> P(C, B)))));
+//
+//	//Now we need to prove our inductive hypothesis for Q
+//	prove inductive_hypothesis: *X(*Y(Y < X -> Q(Y)) -> Q(X)){
+//		given |X|;
+//		assume premise;
+//
+//		//I need to use the axiom of choice to construct S and T
+//		print choice_hypothesis: *Y(Y in X -> ^
+//		print axiom_choice;
+//
+//		//We will prove Q by definition
+//		prove Q_def: ^F^S^T(is_relation(F) & *A*B(related(A, B, F) <-> A in S & B in T & *C(*W(W in C <-> ^V(V < A & related(V, W, F))) -> P(C, B)))){
+//			
+//		}
+//	}
+//}

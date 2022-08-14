@@ -55,7 +55,11 @@ void free_import_entry_void(void *v){
 }
 
 void init_verifier(void){
+	static char *pointer = "";
+
 	global_imports = create_dictionary(NULL);
+	global_program_pointer = &pointer;
+	global_program_start = pointer;
 }
 
 void deinit_verifier(void){
@@ -83,8 +87,6 @@ import_entry *get_import_entry(char *file_name){
 	unsigned int old_line_number;
 	expr_value *return_value;
 
-	old_file_name = global_file_name;
-	global_file_name = file_name;
 	path = realpath(file_name, NULL);
 	if(!path){
 		error(ERROR_PARSE_PATH);
@@ -92,7 +94,6 @@ import_entry *get_import_entry(char *file_name){
 	custom_register(path, 0);
 	output = read_dictionary(global_imports, path, 0);
 	if(output){
-		global_file_name = old_file_name;
 		free(path);
 		return output;
 	} else {
@@ -121,6 +122,7 @@ import_entry *get_import_entry(char *file_name){
 		old_line_number = global_line_number;
 		old_import_entry = global_import_entry;
 		old_dependencies = global_dependencies;
+		old_file_name = global_file_name;
 
 		program_start = load_file(bname);
 		if(!program_start){
@@ -134,6 +136,8 @@ import_entry *get_import_entry(char *file_name){
 		global_program_start = program_start;
 		global_import_entry = create_import_entry(path, global_context);
 		global_dependencies = &(global_import_entry->dependencies);
+		global_file_name = file_name;
+
 		return_value = parse_context(&program_text);
 		if(*program_text == '}'){
 			error(ERROR_EOF);
@@ -328,6 +332,7 @@ variable *transfer_variable(variable *var){
 		//Error if the variable already exists but is not compatible
 		output = read_dictionary(transfer_context(var->parent_context)->variables, var->name, 0);
 		if(output && (var->type != SENTENCE_VAR || output->type != SENTENCE_VAR)){
+			global_error_arg0 = var->name;
 			error(ERROR_IMPORT_VARIABLE);
 		}
 		if(var->type == OBJECT_VAR){
@@ -358,6 +363,7 @@ relation *transfer_relation(relation *rel){
 		//Error if the relation already exists but is not the destination
 		output = read_dictionary(transfer_context(rel->parent_context)->relations, rel->name, 0);
 		if(output){
+			global_error_arg0 = rel->name;
 			error(ERROR_IMPORT_RELATION);
 		}
 		output = create_relation(rel->name, transfer_sentence(rel->sentence_data, NULL), transfer_context(rel->parent_context));
@@ -379,6 +385,7 @@ definition *transfer_definition(definition *def){
 		//Error if the definition already exists but is not the destination
 		output = read_dictionary(transfer_context(def->parent_context)->definitions, def->name, 0);
 		if(output){
+			global_error_arg0 = def->name;
 			error(ERROR_IMPORT_DEFINITION);
 		}
 		output = create_definition(def->name, transfer_sentence(def->sentence_data, NULL), def->num_args, transfer_context(def->parent_context));
@@ -477,13 +484,16 @@ void check_axiom_dependency(variable *var){
 
 	check_var = get_variable(var->name, global_context, var->parent_context->dependent);
 	if(!check_var){
+		global_error_arg0 = var->name;
 		error(ERROR_VARIABLE_NOT_FOUND);
 	}
 	if(check_var->type != SENTENCE_VAR){
+		global_error_arg0 = var->name;
 		error(ERROR_AXIOM_INCOMPATIBLE);
 	}
 	new_sentence = transfer_sentence(var->sentence_data, NULL);
 	if(!sentence_stronger(check_var->sentence_data, new_sentence)){
+		global_error_arg0 = var->name;
 		error(ERROR_AXIOM_INCOMPATIBLE);
 	}
 	free_sentence(new_sentence);
@@ -495,9 +505,11 @@ void check_object_dependency(variable *var){
 
 	check_var = get_variable(var->name, global_context, var->parent_context->dependent);
 	if(!check_var){
+		global_error_arg0 = var->name;
 		error(ERROR_VARIABLE_NOT_FOUND);
 	}
 	if(check_var->type != OBJECT_VAR){
+		global_error_arg0 = var->name;
 		error(ERROR_OBJECT_INCOMPATIBLE);
 	}
 	var->destination = check_var;
@@ -521,14 +533,17 @@ void check_definition_dependency(definition *def){
 		error(ERROR_DEFINITION_EXISTS);
 	}
 	if(def->num_args != check_definition->num_args){
+		global_error_arg0 = def->name;
 		error(ERROR_DEFINITION_INCOMPATIBLE);
 	}
 	if(def->sentence_data && !check_definition->sentence_data){
+		global_error_arg0 = def->name;
 		error(ERROR_DEFINITION_INCOMPATIBLE);
 	}
 	if(def->sentence_data){
 		new_sentence = transfer_sentence(def->sentence_data, NULL);
 		if(!check_definition->sentence_data || !sentence_equivalent(new_sentence, check_definition->sentence_data)){
+			global_error_arg0 = def->name;
 			error(ERROR_DEFINITION_INCOMPATIBLE);
 		}
 		free_sentence(new_sentence);
@@ -573,6 +588,7 @@ void check_context_dependency(variable *var, dependency *children){
 
 	check_variable = get_variable(var->name, global_context, var->parent_context->dependent);
 	if(!check_variable){
+		global_error_arg0 = var->name;
 		error(ERROR_VARIABLE_NOT_FOUND);
 	}
 	if(check_variable->type != CONTEXT_VAR){

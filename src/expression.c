@@ -432,6 +432,8 @@ expr_value *parse_expr_identifier(char **c){
 		}
 
 		if(!var){
+			global_error_arg0 = malloc(sizeof(char)*(strlen(name_buffer) + 1));
+			strcpy(global_error_arg0, name_buffer);
 			error(ERROR_VARIABLE_NOT_FOUND);
 		}
 
