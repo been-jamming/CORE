@@ -1,5 +1,5 @@
 # CORE
-A constructive proof assistant for first order logic.
+A constructive proof assistant for second order logic.
 
 ## Introduction
 
