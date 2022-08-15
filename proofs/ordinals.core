@@ -9,7 +9,6 @@ dependent define domain(A, B): *X(X in A <-> ^Y(related(X, Y, B)));
 dependent define codomain(A, B): *X*Y(related(X, Y, B) -> Y in A);
 axiom relation_exists[P(2)]: *A*B^R(is_relation(R) & *X*Y(related(X, Y, R) <-> P(X, Y) & X in A & Y in B));
 axiom domain_related: *A*B*X*Y(domain(B, A) & related(X, Y, A) -> X in B);
-//axiom relation_unique: *R*S(is_relation(R) & is_relation(S) & *X*Y(related(X, Y, R) <-> related(X, Y, S)) -> R = S);
 
 //First we define < on ordinals
 relation X < Y: X in Y;

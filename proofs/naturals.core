@@ -323,8 +323,9 @@ successor_function = #function(SUCCESSOR)(SUCCESSOR_relation, successor_function
 
 define addition_function(F, N): function(F) & domain(NATURALS, F) & codomain(NATURALS, F) & related(ZERO, N, F) & *M*Y*L*Z(successor(L, M) & related(M, Y, F) & related(L, Z, F) -> successor(Z, Y));
 
-define sum(A, B, C): *F(addition_function(F, B) -> related(C, A, F));
+define sum(A, B, C): B in NATURALS & C in NATURALS & *F(addition_function(F, B) -> related(C, A, F));
 
+//Addition functions always exist
 prove addition_function_exists: *N(N in NATURALS -> ^F(addition_function(F, N))){
 	given |N|;
 	assume N_natural;
@@ -342,5 +343,73 @@ prove addition_function_exists: *N(N in NATURALS -> ^F(addition_function(F, N)))
 		return SUCCESSOR_def(Y, Z)(Y_related_Z_successor);
 	}
 	return #addition_function(F, N)(function_F, domain_naturals, codomain_naturals, ZERO_related_N, recursion);
+}
+
+//Addition functions are unique
+prove addition_function_unique: *N*F*G*X*Y(N in NATURALS & addition_function(F, N) & addition_function(G, N) & related(X, Y, F) -> related(X, Y, G)){
+	given |N, F, G, X, Y|;
+	assume N_natural, addition_F, addition_G, X_related_Y_F;
+	function_F, domain_F, codomain_F, zero_F, recursive_F = expand(addition_F);
+	relation_F, function_F = expand(function_F);
+	function_G, domain_G, codomain_G, zero_G, recursive_G = expand(addition_G);
+	relation_G, function_G = expand(function_G);
+	Y_exists = exists[<Q: related(X, Q, F)>](Y)(X_related_Y_F);
+	X_natural = expand(domain_F)(X)(Y_exists);
+	prove induction_result: *X(X in NATURALS -> *Y(related(X, Y, F) -> related(X, Y, G))){
+		prove base_case: *Y(related(ZERO, Y, F) -> related(ZERO, Y, G)){
+			given |Y|;
+			assume ZERO_related_Y_F;
+			N_eq_Y = function_F(ZERO, N, Y)(zero_F, ZERO_related_Y_F);
+			return replace[<Q: related(ZERO, Q, G)>](N, Y)(N_eq_Y)(zero_G);
+		}
+		prove inductive_step: *X*Y(*V(related(X, V, F) -> related(X, V, G)) & successor(Y, X) -> *V(related(Y, V, F) -> related(Y, V, G))){
+			given |X, Y|;
+			assume hypothesis, successor_Y;
+			given |V|;
+			assume Y_related_V_F;
+			V_exists = exists[<Q: related(Y, Q, F)>](V)(Y_related_V_F);
+			Y_natural = expand(domain_F)(Y)(V_exists);
+			X_natural = predecessor_natural(X, Y)(Y_natural, successor_Y);
+			X_related_W_F = expand(domain_F)(X)(X_natural)|W|;
+			X_related_W_G = hypothesis(W)(X_related_W_F);
+			successor_V = recursive_F(X, W, Y, V)(successor_Y, X_related_W_F, Y_related_V_F);
+			Y_related_V1_G = expand(domain_G)(Y)(Y_natural)|V1|;
+			successor_V1 = recursive_G(X, W, Y, V1)(successor_Y, X_related_W_G, Y_related_V1_G);
+			V_eq_V1 = successor_unique(V, V1, W)(successor_V, successor_V1);
+			return replace[<Q: related(Y, Q, G)>](V, V1)(V_eq_V1)(Y_related_V1_G);
+		}
+		return induction[<Q: *Y(related(Q, Y, F) -> related(Q, Y, G))>](base_case, inductive_step);
+	}
+	return induction_result(X)(X_natural)(Y)(X_related_Y_F);
+}
+
+//The sum of two naturals exists
+prove sum: *A*B(A in NATURALS & B in NATURALS -> ^C(sum(C, A, B))){
+	given |A, B|;
+	assume A_natural, B_natural;
+	addition_F = addition_function_exists(A)(A_natural)|F|;
+	function_F, domain_F, codomain_F, zero_F, recursion_F = expand(addition_F);
+	B_related_C_F = expand(domain_F)(B)(B_natural)|C|;
+	choose C;
+	prove sum_C: *G(addition_function(G, A) -> related(B, C, G)){
+		given |G|;
+		assume addition_G;
+		return addition_function_unique(A, F, G, B, C)(A_natural, addition_F, addition_G, B_related_C_F);
+	}
+	return #sum(C, A, B)(A_natural, B_natural, sum_C);
+}
+
+//The sum of two natural numbers is unique
+prove sum_unique: *A*B*C*D(sum(C, A, B) & sum(D, A, B) -> C = D){
+	given |A, B, C, D|;
+	assume sum_C, sum_D;
+	A_natural, B_natural, sum_C = expand(sum_C);
+	A_natural, B_natural, sum_D = expand(sum_D);
+	addition_F = addition_function_exists(A)(A_natural)|F|;
+	function_F, domain_F, codomain_F, zero_F, recursion_F = expand(addition_F);
+	relation_F, function_F = expand(function_F);
+	B_related_C_F = sum_C(F)(addition_F);
+	B_related_D_F = sum_D(F)(addition_F);
+	return function_F(B, C, D)(B_related_C_F, B_related_D_F);
 }
 
