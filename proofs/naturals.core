@@ -413,3 +413,10 @@ prove sum_unique: *A*B*C*D(sum(C, A, B) & sum(D, A, B) -> C = D){
 	return function_F(B, C, D)(B_related_C_F, B_related_D_F);
 }
 
+//The sum of N and 0 is N
+//prove sum_zero: *A(A in NATURALS -> sum(A, A, ZERO)){
+//	given |A|;
+//	assume A_natural;
+//	addition_F = addition_function_exists(A)(A_natural)|F|;
+//	print #sum;
+//}

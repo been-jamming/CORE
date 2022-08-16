@@ -335,8 +335,10 @@ void get_definition_relation(char **c, definition **output_def, relation **outpu
 	search_context = global_context;
 	do{
 		var = read_dictionary(search_context->variables, name_buffer, 0);
-		if(var){
+		if(var && var->type == CONTEXT_VAR){
 			break;
+		} else if(var){
+			var = NULL;
 		}
 		def = read_dictionary(search_context->definitions, name_buffer, 0);
 		if(def){
@@ -366,7 +368,7 @@ void get_definition_relation(char **c, definition **output_def, relation **outpu
 			}
 			skip_whitespace(c);
 			next_var = read_dictionary(var->context_data->variables, name_buffer, 0);
-			if(next_var){
+			if(next_var && next_var->type == CONTEXT_VAR){
 				var = next_var;
 				continue;
 			}
@@ -380,9 +382,6 @@ void get_definition_relation(char **c, definition **output_def, relation **outpu
 			}
 			var = next_var;
 		} while(var);
-		if(!def && !rel){
-			error(ERROR_DEFINITION_EXISTS);
-		}
 	}
 	if(def){
 		*output_def = def;
