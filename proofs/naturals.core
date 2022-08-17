@@ -414,9 +414,27 @@ prove sum_unique: *A*B*C*D(sum(C, A, B) & sum(D, A, B) -> C = D){
 }
 
 //The sum of N and 0 is N
-//prove sum_zero: *A(A in NATURALS -> sum(A, A, ZERO)){
-//	given |A|;
-//	assume A_natural;
-//	addition_F = addition_function_exists(A)(A_natural)|F|;
-//	print #sum;
-//}
+prove sum_zero: *A(A in NATURALS -> sum(A, A, ZERO)){
+	given |A|;
+	assume A_natural;
+	prove sum_A: *F(addition_function(F, A) -> related(ZERO, A, F)){
+		given |F|;
+		assume addition_F;
+		return expand(addition_F);
+	}
+	return #sum(A, A, ZERO)(A_natural, zero_natural, sum_A);
+}
+
+//The recursive rule for sum
+prove sum_recursion: *A*B*C*D*E(successor(C, B) & sum(D, A, B) & sum(E, A, C) -> successor(E, D)){
+	given |A, B, C, D, E|;
+	assume successor_C, sum_D, sum_E;
+	A_natural, B_natural, sum_D = expand(sum_D);
+	A_natural, C_natural, sum_E = expand(sum_E);
+	addition_F = addition_function_exists(A)(A_natural)|F|;
+	B_related_D_F = sum_D(F)(addition_F);
+	C_related_E_F = sum_E(F)(addition_F);
+	function_F, domain_F, codomain_F, zero_F, recursion_F = expand(addition_F);
+	return recursion_F(B, D, C, E)(successor_C, B_related_D_F, C_related_E_F);
+}
+
