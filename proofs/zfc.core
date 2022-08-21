@@ -461,7 +461,7 @@ prove union_unique: *A*B*C(union(A, C) & union(B, C) -> A = B){
 	return definition_uniqueness_lemma[<X: ^D(D in C & X in D)>](A, B)(expand(union_A), expand(union_B));
 }
 
-//Finally, we shall construct the successor setA
+//Finally, we shall construct the successor set A
 prove successor: *A^B(successor(B, A)){
 	given |A|;
 	S_def = pair(A, A)|S|;

@@ -438,3 +438,130 @@ prove sum_recursion: *A*B*C*D*E(successor(C, B) & sum(D, A, B) & sum(E, A, C) ->
 	return recursion_F(B, D, C, E)(successor_C, B_related_D_F, C_related_E_F);
 }
 
+//The sum of two naturals is natural
+prove sum_natural: *A*B*C(sum(A, B, C) -> A in NATURALS){
+	given |A, B, C|;
+	assume sum_A;
+	B_natural, C_natural, sum_A = expand(sum_A);
+	addition_F = addition_function_exists(B)(B_natural)|F|;
+	C_related_A_F = sum_A(F)(addition_F);
+	function_F, domain_F, codomain_F, zero_F, recursion_F = expand(addition_F);
+	return expand(codomain_F)(C, A)(C_related_A_F);
+}
+
+//These two rules uniquely determine addition. They are often used as a definition.
+
+//Now I must prove that addition is commutative. I can do this by proving the symmetric versions of the defining identities.
+
+//Symmetric version of the sum_zero identity
+prove sum_zero2: *A(A in NATURALS -> sum(A, ZERO, A)){
+	base_step = sum_zero(ZERO)(zero_natural);
+	prove inductive_step: *Y*Z(sum(Y, ZERO, Y) & successor(Z, Y) -> sum(Z, ZERO, Z)){
+		given |Y, Z|;
+		assume sum_Y, successor_Z;
+		zero_natural, Y_natural, sum_Y = expand(sum_Y);
+		Z_natural = successor_natural(Y, Z)(Y_natural, successor_Z);
+		prove sum_Z: *F(addition_function(F, ZERO) -> related(Z, Z, F)){
+			given |F|;
+			assume addition_F;
+			Y_related_Y_F = sum_Y(F)(addition_F);
+			function_F, domain_F, codomain_F, zero_F, recursion_F = expand(addition_F);
+			Z_related_Z2_F = expand(domain_F)(Z)(Z_natural)|Z2|;
+			successor_Z2 = recursion_F(Y, Y, Z, Z2)(successor_Z, Y_related_Y_F, Z_related_Z2_F);
+			Z_eq_Z2 = successor_unique(Z, Z2, Y)(successor_Z, successor_Z2);
+			return replace[<Q: related(Z, Q, F)>](Z, Z2)(Z_eq_Z2)(Z_related_Z2_F);
+		}
+		return #sum(Z, ZERO, Z)(zero_natural, Z_natural, sum_Z);
+	}
+	return induction[<Q: sum(Q, ZERO, Q)>](base_step, inductive_step);
+}
+
+//Symmetric version of the sum_recursion identity
+prove sum_recursion2: *A*B*C*D*E(successor(B, A) & sum(D, A, C) & sum(E, B, C) -> successor(E, D)){
+	define R(C): *A*B*D*E(successor(B, A) & sum(D, A, C) & sum(E, B, C) -> successor(E, D));
+	prove base_case: *A*B*D*E(successor(B, A) & sum(D, A, ZERO) & sum(E, B, ZERO) -> successor(E, D)){
+		given |A, B, D, E|;
+		assume successor_B, sum_D, sum_E;
+		A_natural, zero_natural, sum_D_def = expand(sum_D);
+		B_natural, zero_natural, sum_E_def = expand(sum_E);
+		sum_A = sum_zero(A)(A_natural);
+		sum_B = sum_zero(B)(B_natural);
+		A_eq_D = sum_unique(A, ZERO, A, D)(sum_A, sum_D);
+		B_eq_E = sum_unique(B, ZERO, B, E)(sum_B, sum_E);
+		result = replace[<Q: successor(Q, A)>](B, E)(B_eq_E)(successor_B);
+		return replace[<Q: successor(E, Q)>](A, D)(A_eq_D)(result);
+	}
+	base_case = #R(ZERO)(base_case);
+
+	prove inductive_step: *Y*Z(R(Y) & successor(Z, Y) -> R(Z)){
+		given |Y, Z|;
+		assume R_Y, successor_Z;
+		R_Y = expand(R_Y);
+		prove R_Z: *A*B*D*E(successor(B, A) & sum(D, A, Z) & sum(E, B, Z) -> successor(E, D)){
+			given |A, B, D, E|;
+			assume successor_B, sum_D, sum_E;
+			A_natural, Z_natural, sum_D_def = expand(sum_D);
+			B_natural, Z_natural, sum_E_def = expand(sum_E);
+			Y_natural = predecessor_natural(Y, Z)(Z_natural, successor_Z);
+			sum_DP = sum(A, Y)(A_natural, Y_natural)|DP|;
+			successor_D = sum_recursion(A, Y, Z, DP, D)(successor_Z, sum_DP, sum_D);
+			sum_EP = sum(B, Y)(B_natural, Y_natural)|EP|;
+			successor_E = sum_recursion(B, Y, Z, EP, E)(successor_Z, sum_EP, sum_E);
+			successor_EP = R_Y(A, B, DP, EP)(successor_B, sum_DP, sum_EP);
+			EP_eq_D = successor_unique(EP, D, DP)(successor_EP, successor_D);
+			return replace[<Q: successor(E, Q)>](EP, D)(EP_eq_D)(successor_E);
+		}
+		return #R(Z)(R_Z);
+	}
+
+	result = induction[<N: R(N)>](base_case, inductive_step);
+	given |A, B, C, D, E|;
+	assume successor_B, sum_D, sum_E;
+	A_natural, C_natural, sum_D_def = expand(sum_D);
+	R_C = result(C)(C_natural);
+	return expand(R_C)(A, B, D, E)(successor_B, sum_D, sum_E);
+}
+
+//Finally proving that addition commutes
+prove sum_commutes: *A*B*C(sum(A, B, C) -> sum(A, C, B)){
+	define R(C): *A*B(sum(A, B, C) -> sum(A, C, B));
+
+	prove base_case: *A*B(sum(A, B, ZERO) -> sum(A, ZERO, B)){
+		given |A, B|;
+		assume sum_A;
+		B_natural, zero_natural, sum_A_def = expand(sum_A);
+		sum_B = sum_zero(B)(B_natural);
+		A_eq_B = sum_unique(B, ZERO, A, B)(sum_A, sum_B);
+		sum_B = sum_zero2(B)(B_natural);
+		return replace[<Q: sum(Q, ZERO, B)>](A, B)(A_eq_B)(sum_B);
+	}
+	base_case = #R(ZERO)(base_case);
+
+	prove inductive_step: *Y*Z(R(Y) & successor(Z, Y) -> R(Z)){
+		given |Y, Z|;
+		assume R_Y, successor_Z;
+		R_Y = expand(R_Y);
+		prove R_Z: *A*B(sum(A, B, Z) -> sum(A, Z, B)){
+			given |A, B|;
+			assume sum_A;
+			B_natural, Z_natural, sum_A_def = expand(sum_A);
+			Y_natural = predecessor_natural(Y, Z)(Z_natural, successor_Z);
+			sum_AP = sum(B, Y)(B_natural, Y_natural)|AP|;
+			successor_A = sum_recursion(B, Y, Z, AP, A)(successor_Z, sum_AP, sum_A);
+			sum_AP = R_Y(AP, B)(sum_AP);
+			sum_A2 = sum(Z, B)(Z_natural, B_natural)|A2|;
+			successor_A2 = sum_recursion2(Y, Z, B, AP, A2)(successor_Z, sum_AP, sum_A2);
+			A2_eq_A = successor_unique(A2, A, AP)(successor_A2, successor_A);
+			return replace[<Q: sum(Q, Z, B)>](A2, A)(A2_eq_A)(sum_A2);
+		}
+		return #R(Z)(R_Z);
+	}
+
+	result = induction[<N: R(N)>](base_case, inductive_step);
+	given |A, B, C|;
+	assume sum_A;
+	B_natural, C_natural, sum_A_def = expand(sum_A);
+	R_C = result(C)(C_natural);
+	return expand(R_C)(A, B)(sum_A);
+}
+
