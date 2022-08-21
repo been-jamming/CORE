@@ -565,3 +565,66 @@ prove sum_commutes: *A*B*C(sum(A, B, C) -> sum(A, C, B)){
 	return expand(R_C)(A, B)(sum_A);
 }
 
+//Now that we have defined addition, we can define <
+//Normally when the naturals are defined using the von Neumann ordinal,
+//A < B can be defined to mean that A in B.
+//However, this definition works much more generally
+
+relation A < B: A in NATURALS & B in NATURALS & *C(~sum(A, B, C));
+
+//If A < B, then A < B + 1
+prove lt_successor: *A*B*C(A < B & successor(C, B) -> A < C){
+	given |A, B, C|;
+	assume A_lt_B, successor_C;
+	A_natural, B_natural, A_lt_B_def = expand(A_lt_B);
+	C_natural = successor_natural(B, C)(B_natural, successor_C);
+	prove A_lt_C: *D(~sum(A, C, D)){
+		given |D|;
+		not sum_A;
+		C_natural, D_natural, sum_A_def = expand(sum_A);
+		successor_E = successor(D)|E|;
+		E_natural = successor_natural(D, E)(D_natural, successor_E);
+		sum_AP = sum(B, D)(B_natural, D_natural)|AP|;
+		successor_A = sum_recursion2(B, C, D, AP, A)(successor_C, sum_AP, sum_A);
+		sum_A2 = sum(B, E)(B_natural, E_natural)|A2|;
+		successor_A2 = sum_recursion(B, D, E, AP, A2)(successor_E, sum_AP, sum_A2);
+		A_eq_A2 = successor_unique(A, A2, AP)(successor_A, successor_A2);
+		sum_A = replace[<Q: sum(Q, B, E)>](A, A2)(A_eq_A2)(sum_A2);
+		return A_lt_B_def(E)(sum_A);
+	}
+	return #<(A, C)(A_natural, C_natural, A_lt_C);
+}
+
+//ZERO is a minimal natural number
+prove zero_minimal: *N(N in NATURALS -> N = ZERO | ZERO < N){
+	define R(N): N = ZERO | ZERO < N;
+
+	base_case = #R(ZERO)(equal_reflexive(ZERO));
+	prove inductive_step: *Y*Z(R(Y) & successor(Z, Y) -> R(Z)){
+		given |Y, Z|;
+		assume R_Y, successor_Z;
+		zero_lt_Z = branch(expand(R_Y), Y_eq_ZERO, ZERO_lt_Y){
+			successor_Z = replace[<Q: successor(Z, Q)>](Y, ZERO)(Y_eq_ZERO)(successor_Z);
+			Z_natural = successor_natural(ZERO, Z)(zero_natural, successor_Z);
+			prove zero_lt_Z: *C(~sum(ZERO, Z, C)){
+				given |C|;
+				not sum_ZERO;
+				Z_natural, C_natural, sum_ZERO_def = expand(sum_ZERO);
+				successor_D = successor(C)|D|;
+				sum_C = sum_zero2(C)(C_natural);
+				successor_ZERO = sum_recursion2(ZERO, Z, C, C, ZERO)(successor_Z, sum_C, sum_ZERO);
+				return zero_not_successor(C)(successor_ZERO);
+			}
+			return #<(ZERO, Z)(zero_natural, Z_natural, zero_lt_Z);
+		} or {
+			return lt_successor(ZERO, Y, Z)(ZERO_lt_Y, successor_Z);
+		};
+		return #R(Z)(zero_lt_Z);
+	}
+
+	result = induction[<N: R(N)>](base_case, inductive_step);
+	given |N|;
+	assume N_natural;
+	return expand(result(N)(N_natural));
+}
+
