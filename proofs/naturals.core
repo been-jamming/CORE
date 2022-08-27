@@ -565,6 +565,72 @@ prove sum_commutes: *A*B*C(sum(A, B, C) -> sum(A, C, B)){
 	return expand(R_C)(A, B)(sum_A);
 }
 
+//If C is the sum of A and B, then A and B are natural numbers
+prove sum_operand_natural: *A*B*C(sum(C, A, B) -> A in NATURALS & B in NATURALS){
+	given |A, B, C|;
+	assume sum_C;
+	return expand(sum_C);
+}
+
+//If the sum of A and ZERO is B, then A = B
+prove sum_zero_identity: *A*B(sum(B, A, ZERO) | sum(B, ZERO, A) -> A = B){
+	given |A, B|;
+	assume either;
+	sum_B = branch(either, sum_B, sum_B){
+		return sum_B;
+	} or {
+		return sum_commutes(B, ZERO, A)(sum_B);
+	};
+	A_natural, zero_natural = sum_operand_natural(A, ZERO, B)(sum_B);
+	sum_A = sum_zero(A)(A_natural);
+	return sum_unique(A, ZERO, A, B)(sum_A, sum_B);
+}
+
+//Addition is also associative
+prove sum_associates: *A*B*C*D*E*F(sum(D, A, B) & sum(F, D, C) & sum(E, B, C) -> sum(F, A, E)){
+	define R(C): *A*B*D*E*F(sum(D, A, B) & sum(F, D, C) & sum(E, B, C) -> sum(F, A, E));
+
+	prove base_case: *A*B*D*E*F(sum(D, A, B) & sum(F, D, ZERO) & sum(E, B, ZERO) -> sum(F, A, E)){
+		given |A, B, D, E, F|;
+		assume sum_D, sum_F, sum_E;
+		D_eq_F = sum_zero_identity(D, F)(sum_F);
+		B_eq_E = sum_zero_identity(B, E)(sum_E);
+		result = replace[<Q: sum(D, A, Q)>](B, E)(B_eq_E)(sum_D);
+		return replace[<Q: sum(Q, A, E)>](D, F)(D_eq_F)(result);
+	}
+	base_case = #R(ZERO)(base_case);
+
+	prove inductive_step: *Y*Z(R(Y) & successor(Z, Y) -> R(Z)){
+		given |Y, Z|;
+		assume R_Y, successor_Z;
+		R_Y = expand(R_Y);
+		prove R_Z: *A*B*D*E*F(sum(D, A, B) & sum(F, D, Z) & sum(E, B, Z) -> sum(F, A, E)){
+			given |A, B, D, E, F|;
+			assume sum_D, sum_F, sum_E;
+			A_natural, B_natural = sum_operand_natural(A, B, D)(sum_D);
+			D_natural, Z_natural = sum_operand_natural(D, Z, F)(sum_F);
+			Y_natural = predecessor_natural(Y, Z)(Z_natural, successor_Z);
+			E_natural = sum_natural(E, B, Z)(sum_E);
+			sum_FP = sum(D, Y)(D_natural, Y_natural)|FP|;
+			sum_EP = sum(B, Y)(B_natural, Y_natural)|EP|;
+			sum_FP2 = R_Y(A, B, D, EP, FP)(sum_D, sum_FP, sum_EP);
+			successor_F = sum_recursion(D, Y, Z, FP, F)(successor_Z, sum_FP, sum_F);
+			successor_E = sum_recursion(B, Y, Z, EP, E)(successor_Z, sum_EP, sum_E);
+			sum_F2 = sum(A, E)(A_natural, E_natural)|F2|;
+			successor_F2 = sum_recursion(A, EP, E, FP, F2)(successor_E, sum_FP2, sum_F2);
+			F_eq_F2 = successor_unique(F, F2, FP)(successor_F, successor_F2);
+			return replace[<Q: sum(Q, A, E)>](F, F2)(F_eq_F2)(sum_F2);
+		}
+		return #R(Z)(R_Z);
+	}
+
+	result = induction[<N: R(N)>](base_case, inductive_step);
+	given |A, B, C, D, E, F|;
+	assume sum_D, sum_F, sum_E;
+	D_natural, C_natural = sum_operand_natural(D, C, F)(sum_F);
+	return expand(result(C)(C_natural))(A, B, D, E, F)(sum_D, sum_F, sum_E);
+}
+
 //Now that we have defined addition, we can define <
 //Normally when the naturals are defined using the von Neumann ordinal,
 //A < B can be defined to mean that A in B.
@@ -628,3 +694,19 @@ prove zero_minimal: *N(N in NATURALS -> N = ZERO | ZERO < N){
 	return expand(result(N)(N_natural));
 }
 
+//less than is transitive: If A < B and B < C, then A < C
+//prove lt_transitive: *A*B*C(A < B & B < C -> A < C){
+//	given |A, B, C|;
+//	assume A_lt_B, B_lt_C;
+//	A_natural, B_natural, A_lt_B = expand(A_lt_B);
+//	B_natural, C_natural, B_lt_C = expand(B_lt_C);
+//
+//	prove A_lt_C: *D(~sum(C, D, A)){
+//		given |D|;
+//		not sum_C;
+//		print sum_C;
+//		print A_lt_B;
+//		print B_lt_C;
+//	}
+//}
+//

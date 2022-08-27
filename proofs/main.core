@@ -4,4 +4,3 @@ import "relations.core";
 import "zfc_ordinals.core";
 import "zfc_naturals.core";
 
-print ordinals.induction;
