@@ -104,7 +104,7 @@ prove well_order[P(1)]: ^X(ordinal(X) & P(X)) -> ^X(ordinal(X) & P(X) & *Y(Y < X
 			prove least: *Y(Y < X -> ~P(Y)){
 				given |Y|;
 				assume Y_lt_X;
-				not P_Y;
+				assume P_Y;
 				//Applying transitivity of E
 				Y_lt_E = expand(transitive_E)(X, Y)(X_lt_E, Y_lt_X);
 				Y_in_E = expand(Y_lt_E);
@@ -123,7 +123,7 @@ prove well_order[P(1)]: ^X(ordinal(X) & P(X)) -> ^X(ordinal(X) & P(X) & *Y(Y < X
 			prove least: *Y(Y < E -> ~P(Y)){
 				given |Y|;
 				assume Y_lt_E;
-				not P_Y;
+				assume P_Y;
 				//Otherwise any other least element would be a member of F.
 				Y_in_E = expand(Y_lt_E);
 				Y_in_F = F_def(Y)(Y_in_E, P_Y);

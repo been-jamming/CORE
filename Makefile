@@ -1,4 +1,4 @@
-CC = gcc
+CC = cc
 DEL = rm -r
 DIR = mkdir -p
 FLAGS = -Wall -pedantic -DUSE_CUSTOM_ALLOC -g

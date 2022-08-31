@@ -1149,7 +1149,7 @@ expr_value *assume_command(char **c){
 		error(ERROR_IDENTIFIER_EXPECTED);
 	}
 
-	if(global_context->goal->type != IMPLIES){
+	if(global_context->goal->type != IMPLIES && global_context->goal->type != NOT){
 		error(ERROR_GOAL_TYPE);
 	}
 
@@ -1190,9 +1190,13 @@ expr_value *assume_command(char **c){
 	++*c;
 	skip_whitespace(c);
 
-	next_goal = malloc(sizeof(sentence));
-	copy_sentence(next_goal, global_context->parent->goal->child1);
-	next_goal->parent = NULL;
+	if(global_context->parent->goal->type == IMPLIES){
+		next_goal = malloc(sizeof(sentence));
+		copy_sentence(next_goal, global_context->parent->goal->child1);
+		next_goal->parent = NULL;
+	} else if(global_context->parent->goal->type == NOT){
+		next_goal = create_sentence(FALSE, 0, 0);
+	}
 	create_sentence_variable("goal", next_goal, 0, global_context);
 	global_context->goal = malloc(sizeof(sentence));
 	copy_sentence(global_context->goal, next_goal);

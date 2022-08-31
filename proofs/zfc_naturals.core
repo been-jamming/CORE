@@ -70,7 +70,7 @@ context naturals{
 	//ZERO is not the successor of any natural number
 	prove zero_not_successor: *X(~successor(ZERO, X)){
 		given |X|;
-		not successor_zero;
+		assume successor_zero;
 		X_in_zero = expand(successor_zero)(X)(equal_reflexive(X));
 		X_in_empty = replace[<Q: X in Q>](EMPTY, ZERO)(zero_def)(X_in_zero);
 		return empty_def(X)(X_in_empty);

@@ -56,7 +56,7 @@ prove predecessor_natural: *N*M(M in NATURALS & successor(M, N) -> N in NATURALS
 	given |N, M|;
 	assume M_natural, successor_M;
 	prove M_not_zero: ~M = ZERO{
-		not M_eq_ZERO;
+		assume M_eq_ZERO;
 		successor_zero = replace[<Q: successor(Q, N)>](M, ZERO)(M_eq_ZERO)(successor_M);
 		return zero_not_successor(N)(successor_zero);
 	}
@@ -646,7 +646,7 @@ prove lt_successor: *A*B*C(A < B & successor(C, B) -> A < C){
 	C_natural = successor_natural(B, C)(B_natural, successor_C);
 	prove A_lt_C: *D(~sum(A, C, D)){
 		given |D|;
-		not sum_A;
+		assume sum_A;
 		C_natural, D_natural, sum_A_def = expand(sum_A);
 		successor_E = successor(D)|E|;
 		E_natural = successor_natural(D, E)(D_natural, successor_E);
@@ -674,7 +674,7 @@ prove zero_minimal: *N(N in NATURALS -> N = ZERO | ZERO < N){
 			Z_natural = successor_natural(ZERO, Z)(zero_natural, successor_Z);
 			prove zero_lt_Z: *C(~sum(ZERO, Z, C)){
 				given |C|;
-				not sum_ZERO;
+				assume sum_ZERO;
 				Z_natural, C_natural, sum_ZERO_def = expand(sum_ZERO);
 				successor_D = successor(C)|D|;
 				sum_C = sum_zero2(C)(C_natural);
