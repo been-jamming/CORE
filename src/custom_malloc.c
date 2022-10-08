@@ -95,6 +95,10 @@ void *custom_malloc(size_t size){
 	cmalloc_node *current_node;
 	cmalloc_node *parent_node;
 
+	if(size == 0){
+		return NULL;
+	}
+
 	output = malloc(size);
 	if(!output){
 #ifdef CMALLOC_PRINT_ERRORS
@@ -191,6 +195,11 @@ void *custom_realloc(void *pointer, size_t size){
 	uintptr_t ptr_num;
 	size_t size_before;
 	cmalloc_node *parent_node;
+
+	if(size == 0){
+		custom_free(pointer);
+		return NULL;
+	}
 
 	ptr_num = (uintptr_t) pointer;
 	parent_node = seek_parent(&ptr_num);
