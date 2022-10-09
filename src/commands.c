@@ -966,18 +966,19 @@ expr_value *given_command(char **c){
 		if(**c != '|' && **c != ','){
 			error(ERROR_PIPE_OR_COMMA);
 		}
-		if(next_goal){
+		if(!next_goal){
+			next_goal = malloc(sizeof(sentence));
+			copy_sentence(next_goal, global_context->parent->goal);
+			next_goal->parent = NULL;
+		}
+		new_var = create_object_variable(name_buffer, global_context);
+		substitute_variable(next_goal->child0, new_var);
+		if(next_goal->child0->num_bound_vars == 0){
 			temp_goal = next_goal->child0;
 			free(next_goal);
 			next_goal = temp_goal;
 			next_goal->parent = NULL;
-		} else {
-			next_goal = malloc(sizeof(sentence));
-			copy_sentence(next_goal, global_context->parent->goal->child0);
-			next_goal->parent = NULL;
 		}
-		new_var = create_object_variable(name_buffer, global_context);
-		substitute_variable(next_goal, new_var);
 	} while(**c == ',');
 
 	++*c;
@@ -1072,16 +1073,18 @@ expr_value *choose_command(char **c){
 		if(**c != '{' &&  **c != ';' && **c != ','){
 			error(ERROR_BRACE_OR_SEMICOLON_OR_COMMA);
 		}
-		if(next_goal){
+		if(!next_goal){
+			next_goal = malloc(sizeof(sentence));
+			copy_sentence(next_goal, global_context->parent->goal);
+			next_goal->parent = NULL;
+		}
+		substitute_variable(next_goal->child0, var);
+		if(next_goal->child0->num_bound_vars == 0){
 			temp_goal = next_goal->child0;
 			free(next_goal);
 			next_goal = temp_goal;
-		} else {
-			next_goal = malloc(sizeof(sentence));
-			copy_sentence(next_goal, global_context->parent->goal->child0);
 			next_goal->parent = NULL;
 		}
-		substitute_variable(next_goal, var);
 	} while(**c == ',');
 
 	explicit_scope = (**c == '{');

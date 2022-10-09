@@ -16,6 +16,7 @@ void clear_bound_variables(void){
 	free_dictionary(&global_bound_variables, free);
 }
 
+//Clear the global bound propositions
 void clear_bound_propositions(void){
 	free_dictionary(&global_bound_propositions, free);
 }
@@ -249,8 +250,8 @@ expr_value *definition_to_value(definition *def){
 	sentence_data->child0 = malloc(sizeof(sentence));
 	copy_sentence(sentence_data->child0, def->sentence_data);
 	sentence_data->child0->parent = sentence_data;
-	for(i = def->sentence_data->num_bound_vars - 1; i >= 0; i--){
-		new = create_sentence(FORALL, i, 0);
+	if(def->sentence_data->num_bound_vars >= 1){
+		new = create_sentence(FORALL, 0, 0);
 		new->child0 = sentence_data;
 		new->child0->parent = new;
 		sentence_data = new;
@@ -285,10 +286,6 @@ expr_value *relation_to_value(relation *rel){
 	sentence_data->child0 = malloc(sizeof(sentence));
 	copy_sentence(sentence_data->child0, rel->sentence_data);
 	sentence_data->child0->parent = sentence_data;
-	new = create_sentence(FORALL, 1, 0);
-	new->child0 = sentence_data;
-	new->child0->parent = new;
-	sentence_data = new;
 	new = create_sentence(FORALL, 0, 0);
 	new->child0 = sentence_data;
 	new->child0->parent = new;
@@ -1394,8 +1391,8 @@ expr_value *parse_substitute(char **c){
 	premise->child0->parent = premise;
 	premise->child1->parent = premise;
 
-	for(i = num_args - 1; i >= 0; i--){
-		next_premise = create_sentence(FORALL, i, 2);
+	if(num_args > 0){
+		next_premise = create_sentence(FORALL, 0, 2);
 		next_premise->child0 = premise;
 		next_premise->child0->parent = next_premise;
 		premise = next_premise;
@@ -1529,11 +1526,7 @@ expr_value *parse_expr_value_pipe(char **c, expr_value *input){
 		}
 		skip_whitespace(c);
 		var = create_object_variable(var_name, global_context);
-		next_input_sentence = input_sentence->child0;
-		free(input_sentence);
-		input_sentence = next_input_sentence;
-		input_sentence->parent = NULL;
-		substitute_variable(input_sentence, var);
+		substitute_variable(input_sentence->child0, var);
 		if(**c != '|' && **c != ','){
 			error(ERROR_PIPE_OR_COMMA);
 		}
@@ -1544,6 +1537,14 @@ expr_value *parse_expr_value_pipe(char **c, expr_value *input){
 				error(ERROR_IDENTIFIER_EXPECTED);
 			}
 		}
+	}
+
+	//If all variables are quantified, remove quantifier
+	if(input_sentence->child0->num_bound_vars == 0){
+		next_input_sentence = input_sentence->child0;
+		free(input_sentence);
+		input_sentence = next_input_sentence;
+		input_sentence->parent = NULL;
 	}
 
 	++*c;
@@ -1629,11 +1630,7 @@ expr_value *parse_expr_value_parentheses(char **c, expr_value *input){
 			}
 			var = arg->var;
 			free_expr_value(arg);
-			next_input_sentence = input_sentence->child0;
-			free(input_sentence);
-			input_sentence = next_input_sentence;
-			input_sentence->parent = NULL;
-			substitute_variable(input_sentence, var);
+			substitute_variable(input_sentence->child0, var);
 			if(**c != ')' && **c != ','){
 				error(ERROR_PARENTHESES_OR_COMMA);
 			}
@@ -1645,6 +1642,15 @@ expr_value *parse_expr_value_parentheses(char **c, expr_value *input){
 				}
 			}
 		}
+
+		//If all variables are quantified, remove quantifier
+		if(input_sentence->child0->num_bound_vars == 0){
+			next_input_sentence = input_sentence->child0;
+			free(input_sentence);
+			input_sentence = next_input_sentence;
+			input_sentence->parent = NULL;
+		}
+
 		++*c;
 		skip_whitespace(c);
 	} else {

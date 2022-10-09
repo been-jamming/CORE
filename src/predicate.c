@@ -191,6 +191,7 @@ void error(int error_code){
 	exit(error_code);
 }
 
+//Print a custom error message
 void custom_error(int error_code, char *error_message, unsigned char print_file_name){
 	fprintf(stderr, "\033[31;1mError\033[-;1m: %s\033[0m\n", error_message);
 	if(print_file_name){
@@ -664,6 +665,7 @@ sentence *parse_all(char **c, int num_bound_vars, int num_bound_props){
 	char *beginning;
 	int new_int;
 	int *old_int;
+	sentence *child;
 
 	skip_whitespace(c);
 	beginning = *c;
@@ -687,9 +689,15 @@ sentence *parse_all(char **c, int num_bound_vars, int num_bound_props){
 	new_int = num_bound_vars;
 	write_dictionary(&global_bound_variables, var_name, &new_int, 0);
 
-	output = create_sentence(FORALL, num_bound_vars, num_bound_props);
-	output->child0 = parse_sentence_value(c, num_bound_vars + 1, num_bound_props);
-	output->child0->parent = output;
+	child = parse_sentence_value(c, num_bound_vars + 1, num_bound_props);
+	if(child->type == FORALL){
+		output = child;
+		output->num_bound_vars = num_bound_vars;
+	} else {
+		output = create_sentence(FORALL, num_bound_vars, num_bound_props);
+		output->child0 = child;
+		output->child0->parent = output;
+	}
 
 	write_dictionary(&global_bound_variables, var_name, old_int, 0);
 
@@ -703,6 +711,7 @@ sentence *parse_exists(char **c, int num_bound_vars, int num_bound_props){
 	char *beginning;
 	int *old_int;
 	int new_int;
+	sentence *child;
 
 	skip_whitespace(c);
 	beginning = *c;
@@ -725,9 +734,15 @@ sentence *parse_exists(char **c, int num_bound_vars, int num_bound_props){
 	new_int = num_bound_vars;
 	write_dictionary(&global_bound_variables, var_name, &new_int, 0);
 
-	output = create_sentence(EXISTS, num_bound_vars, num_bound_props);
-	output->child0 = parse_sentence_value(c, num_bound_vars + 1, num_bound_props);
-	output->child0->parent = output;
+	child = parse_sentence_value(c, num_bound_vars + 1, num_bound_props);
+	if(child->type == EXISTS){
+		output = child;
+		output->num_bound_vars = num_bound_vars;
+	} else {
+		output = create_sentence(EXISTS, num_bound_vars, num_bound_props);
+		output->child0 = child;
+		output->child0->parent = output;
+	}
 
 	write_dictionary(&global_bound_variables, var_name, old_int, 0);
 
@@ -1020,7 +1035,9 @@ static void print_sentence_recursive(int precedence, sentence *s){
 			print_sentence_recursive(4, s->child0);
 			break;
 		case FORALL:
-			printf("*%d", s->num_bound_vars);
+			for(i = s->num_bound_vars; i < s->child0->num_bound_vars; i++){
+				printf("*%d", i);
+			}
 			if(s->child0->type == NOT || s->child0->type == FALSE || s->child0->type == TRUE || s->child0->type == RELATION || s->child0->type == PROPOSITION){
 				printf("(");
 			}
@@ -1030,7 +1047,9 @@ static void print_sentence_recursive(int precedence, sentence *s){
 			}
 			break;
 		case EXISTS:
-			printf("^%d", s->num_bound_vars);
+			for(i = s->num_bound_vars; i < s->child0->num_bound_vars; i++){
+				printf("^%d", i);
+			}
 			if(s->child0->type == NOT || s->child0->type == FALSE || s->child0->type == TRUE || s->child0->type == RELATION || s->child0->type == PROPOSITION){
 				printf("(");
 			}
