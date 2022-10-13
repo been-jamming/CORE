@@ -3,6 +3,7 @@
 #include <string.h>
 #include "dictionary.h"
 #include "predicate.h"
+#include "compare.h"
 #include "expression.h"
 #include "custom_malloc.h"
 

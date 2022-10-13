@@ -3,7 +3,9 @@
 #include <stdint.h>
 #include <string.h>
 
-#define CMALLOC_PRINT_ERRORS
+#ifndef CMALLOC_PRINT_ERRORS
+#define CMALLOC_PRINT_ERRORS 1
+#endif
 
 typedef struct cmalloc_node cmalloc_node;
 static size_t total_allocated;
@@ -24,7 +26,7 @@ static cmalloc_node *seek_parent(uintptr_t *ptr_num){
 	cmalloc_node *parent_node;
 
 	if(!global_node){
-#ifdef CMALLOC_PRINT_ERRORS
+#if CMALLOC_PRINT_ERRORS
 		fprintf(stderr, "cmalloc error: cmalloc must be initialized\n");
 #endif
 		return NULL;
@@ -61,7 +63,7 @@ void custom_register(void *pointer, size_t size){
 
 	parent_node = seek_parent(&ptr_num);
 	if(!parent_node){
-#ifdef CMALLOC_PRINT_ERRORS
+#if CMALLOC_PRINT_ERRORS
 		fprintf(stderr, "cmalloc error: failed to register pointer (%p)\n", pointer);
 #endif
 		return;
@@ -69,7 +71,7 @@ void custom_register(void *pointer, size_t size){
 
 	current_node = malloc(sizeof(cmalloc_node));
 	if(!current_node){
-#ifdef CMALLOC_PRINT_ERRORS
+#if CMALLOC_PRINT_ERRORS
 		fprintf(stderr, "cmalloc error: malloc returned NULL\n");
 #endif
 		return;
@@ -101,7 +103,7 @@ void *custom_malloc(size_t size){
 
 	output = malloc(size);
 	if(!output){
-#ifdef CMALLOC_PRINT_ERRORS
+#if CMALLOC_PRINT_ERRORS
 		fprintf(stderr, "cmalloc error: malloc returned NULL\n");
 #endif
 		return NULL;
@@ -115,7 +117,7 @@ void *custom_malloc(size_t size){
 
 	current_node = malloc(sizeof(cmalloc_node));
 	if(!current_node){
-#ifdef CMALLOC_PRINT_ERRORS
+#if CMALLOC_PRINT_ERRORS
 		fprintf(stderr, "cmalloc error: malloc returned NULL\n");
 #endif
 		return NULL;
@@ -153,7 +155,7 @@ void custom_free(void *pointer){
 	}
 
 	if(parent_node->value != pointer){
-#ifdef CMALLOC_PRINT_ERRORS
+#if CMALLOC_PRINT_ERRORS
 		fprintf(stderr, "cmalloc error: pointer (%p) to free not found\n", pointer);
 #endif
 		return;
@@ -182,7 +184,7 @@ size_t custom_block_size(void *pointer){
 	ptr_num = (uintptr_t) pointer;
 	parent_node = seek_parent(&ptr_num);
 	if(parent_node->value != pointer){
-#ifdef CMALLOC_PRINT_ERRORS
+#if CMALLOC_PRINT_ERRORS
 		fprintf(stderr, "cmalloc error: pointer (%p) to free not found\n", pointer);
 #endif
 		return 0;
@@ -204,7 +206,7 @@ void *custom_realloc(void *pointer, size_t size){
 	ptr_num = (uintptr_t) pointer;
 	parent_node = seek_parent(&ptr_num);
 	if(parent_node->value != pointer){
-#ifdef CMALLOC_PRINT_ERRORS
+#if CMALLOC_PRINT_ERRORS
 		fprintf(stderr, "cmalloc error: pointer (%p) to free not found\n", pointer);
 #endif
 		return NULL;
@@ -236,7 +238,7 @@ static void custom_malloc_abort_node(cmalloc_node *node){
 
 void custom_malloc_abort(){
 	if(!global_node){
-#ifdef CMALLOC_PRINT_ERRORS
+#if CMALLOC_PRINT_ERRORS
 		fprintf(stderr, "cmalloc error: cmalloc must be initialized\n");
 #endif
 		return;
@@ -248,7 +250,7 @@ void custom_malloc_abort(){
 void custom_malloc_init(){
 	global_node = malloc(sizeof(cmalloc_node));
 	if(!global_node){
-#ifdef CMALLOC_PRINT_ERRORS
+#if CMALLOC_PRINT_ERRORS
 		fprintf(stderr, "cmalloc error: cmalloc initialization failed because malloc returned NULL\n");
 #endif
 		return;
@@ -262,12 +264,12 @@ void custom_malloc_init(){
 
 void custom_malloc_deinit(){
 	if(!global_node){
-#ifdef CMALLOC_PRINT_ERRORS
+#if CMALLOC_PRINT_ERRORS
 		fprintf(stderr, "cmalloc error: cmalloc must be initialized\n");
 #endif
 		return;
 	}
-#ifdef CMALLOC_PRINT_ERRORS
+#if CMALLOC_PRINT_ERRORS
 	if(total_allocated){
 		fprintf(stderr, "cmalloc error: deinitialization with %d bytes in use\n", (int) total_allocated);
 	}

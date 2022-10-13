@@ -4,6 +4,7 @@
 #include <string.h>
 #include "dictionary.h"
 #include "predicate.h"
+#include "compare.h"
 #include "expression.h"
 #include "custom_malloc.h"
 
@@ -1105,7 +1106,7 @@ void print_sentence(sentence *s){
 
 //Determines whether one sentence trivially implies another sentence
 //Returns 1 if it can determine that s0 implies s1, and 0 otherwise
-int sentence_stronger(sentence *s0, sentence *s1){
+int sentence_stronger2(sentence *s0, sentence *s1){
 	int i;
 
 	if(s0->num_bound_vars != s1->num_bound_vars || s0->num_bound_props != s1->num_bound_props){
@@ -1215,12 +1216,12 @@ int sentence_stronger(sentence *s0, sentence *s1){
 }
 
 //Determine if two sentences imply each other
-int sentence_equivalent(sentence *s0, sentence *s1){
+int sentence_equivalent2(sentence *s0, sentence *s1){
 	return sentence_stronger(s0, s1) && sentence_stronger(s1, s0);
 }
 
 //Determine if a sentence is trivially true
-int sentence_trivially_true(sentence *s){
+int sentence_trivially_true2(sentence *s){
 	if(s->type == IMPLIES){
 		return sentence_stronger(s->child0, s->child1);
 	} else if(s->type == BICOND){
@@ -1241,7 +1242,7 @@ int sentence_trivially_true(sentence *s){
 }
 
 //Determine if a sentence is trivially false
-int sentence_trivially_false(sentence *s){
+int sentence_trivially_false2(sentence *s){
 	int true0;
 	int true1;
 	int false0;

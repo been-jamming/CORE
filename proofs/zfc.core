@@ -243,6 +243,8 @@ prove pairs: *B^A(pairs(A, B)){
 		given |X|;
 		prove lemma0: X in A -> ^C^D(C in B & D in B & pair(X, C, D)){
 			assume X_in_A;
+			print goal;
+			print A_def(X)(X_in_A);
 			return A_def(X)(X_in_A);
 		}
 		prove lemma1: ^C^D(C in B & D in B & pair(X, C, D)) -> X in A{

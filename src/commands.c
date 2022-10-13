@@ -6,6 +6,7 @@
 #include <libgen.h>
 #include "dictionary.h"
 #include "predicate.h"
+#include "compare.h"
 #include "expression.h"
 #include "imports.h"
 #include "custom_malloc.h"

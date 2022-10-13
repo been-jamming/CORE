@@ -7,6 +7,7 @@
 #include "custom_malloc.h"
 #include "dictionary.h"
 #include "predicate.h"
+#include "compare.h"
 #include "expression.h"
 #include "commands.h"
 #include "imports.h"
@@ -65,6 +66,7 @@ void free_none(void *v){
 void init_verifier(void){
 	static char *pointer = "";
 
+	init_quantifier_map();
 	global_imports = create_dictionary(NULL);
 	global_recursive_include = create_dictionary(NULL);
 	global_program_pointer = &pointer;
