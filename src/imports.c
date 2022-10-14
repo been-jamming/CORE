@@ -74,6 +74,7 @@ void init_verifier(void){
 }
 
 void deinit_verifier(void){
+	deinit_quantifier_map();
 	free_dictionary(&global_imports, free_import_entry_void);
 	free_dictionary(&global_recursive_include, free_none);
 	clear_bound_variables();
@@ -514,6 +515,11 @@ void check_axiom_dependency(variable *var){
 	new_sentence = transfer_sentence(var->sentence_data, NULL);
 	if(!sentence_stronger(check_var->sentence_data, new_sentence)){
 		global_error_arg0 = var->name;
+		printf("sentence 0: ");
+		print_sentence(check_var->sentence_data);
+		printf("\nsentence 1: ");
+		print_sentence(new_sentence);
+		printf("\n");
 		error(ERROR_AXIOM_INCOMPATIBLE);
 	}
 	free_sentence(new_sentence);
