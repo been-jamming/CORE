@@ -18,6 +18,8 @@
 dictionary global_recursive_include;
 //&RECURSIVE_INCLUDE will be stored to prevent recursive includes
 static int RECURSIVE_INCLUDE;
+//Flag is set to one when debug command is called
+int debug_flag = 0;
 
 void new_scope(void){
 	global_context = create_context(global_context);
@@ -697,9 +699,6 @@ void evaluate_command(char **c){
 }
 
 int debug_command(char **c){
-	expr_value *val;
-	expr_value *val2;
-
 	skip_whitespace(c);
 	if(strncmp(*c, "debug", 5) || is_alphanumeric((*c)[5])){
 		return 0;
@@ -707,31 +706,14 @@ int debug_command(char **c){
 	*c += 5;
 	skip_whitespace(c);
 
-	if(global_context->dependent){
-		error(ERROR_DEPENDENT_SCOPE);
-	}
-
-	val = parse_expr_value(c);
-	if(**c != ','){
-		error(ERROR_COMMA);
-	}
-	++*c;
-	skip_whitespace(c);
-	val2 = parse_expr_value(c);
-	if(val->type == SENTENCE && val2->type == SENTENCE){
-		printf("DEBUG: %d\n", sentence_equivalent(val->sentence_data, val2->sentence_data));
-	} else if(val->type == OBJECT && val2->type == OBJECT){
-		printf("DEBUG: %d\n", val->var == val2->var);
-	} else {
-		printf("DEBUG: 0\n");
-	}
-	free_expr_value(val);
-	free_expr_value(val2);
-	skip_whitespace(c);
 	if(**c != ';'){
 		error(ERROR_SEMICOLON);
 	}
 	++*c;
+
+	//Set the debug flag to 1
+	debug_flag = 1;
+
 	return 1;
 }
 

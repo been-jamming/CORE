@@ -74,6 +74,7 @@ prove definition_uniqueness_lemma[P(1)]: *A*B(*X(X in A <-> P(X)) & *X(X in B <-
 	}
 	print goal;
 	print #=(A, B)(equal_def);
+	debug;
 	return #=(A, B)(equal_def);
 }
 
