@@ -54,6 +54,11 @@ static unsigned int max_stack = QUANTIFIER_STACK_DEFAULT;
 static int sentence_stronger_recursive(sentence *s0, sentence *s1, struct map_entry ***source_map, struct map_entry ***dest_map);
 static int sentence_equivalent_recursive(sentence *s0, sentence *s1, struct map_entry ***source_map, struct map_entry ***dest_map);
 
+static int sentence_stronger_exact(sentence *s0, sentence *s1);
+static int sentence_equivalent_exact(sentence *s0, sentence *s1);
+static int sentence_trivially_true_exact(sentence *s0);
+static int sentence_trivially_false_exact(sentence *s1);
+
 extern int debug_flag;
 
 void init_quantifier_map(){
@@ -543,23 +548,178 @@ static int sentence_stronger_recursive(sentence *s0, sentence *s1, struct map_en
 }
 
 int sentence_stronger(sentence *s0, sentence *s1){
-	if(debug_flag){
-		printf("sentence 0: ");
-		print_sentence(s0);
-		printf("\nsentence 1: ");
-		print_sentence(s1);
-		printf("\n");
-	}
 	if(s0->num_bound_vars != s1->num_bound_vars || s0->num_bound_props != s1->num_bound_props){
 		return 0;
 	}
 
 	trivialize_quantifiers(&s0_map, s0->num_bound_vars);
 	trivialize_quantifiers(&s1_map, s1->num_bound_vars);
-	return sentence_stronger_recursive(s0, s1, &s0_map, &s1_map);
+	return sentence_stronger_exact(s0, s1) || sentence_stronger_recursive(s0, s1, &s0_map, &s1_map);
 }
 
 int sentence_equivalent(sentence *s0, sentence *s1){
-	return sentence_stronger(s0, s1) && sentence_stronger(s1, s0);
+	return sentence_equivalent_exact(s0, s1) || (sentence_stronger(s0, s1) && sentence_stronger(s1, s0));
 }
 
+static int sentence_stronger_exact(sentence *s0, sentence *s1){
+	int i;
+
+	if(s0->type == OR){
+		return sentence_stronger_exact(s0->child0, s1) && sentence_stronger_exact(s0->child1, s1);
+	} else if(s1->type == AND){
+		return sentence_stronger_exact(s0, s1->child0) && sentence_stronger_exact(s0, s1->child1);
+	} else if(sentence_trivially_false_exact(s0)){
+		return 1;
+	} else if(sentence_trivially_true_exact(s1)){
+		return 1;
+	} else if(s0->type == NOT && s1->type == NOT){
+		return sentence_stronger_exact(s1->child0, s0->child0);
+	} else if(s1->type == NOT && s1->child0->type == NOT){
+		return sentence_stronger_exact(s0, s1->child0->child0);
+	} else if(s0->type == IMPLIES && s1->type == IMPLIES){
+		return sentence_stronger_exact(s1->child0, s0->child0) && sentence_stronger_exact(s0->child1, s1->child1);
+	} else if(s0->type == FORALL && s1->type == FORALL){
+		return sentence_stronger_exact(s0->child0, s1->child0);
+	} else if(s0->type == EXISTS && s1->type == EXISTS){
+		return sentence_stronger_exact(s0->child0, s1->child0);
+	} else if(s0->type == BICOND && s1->type == BICOND){
+		if(sentence_equivalent_exact(s0->child0, s1->child0) && sentence_equivalent_exact(s0->child1, s1->child1)){
+			return 1;
+		}
+		if(sentence_equivalent_exact(s0->child0, s1->child1) && sentence_equivalent_exact(s0->child1, s1->child0)){
+			return 1;
+		}
+		//Used to also check here if s0->child0 and s0->child1 are equivalent
+		//But since it's an implication, we only care about s1
+		if(sentence_equivalent_exact(s1->child0, s1->child1)){
+			return 1;
+		}
+		return 0;
+	} else if(s1->type == BICOND){
+		return sentence_equivalent_exact(s1->child0, s1->child1);
+	} else if(s0->type == RELATION && s1->type == RELATION){
+		if(s0->relation_data != s1->relation_data){
+			return 0;
+		}
+		if(s0->is_bound0 != s1->is_bound0){
+			return 0;
+		}
+		if(s0->is_bound1 != s1->is_bound1){
+			return 0;
+		}
+		if(s0->is_bound0){
+			if(s0->var0_id != s1->var0_id){
+				return 0;
+			}
+		} else {
+			if(s0->var0 != s1->var0){
+				return 0;
+			}
+		}
+		if(s0->is_bound1){
+			if(s0->var1_id != s1->var1_id){
+				return 0;
+			}
+		} else {
+			if(s0->var1 != s1->var1){
+				return 0;
+			}
+		}
+		return 1;
+	} else if(s0->type == PROPOSITION && s1->type == PROPOSITION){
+		if(s0->is_bound != s1->is_bound){
+			return 0;
+		}
+		if(s0->is_bound){
+			if(s0->definition_id != s1->definition_id){
+				return 0;
+			}
+		} else {
+			if(s0->definition_data != s1->definition_data){
+				return 0;
+			}
+		}
+		if(s0->num_args != s1->num_args){
+			return 0;
+		}
+		for(i = 0; i < s0->num_args; i++){
+			if(s0->proposition_args[i].is_bound != s1->proposition_args[i].is_bound){
+				return 0;
+			}
+			if(s0->proposition_args[i].is_bound){
+				if(s0->proposition_args[i].var_id != s1->proposition_args[i].var_id){
+					return 0;
+				}
+			} else {
+				if(s0->proposition_args[i].var != s1->proposition_args[i].var){
+					return 0;
+				}
+			}
+		}
+		return 1;
+	} else {
+		if(s0->type == AND && (sentence_stronger_exact(s0->child0, s1) || sentence_stronger_exact(s0->child1, s1))){
+			return 1;
+		}
+		if(s1->type == OR && (sentence_stronger_exact(s0, s1->child0) || sentence_stronger_exact(s0, s1->child1))){
+			return 1;
+		}
+		return 0;
+	}
+}
+
+//Determine if two sentences imply each other
+static int sentence_equivalent_exact(sentence *s0, sentence *s1){
+	return sentence_stronger_exact(s0, s1) && sentence_stronger_exact(s1, s0);
+}
+
+//Determine if a sentence is trivially true
+static int sentence_trivially_true_exact(sentence *s){
+	if(s->type == IMPLIES){
+		return sentence_stronger_exact(s->child0, s->child1);
+	} else if(s->type == BICOND){
+		return sentence_equivalent_exact(s->child0, s->child1);
+	} else if(s->type == AND){
+		return sentence_trivially_true_exact(s->child0) && sentence_trivially_true_exact(s->child1);
+	} else if(s->type == OR){
+		return sentence_trivially_true_exact(s->child0) || sentence_trivially_true_exact(s->child1);
+	} else if(s->type == FORALL){
+		return sentence_trivially_true_exact(s->child0);
+	} else if(s->type == NOT){
+		return sentence_trivially_false_exact(s->child0);
+	} else if(s->type == TRUE){
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+//Determine if a sentence is trivially false
+static int sentence_trivially_false_exact(sentence *s){
+	int true0;
+	int true1;
+	int false0;
+	int false1;
+
+	if(s->type == IMPLIES){
+		return sentence_trivially_true_exact(s->child0) && sentence_trivially_false_exact(s->child1);
+	} else if(s->type == BICOND){
+		true0 = sentence_trivially_true_exact(s->child0);
+		false0 = sentence_trivially_false_exact(s->child0);
+		true1 = sentence_trivially_true_exact(s->child1);
+		false1 = sentence_trivially_false_exact(s->child1);
+		return (true0 && false1) || (false0 && true1);
+	} else if(s->type == AND){
+		return sentence_trivially_false_exact(s->child0) || sentence_trivially_false_exact(s->child1);
+	} else if(s->type == OR){
+		return sentence_trivially_false_exact(s->child0) && sentence_trivially_false_exact(s->child1);
+	} else if(s->type == EXISTS || s->type == FORALL){
+		return sentence_trivially_false_exact(s->child0);
+	} else if(s->type == NOT){
+		return sentence_trivially_true_exact(s->child0);
+	} else if(s->type == FALSE){
+		return 1;
+	} else {
+		return 0;
+	}
+}
