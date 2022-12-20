@@ -451,6 +451,15 @@ prove sum_natural: *A*B*C(sum(A, B, C) -> A in NATURALS){
 
 //These two rules uniquely determine addition. They are often used as a definition.
 
+//Proof that 1 + 1 = 2
+prove ONE_plus_ONE_is_TWO: sum(TWO, ONE, ONE){
+	sum_one = sum_zero(ONE)(one_natural);
+	sum_two = sum(ONE, ONE)(one_natural, one_natural)|TWO2|;
+	successor_two = sum_recursion(ONE, ZERO, ONE, ONE, TWO2)(one_def, sum_one, sum_two);
+	two_equal = successor_unique(TWO, TWO2, ONE)(two_def, successor_two);
+	return replace[<Q: sum(Q, ONE, ONE)>](TWO, TWO2)(two_equal)(sum_two);
+}
+
 //Now I must prove that addition is commutative. I can do this by proving the symmetric versions of the defining identities.
 
 //Symmetric version of the sum_zero identity
@@ -694,19 +703,3 @@ prove zero_minimal: *N(N in NATURALS -> N = ZERO | ZERO < N){
 	return expand(result(N)(N_natural));
 }
 
-//less than is transitive: If A < B and B < C, then A < C
-//prove lt_transitive: *A*B*C(A < B & B < C -> A < C){
-//	given |A, B, C|;
-//	assume A_lt_B, B_lt_C;
-//	A_natural, B_natural, A_lt_B = expand(A_lt_B);
-//	B_natural, C_natural, B_lt_C = expand(B_lt_C);
-//
-//	prove A_lt_C: *D(~sum(C, D, A)){
-//		given |D|;
-//		not sum_C;
-//		print sum_C;
-//		print A_lt_B;
-//		print B_lt_C;
-//	}
-//}
-//
