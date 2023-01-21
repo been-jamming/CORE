@@ -66,7 +66,6 @@ void free_none(void *v){
 void init_verifier(void){
 	static char *pointer = "";
 
-	init_quantifier_map();
 	global_imports = create_dictionary(NULL);
 	global_recursive_include = create_dictionary(NULL);
 	global_program_pointer = &pointer;
@@ -74,7 +73,6 @@ void init_verifier(void){
 }
 
 void deinit_verifier(void){
-	deinit_quantifier_map();
 	free_dictionary(&global_imports, free_import_entry_void);
 	free_dictionary(&global_recursive_include, free_none);
 	clear_bound_variables();

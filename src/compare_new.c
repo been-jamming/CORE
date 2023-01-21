@@ -33,7 +33,8 @@ struct map_entry{
 enum seek_status{
 	FAILURE = 0,
 	SUCCESS = 1,
-	FINAL = 2
+	FINAL = 2,
+	CONTINUE = 3
 };
 
 //A linked list which stores a stack of searched subsentences
@@ -46,14 +47,20 @@ struct subsentence_stack{
 	struct subsentence_stack *parent;
 };
 
+int sentence_stronger_recursive(struct subsentence_stack *parent);
+enum seek_status seek_next(struct subsentence_stack *parent);
+
 //Later will have better allocation routines
 struct map_entry *get_map_list(int size){
 	int i;
+	struct map_entry *output;
 
-	output = malloc(sizeof(map_entry)*size);
+	output = malloc(sizeof(struct map_entry)*size);
 	for(i = 0; i < size; i++){
 		output[i].type = RESERVED;
 	}
+
+	return output;
 }
 
 void free_map_list(struct map_entry *map){
@@ -95,7 +102,7 @@ int stronger_double_negation(struct subsentence_stack *parent){
 int stronger_implies(struct subsentence_stack *parent){
 	struct subsentence_stack entry;
 
-	entry = (struct subsentence_stack) {.s0 = parent->s1->child0, .s1 = parent->s0->child0, .parent = parent, .source_map = parent->source_map, .dest_map = parent->dest_map};
+	entry = (struct subsentence_stack) {.s0 = parent->s1->child0, .s1 = parent->s0->child0, .parent = parent, .source_map = parent->dest_map, .dest_map = parent->source_map};
 
 	return sentence_stronger_recursive(&entry);
 }
@@ -203,9 +210,9 @@ int bind_arguments(struct map_entry entry0, struct map_entry entry1, struct map_
 		source_entry = source_map[entry0.var_id];
 		if(source_entry.type == BOUND_VAR){
 			return entry1.type == BOUND_VAR && entry1.var_id == source_entry.var_id;
-		} else if(source_map[entry0.var_id].type == POINTER){
+		} else if(source_entry.type == POINTER){
 			return entry1.type == POINTER && entry1.var == source_entry.var;
-		} else if(source_map[entry0.var_id].type == UNMAPPED){
+		} else if(source_entry.type == UNMAPPED){
 			if(entry1.type == BOUND_VAR && entry1.var_id >= source_entry.range_lower && entry1.var_id <= source_entry.range_upper){
 				source_map[entry0.var_id].type = BOUND_VAR;
 				source_map[entry0.var_id].var_id = entry1.var_id;
@@ -318,70 +325,255 @@ int stronger_proposition(struct subsentence_stack *parent){
 }
 
 int stronger_and_or(struct subsentence_stack *parent){
-	struct subsentence_stack entry0;
-	struct subsentence_stack entry1;
+	struct subsentence_stack entry;
+	struct map_entry *new_source_map;
+	struct map_entry *new_dest_map;
+
+	new_source_map = get_map_list(parent->s0->num_bound_vars);
+	new_dest_map = get_map_list(parent->s1->num_bound_vars);
 
 	if(parent->s0->type == AND){
-		entry0 = (struct subsentence_stack) {.s0 = parent->s0->child0, .s1 = parent->s1, .parent = parent, .source_map = parent->source_map, .dest_map = parent->dest_map};
-		entry1 = (struct subsentence_stack) {.s0 = parent->s0->child1, .s1 = parent->s1, .parent = parent, .source_map = parent->source_map, .dest_map = parent->dest_map};
-		if(sentence_stronger_recursive(&entry0) || sentence_stronger_recursive(&entry1)){
+
+		memcpy(new_source_map, parent->source_map, sizeof(struct map_entry)*parent->s0->num_bound_vars);
+		memcpy(new_dest_map, parent->dest_map, sizeof(struct map_entry)*parent->s1->num_bound_vars);
+
+		entry = (struct subsentence_stack) {.s0 = parent->s0->child0, .s1 = parent->s1, .parent = parent, .source_map = new_source_map, .dest_map = new_dest_map};
+
+		if(sentence_stronger_recursive(&entry)){
+			free_map_list(new_source_map);
+			free_map_list(new_dest_map);
+			return 1;
+		}
+
+		memcpy(new_source_map, parent->source_map, sizeof(struct map_entry)*parent->s0->num_bound_vars);
+		memcpy(new_dest_map, parent->dest_map, sizeof(struct map_entry)*parent->s1->num_bound_vars);
+
+		entry = (struct subsentence_stack) {.s0 = parent->s0->child1, .s1 = parent->s1, .parent = parent, .source_map = new_source_map, .dest_map = new_dest_map};
+		if(sentence_stronger_recursive(&entry)){
+			free_map_list(new_source_map);
+			free_map_list(new_dest_map);
 			return 1;
 		}
 	}
 
 	if(parent->s1->type == OR){
-		entry0 = (struct subsentence_stack) {.s0 = parent->s0, .s1 = parent->s1->child0, .parent = parent, .source_map = parent->source_map, .dest_map = parent->dest_map};
-		entry1 = (struct subsentence_stack) {.s0 = parent->s0, .s1 = parent->s1->child1, .parent = parent, .source_map = parent->source_map, .dest_map = parent->dest_map};
-		return sentence_stronger_recursive(&entry0) || sentence_stronger_recursive(&entry1);
+
+		memcpy(new_source_map, parent->source_map, sizeof(struct map_entry)*parent->s0->num_bound_vars);
+		memcpy(new_dest_map, parent->dest_map, sizeof(struct map_entry)*parent->s1->num_bound_vars);
+
+		entry = (struct subsentence_stack) {.s0 = parent->s0, .s1 = parent->s1->child0, .parent = parent, .source_map = new_source_map, .dest_map = new_dest_map};
+		if(sentence_stronger_recursive(&entry)){
+			free_map_list(new_source_map);
+			free_map_list(new_dest_map);
+			return 1;
+		}
+
+		memcpy(new_source_map, parent->source_map, sizeof(struct map_entry)*parent->s0->num_bound_vars);
+		memcpy(new_dest_map, parent->dest_map, sizeof(struct map_entry)*parent->s1->num_bound_vars);
+
+		entry = (struct subsentence_stack) {.s0 = parent->s0, .s1 = parent->s1->child1, .parent = parent, .source_map = new_source_map, .dest_map = new_dest_map};
+		if(sentence_stronger_recursive(&entry)){
+			free_map_list(new_source_map);
+			free_map_list(new_dest_map);
+			return 1;
+		}
 	}
 
+	free_map_list(new_source_map);
+	free_map_list(new_dest_map);
 	return 0;
 }
 
 //Recursively check if parent->s0 is stronger than parent->s1
-int sentence_stronger_recursive(struct subsentence_stack *parent, struct map_entry *source_map, struct map_entry *dest_map){
+int sentence_stronger_recursive(struct subsentence_stack *parent){
+	enum seek_status status;
+
 	if(parent->s0->type == OR){
-		return stronger_premise_or(parent, source_map, dest_map);
+		if(stronger_premise_or(parent)) return 1;
 	} else if(parent->s1->type == AND){
-		return stronger_conclusion_and(parent, source_map, dest_map);
+		if(stronger_conclusion_and(parent)) return 1;
 	} else if(sentence_trivially_false(parent->s0)){
-		return 1;
+		status = seek_next(parent);
+		if(status == SUCCESS || status == FINAL) return 1;
 	} else if(sentence_trivially_true(parent->s1)){
-		return 1;
+		status = seek_next(parent);
+		if(status == SUCCESS || status == FINAL) return 1;
 	} else if(parent->s0->type == NOT && parent->s1->type == NOT){
-		return stronger_contrapositive(parent, source_map, dest_map);
+		if(stronger_contrapositive(parent)) return 1;
 	} else if(parent->s1->type == NOT && parent->s1->child0->type == NOT){
-		return stronger_double_negation(parent, source_map, dest_map);
+		if(stronger_double_negation(parent)) return 1;
 	} else if(parent->s0->type == IMPLIES && parent->s1->type == IMPLIES){
-		return stronger_implies(parent, source_map, dest_map);
+		if(stronger_implies(parent)) return 1;
 	} else if(parent->s0->type == FORALL){
-		return stronger_forall(parent, source_map, dest_map);
+		if(stronger_forall(parent)) return 1;
 	} else if(parent->s1->type == EXISTS){
-		return stronger_exists(parent, source_map, dest_map);
+		if(stronger_exists(parent)) return 1;
 	} else if(parent->s0->type == BICOND && parent->s1->type == BICOND){
-		return stronger_bicond_both(parent, source_map, dest_map);
+		if(stronger_bicond_both(parent)) return 1;
 	} else if(parent->s0->type == RELATION && parent->s1->type == RELATION){
-		return stronger_relation(parent, source_map, dest_map);
+		if(stronger_relation(parent)) return 1;
 	} else if(parent->s0->type == PROPOSITION && parent->s1->type == PROPOSITION){
-		return stronger_proposition(parent, source_map, dest_map);
-	} else if(parent->s0->type == AND || parent->s1->type == OR){
-		return stronger_and_or(parent, source_map, dest_map);
+		if(stronger_proposition(parent)) return 1;
+	}
+	if(parent->s0->type == AND || parent->s1->type == OR){
+		return stronger_and_or(parent);
 	} else {
 		return 0;
 	}
 }
 
-enum seek_status seek_next(struct subsentence_stack *parent, struct map_entry *source_map, struct map_entry *dest_map){
+int seek_premise_or(struct subsentence_stack *parent){
+	struct subsentence_stack entry;
+
+	entry = (struct subsentence_stack) {.s0 = parent->s0->child1, .s1 = parent->s1, .parent = parent, .source_map = parent->source_map, .dest_map = parent->dest_map};
+
+	return sentence_stronger_recursive(&entry);
+}
+
+int seek_conclusion_and(struct subsentence_stack *parent){
+	struct subsentence_stack entry;
+
+	entry = (struct subsentence_stack) {.s0 = parent->s0, .s1 = parent->s1->child1, .parent = parent, .source_map = parent->source_map, .dest_map = parent->dest_map};
+
+	return sentence_stronger_recursive(&entry);
+}
+
+int seek_implies(struct subsentence_stack *parent){
+	struct subsentence_stack entry;
+
+	entry = (struct subsentence_stack) {.s0 = parent->s0->child1, .s1 = parent->s1->child1, .parent = parent, .source_map = parent->source_map, .dest_map = parent->dest_map};
+
+	return sentence_stronger_recursive(&entry);
+}
+
+enum seek_status seek_bicond_both(struct subsentence_stack *parent, struct subsentence_stack *child){
+	struct subsentence_stack entry;
+
+	if(child->s0 == parent->s0->child0 && child->s1 == parent->s1->child0){
+		entry = (struct subsentence_stack) {.s0 = parent->s1->child0, .s1 = parent->s0->child0, .parent = parent, .source_map = parent->dest_map, .dest_map = parent->source_map};
+		return sentence_stronger_recursive(&entry);
+	} else if(child->s0 == parent->s1->child0 && child->s1 == parent->s0->child0){
+		entry = (struct subsentence_stack) {.s0 = parent->s0->child1, .s1 = parent->s1->child1, .parent = parent, .source_map = parent->source_map, .dest_map = parent->dest_map};
+		return sentence_stronger_recursive(&entry);
+	} else if(child->s0 == parent->s0->child1 && child->s1 == parent->s1->child1){
+		entry = (struct subsentence_stack) {.s0 = parent->s1->child1, .s1 = parent->s0->child1, .parent = parent, .source_map = parent->dest_map, .dest_map = parent->source_map};
+		return sentence_stronger_recursive(&entry);
+	} else if(child->s0 == parent->s0->child0 && child->s1 == parent->s1->child1){
+		entry = (struct subsentence_stack) {.s0 = parent->s1->child1, .s1 = parent->s0->child0, .parent = parent, .source_map = parent->dest_map, .dest_map = parent->source_map};
+		return sentence_stronger_recursive(&entry);
+	} else if(child->s0 == parent->s1->child1 && child->s1 == parent->s0->child0){
+		entry = (struct subsentence_stack) {.s0 = parent->s0->child1, .s1 = parent->s1->child0, .parent = parent, .source_map = parent->source_map, .dest_map = parent->dest_map};
+		return sentence_stronger_recursive(&entry);
+	} else if(child->s0 == parent->s0->child1 && child->s1 == parent->s1->child0){
+		entry = (struct subsentence_stack) {.s0 = parent->s1->child0, .s1 = parent->s0->child1, .parent = parent, .source_map = parent->dest_map, .dest_map = parent->source_map};
+		return sentence_stronger_recursive(&entry);
+	}
+
+	return CONTINUE;
+}
+
+enum seek_status seek_next(struct subsentence_stack *parent){
 	struct subsentence_stack *child;
+	enum seek_status output;
 
 	while(parent->parent != NULL){
 		child = parent;
 		parent = child->parent;
 
 		if(parent->s0->type == OR && parent->s0->child0 == child->s0){
-			return seek_premise_or(parent, source_map, dest_map);
+			return seek_premise_or(parent);
 		} else if(parent->s1->type == AND && parent->s1->child0 == child->s1){
-			return seek_conclusion_and(parent, source_map, dest_map);
-		} else if(
+			return seek_conclusion_and(parent);
+		} else if(parent->s0->type == IMPLIES && parent->s1->type == IMPLIES && child->s0 == parent->s1->child0 && child->s1 == parent->s0->child0){
+			return seek_implies(parent);
+		} else if(parent->s0->type == BICOND && parent->s1->type == BICOND){
+			output = seek_bicond_both(parent, child);
+			if(output != CONTINUE){
+				return output;
+			}
+		}
+	}
+
+	return FINAL;
+}
+
+int sentence_stronger(sentence *s0, sentence *s1){
+	struct subsentence_stack root;
+	struct map_entry *source_map;
+	struct map_entry *dest_map;
+	int i;
+	int output;
+
+	if(s0->num_bound_vars != s1->num_bound_vars){
+		return 0;
+	}
+
+	source_map = get_map_list(s0->num_bound_vars);
+	dest_map = get_map_list(s1->num_bound_vars);
+
+	for(i = 0; i < s0->num_bound_vars; i++){
+		source_map[i] = (struct map_entry) {.type = BOUND_VAR, .var_id = i};
+		dest_map[i] = (struct map_entry) {.type = RESERVED};
+	}
+
+	root = (struct subsentence_stack) {.s0 = s0, .s1 = s1, .parent = NULL, .source_map = source_map, .dest_map = dest_map};
+	output = sentence_stronger_recursive(&root);
+
+	free_map_list(source_map);
+	free_map_list(dest_map);
+	return output;
+}
+
+int sentence_equivalent(sentence *s0, sentence *s1){
+	return sentence_stronger(s0, s1) && sentence_stronger(s1, s0);
+}
+
+int sentence_trivially_true(sentence *s){
+	if(s->type == IMPLIES){
+		return sentence_stronger(s->child0, s->child1);
+	} else if(s->type == BICOND){
+		return sentence_equivalent(s->child0, s->child1);
+	} else if(s->type == AND){
+		return sentence_trivially_true(s->child0) && sentence_trivially_true(s->child1);
+	} else if(s->type == OR){
+		return sentence_trivially_true(s->child0) || sentence_trivially_true(s->child1);
+	} else if(s->type == FORALL){
+		return sentence_trivially_true(s->child0);
+	} else if(s->type == NOT){
+		return sentence_trivially_false(s->child0);
+	} else if(s->type == TRUE){
+		return 1;
+	} else {
+		return 0;
 	}
 }
+
+int sentence_trivially_false(sentence *s){
+	int true0;
+	int true1;
+	int false0;
+	int false1;
+
+	if(s->type == IMPLIES){
+		return sentence_trivially_true(s->child0) && sentence_trivially_false(s->child1);
+	} else if(s->type == BICOND){
+		true0 = sentence_trivially_true(s->child0);
+		false0 = sentence_trivially_false(s->child0);
+		true1 = sentence_trivially_true(s->child1);
+		false1 = sentence_trivially_false(s->child1);
+		return (true0 && false1) || (false0 && true1);
+	} else if(s->type == AND){
+		return sentence_trivially_false(s->child0) || sentence_trivially_false(s->child1);
+	} else if(s->type == OR){
+		return sentence_trivially_false(s->child0) && sentence_trivially_false(s->child1);
+	} else if(s->type == EXISTS){
+		return sentence_trivially_false(s->child0);
+	} else if(s->type == NOT){
+		return sentence_trivially_true(s->child0);
+	} else if(s->type == FALSE){
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
