@@ -555,6 +555,7 @@ int sentence_stronger(sentence *s0, sentence *s1){
 	trivialize_quantifiers(&s0_map, s0->num_bound_vars);
 	trivialize_quantifiers(&s1_map, s1->num_bound_vars);
 	return sentence_stronger_exact(s0, s1) || sentence_stronger_recursive(s0, s1, &s0_map, &s1_map);
+	//return sentence_stronger_recursive(s0, s1, &s0_map, &s1_map);
 }
 
 int sentence_equivalent(sentence *s0, sentence *s1){
