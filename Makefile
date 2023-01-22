@@ -3,7 +3,7 @@ DEL = rm -r
 DIR = mkdir -p
 FLAGS = -Wall -pedantic -DUSE_CUSTOM_ALLOC -g
 #FLAGS = -Wall -pedantic -g
-OBJS = $(addprefix build/, commands.o custom_malloc.o dictionary.o predicate.o expression.o imports.o)
+OBJS = $(addprefix build/, commands.o custom_malloc.o dictionary.o predicate.o compare.o expression.o imports.o)
 
 core: $(OBJS)
 	$(CC) $(OBJS) $(FLAGS) -o core
@@ -13,6 +13,9 @@ build/custom_malloc.o: src/custom_malloc.c | build
 
 build/dictionary.o: src/dictionary.c | build
 	$(CC) src/dictionary.c -c -o build/dictionary.o $(FLAGS)
+
+build/compare.o: src/compare.c | build
+	$(CC) src/compare.c -c -o build/compare.o $(FLAGS)
 
 build/predicate.o: src/predicate.c | build
 	$(CC) src/predicate.c -c -o build/predicate.o $(FLAGS)

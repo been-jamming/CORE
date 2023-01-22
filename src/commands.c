@@ -6,6 +6,7 @@
 #include <libgen.h>
 #include "dictionary.h"
 #include "predicate.h"
+#include "compare.h"
 #include "expression.h"
 #include "imports.h"
 #include "custom_malloc.h"
@@ -17,6 +18,8 @@
 dictionary global_recursive_include;
 //&RECURSIVE_INCLUDE will be stored to prevent recursive includes
 static int RECURSIVE_INCLUDE;
+//Flag is set to one when debug command is called
+int debug_flag = 0;
 
 void new_scope(void){
 	global_context = create_context(global_context);
@@ -696,9 +699,6 @@ void evaluate_command(char **c){
 }
 
 int debug_command(char **c){
-	expr_value *val;
-	expr_value *val2;
-
 	skip_whitespace(c);
 	if(strncmp(*c, "debug", 5) || is_alphanumeric((*c)[5])){
 		return 0;
@@ -706,31 +706,14 @@ int debug_command(char **c){
 	*c += 5;
 	skip_whitespace(c);
 
-	if(global_context->dependent){
-		error(ERROR_DEPENDENT_SCOPE);
-	}
-
-	val = parse_expr_value(c);
-	if(**c != ','){
-		error(ERROR_COMMA);
-	}
-	++*c;
-	skip_whitespace(c);
-	val2 = parse_expr_value(c);
-	if(val->type == SENTENCE && val2->type == SENTENCE){
-		printf("DEBUG: %d\n", sentence_equivalent(val->sentence_data, val2->sentence_data));
-	} else if(val->type == OBJECT && val2->type == OBJECT){
-		printf("DEBUG: %d\n", val->var == val2->var);
-	} else {
-		printf("DEBUG: 0\n");
-	}
-	free_expr_value(val);
-	free_expr_value(val2);
-	skip_whitespace(c);
 	if(**c != ';'){
 		error(ERROR_SEMICOLON);
 	}
 	++*c;
+
+	//Set the debug flag to 1
+	debug_flag = 1;
+
 	return 1;
 }
 
@@ -966,18 +949,19 @@ expr_value *given_command(char **c){
 		if(**c != '|' && **c != ','){
 			error(ERROR_PIPE_OR_COMMA);
 		}
-		if(next_goal){
+		if(!next_goal){
+			next_goal = malloc(sizeof(sentence));
+			copy_sentence(next_goal, global_context->parent->goal);
+			next_goal->parent = NULL;
+		}
+		new_var = create_object_variable(name_buffer, global_context);
+		substitute_variable(next_goal->child0, new_var);
+		if(next_goal->child0->num_bound_vars == 0){
 			temp_goal = next_goal->child0;
 			free(next_goal);
 			next_goal = temp_goal;
 			next_goal->parent = NULL;
-		} else {
-			next_goal = malloc(sizeof(sentence));
-			copy_sentence(next_goal, global_context->parent->goal->child0);
-			next_goal->parent = NULL;
 		}
-		new_var = create_object_variable(name_buffer, global_context);
-		substitute_variable(next_goal, new_var);
 	} while(**c == ',');
 
 	++*c;
@@ -1072,16 +1056,18 @@ expr_value *choose_command(char **c){
 		if(**c != '{' &&  **c != ';' && **c != ','){
 			error(ERROR_BRACE_OR_SEMICOLON_OR_COMMA);
 		}
-		if(next_goal){
+		if(!next_goal){
+			next_goal = malloc(sizeof(sentence));
+			copy_sentence(next_goal, global_context->parent->goal);
+			next_goal->parent = NULL;
+		}
+		substitute_variable(next_goal->child0, var);
+		if(next_goal->child0->num_bound_vars == 0){
 			temp_goal = next_goal->child0;
 			free(next_goal);
 			next_goal = temp_goal;
-		} else {
-			next_goal = malloc(sizeof(sentence));
-			copy_sentence(next_goal, global_context->parent->goal->child0);
 			next_goal->parent = NULL;
 		}
-		substitute_variable(next_goal, var);
 	} while(**c == ',');
 
 	explicit_scope = (**c == '{');

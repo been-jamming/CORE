@@ -4,6 +4,7 @@
 #include <string.h>
 #include "dictionary.h"
 #include "predicate.h"
+#include "compare.h"
 #include "expression.h"
 #include "custom_malloc.h"
 
@@ -191,10 +192,11 @@ void error(int error_code){
 	exit(error_code);
 }
 
+//Print a custom error message
 void custom_error(int error_code, char *error_message, unsigned char print_file_name){
 	fprintf(stderr, "\033[31;1mError\033[-;1m: %s\033[0m\n", error_message);
 	if(print_file_name){
-		fprintf(stderr, "in '%s'\n", global_file_name);
+		fprintf(stderr, "Line %d in '%s'\n", global_line_number, global_file_name);
 	}
 #ifdef USE_CUSTOM_ALLOC
 	custom_malloc_abort();
@@ -664,6 +666,7 @@ sentence *parse_all(char **c, int num_bound_vars, int num_bound_props){
 	char *beginning;
 	int new_int;
 	int *old_int;
+	sentence *child;
 
 	skip_whitespace(c);
 	beginning = *c;
@@ -687,9 +690,15 @@ sentence *parse_all(char **c, int num_bound_vars, int num_bound_props){
 	new_int = num_bound_vars;
 	write_dictionary(&global_bound_variables, var_name, &new_int, 0);
 
-	output = create_sentence(FORALL, num_bound_vars, num_bound_props);
-	output->child0 = parse_sentence_value(c, num_bound_vars + 1, num_bound_props);
-	output->child0->parent = output;
+	child = parse_sentence_value(c, num_bound_vars + 1, num_bound_props);
+	if(child->type == FORALL){
+		output = child;
+		output->num_bound_vars = num_bound_vars;
+	} else {
+		output = create_sentence(FORALL, num_bound_vars, num_bound_props);
+		output->child0 = child;
+		output->child0->parent = output;
+	}
 
 	write_dictionary(&global_bound_variables, var_name, old_int, 0);
 
@@ -703,6 +712,7 @@ sentence *parse_exists(char **c, int num_bound_vars, int num_bound_props){
 	char *beginning;
 	int *old_int;
 	int new_int;
+	sentence *child;
 
 	skip_whitespace(c);
 	beginning = *c;
@@ -725,9 +735,15 @@ sentence *parse_exists(char **c, int num_bound_vars, int num_bound_props){
 	new_int = num_bound_vars;
 	write_dictionary(&global_bound_variables, var_name, &new_int, 0);
 
-	output = create_sentence(EXISTS, num_bound_vars, num_bound_props);
-	output->child0 = parse_sentence_value(c, num_bound_vars + 1, num_bound_props);
-	output->child0->parent = output;
+	child = parse_sentence_value(c, num_bound_vars + 1, num_bound_props);
+	if(child->type == EXISTS){
+		output = child;
+		output->num_bound_vars = num_bound_vars;
+	} else {
+		output = create_sentence(EXISTS, num_bound_vars, num_bound_props);
+		output->child0 = child;
+		output->child0->parent = output;
+	}
 
 	write_dictionary(&global_bound_variables, var_name, old_int, 0);
 
@@ -1020,7 +1036,9 @@ static void print_sentence_recursive(int precedence, sentence *s){
 			print_sentence_recursive(4, s->child0);
 			break;
 		case FORALL:
-			printf("*%d", s->num_bound_vars);
+			for(i = s->num_bound_vars; i < s->child0->num_bound_vars; i++){
+				printf("*%d", i);
+			}
 			if(s->child0->type == NOT || s->child0->type == FALSE || s->child0->type == TRUE || s->child0->type == RELATION || s->child0->type == PROPOSITION){
 				printf("(");
 			}
@@ -1030,7 +1048,9 @@ static void print_sentence_recursive(int precedence, sentence *s){
 			}
 			break;
 		case EXISTS:
-			printf("^%d", s->num_bound_vars);
+			for(i = s->num_bound_vars; i < s->child0->num_bound_vars; i++){
+				printf("^%d", i);
+			}
 			if(s->child0->type == NOT || s->child0->type == FALSE || s->child0->type == TRUE || s->child0->type == RELATION || s->child0->type == PROPOSITION){
 				printf("(");
 			}
@@ -1086,7 +1106,7 @@ void print_sentence(sentence *s){
 
 //Determines whether one sentence trivially implies another sentence
 //Returns 1 if it can determine that s0 implies s1, and 0 otherwise
-int sentence_stronger(sentence *s0, sentence *s1){
+int sentence_stronger2(sentence *s0, sentence *s1){
 	int i;
 
 	if(s0->num_bound_vars != s1->num_bound_vars || s0->num_bound_props != s1->num_bound_props){
@@ -1196,12 +1216,12 @@ int sentence_stronger(sentence *s0, sentence *s1){
 }
 
 //Determine if two sentences imply each other
-int sentence_equivalent(sentence *s0, sentence *s1){
+int sentence_equivalent2(sentence *s0, sentence *s1){
 	return sentence_stronger(s0, s1) && sentence_stronger(s1, s0);
 }
 
 //Determine if a sentence is trivially true
-int sentence_trivially_true(sentence *s){
+int sentence_trivially_true2(sentence *s){
 	if(s->type == IMPLIES){
 		return sentence_stronger(s->child0, s->child1);
 	} else if(s->type == BICOND){
@@ -1222,7 +1242,7 @@ int sentence_trivially_true(sentence *s){
 }
 
 //Determine if a sentence is trivially false
-int sentence_trivially_false(sentence *s){
+int sentence_trivially_false2(sentence *s){
 	int true0;
 	int true1;
 	int false0;
