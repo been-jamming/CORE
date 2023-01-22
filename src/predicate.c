@@ -196,7 +196,7 @@ void error(int error_code){
 void custom_error(int error_code, char *error_message, unsigned char print_file_name){
 	fprintf(stderr, "\033[31;1mError\033[-;1m: %s\033[0m\n", error_message);
 	if(print_file_name){
-		fprintf(stderr, "in '%s'\n", global_file_name);
+		fprintf(stderr, "Line %d in '%s'\n", global_line_number, global_file_name);
 	}
 #ifdef USE_CUSTOM_ALLOC
 	custom_malloc_abort();
