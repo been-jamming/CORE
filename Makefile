@@ -14,8 +14,8 @@ build/custom_malloc.o: src/custom_malloc.c | build
 build/dictionary.o: src/dictionary.c | build
 	$(CC) src/dictionary.c -c -o build/dictionary.o $(FLAGS)
 
-build/compare.o: src/compare_new.c | build
-	$(CC) src/compare_new.c -c -o build/compare.o $(FLAGS)
+build/compare.o: src/compare.c | build
+	$(CC) src/compare.c -c -o build/compare.o $(FLAGS)
 
 build/predicate.o: src/predicate.c | build
 	$(CC) src/predicate.c -c -o build/predicate.o $(FLAGS)
