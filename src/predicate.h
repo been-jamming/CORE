@@ -89,6 +89,7 @@
 #define ERROR_ONE_BOUND_PROP 84
 #define ERROR_RECURSIVE_IMPORT 85
 #define ERROR_RECURSIVE_INCLUDE 86
+#define ERROR_RETURN_DEPENDENT 87
 
 extern int global_relation_id;
 extern dictionary global_bound_variables;
@@ -272,10 +273,8 @@ void free_sentence(sentence *s);
 void free_sentence_independent(sentence *s);
 void decrement_references_sentence(sentence *s);
 void print_sentence(sentence *s);
-int sentence_stronger2(sentence *s0, sentence *s1);
-int sentence_equivalent2(sentence *s0, sentence *s1);
-int sentence_trivially_true2(sentence *s);
-int sentence_trivially_false2(sentence *s);
+int context_dependent_scope(context *child, context *parent);
+int sentence_dependent_scope(sentence *s, context *parent);
 void copy_sentence(sentence *dest, sentence *s);
 sentence *peel_or_left(sentence **s);
 sentence *peel_and_left(sentence **s);

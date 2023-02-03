@@ -113,7 +113,8 @@ static char *error_messages[] = {
 	"Scope is dependent",
 	"Argument must have 1 bound proposition",
 	"Recursive import",
-	"Recursive include"
+	"Recursive include",
+	"Return value depends on current scope"
 };
 
 //Allocate a sentence structure
@@ -1104,170 +1105,48 @@ void print_sentence(sentence *s){
 	print_sentence_recursive(-1, s);
 }
 
-//Determines whether one sentence trivially implies another sentence
-//Returns 1 if it can determine that s0 implies s1, and 0 otherwise
-int sentence_stronger2(sentence *s0, sentence *s1){
+//Determine whether the first context depends on the second
+int context_dependent_scope(context *child, context *parent){
+	while(child){
+		if(child == parent){
+			return 1;
+		}
+		child = child->parent;
+	}
+
+	return 0;
+}
+
+//Determine whether any parts of the sentence depend on the context
+int sentence_dependent_scope(sentence *s, context *parent){
 	int i;
 
-	if(s0->num_bound_vars != s1->num_bound_vars || s0->num_bound_props != s1->num_bound_props){
-		return 0;
-	} else if(s0->type == OR){
-		return sentence_stronger(s0->child0, s1) && sentence_stronger(s0->child1, s1);
-	} else if(s1->type == AND){
-		return sentence_stronger(s0, s1->child0) && sentence_stronger(s0, s1->child1);
-	} else if(sentence_trivially_false(s0)){
-		return 1;
-	} else if(sentence_trivially_true(s1)){
-		return 1;
-	} else if(s0->type == NOT && s1->type == NOT){
-		return sentence_stronger(s1->child0, s0->child0);
-	} else if(s1->type == NOT && s1->child0->type == NOT){
-		return sentence_stronger(s0, s1->child0->child0);
-	} else if(s0->type == IMPLIES && s1->type == IMPLIES){
-		return sentence_stronger(s1->child0, s0->child0) && sentence_stronger(s0->child1, s1->child1);
-	} else if(s0->type == FORALL && s1->type == FORALL){
-		return sentence_stronger(s0->child0, s1->child0);
-	} else if(s0->type == EXISTS && s1->type == EXISTS){
-		return sentence_stronger(s0->child0, s1->child0);
-	} else if(s0->type == BICOND && s1->type == BICOND){
-		if(sentence_equivalent(s0->child0, s1->child0) && sentence_equivalent(s0->child1, s1->child1)){
-			return 1;
-		}
-		if(sentence_equivalent(s0->child0, s1->child1) && sentence_equivalent(s0->child1, s1->child0)){
-			return 1;
-		}
-		//Used to also check here if s0->child0 and s0->child1 are equivalent
-		//But since it's an implication, we only care about s1
-		if(sentence_equivalent(s1->child0, s1->child1)){
-			return 1;
-		}
-		return 0;
-	} else if(s1->type == BICOND){
-		return sentence_equivalent(s1->child0, s1->child1);
-	} else if(s0->type == RELATION && s1->type == RELATION){
-		if(s0->relation_data != s1->relation_data){
+	switch(s->type){
+		case AND:
+		case OR:
+		case IMPLIES:
+		case BICOND:
+			return sentence_dependent_scope(s->child0, parent) || sentence_dependent_scope(s->child1, parent);
+		case NOT:
+		case FORALL:
+		case EXISTS:
+			return sentence_dependent_scope(s->child0, parent);
+		case RELATION:
+			if(!s->is_bound0 && context_dependent_scope(s->var0->parent_context, parent)){
+				return 1;
+			}
+			if(!s->is_bound1 && context_dependent_scope(s->var1->parent_context, parent)){
+				return 1;
+			}
 			return 0;
-		}
-		if(s0->is_bound0 != s1->is_bound0){
-			return 0;
-		}
-		if(s0->is_bound1 != s1->is_bound1){
-			return 0;
-		}
-		if(s0->is_bound0){
-			if(s0->var0_id != s1->var0_id){
-				return 0;
-			}
-		} else {
-			if(s0->var0 != s1->var0){
-				return 0;
-			}
-		}
-		if(s0->is_bound1){
-			if(s0->var1_id != s1->var1_id){
-				return 0;
-			}
-		} else {
-			if(s0->var1 != s1->var1){
-				return 0;
-			}
-		}
-		return 1;
-	} else if(s0->type == PROPOSITION && s1->type == PROPOSITION){
-		if(s0->is_bound != s1->is_bound){
-			return 0;
-		}
-		if(s0->is_bound){
-			if(s0->definition_id != s1->definition_id){
-				return 0;
-			}
-		} else {
-			if(s0->definition_data != s1->definition_data){
-				return 0;
-			}
-		}
-		if(s0->num_args != s1->num_args){
-			return 0;
-		}
-		for(i = 0; i < s0->num_args; i++){
-			if(s0->proposition_args[i].is_bound != s1->proposition_args[i].is_bound){
-				return 0;
-			}
-			if(s0->proposition_args[i].is_bound){
-				if(s0->proposition_args[i].var_id != s1->proposition_args[i].var_id){
-					return 0;
-				}
-			} else {
-				if(s0->proposition_args[i].var != s1->proposition_args[i].var){
-					return 0;
+		case PROPOSITION:
+			for(i = 0; i < s->num_args; i++){
+				if(!s->proposition_args[i].is_bound && context_dependent_scope(s->proposition_args[i].var->parent_context, parent)){
+					return 1;
 				}
 			}
-		}
-		return 1;
-	} else {
-		if(s0->type == AND && (sentence_stronger(s0->child0, s1) || sentence_stronger(s0->child1, s1))){
-			return 1;
-		}
-		if(s1->type == OR && (sentence_stronger(s0, s1->child0) || sentence_stronger(s0, s1->child1))){
-			return 1;
-		}
-		return 0;
-	}
-}
-
-//Determine if two sentences imply each other
-int sentence_equivalent2(sentence *s0, sentence *s1){
-	return sentence_stronger(s0, s1) && sentence_stronger(s1, s0);
-}
-
-//Determine if a sentence is trivially true
-int sentence_trivially_true2(sentence *s){
-	if(s->type == IMPLIES){
-		return sentence_stronger(s->child0, s->child1);
-	} else if(s->type == BICOND){
-		return sentence_equivalent(s->child0, s->child1);
-	} else if(s->type == AND){
-		return sentence_trivially_true(s->child0) && sentence_trivially_true(s->child1);
-	} else if(s->type == OR){
-		return sentence_trivially_true(s->child0) || sentence_trivially_true(s->child1);
-	} else if(s->type == FORALL){
-		return sentence_trivially_true(s->child0);
-	} else if(s->type == NOT){
-		return sentence_trivially_false(s->child0);
-	} else if(s->type == TRUE){
-		return 1;
-	} else {
-		return 0;
-	}
-}
-
-//Determine if a sentence is trivially false
-int sentence_trivially_false2(sentence *s){
-	int true0;
-	int true1;
-	int false0;
-	int false1;
-
-	if(s->type == IMPLIES){
-		return sentence_trivially_true(s->child0) && sentence_trivially_false(s->child1);
-	} else if(s->type == BICOND){
-		true0 = sentence_trivially_true(s->child0);
-		false0 = sentence_trivially_false(s->child0);
-		true1 = sentence_trivially_true(s->child1);
-		false1 = sentence_trivially_false(s->child1);
-		return (true0 && false1) || (false0 && true1);
-	} else if(s->type == AND){
-		return sentence_trivially_false(s->child0) || sentence_trivially_false(s->child1);
-	} else if(s->type == OR){
-		return sentence_trivially_false(s->child0) && sentence_trivially_false(s->child1);
-	} else if(s->type == EXISTS || s->type == FORALL){
-		return sentence_trivially_false(s->child0);
-	} else if(s->type == NOT){
-		return sentence_trivially_true(s->child0);
-	} else if(s->type == FALSE){
-		return 1;
-	} else {
-		return 0;
+		default:
+			return 0;
 	}
 }
 

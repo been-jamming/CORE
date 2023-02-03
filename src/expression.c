@@ -1181,6 +1181,9 @@ expr_value *parse_branch(char **c){
 	if(**c != '}'){
 		error(ERROR_END_BRACE);
 	}
+	if(sentence_dependent_scope(output->sentence_data, global_context)){
+		error(ERROR_RETURN_DEPENDENT);
+	}
 	++*c;
 	skip_whitespace(c);
 
@@ -1211,6 +1214,9 @@ expr_value *parse_branch(char **c){
 		}
 		if(**c != '}'){
 			error(ERROR_END_BRACE);
+		}
+		if(sentence_dependent_scope(returned_val->sentence_data, global_context)){
+			error(ERROR_RETURN_DEPENDENT);
 		}
 		++*c;
 		skip_whitespace(c);

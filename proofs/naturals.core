@@ -833,65 +833,65 @@ prove lt_trichotomy: *A*B(A in NATURALS & B in NATURALS -> A < B | B < A | A = B
 	};
 }
 
-prove lt_implies_leq: *A*B(A < B -> A leq B){
-
-}
-
-prove lt_successor_cancel: *A*B*C*D(successor(B, A) & successor(D, C) -> (A < C <-> B < D)){
-	given |A, B, C, D|;
-	assume successor_B, successor_D;
-	prove lemma0: A < C -> B < D{
-		assume A_lt_C;
-		return lt_successor_both(A, B, C, D)(successor_B, successor_D, A_lt_C);
-	}
-	prove lemma1: B < D -> A < C{
-		
-	}
-}
-
-prove zero_not_greater: *A(~A < ZERO){
-	given |A|;
-	assume A_lt_ZERO;
-	A_natural, zero_natural, A_lt_ZERO_def = expand(A_lt_ZERO);
-	return A_lt_ZERO_def(A)(sum_commutes(A, A, ZERO)(sum_zero(A)(A_natural)));
-}
-
-prove greater_than_zero: *A*B(A < B -> ZERO < B){
-	given |A, B|;
-	assume A_lt_B;
-	A_natural, B_natural, A_lt_B_def = expand(A_lt_B);
-	return branch(zero_minimal(B)(B_natural), B_eq_ZERO, ZERO_lt_B){
-		A_lt_ZERO = replace[<Q: A < Q>](B, ZERO)(B_eq_ZERO)(A_lt_B);
-		return trivial(<: false -> ZERO < B>)(zero_not_greater(A)(A_lt_ZERO));
-	} or {
-		return ZERO_lt_B;
-	};
-}
-
-prove lt_transitive: *A*B*C(A < B & B < C -> A < C){
-	define R(B): *A*C(A < B & B < C -> A < C);
-
-	prove base_case: *A*C(A < ZERO & ZERO < C -> A < C){
-		given |A, C|;
-		assume A_lt_ZERO, ZERO_lt_C;
-		return zero_not_greater(A)(A_lt_ZERO);
-	}
-	base_case = #R(ZERO)(base_case);
-
-	prove inductive_step: *N*M(R(N) & successor(M, N) -> R(M)){
-		given |N, M|;
-		assume R_N, successor_M;
-		prove R_def: *A*C(A < M & M < C -> A < C){
-			given |A, C|;
-			assume A_lt_M, M_lt_C;
-			A_natural, M_natural, A_lt_M_def = expand(A_lt_M);
-			return branch(excluded_middle[<: A = ZERO>], A_eq_ZERO, A_not_eq_ZERO){
-				zero_lt_C = greater_than_zero(M, C)(M_lt_C);
-				return replace[<Q: Q < C>](A, ZERO)(A_eq_ZERO)(zero_lt_C);
-			} or {
-				AP_natural, successor_A = predecessor(A)(A_natural, A_not_eq_ZERO)|AP|;
-
-			};
-		}
-	}
-}
+//prove lt_implies_leq: *A*B(A < B -> A leq B){
+//
+//}
+//
+//prove lt_successor_cancel: *A*B*C*D(successor(B, A) & successor(D, C) -> (A < C <-> B < D)){
+//	given |A, B, C, D|;
+//	assume successor_B, successor_D;
+//	prove lemma0: A < C -> B < D{
+//		assume A_lt_C;
+//		return lt_successor_both(A, B, C, D)(successor_B, successor_D, A_lt_C);
+//	}
+//	prove lemma1: B < D -> A < C{
+//		
+//	}
+//}
+//
+//prove zero_not_greater: *A(~A < ZERO){
+//	given |A|;
+//	assume A_lt_ZERO;
+//	A_natural, zero_natural, A_lt_ZERO_def = expand(A_lt_ZERO);
+//	return A_lt_ZERO_def(A)(sum_commutes(A, A, ZERO)(sum_zero(A)(A_natural)));
+//}
+//
+//prove greater_than_zero: *A*B(A < B -> ZERO < B){
+//	given |A, B|;
+//	assume A_lt_B;
+//	A_natural, B_natural, A_lt_B_def = expand(A_lt_B);
+//	return branch(zero_minimal(B)(B_natural), B_eq_ZERO, ZERO_lt_B){
+//		A_lt_ZERO = replace[<Q: A < Q>](B, ZERO)(B_eq_ZERO)(A_lt_B);
+//		return trivial(<: false -> ZERO < B>)(zero_not_greater(A)(A_lt_ZERO));
+//	} or {
+//		return ZERO_lt_B;
+//	};
+//}
+//
+//prove lt_transitive: *A*B*C(A < B & B < C -> A < C){
+//	define R(B): *A*C(A < B & B < C -> A < C);
+//
+//	prove base_case: *A*C(A < ZERO & ZERO < C -> A < C){
+//		given |A, C|;
+//		assume A_lt_ZERO, ZERO_lt_C;
+//		return zero_not_greater(A)(A_lt_ZERO);
+//	}
+//	base_case = #R(ZERO)(base_case);
+//
+//	prove inductive_step: *N*M(R(N) & successor(M, N) -> R(M)){
+//		given |N, M|;
+//		assume R_N, successor_M;
+//		prove R_def: *A*C(A < M & M < C -> A < C){
+//			given |A, C|;
+//			assume A_lt_M, M_lt_C;
+//			A_natural, M_natural, A_lt_M_def = expand(A_lt_M);
+//			return branch(excluded_middle[<: A = ZERO>], A_eq_ZERO, A_not_eq_ZERO){
+//				zero_lt_C = greater_than_zero(M, C)(M_lt_C);
+//				return replace[<Q: Q < C>](A, ZERO)(A_eq_ZERO)(zero_lt_C);
+//			} or {
+//				AP_natural, successor_A = predecessor(A)(A_natural, A_not_eq_ZERO)|AP|;
+//
+//			};
+//		}
+//	}
+//}
