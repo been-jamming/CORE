@@ -9,7 +9,7 @@ dependent relation A = B: *X(X in A <-> X in B);
 dependent relation A <= B: *X(X in A -> X in B);
 
 //Axiom for replacing sets with equal sets
-axiom replace[P(1)]: *X*Y(X = Y -> (P(X) <-> P(Y)));
+axiom replace[P(1)]: *X*Y(X = Y | Y = X -> (P(X) <-> P(Y)));
 //Axiom for regularity of sets
 axiom axiom_regularity: *A(^X(X in A) -> ^B(B in A & *C(~C in B | ~C in A)));
 //Axiom for specifying subsets of a set

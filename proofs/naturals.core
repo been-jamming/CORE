@@ -932,3 +932,94 @@ prove lt_transitive: *A*B*C(A < B & B < C -> A < C){
 	return expand(result(B)(B_natural))(A, C)(A_lt_B, B_lt_C);
 }
 
+prove lt_sum_cancel: *A*B*C*SA*SB(sum(SA, A, C) & sum(SB, B, C) -> (A < B <-> SA < SB)){
+	define R(C): *A*B*SA*SB(sum(SA, A, C) & sum(SB, B, C) -> (A < B <-> SA < SB));
+
+	prove base_case: *A*B*SA*SB(sum(SA, A, ZERO) & sum(SB, B, ZERO) -> (A < B <-> SA < SB)){
+		given |A, B, SA, SB|;
+		assume sum_SA, sum_SB;
+		A_natural, zero_natural = sum_operand_natural(A, ZERO, SA)(sum_SA);
+		B_natural, zero_natural = sum_operand_natural(B, ZERO, SB)(sum_SB);
+		sum_A = sum_zero(A)(A_natural);
+		A_eq_SA = sum_unique(A, ZERO, A, SA)(sum_A, sum_SA);
+		sum_B = sum_zero(B)(B_natural);
+		B_eq_SB = sum_unique(B, ZERO, B, SB)(sum_B, sum_SB);
+		result = replace[<Q: Q < SB>](A, SA)(A_eq_SA);
+		return replace[<Q: A < Q <-> SA < SB>](B, SB)(B_eq_SB)(result);
+	}
+	base_case = #R(ZERO)(base_case);
+
+	prove inductive_step: *N*M(R(N) & successor(M, N) -> R(M)){
+		given |N, M|;
+		assume R_N, successor_M;
+		prove R_M: *A*B*SA*SB(sum(SA, A, M) & sum(SB, B, M) -> (A < B <-> SA < SB)){
+			given |A, B, SA, SB|;
+			assume sum_SA, sum_SB;
+			A_natural, M_natural = sum_operand_natural(A, M, SA)(sum_SA);
+			B_natural, M_natural = sum_operand_natural(B, M, SB)(sum_SB);
+			N_natural = predecessor_natural(N, M)(M_natural, successor_M);
+			sum_PSA = sum(A, N)(A_natural, N_natural)|PSA|;
+			sum_PSB = sum(B, N)(B_natural, N_natural)|PSB|;
+			successor_SA = sum_recursion(A, N, M, PSA, SA)(successor_M, sum_PSA, sum_SA);
+			successor_SB = sum_recursion(B, N, M, PSB, SB)(successor_M, sum_PSB, sum_SB);
+			replacement0 = lt_successor_cancel(PSA, SA, PSB, SB)(successor_SA, successor_SB);
+			replacement1 = expand(R_N)(A, B, PSA, PSB)(sum_PSA, sum_PSB);
+			return substitute(<P(0): P <-> SA < SB>)[<: A < B>, <: PSA < PSB>](replacement1)(replacement0);
+		}
+		return #R(M)(R_M);
+	}
+
+	result = induction[<N: R(N)>](base_case, inductive_step);
+	given |A, B, C, SA, SB|;
+	assume sum_SA, sum_SB;
+	A_natural, C_natural = sum_operand_natural(A, C, SA)(sum_SA);
+	return expand(result(C)(C_natural))(A, B, SA, SB)(sum_SA, sum_SB);
+}
+
+prove sum_cancel: *A*B*C*S(sum(S, A, C) & sum(S, B, C) -> A = B){
+	define R(N): *A*B*S(sum(S, A, N) & sum(S, B, N) -> A = B);
+
+	prove base_case: *A*B*S(sum(S, A, ZERO) & sum(S, B, ZERO) -> A = B){
+		given |A, B, S|;
+		assume sum_S_A, sum_S_B;
+		A_natural, zero_natural = sum_operand_natural(A, ZERO, S)(sum_S_A);
+		B_natural, zero_natural = sum_operand_natural(B, ZERO, S)(sum_S_B);
+		sum_A = sum_zero(A)(A_natural);
+		A_eq_S = sum_unique(A, ZERO, A, S)(sum_A, sum_S_A);
+		sum_B = sum_zero(B)(B_natural);
+		B_eq_S = sum_unique(B, ZERO, B, S)(sum_B, sum_S_B);
+		S_eq_B = equal_symmetric(B, S)(B_eq_S);
+		return equal_transitive(A, S, B)(A_eq_S, S_eq_B);
+	}
+	base_case = #R(ZERO)(base_case);
+
+	prove inductive_step: *N*M(R(N) & successor(M, N) -> R(M)){
+		given |N, M|;
+		assume R_N, successor_M;
+		prove R_M: *A*B*S(sum(S, A, M) & sum(S, B, M) -> A = B){
+			given |A, B, S|;
+			assume sum_S_A, sum_S_B;
+			A_natural, M_natural = sum_operand_natural(A, M, S)(sum_S_A);
+			B_natural, M_natural = sum_operand_natural(B, M, S)(sum_S_B);
+			N_natural = predecessor_natural(N, M)(M_natural, successor_M);
+			sum_PSA = sum(A, N)(A_natural, N_natural)|PSA|;
+			predecessor_PSA = sum_recursion(A, N, M, PSA, S)(successor_M, sum_PSA, sum_S_A);
+			sum_PSB = sum(B, N)(B_natural, N_natural)|PSB|;
+			predecessor_PSB = sum_recursion(B, N, M, PSB, S)(successor_M, sum_PSB, sum_S_B);
+			PSA_eq_PSB = successor_injective(S, PSA, PSB)(predecessor_PSA, predecessor_PSB);
+			sum_PSA_B = replace[<Q: sum(Q, B, N)>](PSA, PSB)(PSA_eq_PSB)(sum_PSB);
+			return expand(R_N)(A, B, PSA)(sum_PSA, sum_PSA_B);
+		}
+		return #R(M)(R_M);
+	}
+
+	result = induction[<Q: R(Q)>](base_case, inductive_step);
+	given |A, B, C, S|;
+	assume sum_S_A, sum_S_B;
+	A_natural, C_natural = sum_operand_natural(A, C, S)(sum_S_A);
+	return expand(result(C)(C_natural))(A, B, S)(sum_S_A, sum_S_B);
+}
+
+//Defining when a function multiplies its input by N
+define multiplication_function(F, N): function(F) & domain(NATURALS, F) & codomain(NATURALS, F) & related(ONE, N, F) & *M*Y*L*Z(successor(L, M) & related(M, Y, F) & related(L, Z, F) -> sum(Z, Y, N));
+
