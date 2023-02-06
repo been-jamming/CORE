@@ -1021,5 +1021,37 @@ prove sum_cancel: *A*B*C*S(sum(S, A, C) & sum(S, B, C) -> A = B){
 }
 
 //Defining when a function multiplies its input by N
-define multiplication_function(F, N): function(F) & domain(NATURALS, F) & codomain(NATURALS, F) & related(ONE, N, F) & *M*Y*L*Z(successor(L, M) & related(M, Y, F) & related(L, Z, F) -> sum(Z, Y, N));
+define multiplication_function(F, N): function(F) & domain(NATURALS, F) & codomain(NATURALS, F) & related(ZERO, ZERO, F) & *M*Y*L*Z(successor(L, M) & related(M, Y, F) & related(L, Z, F) -> sum(Z, Y, N));
 
+//Define the product of natural numbers
+define product(A, B, C): A in NATURALS & B in NATURALS & *F(multiplication_function(F, B) -> related(C, A, F));
+
+//Multiplication functions always exist
+prove multiplication_function_exists: *N(N in NATURALS -> ^F(multiplication_function(F, N))){
+	given |N|;
+	assume N_natural;
+	A_addition = addition_function_exists(N)(N_natural)|A|;
+	A_function, A_domain_naturals, A_codomain_naturals, A_related_zero, A_recursion = expand(A_addition);
+	F_def = recursion(A, NATURALS, ZERO)(A_function, A_domain_naturals, A_codomain_naturals, zero_natural)|F|;
+	choose F;
+	F_function, F_domain_naturals, F_codomain_naturals, F_initial, F_recursion = F_def;
+	F_initial = F_initial(ZERO)(equal_reflexive(ZERO));
+	prove function_recursion: *M*Y*L*Z(successor(L, M) & related(M, Y, F) & related(L, Z, F) -> sum(Z, Y, N)){
+		given |M, Y, L, Z|;
+		assume successor_L, M_related_Y, L_related_Z;
+		Y_natural = expand(F_codomain_naturals)(M, Y)(M_related_Y);
+		M_related_Y2, Y2_related_Z = F_recursion(M, L, Z)(successor_L, L_related_Z)|Y2|;
+		F_relation, F_function_def = expand(F_function);
+		Y_eq_Y2 = F_function_def(M, Y, Y2)(M_related_Y, M_related_Y2);
+		Y_related_Z = replace[<Q: related(Q, Z, A)>](Y, Y2)(Y_eq_Y2)(Y2_related_Z);
+		M_related_Y = replace[<Q: related(M, Q, F)>](Y, Y2)(Y_eq_Y2)(M_related_Y2);
+		prove sum_Z: *A2(addition_function(A2, N) -> related(Y, Z, A2)){
+			given |A2|;
+			assume A2_addition;
+			return addition_function_unique(N, A, A2, Y, Z)(N_natural, A_addition, A2_addition, Y_related_Z);
+		}
+		sum_Z_N_Y = #sum(Z, N, Y)(N_natural, Y_natural, sum_Z);
+		return sum_commutes(Z, N, Y)(sum_Z_N_Y);
+	}
+	return #multiplication_function(F, N)(F_function, F_domain_naturals, F_codomain_naturals, F_initial, function_recursion);
+}
