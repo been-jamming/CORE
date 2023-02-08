@@ -22,6 +22,10 @@ one_def = successor(ZERO)|ONE|;
 one_natural = successor_natural(ZERO, ONE)(zero_natural, one_def);
 two_def = successor(ONE)|TWO|;
 two_natural = successor_natural(ONE, TWO)(one_natural, two_def);
+three_def = successor(TWO)|THREE|;
+three_natural = successor_natural(TWO, THREE)(two_natural, three_def);
+four_def = successor(THREE)|FOUR|;
+four_natural = successor_natural(THREE, FOUR)(three_natural, four_def);
 
 //First I need to prove that the predecessor of a natural number exists
 prove predecessor: *M(M in NATURALS & ~M = ZERO -> ^N(N in NATURALS & successor(M, N))){
@@ -1024,7 +1028,7 @@ prove sum_cancel: *A*B*C*S(sum(S, A, C) & sum(S, B, C) -> A = B){
 define multiplication_function(F, N): function(F) & domain(NATURALS, F) & codomain(NATURALS, F) & related(ZERO, ZERO, F) & *M*Y*L*Z(successor(L, M) & related(M, Y, F) & related(L, Z, F) -> sum(Z, Y, N));
 
 //Define the product of natural numbers
-define product(A, B, C): A in NATURALS & B in NATURALS & *F(multiplication_function(F, B) -> related(C, A, F));
+define product(A, B, C): B in NATURALS & C in NATURALS & *F(multiplication_function(F, B) -> related(C, A, F));
 
 //Multiplication functions always exist
 prove multiplication_function_exists: *N(N in NATURALS -> ^F(multiplication_function(F, N))){
@@ -1055,3 +1059,104 @@ prove multiplication_function_exists: *N(N in NATURALS -> ^F(multiplication_func
 	}
 	return #multiplication_function(F, N)(F_function, F_domain_naturals, F_codomain_naturals, F_initial, function_recursion);
 }
+
+//Multiplication functions are unique
+prove multiplication_function_unique: *N*F*G*X*Y(N in NATURALS & multiplication_function(F, N) & multiplication_function(G, N) & related(X, Y, F) -> related(X, Y, G)){
+	given |N, F, G, X, Y|;
+	assume N_natural, F_multiplication, G_multiplication, X_related_Y_F;
+	F_function, F_domain, F_codomain, F_zero, F_recursive = expand(F_multiplication);
+	F_relation, F_function = expand(F_function);
+	G_function, G_domain, G_codomain, G_zero, G_recursive = expand(G_multiplication);
+	G_relation, G_function = expand(G_function);
+	X_natural = expand(F_domain)(X)(X_related_Y_F);
+	prove induction_result: *X(X in NATURALS -> *Y(related(X, Y, F) -> related(X, Y, G))){
+		define R(X): *Y(related(X, Y, F) -> related(X, Y, G));
+
+		prove base_case: *Y(related(ZERO, Y, F) -> related(ZERO, Y, G)){
+			given |Y|;
+			assume zero_related_Y_F;
+			Y_eq_ZERO = F_function(ZERO, Y, ZERO)(zero_related_Y_F, F_zero);
+			return replace[<Q: related(ZERO, Q, G)>](Y, ZERO)(Y_eq_ZERO)(G_zero);
+		}
+		base_case = #R(ZERO)(base_case);
+
+		prove inductive_step: *J*K(R(J) & successor(K, J) -> R(K)){
+			given |J, K|;
+			assume R_J, successor_K;
+			R_J = expand(R_J);
+			prove R_K: *Y(related(K, Y, F) -> related(K, Y, G)){
+				given |Y|;
+				assume K_related_Y_F;
+				K_natural = expand(F_domain)(K)(K_related_Y_F);
+				J_natural = predecessor_natural(J, K)(K_natural, successor_K);
+				J_related_W_F = expand(F_domain)(J)(J_natural)|W|;
+				J_related_W_G = R_J(W)(J_related_W_F);
+				sum_Y = F_recursive(J, W, K, Y)(successor_K, J_related_W_F, K_related_Y_F);
+				K_related_Y2_G = expand(G_domain)(K)(K_natural)|Y2|;
+				sum_Y2 = G_recursive(J, W, K, Y2)(successor_K, J_related_W_G, K_related_Y2_G);
+				Y_eq_Y2 = sum_unique(W, N, Y, Y2)(sum_Y, sum_Y2);
+				return replace[<Q: related(K, Q, G)>](Y, Y2)(Y_eq_Y2)(K_related_Y2_G);
+			}
+			return #R(K)(R_K);
+		}
+		
+		given |X|;
+		assume X_natural;
+		return expand(induction[<Q: R(Q)>](base_case, inductive_step)(X)(X_natural));
+	}
+
+	return induction_result(X)(X_natural)(Y)(X_related_Y_F);
+}
+
+//The product of two natural numbers exists
+prove product: *A*B(A in NATURALS & B in NATURALS -> ^C(product(C, A, B))){
+	given |A, B|;
+	assume A_natural, B_natural;
+	F_multiplication = multiplication_function_exists(A)(A_natural)|F|;
+	F_function, F_domain, F_codomain, F_zero, F_recursion = expand(F_multiplication);
+	B_related_C_F = expand(F_domain)(B)(B_natural)|C|;
+	choose C;
+	prove product_C: *G(multiplication_function(G, A) -> related(B, C, G)){
+		given |G|;
+		assume G_multiplication;
+		return multiplication_function_unique(A, F, G, B, C)(A_natural, F_multiplication, G_multiplication, B_related_C_F);
+	}
+	return #product(C, A, B)(A_natural, B_natural, product_C);
+}
+
+//The product of N and 0 is 0
+prove product_zero: *A(A in NATURALS -> product(ZERO, A, ZERO)){
+	given |A|;
+	assume A_natural;
+	prove product_zero: *F(multiplication_function(F, A) -> related(ZERO, ZERO, F)){
+		given |F|;
+		assume F_multiplication;
+		return expand(F_multiplication);
+	}
+	return #product(ZERO, A, ZERO)(A_natural, zero_natural, product_zero);
+}
+
+//The recursive rule for product
+prove product_recursion: *A*B*C*D*E(successor(C, B) & product(D, A, B) & product(E, A, C) -> sum(E, D, A)){
+	given |A, B, C, D, E|;
+	assume C_successor, D_product, E_product;
+	A_natural, B_natural, D_product = expand(D_product);
+	A_natural, C_natural, E_product = expand(E_product);
+	F_multiplication = multiplication_function_exists(A)(A_natural)|F|;
+	B_related_D = D_product(F)(F_multiplication);
+	C_related_E = E_product(F)(F_multiplication);
+	F_function, F_domain, F_codomain, F_zero, F_recursion = expand(F_multiplication);
+	return F_recursion(B, D, C, E)(C_successor, B_related_D, C_related_E);
+}
+
+//The product of two naturals is natural
+prove product_natural: *A*B*C(product(A, B, C) -> A in NATURALS){
+	given |A, B, C|;
+	assume A_product;
+	B_natural, C_natural, A_product = expand(A_product);
+	F_multiplication = multiplication_function_exists(B)(B_natural)|F|;
+	C_related_A = A_product(F)(F_multiplication);
+	F_function, F_domain, F_codomain, F_zero, F_recursion = expand(F_multiplication);
+	return expand(F_codomain)(C, A)(C_related_A);
+}
+
