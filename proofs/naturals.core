@@ -1124,6 +1124,20 @@ prove product: *A*B(A in NATURALS & B in NATURALS -> ^C(product(C, A, B))){
 	return #product(C, A, B)(A_natural, B_natural, product_C);
 }
 
+//The product of two natural numbers is unique
+prove product_unique: *A*B*C*D(product(C, A, B) & product(D, A, B) -> C = D){
+	given |A, B, C, D|;
+	assume C_product, D_product;
+	A_natural, B_natural, C_product = expand(C_product);
+	A_natural, B_natural, D_product = expand(D_product);
+	F_multiplication = multiplication_function_exists(A)(A_natural)|F|;
+	F_function, F_domain, F_codomain, F_zero, F_recursion = expand(F_multiplication);
+	F_relation, F_function = expand(F_function);
+	B_related_C_F = C_product(F)(F_multiplication);
+	B_related_D_F = D_product(F)(F_multiplication);
+	return F_function(B, C, D)(B_related_C_F, B_related_D_F);
+}
+
 //The product of N and 0 is 0
 prove product_zero: *A(A in NATURALS -> product(ZERO, A, ZERO)){
 	given |A|;
@@ -1158,5 +1172,67 @@ prove product_natural: *A*B*C(product(A, B, C) -> A in NATURALS){
 	C_related_A = A_product(F)(F_multiplication);
 	F_function, F_domain, F_codomain, F_zero, F_recursion = expand(F_multiplication);
 	return expand(F_codomain)(C, A)(C_related_A);
+}
+
+prove product_zero2: *A(A in NATURALS -> product(ZERO, ZERO, A)){
+	base_step = product_zero(ZERO)(zero_natural);
+	prove inductive_step: *Y*Z(product(ZERO, ZERO, Y) & successor(Z, Y) -> product(ZERO, ZERO, Z)){
+		given |Y, Z|;
+		assume zero_product_zero_Y, Z_successor;
+		zero_natural, Y_natural, zero_product_zero_Y = expand(zero_product_zero_Y);
+		Z_natural = successor_natural(Y, Z)(Y_natural, Z_successor);
+		prove zero_product_zero_Z: *F(multiplication_function(F, ZERO) -> related(Z, ZERO, F)){
+			given |F|;
+			assume F_multiplication;
+			Y_related_zero_F = zero_product_zero_Y(F)(F_multiplication);
+			F_function, F_domain, F_codomain, F_zero, F_recursion = expand(F_multiplication);
+			Z_related_K_F = expand(F_domain)(Z)(Z_natural)|K|;
+			K_sum = F_recursion(Y, ZERO, Z, K)(Z_successor, Y_related_zero_F, Z_related_K_F);
+			zero_sum = sum_zero(ZERO)(zero_natural);
+			K_eq_ZERO = sum_unique(ZERO, ZERO, K, ZERO)(K_sum, zero_sum);
+			return replace[<Q: related(Z, Q, F)>](K, ZERO)(K_eq_ZERO)(Z_related_K_F);
+		}
+		return #product(ZERO, ZERO, Z)(zero_natural, Z_natural, zero_product_zero_Z);
+	}
+	return induction[<Q: product(ZERO, ZERO, Q)>](base_step, inductive_step);
+}
+
+prove product_recursion2: *A*B*C*D*E(successor(B, A) & product(D, A, C) & product(E, B, C) -> sum(E, D, C)){
+	define R(C): *A*B*D*E(successor(B, A) & product(D, A, C) & product(E, B, C) -> sum(E, D, C));
+	prove base_case: *A*B*D*E(successor(B, A) & product(D, A, ZERO) & product(E, B, ZERO) -> sum(E, D, ZERO)){
+		given |A, B, D, E|;
+		assume B_successor, D_product, E_product;
+		A_natural, zero_natural, D_product_def = expand(D_product);
+		B_natural, zero_natural, E_product_def = expand(E_product);
+		zero_product = product_zero(A)(A_natural);
+		D_eq_ZERO = product_unique(A, ZERO, D, ZERO)(D_product, zero_product);
+		zero_product = product_zero(B)(B_natural);
+		E_eq_ZERO = product_unique(B, ZERO, E, ZERO)(E_product, zero_product);
+		zero_sum = sum_zero(ZERO)(zero_natural);
+		result = replace[<Q: sum(ZERO, Q, ZERO)>](D, ZERO)(D_eq_ZERO)(zero_sum);
+		return replace[<Q: sum(Q, D, ZERO)>](E, ZERO)(E_eq_ZERO)(result);
+	}
+	base_case = #R(ZERO)(base_case);
+
+	prove inductive_step: *N*M(R(N) & successor(M, N) -> R(M)){
+		given |N, M|;
+		assume R_N, M_successor;
+		R_N = expand(R_N);
+		prove R_M: *A*B*D*E(successor(B, A) & product(D, A, M) & product(E, B, M) -> sum(E, D, M)){
+			given |A, B, D, E|;
+			assume B_successor, D_product, E_product;
+			A_natural, M_natural, D_product_def = expand(D_product);
+			B_natural, M_natural, D_product_def = expand(E_product);
+			N_natural = predecessor_natural(N, M)(M_natural, M_successor);
+			J_product = product(A, N)(A_natural, N_natural)|J|;
+			D_sum = product_recursion(A, N, M, J, D)(M_successor, J_product, D_product);
+			K_product = product(B, N)(B_natural, N_natural)|K|;
+			E_sum = product_recursion(B, N, M, K, E)(M_successor, K_product, E_product);
+			K_sum = R_N(A, B, J, K)(B_successor, J_product, K_product);
+			print D_sum;
+			print E_sum;
+			print K_sum;
+		}
+	}
 }
 
