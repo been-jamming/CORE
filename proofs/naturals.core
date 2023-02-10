@@ -1024,6 +1024,54 @@ prove sum_cancel: *A*B*C*S(sum(S, A, C) & sum(S, B, C) -> A = B){
 	return expand(result(C)(C_natural))(A, B, S)(sum_S_A, sum_S_B);
 }
 
+prove sum_combine: *A*B*C*D*E*F(sum(A, D, E) & sum(B, D, F) & sum(F, E, C) -> sum(B, A, C)){
+	define R(C): *A*B*D*E*F(sum(A, D, E) & sum(B, D, F) & sum(F, E, C) -> sum(B, A, C));
+
+	prove base_case: *A*B*D*E*F(sum(A, D, E) & sum(B, D, F) & sum(F, E, ZERO) -> sum(B, A, ZERO)){
+		given |A, B, D, E, F|;
+		assume A_sum, B_sum, F_sum;
+		D_natural, E_natural = sum_operand_natural(D, E, A)(A_sum);
+		B_natural = sum_natural(B, D, F)(B_sum);
+		E_sum = sum_zero(E)(E_natural);
+		E_eq_F = sum_unique(E, ZERO, E, F)(E_sum, F_sum);
+		B_sum = replace[<Q: sum(B, D, Q)>](E, F)(E_eq_F)(B_sum);
+		A_eq_B = sum_unique(D, E, A, B)(A_sum, B_sum);
+		B_sum = sum_zero(B)(B_natural);
+		return replace[<Q: sum(B, Q, ZERO)>](A, B)(A_eq_B)(B_sum);
+	}
+	base_case = #R(ZERO)(base_case);
+
+	prove inductive_step: *N*M(R(N) & successor(M, N) -> R(M)){
+		given |N, M|;
+		assume R_N, M_successor;
+		prove R_M: *A*B*D*E*F(sum(A, D, E) & sum(B, D, F) & sum(F, E, M) -> sum(B, A, M)){
+			given |A, B, D, E, F|;
+			assume A_sum, B_sum, F_sum;
+			D_natural, F_natural = sum_operand_natural(D, F, B)(B_sum);
+			E_natural, M_natural = sum_operand_natural(E, M, F)(F_sum);
+			N_natural = predecessor_natural(N, M)(M_natural, M_successor);
+			FP_sum = sum(E, N)(E_natural, N_natural)|FP|;
+			FP_natural = sum_natural(FP, E, N)(FP_sum);
+			F_successor = sum_recursion(E, N, M, FP, F)(M_successor, FP_sum, F_sum);
+			BP_sum = sum(D, FP)(D_natural, FP_natural)|BP|;
+			B_successor = sum_recursion(D, FP, F, BP, B)(F_successor, BP_sum, B_sum);
+			BP_sum = expand(R_N)(A, BP, D, E, FP)(A_sum, BP_sum, FP_sum);
+			A_natural = sum_natural(A, D, E)(A_sum);
+			B2_sum = sum(A, M)(A_natural, M_natural)|B2|;
+			B2_successor = sum_recursion(A, N, M, BP, B2)(M_successor, BP_sum, B2_sum);
+			B_eq_B2 = successor_unique(B, B2, BP)(B_successor, B2_successor);
+			return replace[<Q: sum(Q, A, M)>](B, B2)(B_eq_B2)(B2_sum);
+		}
+		return #R(M)(R_M);
+	}
+
+	result = induction[<N: R(N)>](base_case, inductive_step);
+	given |A, B, C, D, E, F|;
+	assume A_sum, B_sum, F_sum;
+	E_natural, C_natural = sum_operand_natural(E, C, F)(F_sum);
+	return expand(result(C)(C_natural))(A, B, D, E, F)(A_sum, B_sum, F_sum);
+}
+
 //Defining when a function multiplies its input by N
 define multiplication_function(F, N): function(F) & domain(NATURALS, F) & codomain(NATURALS, F) & related(ZERO, ZERO, F) & *M*Y*L*Z(successor(L, M) & related(M, Y, F) & related(L, Z, F) -> sum(Z, Y, N));
 
@@ -1226,13 +1274,29 @@ prove product_recursion2: *A*B*C*D*E(successor(B, A) & product(D, A, C) & produc
 			N_natural = predecessor_natural(N, M)(M_natural, M_successor);
 			J_product = product(A, N)(A_natural, N_natural)|J|;
 			D_sum = product_recursion(A, N, M, J, D)(M_successor, J_product, D_product);
+			D_natural = sum_natural(D, J, A)(D_sum);
 			K_product = product(B, N)(B_natural, N_natural)|K|;
+			K_natural = product_natural(K, B, N)(K_product);
 			E_sum = product_recursion(B, N, M, K, E)(M_successor, K_product, E_product);
 			K_sum = R_N(A, B, J, K)(B_successor, J_product, K_product);
-			print D_sum;
-			print E_sum;
-			print K_sum;
+			EP_sum = sum(K, A)(K_natural, A_natural)|EP|;
+			E_successor = sum_recursion(K, A, B, EP, E)(B_successor, EP_sum, E_sum);
+			EP_sum = sum_commutes(EP, K, A)(EP_sum);
+			D_sum = sum_commutes(D, J, A)(D_sum);
+			EP_sum = sum_combine(D, EP, N, A, J, K)(D_sum, EP_sum, K_sum);
+			E2_sum = sum(D, M)(D_natural, M_natural)|E2|;
+			E2_successor = sum_recursion(D, N, M, EP, E2)(M_successor, E2_sum, EP_sum);
+			E_eq_E2 = successor_unique(E, E2, EP)(E_successor, E2_successor);
+			return replace[<Q: sum(Q, D, M)>](E, E2)(E_eq_E2)(E2_sum);
 		}
+
+		return #R(M)(R_M);
 	}
+
+	result = induction[<N: R(N)>](base_case, inductive_step);
+	given |A, B, C, D, E|;
+	assume B_successor, D_product, E_product;
+	B_natural, C_natural, E_product_def = expand(E_product);
+	return expand(result(C)(C_natural))(A, B, D, E)(B_successor, D_product, E_product);
 }
 
