@@ -1351,54 +1351,58 @@ prove product_commutes: *A*B*C(product(A, B, C) -> product(A, C, B)){
 //D = A*B, E=A*C, F=B+C, G=A*F : G = D + E
 //Should probably induct on C instead lmao
 prove product_distribues: *A*B*C*D*E*F*G(product(D, A, B) & product(E, A, C) & sum(F, B, C) & product(G, A, F) -> sum(G, D, E)){
-	define R(A): *B*C*D*E*F*G(product(D, A, B) & product(E, A, C) & sum(F, A, B) & product(G, A, F) -> sum(G, D, E));
+	define R(C): *A*B*D*E*F*G(product(D, A, B) & product(E, A, C) & sum(F, B, C) & product(G, A, F) -> sum(G, D, E));
 
-	prove base_case: *B*C*D*E*F*G(product(D, ZERO, B) & product(E, ZERO, C) & sum(F, ZERO, B) & product(G, ZERO, F) -> sum(G, D, E)){
-		given |B, C, D, E, F, G|;
+	prove base_case: *A*B*D*E*F*G(product(D, A, B) & product(E, A, ZERO) & sum(F, B, ZERO) & product(G, A, F) -> sum(G, D, E)){
+		given |A, B, D, E, F, G|;
 		assume D_product, E_product, F_sum, G_product;
-		zero_natural, B_natural = product_operand_natural(ZERO, B, D)(D_product);
-		zero_natural, C_natural = product_operand_natural(ZERO, C, E)(E_product);
-		zero_natural, F_natural = product_operand_natural(ZERO, F, G)(G_product);
-		zero_product = product_zero2(B)(B_natural);
-		D_eq_zero = product_unique(ZERO, B, D, ZERO)(D_product, zero_product);
-		zero_product = product_zero2(C)(C_natural);
-		E_eq_zero = product_unique(ZERO, C, E, ZERO)(E_product, zero_product);
-		zero_product = product_zero2(F)(F_natural);
-		G_eq_zero = product_unique(ZERO, F, G, ZERO)(G_product, zero_product);
-		result = sum_zero(ZERO)(zero_natural);
-		result = replace[<Q: sum(Q, ZERO, ZERO)>](G, ZERO)(G_eq_zero)(result);
-		result = replace[<Q: sum(G, Q, ZERO)>](D, ZERO)(D_eq_zero)(result);
+		A_natural, B_natural = product_operand_natural(A, B, D)(D_product);
+		zero_product = product_zero(A)(A_natural);
+		E_eq_zero = product_unique(A, ZERO, E, ZERO)(E_product, zero_product);
+		B_sum = sum_zero(B)(B_natural);
+		F_eq_B = sum_unique(B, ZERO, F, B)(F_sum, B_sum);
+		G_product = replace[<Q: product(G, A, Q)>](F, B)(F_eq_B)(G_product);
+		D_eq_G = product_unique(A, B, D, G)(D_product, G_product);
+		D_natural = product_natural(D, A, B)(D_product);
+		D_sum = sum_zero(D)(D_natural);
+		result = replace[<Q: sum(Q, D, ZERO)>](D, G)(D_eq_G)(D_sum);
 		return replace[<Q: sum(G, D, Q)>](E, ZERO)(E_eq_zero)(result);
 	}
 	base_case = #R(ZERO)(base_case);
-	
+
 	prove inductive_step: *N*M(R(N) & successor(M, N) -> R(M)){
 		given |N, M|;
 		assume R_N, M_successor;
-		prove R_M: *B*C*D*E*F*G(product(D, M, B) & product(E, M, C) & sum(F, M, B) & product(G, M, F) -> sum(G, D, E)){
-			given |B, C, D, E, F, G|;
+		prove R_M: *A*B*D*E*F*G(product(D, A, B) & product(E, A, M) & sum(F, B, M) & product(G, A, F) -> sum(G, D, E)){
+			given |A, B, D, E, F, G|;
 			assume D_product, E_product, F_sum, G_product;
-			M_natural, B_natural = product_operand_natural(M, B, D)(D_product);
-			M_natural, C_natural = product_operand_natural(M, C, E)(E_product);
-			M_natural, F_natural = product_operand_natural(M, F, G)(G_product);
+			A_natural, B_natural = product_operand_natural(A, B, D)(D_product);
+			A_natural, M_natural = product_operand_natural(A, M, E)(E_product);
 			N_natural = predecessor_natural(N, M)(M_natural, M_successor);
-			DP_product = product(N, B)(N_natural, B_natural)|DP|;
-			D_sum = product_recursion2(N, M, B, DP, D)(M_successor, DP_product, D_product);
-			EP_product = product(N, C)(N_natural, C_natural)|EP|;
-			E_sum = product_recursion2(N, M, C, EP, E)(M_successor, EP_product, E_product);
-			FP_sum = sum(N, B)(N_natural, B_natural)|FP|;
-			FP_natural = sum_natural(FP, N, B)(FP_sum);
-			F_successor = sum_recursion2(N, M, B, FP, F)(M_successor, FP_sum, F_sum);
-			GP_product = product(N, F)(N_natural, F_natural)|GP|;
-			G_sum = product_recursion2(N, M, F, GP, G)(M_successor, GP_product, G_product);
-			GQ_product = product(N, FP)(N_natural, FP_natural)|GQ|;
-			GP_sum = product_recursion(N, FP, F, GQ, GP)(F_successor, GQ_product, GP_product);
-			GQ_sum = expand(R_N)(B, C, DP, EP, FP, GQ)(DP_product, EP_product, FP_sum, GQ_product);
-			print GQ_sum;
-			print GP_sum;
-			print G_sum;
+			D_natural = product_natural(D, A, B)(D_product);
+			E_natural = product_natural(E, A, M)(E_product);
+			EP_product = product(A, N)(A_natural, N_natural)|EP|;
+			E_sum = product_recursion(A, N, M, EP, E)(M_successor, EP_product, E_product);
+			FP_sum = sum(B, N)(B_natural, N_natural)|FP|;
+			FP_natural = sum_natural(FP, B, N)(FP_sum);
+			F_successor = sum_recursion(B, N, M, FP, F)(M_successor, FP_sum, F_sum);
+			GP_product = product(A, FP)(A_natural, FP_natural)|GP|;
+			G_sum = product_recursion(A, FP, F, GP, G)(F_successor, GP_product, G_product);
+			GP_sum = expand(R_N)(A, B, D, EP, FP, GP)(D_product, EP_product, FP_sum, GP_product);
+
+			G2_sum = sum(D, E)(D_natural, E_natural)|G2|;
+			G2_sum2 = sum_combine(GP, G2, A, D, EP, E)(GP_sum, G2_sum, E_sum);
+			G_eq_G2 = sum_unique(GP, A, G, G2)(G_sum, G2_sum2);
+			return replace[<Q: sum(Q, D, E)>](G, G2)(G_eq_G2)(G2_sum);
 		}
+		return #R(M)(R_M);
 	}
+
+	result = induction[<N: R(N)>](base_case, inductive_step);
+	given |A, B, C, D, E, F, G|;
+	assume D_product, E_product, F_sum, G_product;
+	A_natural, C_natural = product_operand_natural(A, C, E)(E_product);
+	return expand(result(C)(C_natural))(A, B, D, E, F, G)(D_product, E_product, F_sum, G_product);
 }
 
 prove product_associates: *A*B*C*D*E*F(product(D, A, B) & product(F, D, C) & product(E, B, C) -> product(F, A, E)){
@@ -1431,12 +1435,23 @@ prove product_associates: *A*B*C*D*E*F(product(D, A, B) & product(F, D, C) & pro
 			N_natural = predecessor_natural(N, M)(M_natural, M_successor);
 			FP_product = product(D, N)(D_natural, N_natural)|FP|;
 			F_sum = product_recursion(D, N, M, FP, F)(M_successor, FP_product, F_product);
-			print F_sum;
 			EP_product = product(B, N)(B_natural, N_natural)|EP|;
 			E_sum = product_recursion(B, N, M, EP, E)(M_successor, EP_product, E_product);
-			print E_sum;
+			E_natural = sum_natural(E, EP, B)(E_sum);
 			//Here I need the distributive property to continue
-			print expand(R_N)(A, B, D, EP, FP)(D_product, FP_product, EP_product);
+			FP_product = expand(R_N)(A, B, D, EP, FP)(D_product, FP_product, EP_product);
+			F2_product = product(A, E)(A_natural, E_natural)|F2|;
+			F2_sum = product_distribues(A, EP, B, FP, D, E, F2)(FP_product, D_product, E_sum, F2_product);
+			F_eq_F2 = sum_unique(FP, D, F, F2)(F_sum, F2_sum);
+			return replace[<Q: product(Q, A, E)>](F, F2)(F_eq_F2)(F2_product);
 		}
+		return #R(M)(R_M);
 	}
+
+	result = induction[<N: R(N)>](base_case, inductive_step);
+	given |A, B, C, D, E, F|;
+	assume D_product, F_product, E_product;
+	D_natural, C_natural = product_operand_natural(D, C, F)(F_product);
+	return expand(result(C)(C_natural))(A, B, D, E, F)(D_product, F_product, E_product);
 }
+
