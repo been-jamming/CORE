@@ -1,0 +1,3 @@
+include "zfc_axioms.core";
+include "relations_axioms.core";
+include "integers_axioms.core";

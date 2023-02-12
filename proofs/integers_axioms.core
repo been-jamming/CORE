@@ -1,0 +1,19 @@
+include "naturals_axioms.core";
+
+object INTEGERS;
+
+dependent define negative(X, Y);
+
+axiom naturals_integers: NATURALS <= INTEGERS;
+axiom predecessor: *X(X in INTEGERS -> ^Y(Y in INTEGERS & successor(X, Y)));
+axiom predecessor_integer: *X*Y(Y in INTEGERS & successor(Y, X) -> X in INTEGERS);
+axiom negative: *X(X in INTEGERS -> ^Y(negative(Y, X)));
+axiom negative_unique: *X*Y*Z(negative(X, Y) & negative(X, Z) -> Y = Z);
+axiom negative_symmetric: *X*Y(negative(X, Y) <-> negative(Y, X));
+axiom negative_natural: *X*Y(negative(X, Y) -> X in NATURALS | Y in NATURALS);
+axiom negative_successor: *X*Y*Z*W(successor(Y, X) & negative(Z, X) & negative(W, Y) -> successor(Z, W));
+
+dependent context naturals{
+	include "naturals_results.core";
+}
+

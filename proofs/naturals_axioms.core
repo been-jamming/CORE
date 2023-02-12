@@ -1,0 +1,16 @@
+axiom exists[P(1)]: *X(P(X) -> ^Y(P(Y)));
+axiom equal_reflexive: *A(A = A);
+axiom equal_symmetric: *A*B(A = B <-> B = A);
+axiom equal_transitive: *A*B*C(A = B & B = C -> A = C);
+
+object NATURALS;
+object ZERO;
+
+axiom zero_natural: ZERO in NATURALS;
+axiom successor: *A^B(successor(B, A));
+axiom successor_unique: *A*B*C(successor(A, C) & successor(B, C) -> A = B);
+axiom successor_natural: *X*Y(X in NATURALS & successor(Y, X) -> Y in NATURALS);
+axiom successor_injective: *X*Y*Z(successor(X, Y) & successor(X, Z) -> Y = Z);
+axiom zero_not_successor: *X(~successor(ZERO, X));
+//Since we're working in ZFC, this axiom is strong enough
+axiom induction[P(1)]: P(ZERO) & *X*Y(P(X) & successor(Y, X) -> P(Y)) -> *N(N in NATURALS -> P(N));
