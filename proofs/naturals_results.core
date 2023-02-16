@@ -27,7 +27,7 @@ axiom lt_alternative: *A*B(A in NATURALS & B in NATURALS -> A < B | B leq A);
 axiom lt_leq_exclusive: *A*B(~(A < B & B leq A));
 axiom leq_cancellation: *A*B*C*D(successor(A, C) & successor(B, D) & A leq B -> C leq D);
 axiom lt_successor_both: *A*B*C*D(successor(B, A) & successor(D, C) & A < C -> B < D);
-axiom leq_to_lt_or_eq: *A*B(A leq B -> A = B | A < B);
+axiom leq_to_lt_or_eq: *A*B(A in NATURALS & B in NATURALS -> (A leq B <-> A = B | A < B));
 axiom lt_trichotomy: *A*B(A in NATURALS & B in NATURALS -> A < B | B < A | A = B);
 axiom lt_predecessor_both: *A*B*C*D(successor(B, A) & successor(D, C) & B < D -> A < C);
 axiom lt_successor_cancel: *A*B*C*D(successor(B, A) & successor(D, C) -> (A < C <-> B < D));

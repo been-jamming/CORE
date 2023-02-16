@@ -1,3 +1,53 @@
 include "zfc_axioms.core";
 include "relations_axioms.core";
 include "integers_axioms.core";
+
+prove negative_integer: *A*B(negative(A, B) -> A in INTEGERS & B in INTEGERS){
+	given |A, B|;
+	assume A_negative_B;
+	B_negative_A = negative_symmetric(A, B)(A_negative_B);
+	return negative(B)(A_negative_B), negative(A)(B_negative_A);
+}
+
+//Just changed this
+define sum(A, B, C): ^D^E^F(negative(D, A) & negative(E, B) & negative(F, C) & (naturals.sum(A, B, C) | naturals.sum(C, A, E) | naturals.sum(E, D, C) | naturals.sum(B, A, F) | naturals.sum(F, D, B) | naturals.sum(D, E, F)));
+
+prove sum_operand_integer: *B*C*A(sum(A, B, C) -> B in INTEGERS & C in INTEGERS){
+	given |B, C, A|;
+	assume A_sum;
+	D_negative, E_negative, F_negative, sum_def = expand(A_sum)|D, E, F|;
+	return negative(B)(E_negative), negative(C)(F_negative);
+}
+
+prove sum_integer: *A*B*C(sum(A, B, C) -> A in INTEGERS){
+	given |A, B, C|;
+	assume A_sum;
+	D_negative, E_negative, F_negative, sum_def = expand(A_sum)|D, E, F|;
+	return negative(A)(D_negative);
+}
+
+prove sum: *B*C(B in INTEGERS & C in INTEGERS -> ^A(sum(A, B, C))){
+	given |B, C|;
+	assume B_integer, C_integer;
+	E_negative = negative(B)(B_integer)|E|;
+	F_negative = negative(C)(C_integer)|F|;
+	return branch(negative_natural(E, B)(E_negative), E_natural, B_natural){
+		return branch(negative_natural(F, C)(F_negative), F_natural, C_natural){
+			D_sum = naturals.sum(E, F)(E_natural, F_natural)|D|;
+			D_natural = naturals.sum_natural(D, E, F)(D_sum);
+			D_integer = expand(naturals_integers)(D)(D_natural);
+			A_negative = negative(D)(D_integer)|A|;
+			D_negative = negative_symmetric(A, D)(A_negative);
+			sum_A = #sum(A, B, C)(D_negative, E_negative, F_negative, D_sum);
+			return trivial(<: sum(A, B, C) -> ^A(sum(A, B, C))>)(sum_A);
+		} or {
+			
+		};
+	} or {
+		return branch(negative_natural(F, C)(F_negative), F_natural, C_natural){
+
+		} or {
+
+		};
+	};
+}

@@ -732,6 +732,31 @@ prove leq_cancellation: *A*B*C*D(successor(A, C) & successor(B, D) & A leq B -> 
 	return #leq(C, D)(C_natural, D_natural, sum_D);
 }
 
+prove leq_cancellation: *A*B*C*D(successor(A, C) & successor(B, D) -> (A leq B <-> C leq D)){
+	given |A, B, C, D|;
+	assume A_successor, B_successor;
+	prove lemma0: C leq D -> A leq B{
+		assume C_leq_D;
+		C_natural, D_natural, C_leq_D_def = expand(C_leq_D);
+		A_natural = successor_natural(C, A)(C_natural, A_successor);
+		B_natural = successor_natural(D, B)(D_natural, B_successor);
+		D_sum = C_leq_D_def|E|;
+		D_sum = sum_commutes(D, C, E)(D_sum);
+		E_natural, C_natural = sum_operand_natural(E, C, D)(D_sum);
+		B2_sum = sum(E, A)(E_natural, A_natural)|B2|;
+		B2_successor = sum_recursion(E, C, A, D, B2)(A_successor, D_sum, B2_sum);
+		B_eq_B2 = successor_unique(B, B2, D)(B_successor, B2_successor);
+		B_sum = replace[<Q: sum(Q, E, A)>](B, B2)(B_eq_B2)(B2_sum);
+		B_sum = sum_commutes(B, E, A)(B_sum);
+		return #leq(A, B)(A_natural, B_natural, B_sum);
+	}
+	prove lemma1: A leq B -> C leq D{
+		assume A_leq_B;
+		return leq_cancellation(A, B, C, D)(A_successor, B_successor, A_leq_B);
+	}
+	return iff(lemma0, lemma1);
+}
+
 prove lt_successor_both: *A*B*C*D(successor(B, A) & successor(D, C) & A < C -> B < D){
 	given |A, B, C, D|;
 	assume successor_B, successor_D, A_lt_C;
@@ -751,74 +776,6 @@ prove lt_successor_both: *A*B*C*D(successor(B, A) & successor(D, C) & A < C -> B
 		return A_lt_C_def(E)(sum_A);
 	}
 	return #<(B, D)(B_natural, D_natural, B_lt_D_def);
-}
-
-prove leq_to_lt_or_eq: *A*B(A leq B -> A = B | A < B){
-	define R(A): *B(A leq B -> A = B | A < B);
-	prove base_case: *B(ZERO leq B -> ZERO = B | ZERO < B){
-		given |B|;
-		assume zero_leq_B;
-		zero_natural, B_natural, exists = expand(zero_leq_B);
-		result = zero_minimal(B)(B_natural);
-		return substitute(<Q(): Q | ZERO < B>)[<: B = ZERO>, <: ZERO = B>](equal_symmetric(B, ZERO))(result);
-	}
-	base_case = #R(ZERO)(base_case);
-	prove inductive_step: *N*M(R(N) & successor(M, N) -> R(M)){
-		given |N, M|;
-		assume R_N, successor_M;
-		R_N = expand(R_N);
-		prove R_def: *B(M leq B -> M = B | M < B){
-			given |B|;
-			assume M_leq_B;
-			M_natural, B_natural, M_leq_B_def = expand(M_leq_B);
-			return branch(excluded_middle[<: B = ZERO>], B_eq_zero, B_not_zero){
-				M_leq_zero = replace[<Q: M leq Q>](B, ZERO)(B_eq_zero)(M_leq_B);
-				prove zero_not_lt_M: ~ZERO < M{
-					assume zero_lt_M;
-					return lt_leq_exclusive(ZERO, M)(zero_lt_M, M_leq_zero);
-				}
-				M_eq_zero = branch(zero_minimal(M)(M_natural), zero_eq_M, zero_lt_M){
-					return zero_eq_M;
-				} or{
-					return trivial(<: false -> M = ZERO>)(zero_not_lt_M(zero_lt_M));
-				};
-				return or(replace[<Q: M = Q>](B, ZERO)(B_eq_zero)(M_eq_zero), <: M < B>);
-			} or {
-				A_natural, successor_B = predecessor(B)(B_natural, B_not_zero)|A|;
-				implication_N = R_N(A);
-				sum_B = M_leq_B_def|C|;
-				N_leq_A = leq_cancellation(M, B, N, A)(successor_M, successor_B, M_leq_B);
-				N_eq_A_or_N_lt_A = implication_N(N_leq_A);
-				return branch(N_eq_A_or_N_lt_A, N_eq_A, N_lt_A){
-					successor_B = replace[<Q: successor(B, Q)>](N, A)(N_eq_A)(successor_B);
-					return or(successor_unique(M, B, N)(successor_M, successor_B), <: M < B>);
-				} or {
-					return or(<: M = B>, lt_successor_both(N, M, A, B)(successor_M, successor_B, N_lt_A));
-				};
-			};
-		}
-		return #R(M)(R_def);
-	}
-
-	result = induction[<N: R(N)>](base_case, inductive_step);
-	given |A, B|;
-	assume A_leq_B;
-	A_natural, B_natural, A_leq_B_def = expand(A_leq_B);
-	return expand(result(A)(A_natural))(B)(A_leq_B);
-}
-
-prove lt_trichotomy: *A*B(A in NATURALS & B in NATURALS -> A < B | B < A | A = B){
-	given |A, B|;
-	assume A_natural, B_natural;
-	return branch(lt_alternative(A, B)(A_natural, B_natural), A_lt_B, B_leq_A){
-		return or(A_lt_B, <: B < A>, <: A = B>);
-	} or {
-		return branch(leq_to_lt_or_eq(B, A)(B_leq_A), B_eq_A, B_lt_A){
-			return or(<: A < B>, <: B < A>, equal_symmetric(B, A)(B_eq_A));
-		} or {
-			return or(<: A < B>, B_lt_A, <: A = B>);
-		};
-	};
 }
 
 prove lt_predecessor_both: *A*B*C*D(successor(B, A) & successor(D, C) & B < D -> A < C){
@@ -861,6 +818,130 @@ prove zero_not_greater: *A(~A < ZERO){
 	assume A_lt_ZERO;
 	A_natural, zero_natural, A_lt_ZERO_def = expand(A_lt_ZERO);
 	return A_lt_ZERO_def(A)(sum_commutes(A, A, ZERO)(sum_zero(A)(A_natural)));
+}
+
+prove leq_to_lt_or_eq: *A*B(A leq B -> A = B | A < B){
+	define R(A): *B(A leq B -> A = B | A < B);
+	prove base_case: *B(ZERO leq B -> ZERO = B | ZERO < B){
+		given |B|;
+		assume zero_leq_B;
+		zero_natural, B_natural, exists = expand(zero_leq_B);
+		result = zero_minimal(B)(B_natural);
+		return substitute(<Q(): Q | ZERO < B>)[<: B = ZERO>, <: ZERO = B>](equal_symmetric(B, ZERO))(result);
+	}
+	base_case = #R(ZERO)(base_case);
+	prove inductive_step: *N*M(R(N) & successor(M, N) -> R(M)){
+		given |N, M|;
+		assume R_N, successor_M;
+		R_N = expand(R_N);
+		prove R_def: *B(M leq B -> M = B | M < B){
+			given |B|;
+			assume M_leq_B;
+			M_natural, B_natural, M_leq_B_def = expand(M_leq_B);
+			return branch(excluded_middle[<: B = ZERO>], B_eq_zero, B_not_zero){
+				M_leq_zero = replace[<Q: M leq Q>](B, ZERO)(B_eq_zero)(M_leq_B);
+				prove zero_not_lt_M: ~ZERO < M{
+					assume zero_lt_M;
+					return lt_leq_exclusive(ZERO, M)(zero_lt_M, M_leq_zero);
+				}
+				M_eq_zero = branch(zero_minimal(M)(M_natural), zero_eq_M, zero_lt_M){
+					return zero_eq_M;
+				} or{
+					return trivial(<: false -> M = ZERO>)(zero_not_lt_M(zero_lt_M));
+				};
+				return or(replace[<Q: M = Q>](B, ZERO)(B_eq_zero)(M_eq_zero), <: M < B>);
+			} or {
+				A_natural, successor_B = predecessor(B)(B_natural, B_not_zero)|A|;
+				implication_N = R_N(A);
+				sum_B = M_leq_B_def|C|;
+				N_leq_A = leq_cancellation(M, B, N, A)(successor_M, successor_B)(M_leq_B);
+				N_eq_A_or_N_lt_A = implication_N(N_leq_A);
+				return branch(N_eq_A_or_N_lt_A, N_eq_A, N_lt_A){
+					successor_B = replace[<Q: successor(B, Q)>](N, A)(N_eq_A)(successor_B);
+					return or(successor_unique(M, B, N)(successor_M, successor_B), <: M < B>);
+				} or {
+					return or(<: M = B>, lt_successor_both(N, M, A, B)(successor_M, successor_B, N_lt_A));
+				};
+			};
+		}
+		return #R(M)(R_def);
+	}
+
+	result = induction[<N: R(N)>](base_case, inductive_step);
+	given |A, B|;
+	assume A_leq_B;
+	A_natural, B_natural, A_leq_B_def = expand(A_leq_B);
+	return expand(result(A)(A_natural))(B)(A_leq_B);
+}
+
+//This will give a stronger version of the previous theorem
+//So I will just name it the same
+prove leq_to_lt_or_eq: *A*B(A in NATURALS & B in NATURALS -> (A leq B <-> A = B | A < B)){
+	define R(A): A in NATURALS & *B(A = B | A < B -> A leq B);
+
+	prove base_case: *B(ZERO = B | ZERO < B -> ZERO leq B){
+		given |B|;
+		assume either;
+		B_natural = branch(either, zero_eq_B, zero_lt_B){
+			return replace[<Q: Q in NATURALS>](ZERO, B)(zero_eq_B)(zero_natural);
+		} or {
+			zero_natural, B_natural, lt_def = expand(zero_lt_B);
+			return B_natural;
+		};
+		B_sum = sum_commutes(B, B, ZERO)(sum_zero(B)(B_natural));
+		return #leq(ZERO, B)(zero_natural, B_natural, B_sum);
+	}
+	base_case = #R(ZERO)(zero_natural, base_case);
+
+	prove inductive_step: *N*M(R(N) & successor(M, N) -> R(M)){
+		given |N, M|;
+		assume R_N, M_successor;
+		N_natural, R_N = expand(R_N);
+		M_natural = successor_natural(N, M)(N_natural, M_successor);
+		prove R_M: *B(M = B | M < B -> M leq B){
+			given |B|;
+			assume either;
+			return branch(either, M_eq_B, M_lt_B){
+				M_leq_M = leq_reflexive(M)(M_natural);
+				return replace[<Q: M leq Q>](M, B)(M_eq_B)(M_leq_M);
+			} or {
+				M_natural, B_natural, M_lt_B_def = expand(M_lt_B);
+				prove B_not_zero: ~B = ZERO{
+					assume B_eq_zero;
+					return zero_not_greater(M)(replace[<Q: M < Q>](B, ZERO)(B_eq_zero)(M_lt_B));
+				}
+				BP_natural, B_successor = predecessor(B)(B_natural, B_not_zero)|BP|;
+				N_lt_BP = lt_successor_cancel(N, M, BP, B)(M_successor, B_successor)(M_lt_B);
+				N_leq_BP = R_N(BP)(N_lt_BP);
+				return leq_cancellation(M, B, N, BP)(M_successor, B_successor)(N_leq_BP);
+			};
+		}
+		return #R(M)(M_natural, R_M);
+	}
+
+	result = induction[<N: R(N)>](base_case, inductive_step);
+	given |A, B|;
+	assume A_natural, B_natural;
+	prove lemma: A = B | A < B -> A leq B{
+		assume either;
+		A_natural, result_A = expand(result(A)(A_natural));
+		return result_A(B)(either);
+	}
+	return iff(leq_to_lt_or_eq(A, B), lemma);
+}
+
+prove lt_trichotomy: *A*B(A in NATURALS & B in NATURALS -> A < B | B < A | A = B){
+	given |A, B|;
+	assume A_natural, B_natural;
+	return branch(lt_alternative(A, B)(A_natural, B_natural), A_lt_B, B_leq_A){
+		return or(A_lt_B, <: B < A>, <: A = B>);
+	} or {
+		return branch(leq_to_lt_or_eq(B, A)(B_natural, A_natural)(B_leq_A), B_eq_A, B_lt_A){
+			return or(<: A < B>, <: B < A>, equal_symmetric(B, A)(B_eq_A));
+		} or {
+			return or(<: A < B>, B_lt_A, <: A = B>);
+		};
+	};
 }
 
 prove greater_than_zero: *A*B(A < B -> ZERO < B){
