@@ -553,6 +553,12 @@ prove sum_commutes: *A*B*C(sum(A, B, C) -> sum(A, C, B)){
 	return expand(R_C)(A, B)(sum_A);
 }
 
+//Trivially strengthening the result
+prove sum_commutes: *A*B*C(sum(A, B, C) <-> sum(A, C, B)){
+	given |A, B, C|;
+	return iff(sum_commutes(A, B, C), sum_commutes(A, C, B));
+}
+
 //If C is the sum of A and B, then A and B are natural numbers
 prove sum_operand_natural: *A*B*C(sum(C, A, B) -> A in NATURALS & B in NATURALS){
 	given |A, B, C|;
@@ -928,6 +934,17 @@ prove leq_to_lt_or_eq: *A*B(A in NATURALS & B in NATURALS -> (A leq B <-> A = B 
 		return result_A(B)(either);
 	}
 	return iff(leq_to_lt_or_eq(A, B), lemma);
+}
+
+prove leq_alternative: *A*B(A in NATURALS & B in NATURALS -> A leq B | B leq A){
+	given |A, B|;
+	assume A_natural, B_natural;
+	return branch(lt_alternative(A, B)(A_natural, B_natural), A_lt_B, B_leq_A){
+		A_leq_B = leq_to_lt_or_eq(A, B)(A_natural, B_natural)(A_lt_B);
+		return or(A_leq_B, <: B leq A>);
+	} or {
+		return or(<: A leq B>, B_leq_A);
+	};
 }
 
 prove lt_trichotomy: *A*B(A in NATURALS & B in NATURALS -> A < B | B < A | A = B){

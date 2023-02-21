@@ -14,7 +14,7 @@ axiom sum_recursion: *A*B*C*D*E(successor(C, B) & sum(D, A, B) & sum(E, A, C) ->
 axiom sum_natural: *A*B*C(sum(A, B, C) -> A in NATURALS);
 axiom sum_zero2: *A(A in NATURALS -> sum(A, ZERO, A));
 axiom sum_recursion2: *A*B*C*D*E(successor(B, A) & sum(D, A, C) & sum(E, B, C) -> successor(E, D));
-axiom sum_commutes: *A*B*C(sum(A, B, C) -> sum(A, C, B));
+axiom sum_commutes: *A*B*C(sum(A, B, C) <-> sum(A, C, B));
 axiom sum_operand_natural: *A*B*C(sum(C, A, B) -> A in NATURALS & B in NATURALS);
 axiom sum_zero_identity: *A*B(sum(B, A, ZERO) | sum(B, ZERO, A) -> A = B);
 axiom sum_associates: *A*B*C*D*E*F(sum(D, A, B) & sum(F, D, C) & sum(E, B, C) -> sum(F, A, E));
@@ -28,6 +28,7 @@ axiom lt_leq_exclusive: *A*B(~(A < B & B leq A));
 axiom leq_cancellation: *A*B*C*D(successor(A, C) & successor(B, D) & A leq B -> C leq D);
 axiom lt_successor_both: *A*B*C*D(successor(B, A) & successor(D, C) & A < C -> B < D);
 axiom leq_to_lt_or_eq: *A*B(A in NATURALS & B in NATURALS -> (A leq B <-> A = B | A < B));
+axiom leq_alternative: *A*B(A in NATURALS & B in NATURALS -> A leq B | B leq A);
 axiom lt_trichotomy: *A*B(A in NATURALS & B in NATURALS -> A < B | B < A | A = B);
 axiom lt_predecessor_both: *A*B*C*D(successor(B, A) & successor(D, C) & B < D -> A < C);
 axiom lt_successor_cancel: *A*B*C*D(successor(B, A) & successor(D, C) -> (A < C <-> B < D));

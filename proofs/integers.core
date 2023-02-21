@@ -38,16 +38,73 @@ prove sum: *B*C(B in INTEGERS & C in INTEGERS -> ^A(sum(A, B, C))){
 			D_integer = expand(naturals_integers)(D)(D_natural);
 			A_negative = negative(D)(D_integer)|A|;
 			D_negative = negative_symmetric(A, D)(A_negative);
-			sum_A = #sum(A, B, C)(D_negative, E_negative, F_negative, D_sum);
-			return trivial(<: sum(A, B, C) -> ^A(sum(A, B, C))>)(sum_A);
+			A_sum = #sum(A, B, C)(D_negative, E_negative, F_negative, D_sum);
+			return trivial(<: sum(A, B, C) -> ^A(sum(A, B, C))>)(A_sum);
 		} or {
-			
+			return branch(naturals.leq_alternative(E, C)(E_natural, C_natural), E_leq_C, C_leq_E){
+				E_natural, C_natural, C_sum = expand(E_leq_C);
+				C_sum = C_sum|A|;
+				E_natural, A_natural = naturals.sum_operand_natural(E, A, C)(C_sum);
+				A_integer = expand(naturals_integers)(A)(A_natural);
+				D_negative = negative(A)(A_integer)|D|;
+				C_sum = naturals.sum_commutes(C, E, A)(C_sum);
+				A_sum = #sum(A, B, C)(D_negative, E_negative, F_negative, C_sum);
+				return trivial(<: sum(A, B, C) -> ^A(sum(A, B, C))>)(A_sum);
+			} or {
+				C_natural, E_natural, E_sum = expand(C_leq_E);
+				E_sum = E_sum|D|;
+				C_natural, D_natural = naturals.sum_operand_natural(C, D, E)(E_sum);
+				D_integer = expand(naturals_integers)(D)(D_natural);
+				A_negative = negative(D)(D_integer)|A|;
+				D_negative = negative_symmetric(A, D)(A_negative);
+				E_sum = naturals.sum_commutes(E, C, D)(E_sum);
+				A_sum = #sum(A, B, C)(D_negative, E_negative, F_negative, E_sum);
+				return trivial(<: sum(A, B, C) -> ^A(sum(A, B, C))>)(A_sum);
+			};
 		};
 	} or {
 		return branch(negative_natural(F, C)(F_negative), F_natural, C_natural){
-
+			return branch(naturals.leq_alternative(B, F)(B_natural, F_natural), B_leq_F, F_leq_B){
+				B_natural, F_natural, F_sum = expand(B_leq_F);
+				F_sum = F_sum|D|;
+				B_natural, D_natural = naturals.sum_operand_natural(B, D, F)(F_sum);
+				D_integer = expand(naturals_integers)(D)(D_natural);
+				A_negative = negative(D)(D_integer)|A|;
+				D_negative = negative_symmetric(A, D)(A_negative);
+				F_sum = naturals.sum_commutes(F, B, D)(F_sum);
+				A_sum = #sum(A, B, C)(D_negative, E_negative, F_negative, F_sum);
+				return trivial(<: sum(A, B, C) -> ^A(sum(A, B, C))>)(A_sum);
+			} or {
+				F_natural, B_natural, B_sum = expand(F_leq_B);
+				B_sum = B_sum|A|;
+				F_natural, A_natural = naturals.sum_operand_natural(F, A, B)(B_sum);
+				A_integer = expand(naturals_integers)(A)(A_natural);
+				D_negative = negative(A)(A_integer)|D|;
+				B_sum = naturals.sum_commutes(B, F, A)(B_sum);
+				A_sum = #sum(A, B, C)(D_negative, E_negative, F_negative, B_sum);
+				return trivial(<: sum(A, B, C) -> ^A(sum(A, B, C))>)(A_sum);
+			};
 		} or {
-
+			A_sum = naturals.sum(B, C)(B_natural, C_natural)|A|;
+			A_natural = naturals.sum_natural(A, B, C)(A_sum);
+			A_integer = expand(naturals_integers)(A)(A_natural);
+			D_negative = negative(A)(A_integer)|D|;
+			A_sum = #sum(A, B, C)(D_negative, E_negative, F_negative, A_sum);
+			return trivial(<: sum(A, B, C) -> ^A(sum(A, B, C))>)(A_sum);
 		};
 	};
 }
+
+prove sum_commutes: *A*B*C(sum(A, B, C) <-> sum(A, C, B)){
+	prove lemma: *A*B*C(sum(A, B, C) -> sum(A, C, B)){
+		given |A, B, C|;
+		assume A_sum;
+		result = substitute(<Q(): ^D^E^F(negative(D, A) & negative(E, B) & negative(F, C) & (Q | naturals.sum(C, A, E) | naturals.sum(E, D, C) | naturals.sum(B, A, F) | naturals.sum(F, D, B) | naturals.sum(D, E, F)))>)[<: naturals.sum(A, B, C)>, <: naturals.sum(A, C, B)>](naturals.sum_commutes(A, B, C))(expand(A_sum));
+		result = substitute(<Q(3): ^D^E^F(negative(D, A) & negative(E, B) & negative(F, C) & (naturals.sum(A, C, B) | naturals.sum(C, A, E) | naturals.sum(E, D, C) | naturals.sum(B, A, F) | naturals.sum(F, D, B) | Q(D, E, F)))>)[<D, E, F: naturals.sum(D, E, F)>, <D, E, F: naturals.sum(D, F, E)>](naturals.sum_commutes)(result);
+		result = trivial(<: ^D^E^F(negative(D, A) & negative(E, B) & negative(F, C) & (naturals.sum(A, C, B) | naturals.sum(C, A, E) | naturals.sum(E, D, C) | naturals.sum(B, A, F) | naturals.sum(F, D, B) | naturals.sum(D, F, E))) -> ^D^E^F(negative(D, A) & negative(E, C) & negative(F, B) & (naturals.sum(A, C, B) | naturals.sum(B, A, E) | naturals.sum(E, D, B) | naturals.sum(C, A, F) | naturals.sum(F, D, C) | naturals.sum(D, E, F)))>)(result);
+		return #sum(A, C, B)(result);
+	}
+	given |A, B, C|;
+	return iff(lemma(A, B, C), lemma(A, C, B));
+}
+
