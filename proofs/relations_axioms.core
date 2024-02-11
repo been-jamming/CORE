@@ -15,4 +15,5 @@ axiom domain_related: *A*B*X*Y(domain(B, A) & related(X, Y, A) -> X in B);
 axiom equivalence_class: *A*B*C(equivalence(A, B) & C in B -> ^D(C in D & equivalence_class(D, A)));
 axiom equivalence_class_disjoint: *A*B*C*D*E(equivalence_class(A, C) & equivalence_class(B, C) & equivalence(C, D) & E in A & E in B -> A = B);
 axiom equivalence_class_member: *A*B*C*X(equivalence_class(A, B) & equivalence(B, C) & X in A -> *Y(Y in A <-> related(X, Y, B)));
+axiom choice_function: *F*A*B(function(F) & domain(A, F) & codomain(B, F) & *Y(Y in B -> ^X(X in A & related(X, Y, F))) -> ^G(function(G) & domain(B, G) & codomain(A, G) & *Y*X(related(Y, X, G) -> related(X, Y, F))));
 

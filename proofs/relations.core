@@ -214,3 +214,80 @@ prove relation_unique: *R*S(is_relation(R) & is_relation(S) & *X*Y(related(X, Y,
 	return #=(R, S)(equal_def);
 }
 
+prove choice_function: *F*A*B(function(F) & domain(A, F) & codomain(B, F) & *Y(Y in B -> ^X(X in A & related(X, Y, F))) -> ^G(function(G) & domain(B, G) & codomain(A, G) & *Y*X(related(Y, X, G) -> related(X, Y, F)))){
+	given |F, A, B|;
+	assume function_F, domain_F, codomain_F, surjective_F;
+	define P(Y, X): related(X, Y, F);
+
+	prove choice_hyp: *Y(Y in B -> ^X*Z(P(Z, X) <-> Z = Y)){
+		given |Y|;
+		assume Y_in_B;
+		X_in_A, X_Y_related_F = surjective_F(Y)(Y_in_B)|X|;
+		choose X;
+		given |Z|;
+		relation_F, function_F = expand(function_F);
+		prove lemma0: P(Z, X) -> Z = Y{
+			assume P_Z_X;
+			Y_eq_Z = function_F(X, Y, Z)(X_Y_related_F, expand(P_Z_X));
+			return equal_symmetric(Y, Z)(Y_eq_Z);
+		}
+		prove lemma1: Z = Y -> P(Z, X){
+			assume Z_eq_Y;
+			X_related_Z_F = replace[<Q: related(X, Q, F)>](Z, Y)(Z_eq_Y)(X_Y_related_F);
+			return #P(Z, X)(X_related_Z_F);
+		}
+		return iff(lemma0, lemma1);
+	}
+
+	choice_J = axiom_choice[<Y, X: P(Y, X)>](B)(choice_hyp)|J|;
+	
+	relation_G, G_def = relation_exists[<Y, X: X in J & related(X, Y, F)>](B, A)|G|;
+	prove function_G: *Y*X*Z(related(Y, X, G) & related(Y, Z, G) -> X = Z){
+		given |Y, X, Z|;
+		assume Y_X_related_G, Y_Z_related_G;
+		X_in_J, X_Y_related_F, Y_in_B, X_in_A = G_def(Y, X)(Y_X_related_G);
+		Z_in_J, Z_Y_related_F, Y_in_B, Z_in_A = G_def(Y, Z)(Y_Z_related_G);
+		P_Y_X = #P(Y, X)(X_Y_related_F);
+		P_Y_Z = #P(Y, Z)(Z_Y_related_F);
+		K_def = choice_J(Y)(Y_in_B)|K|;
+		X_eq_K = K_def(X)(X_in_J, P_Y_X);
+		Z_eq_K = K_def(Z)(Z_in_J, P_Y_Z);
+		K_eq_Z = equal_symmetric(Z, K)(Z_eq_K);
+		return equal_transitive(X, K, Z)(X_eq_K, K_eq_Z);
+	}
+	function_G = #function(G)(relation_G, function_G);
+
+	prove domain_B: *Y(Y in B <-> ^X(related(Y, X, G))){
+		given |Y|;
+		prove lemma0: Y in B -> ^X(related(Y, X, G)){
+			assume Y_in_B;
+			X_in_J, P_Y_X = choice_J(Y)(Y_in_B)|X|(X)(equal_reflexive(X));
+			X_related_Y_F = expand(P_Y_X);
+			X_in_A = expand(domain_F)(X)(X_related_Y_F);
+			return G_def(Y, X)(X_in_J, X_related_Y_F, Y_in_B, X_in_A);
+		}
+		prove lemma1: ^X(related(Y, X, G)) -> Y in B{
+			assume exists;
+			Y_related_X_G = exists|X|;
+			return G_def(Y, X)(Y_related_X_G);
+		}
+		return iff(lemma0, lemma1);
+	}
+	domain_B = #domain(B, G)(domain_B);
+
+	prove codomain_A: *Y*X(related(Y, X, G) -> X in A){
+		given |Y, X|;
+		assume Y_X_related_G;
+		return G_def(Y, X)(Y_X_related_G);
+	}
+	codomain_A = #codomain(A, G)(codomain_A);
+
+	prove condition: *Y*X(related(Y, X, G) -> related(X, Y, F)){
+		given |Y, X|;
+		assume Y_X_related_G;
+		return G_def(Y, X)(Y_X_related_G);
+	}
+
+	return function_G, domain_B, codomain_A, condition;
+}
+
