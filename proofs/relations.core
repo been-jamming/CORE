@@ -70,6 +70,8 @@ prove relation_exists[P(2)]: *A*B^R(is_relation(R) & *X*Y(related(X, Y, R) <-> P
 
 //A symmetric relation
 define symmetric(A): *X*Y(related(X, Y, A) <-> related(Y, X, A));
+//An antisymmetric relation
+define antisymmetric(A): *X*Y(related(X, Y, A) & related(Y, X, A) -> X = Y);
 //A transitive relation
 define transitive(A): *X*Y*Z(related(X, Y, A) & related(Y, Z, A) -> related(X, Z, A));
 //When a relation is reflexive with respect to another set

@@ -1,0 +1,11 @@
+include "zfc_axioms.core";
+include "relations_axioms.core";
+
+define partial_order(A, B): is_relation(A) & domain(B, A) & codomain(B, A) & antisymmetric(A) & transitive(A) & reflexive(A, B);
+define chain(C, A): *X*Y(X in C & Y in X -> related(X, Y, A) | related(Y, X));
+define upper_bound(M, C, A): *X(X in C -> related(X, M, A));
+
+prove zorns_lemma: *A*B(partial_order(A, B) & *C(subset(C, B) & chain(C, A) -> ^M(upper_bound(M, C, A))) -> ^M(upper_bound(M, B, A))){
+	given |A, B|;
+	assume A_partial_order, chain_condition;
+}

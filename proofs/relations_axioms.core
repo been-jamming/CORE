@@ -2,6 +2,7 @@ dependent define is_relation(A);
 dependent define related(X, Y, A);
 dependent define function(A): is_relation(A) & *X*Y*Z(related(X, Y, A) & related(X, Z, A) -> Y = Z);
 dependent define symmetric(A): *X*Y(related(X, Y, A) <-> related(Y, X, A));
+dependent define antisymmetric(A): *X*Y(related(X, Y, A) & related(Y, X, A) -> X = Y);
 dependent define transitive(A): *X*Y*Z(related(X, Y, A) & related(Y, Z, A) -> related(X, Z, A));
 dependent define reflexive(A, B): *X(X in B -> related(X, X, A));
 dependent define domain(A, B): *X(X in A <-> ^Y(related(X, Y, B)));
