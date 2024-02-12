@@ -1,12 +1,133 @@
 include "zfc_depend.core";
 include "relations_axioms.core";
 
-define partial_order(A, B): is_relation(A) & domain(B, A) & codomain(B, A) & antisymmetric(A) & transitive(A) & reflexive(A, B);
-define chain(C, A): *X*Y(X in C & Y in X -> related(X, Y, A) | related(Y, X, A));
+define partial_order(A, B): is_relation(A) & antisymmetric(A) & transitive(A) & reflexive(A, B);
+define chain(C, A): *X*Y(X in C & Y in C -> related(X, Y, A) | related(Y, X, A));
 define upper_bound(M, C, A): *X(X in C -> related(X, M, A));
+define maximal(M, C, A): *X(X in C & related(M, X, A) <-> X = M);
 
-prove zorns_lemma: *A*B(partial_order(A, B) & *C(C <= B & chain(C, A) -> ^M(upper_bound(M, C, A))) -> ^M(upper_bound(M, B, A))){
+prove zorns_lemma: *A*B(partial_order(A, B) & *C(C <= B & chain(C, A) -> ^M(M in B & upper_bound(M, C, A))) -> ^M(maximal(M, B, A))){
 	given |A, B|;
 	assume A_partial_order, chain_condition;
+	define strict_bound(X, C): *Y(Y in C -> ~Y = X & related(Y, X, A));
+	define well_order_chain(C): *D*Z(D <= C & Z in D -> ^X(X in D & *Y(Y in D -> related(X, Y, A))));
+
+	//Since A is a partial order, it's a relation satisfying the 3 properties below
+	relation_A, antisymmetric_A, transitive_A, reflexive_A = expand(A_partial_order);
+
+	//The proof is by contradiction
+	prove contradiction: ~~^M(maximal(M, B, A)){
+		//We first assume no maximal element of B exists
+		assume no_maximal;
+
+		//We must know that for every chain there exists a strict upper bound
+		//Constructing that bound is actually a bit tricky
+		prove strict_bounds_exist: *C(C <= B & chain(C, A) -> ^X(strict_bound(X, C))){
+			given |C|;
+			assume C_subset_B, chain_C;
+			
+			M_in_B, M_upper_bound = chain_condition(C)(C_subset_B, chain_C)|M|;
+			X_exists = branch(excluded_middle[<: ^X(related(M, X, A) & ~X = M)>], X_exists, X_not_exists){
+				return X_exists;
+			} or {
+				prove contradict: *X(X in B & related(M, X, A) <-> X = M){
+					given |X|;
+					prove lemma0: X in B & related(M, X, A) -> X = M{
+						assume X_in_B, M_related_X;
+						return branch(excluded_middle[<: X = M>], result, X_not_M){
+							return result;
+						} or {
+							contra = X_not_exists(M_related_X, X_not_M);
+							return trivial(<:false -> X = M>)(contra);
+						};
+					}
+					prove lemma1: X = M -> X in B & related(M, X, A){
+						assume X_eq_M;
+						X_in_B = replace[<W: W in B>](X, M)(X_eq_M)(M_in_B);
+						M_related_M = expand(reflexive_A)(M)(M_in_B);
+						return X_in_B, replace[<W: related(M, W, A)>](X, M)(X_eq_M)(M_related_M);
+					}
+					return iff(lemma0, lemma1);
+				}
+				return trivial(<: false -> ^X(related(M, X, A) & ~X = M)>)(no_maximal(#maximal(M, B, A)(contradict)));
+			};
+			M_related_X, X_not_M = X_exists|X|;
+			choose X;
+			prove X_strict_bound: *Y(Y in C -> ~Y = X & related(Y, X, A)){
+				given |Y|;
+				assume Y_in_C;
+				Y_related_M = expand(M_upper_bound)(Y)(Y_in_C);
+				Y_related_X = expand(transitive_A)(Y, M, X)(Y_related_M, M_related_X);
+				prove Y_not_X: ~Y = X{
+					assume Y_eq_X;
+					M_related_Y = replace[<W: related(M, W, A)>](Y, X)(Y_eq_X)(M_related_X);
+					M_eq_Y = expand(antisymmetric_A)(M, Y)(M_related_Y, Y_related_M);
+					M_eq_X = equal_transitive(M, Y, X)(M_eq_Y, Y_eq_X);
+					X_eq_M = equal_symmetric(M, X)(M_eq_X);
+					return X_not_M(X_eq_M);
+				}
+				return Y_not_X, Y_related_X;
+			}
+			return #strict_bound(X, C)(X_strict_bound);
+		}
+
+		//Now, for each chain we would like to choose an arbitrary strict upper bound
+		//To do this, first we will construct the set of all chains
+		P_def = power_set(B)|P|;
+		P_def = expand(P_def);
+		//Let V be the collection of all chains
+		V_def = specify[<C: chain(C, A)>](P)|V|;
+		//We'd like a more convenient definition of V, which we'll prove here
+		prove V_def: *C(C in V <-> C <= B & chain(C, A)){
+			given |C|;
+			equiv = V_def(C);
+			return substitute(<W(): C in V <-> W() & chain(C, A)>)[<: C <= B>, <: C in P>](P_def(C))(equiv);
+		}
+
+		//We need to modify the statement of strict bounds existing slightly
+		prove strict_bounds_exist: *C(C in V -> ^X(chain(C, A) & strict_bound(X, C))){
+			given |C|;
+			assume C_in_V;
+			C_subset_B, C_chain = V_def(C)(C_in_V);
+			return C_chain, strict_bounds_exist(C)(C_subset_B, C_chain)|X|;
+		}
+
+		//Here we apply the axiom of choice to get a choice function which takes each chain to a strict upper bound
+		F_def = choice_function[<C, X: chain(C, A) & strict_bound(X, C)>](V)(strict_bounds_exist)|F|;
+
+		//Next we'll define chain cuts. A chain cut by x is the set of elements less than x
+		define cut(D, X, C): *Y(Y in D <-> Y in C & related(Y, X, A) & ~Y = X);
+
+		//We need to know that the cut of a chain is still a chain
+		prove cut_chain: *C*X*D(chain(C, A) & X in C & cut(D, X, C) -> chain(D, A)){
+			given |C, X, D|;
+			assume chain_C, X_in_C, cut_D;
+			prove chain_D: *Y*Z(Y in D & Z in D -> related(Y, Z, A) | related(Z, Y, A)){
+				given |Y, Z|;
+				assume Y_in_D, Z_in_D;
+				Y_in_C, Y_related_X, Y_not_X = expand(cut_D)(Y)(Y_in_D);
+				Z_in_C, Z_related_X, Z_not_X = expand(cut_D)(Z)(Z_in_D);
+				return expand(chain_C)(Y, Z)(Y_in_C, Z_in_C);
+			}
+			return #chain(D, A)(chain_D);
+		}
+
+		//Now we define a conforming chain
+		//A chain is conforming if it is well ordered and its elements satisfy the choices that F makes
+		define conforming(C): well_order_chain(C) & *X*D(X in C & cut(D, X, C) -> related(D, X, F));
+
+		//Here is the main idea of the proof:
+		//For any two conforming chains which aren't equal, one is an initial segment of the other
+		prove initial_segments: *C*D*Z(chain(C, A) & chain(D, A) & conforming(C) & conforming(D) & Z in C & ~Z in D -> ^X(X in C & cut(D, X, C))){
+			given |C, D, Z|;
+			assume chain_C, chain_D, conforming_C, conforming_D, Z_in_C, Z_not_in_D;
+		}
+	}
+
+	return branch(excluded_middle[<:^M(upper_bound(M, B, A))>], result, not_result){
+		return result;
+	} or {
+		return trivial(false -> ^M(upper_bound(M, B, A)))(contradiction(not_result));
+	};
 }
 
