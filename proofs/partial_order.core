@@ -121,6 +121,62 @@ prove zorns_lemma: *A*B(partial_order(A, B) & *C(C <= B & chain(C, A) -> ^M(M in
 		prove initial_segments: *C*D*Z(chain(C, A) & chain(D, A) & conforming(C) & conforming(D) & Z in C & ~Z in D -> ^X(X in C & cut(D, X, C))){
 			given |C, D, Z|;
 			assume chain_C, chain_D, conforming_C, conforming_D, Z_in_C, Z_not_in_D;
+			well_order_C, conforming_C = expand(conforming_C);
+			well_order_D, conforming_D = expand(conforming_D);
+			//We construct the set S which is C\D
+			S_def = specify[<W: ~W in D>](C)|S|;
+			//S is a subset of C
+			prove S_subset_C: *W(W in S -> W in C){
+				given |W|;
+				assume W_in_S;
+				return S_def(W)(W_in_S);
+			}
+			S_subset_C = #<=(S, C)(S_subset_C);
+			//Z is a member of S, so S is non-empty
+			Z_in_S = S_def(Z)(Z_in_C, Z_not_in_D);
+			//Let X be the minimum of S
+			X_in_S, X_minimum = expand(well_order_C)(S, Z)(S_subset_C, Z_in_S)|X|;
+			choose X;
+			//By construction, X is in C and X is not in D
+			X_in_C, X_not_in_D = S_def(X)(X_in_S);
+
+			//The hard part... we must prove that D is a subset of X
+			prove D_subset_C: *W(W in D -> W in C){
+				//If D is not a subset of C, then there exists some W in D which does not belong to C
+				//The idea is to choose the minimum such W, call it Y
+				//The cut of D by Y is then the same as the cut of C by X!
+				//Hence our choice function gives us equality between Y and X
+			}
+
+			//Now we wish to show that by definition, D is the chain C cut by X
+			prove cut_D: *W(W in D <-> W in C & related(W, X, A) & ~W = X){
+				given |W|;
+				//We need to show each implication separately
+				prove lemma0: W in D -> W in C & related(W, X, A) & ~W = X{
+					assume W_in_D;
+					
+				}
+				//The other implication we must show
+				prove lemma1: W in C & related(W, X, A) & ~W = X -> W in D{
+					assume W_in_C, W_related_X, W_not_X;
+					//Either W belongs to D or not
+					return branch(excluded_middle[<: W in D>], W_in_D, W_not_in_D){
+						//If W belongs to D, we are done
+						return W_in_D;
+					} or {
+						//Otherwise, we will find a contradiction
+						//If W is not in D, then W is in S since W is in C
+						W_in_S = S_def(W)(W_in_C, W_not_in_D);
+						//Then X <= W since X is the minimum of S
+						X_related_W = X_minimum(W)(W_in_S);
+						//But W <= X, so W = X
+						W_eq_X = expand(antisymmetric_A)(W, X)(W_related_X, X_related_W);
+						//This is a contradiction since we assumed that W is not X
+						contradiction = W_not_X(W_eq_X);
+						return trivial(<: false -> W in D>)(contradiction);
+					};
+				}
+			}
 		}
 	}
 
