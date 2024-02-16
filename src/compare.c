@@ -30,12 +30,6 @@ struct map_entry{
 	};
 };
 
-enum seek_status{
-	FAILURE = 0,
-	SUCCESS = 1,
-	CONTINUE = 2
-};
-
 //A linked list which stores a stack of searched subsentences
 //The linked list is stored on the stack!
 struct subsentence_stack{
@@ -78,6 +72,17 @@ static int stronger_conclusion_and(struct subsentence_stack *parent){
 	struct subsentence_stack entry;
 
 	entry = (struct subsentence_stack) {.s0 = parent->s0, .s1 = parent->s1->child0, .parent = parent, .source_map = parent->source_map, .dest_map = parent->dest_map};
+
+	return sentence_stronger_recursive(&entry);
+}
+
+static int stronger_conclusion_bicond(struct subsentence_stack *parent){
+	struct subsentence_stack entry;
+	struct sentence temp_sentence;
+
+	temp_sentence = *(parent->s1);
+	temp_sentence.type = IMPLIES;
+	entry = (struct subsentence_stack) {.s0 = parent->s0, .s1 = &temp_sentence, .parent = parent, .source_map = parent->source_map, .dest_map = parent->dest_map};
 
 	return sentence_stronger_recursive(&entry);
 }
@@ -188,18 +193,6 @@ static int stronger_exists(struct subsentence_stack *parent){
 	free_map_list(new_source_map);
 
 	return output;
-}
-
-static int stronger_bicond_both(struct subsentence_stack *parent){
-	struct subsentence_stack entry0;
-	struct subsentence_stack entry1;
-
-	entry0 = (struct subsentence_stack) {.s0 = parent->s0->child0, .s1 = parent->s1->child0, .parent = parent, .source_map = parent->source_map, .dest_map = parent->dest_map};
-	entry1 = (struct subsentence_stack) {.s0 = parent->s0->child0, .s1 = parent->s1->child1, .parent = parent, .source_map = parent->source_map, .dest_map = parent->dest_map};
-
-	//Remember, these aren't the final checks
-	//We seek back up the tree and check the other implications once we reach a leaf node
-	return sentence_stronger_recursive(&entry0) || sentence_stronger_recursive(&entry1);
 }
 
 static int bind_arguments(struct map_entry entry0, struct map_entry entry1, struct map_entry *source_map){
@@ -319,6 +312,8 @@ static int stronger_and_or(struct subsentence_stack *parent){
 	struct subsentence_stack entry;
 	struct map_entry *new_source_map;
 	struct map_entry *new_dest_map;
+	struct sentence temp_sentence;
+	struct sentence *temp;
 
 	new_source_map = get_map_list(parent->s0->num_bound_vars);
 	new_dest_map = get_map_list(parent->s1->num_bound_vars);
@@ -340,6 +335,36 @@ static int stronger_and_or(struct subsentence_stack *parent){
 		memcpy(new_dest_map, parent->dest_map, sizeof(struct map_entry)*parent->s1->num_bound_vars);
 
 		entry = (struct subsentence_stack) {.s0 = parent->s0->child1, .s1 = parent->s1, .parent = parent, .source_map = new_source_map, .dest_map = new_dest_map};
+		if(sentence_stronger_recursive(&entry)){
+			free_map_list(new_source_map);
+			free_map_list(new_dest_map);
+			return 1;
+		}
+	} else if(parent->s0->type == BICOND){
+		temp_sentence = *(parent->s0);
+		temp_sentence.type = IMPLIES;
+
+		memcpy(new_source_map, parent->source_map, sizeof(struct map_entry)*parent->s0->num_bound_vars);
+		memcpy(new_dest_map, parent->dest_map, sizeof(struct map_entry)*parent->s1->num_bound_vars);
+
+		entry = (struct subsentence_stack) {.s0 = &temp_sentence, .s1 = parent->s1, .parent = parent, .source_map = new_source_map, .dest_map = new_dest_map};
+
+		if(sentence_stronger_recursive(&entry)){
+			free_map_list(new_source_map);
+			free_map_list(new_dest_map);
+			return 1;
+		}
+
+		memcpy(new_source_map, parent->source_map, sizeof(struct map_entry)*parent->s0->num_bound_vars);
+		memcpy(new_dest_map, parent->dest_map, sizeof(struct map_entry)*parent->s1->num_bound_vars);
+
+		temp = temp_sentence.child0;
+		temp_sentence.child0 = temp_sentence.child1;
+		temp_sentence.child1 = temp;
+
+		//Technically I'm not even modifying this struct, but just to be explicit I'm putting this line
+		entry = (struct subsentence_stack) {.s0 = &temp_sentence, .s1 = parent->s1, .parent = parent, .source_map = new_source_map, .dest_map = new_dest_map};
+
 		if(sentence_stronger_recursive(&entry)){
 			free_map_list(new_source_map);
 			free_map_list(new_dest_map);
@@ -381,6 +406,8 @@ static int sentence_stronger_recursive(struct subsentence_stack *parent){
 		if(stronger_premise_or(parent)) return 1;
 	} else if(parent->s1->type == AND){
 		if(stronger_conclusion_and(parent)) return 1;
+	} else if(parent->s1->type == BICOND){
+		if(stronger_conclusion_bicond(parent)) return 1;
 	} else if(sentence_trivially_false(parent->s0)){
 		if(seek_next(parent)) return 1;
 	} else if(sentence_trivially_true(parent->s1)){
@@ -395,14 +422,12 @@ static int sentence_stronger_recursive(struct subsentence_stack *parent){
 		if(stronger_forall(parent)) return 1;
 	} else if(parent->s1->type == EXISTS){
 		if(stronger_exists(parent)) return 1;
-	} else if(parent->s0->type == BICOND && parent->s1->type == BICOND){
-		if(stronger_bicond_both(parent)) return 1;
 	} else if(parent->s0->type == RELATION && parent->s1->type == RELATION){
 		if(stronger_relation(parent)) return 1;
 	} else if(parent->s0->type == PROPOSITION && parent->s1->type == PROPOSITION){
 		if(stronger_proposition(parent)) return 1;
 	}
-	if(parent->s0->type == AND || parent->s1->type == OR){
+	if(parent->s0->type == AND || parent->s0->type == BICOND || parent->s1->type == OR){
 		return stronger_and_or(parent);
 	} else {
 		return 0;
@@ -425,42 +450,27 @@ static int seek_conclusion_and(struct subsentence_stack *parent){
 	return sentence_stronger_recursive(&entry);
 }
 
+static int seek_conclusion_bicond(struct subsentence_stack *parent){
+	struct subsentence_stack entry;
+	struct sentence temp_sentence;
+	struct sentence *temp;
+
+	temp_sentence = *(parent->s1);
+	temp_sentence.type = IMPLIES;
+	temp = temp_sentence.child0;
+	temp_sentence.child0 = temp_sentence.child1;
+	temp_sentence.child1 = temp;
+	entry = (struct subsentence_stack) {.s0 = parent->s0, .s1 = &temp_sentence, .parent = parent, .source_map = parent->source_map, .dest_map = parent->dest_map};
+
+	return sentence_stronger_recursive(&entry);
+}
+
 static int seek_implies(struct subsentence_stack *parent){
 	struct subsentence_stack entry;
 
 	entry = (struct subsentence_stack) {.s0 = parent->s0->child1, .s1 = parent->s1->child1, .parent = parent, .source_map = parent->source_map, .dest_map = parent->dest_map};
 
 	return sentence_stronger_recursive(&entry);
-}
-
-static enum seek_status seek_bicond_both(struct subsentence_stack *parent, struct subsentence_stack *child){
-	struct subsentence_stack entry;
-
-	if(child->s0 == parent->s0->child0 && child->s1 == parent->s1->child0){
-		entry = (struct subsentence_stack) {.s0 = parent->s1->child0, .s1 = parent->s0->child0, .parent = parent, .source_map = parent->dest_map, .dest_map = parent->source_map};
-		return sentence_stronger_recursive(&entry);
-	} else if(child->s0 == parent->s1->child0 && child->s1 == parent->s0->child0){
-		//We must take care to swap the source and destination maps back to
-		//what they were before. This is because they were switched by the
-		//above case which was invoked earlier in the tree
-		entry = (struct subsentence_stack) {.s0 = parent->s0->child1, .s1 = parent->s1->child1, .parent = parent, .source_map = parent->dest_map, .dest_map = parent->source_map};
-		return sentence_stronger_recursive(&entry);
-	} else if(child->s0 == parent->s0->child1 && child->s1 == parent->s1->child1){
-		//Once again, we must swap the source and destination
-		entry = (struct subsentence_stack) {.s0 = parent->s1->child1, .s1 = parent->s0->child1, .parent = parent, .source_map = parent->dest_map, .dest_map = parent->source_map};
-		return sentence_stronger_recursive(&entry);
-	} else if(child->s0 == parent->s0->child0 && child->s1 == parent->s1->child1){
-		entry = (struct subsentence_stack) {.s0 = parent->s1->child1, .s1 = parent->s0->child0, .parent = parent, .source_map = parent->dest_map, .dest_map = parent->source_map};
-		return sentence_stronger_recursive(&entry);
-	} else if(child->s0 == parent->s1->child1 && child->s1 == parent->s0->child0){
-		entry = (struct subsentence_stack) {.s0 = parent->s0->child1, .s1 = parent->s1->child0, .parent = parent, .source_map = parent->dest_map, .dest_map = parent->source_map};
-		return sentence_stronger_recursive(&entry);
-	} else if(child->s0 == parent->s0->child1 && child->s1 == parent->s1->child0){
-		entry = (struct subsentence_stack) {.s0 = parent->s1->child0, .s1 = parent->s0->child1, .parent = parent, .source_map = parent->dest_map, .dest_map = parent->source_map};
-		return sentence_stronger_recursive(&entry);
-	}
-
-	return CONTINUE;
 }
 
 static int seek_next(struct subsentence_stack *parent){
@@ -470,7 +480,6 @@ static int seek_next(struct subsentence_stack *parent){
 	struct map_entry *leaf_dest_map;
 	struct map_entry *temp_map;
 	int i;
-	enum seek_status output;
 
 	leaf_source_map = parent->source_map;
 	leaf_dest_map = parent->dest_map;
@@ -489,6 +498,8 @@ static int seek_next(struct subsentence_stack *parent){
 			return seek_premise_or(&entry);
 		} else if(parent->s1->type == AND && parent->s1->child0 == child->s1){
 			return seek_conclusion_and(&entry);
+		} else if(parent->s1->type == BICOND && parent->s1->child0 == child->s1->child0){
+			return seek_conclusion_bicond(&entry);
 		} else if(parent->s0->type == NOT && parent->s1->type == NOT){
 			//Evaluating contrapositives swaps the source and
 			//destination maps, so we must swap them back
@@ -524,18 +535,6 @@ static int seek_next(struct subsentence_stack *parent){
 				if(leaf_dest_map[i].type == RESERVED){
 					custom_error(1, "Internal Error: The source and destination maps are mismatched\n", 1);
 				}
-			}
-		} else if(parent->s0->type == BICOND && parent->s1->type == BICOND){
-			output = seek_bicond_both(&entry, child);
-			if(output != CONTINUE){
-				return output;
-			} else {
-				//While evaluating the biconditional implication, the source and
-				//destination maps get swapped. We swap them back before seeking
-				//farther up the tree.
-				temp_map = leaf_source_map;
-				leaf_source_map = leaf_dest_map;
-				leaf_dest_map = temp_map;
 			}
 		}
 	}
