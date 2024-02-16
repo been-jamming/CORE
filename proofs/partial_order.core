@@ -125,13 +125,7 @@ prove zorns_lemma: *A*B(partial_order(A, B) & *C(C <= B & chain(C, A) -> ^M(M in
 			well_order_D, conforming_D = expand(conforming_D);
 			//We construct the set S which is C\D
 			S_def = specify[<W: ~W in D>](C)|S|;
-			//S is a subset of C
-			prove S_subset_C: *W(W in S -> W in C){
-				given |W|;
-				assume W_in_S;
-				return S_def(W)(W_in_S);
-			}
-			S_subset_C = #<=(S, C)(S_subset_C);
+			S_subset_C = #<=(S, C)(S_def);
 			//Z is a member of S, so S is non-empty
 			Z_in_S = S_def(Z)(Z_in_C, Z_not_in_D);
 			//Let X be the minimum of S
@@ -148,25 +142,13 @@ prove zorns_lemma: *A*B(partial_order(A, B) & *C(C <= B & chain(C, A) -> ^M(M in
 					assume W_in_D;
 					//Let Q be the set of L in D that either are not in C or are >= X
 					Q_def = specify[<L: ~L in C | related(X, L, A)>](D)|Q|;
-					//Q is a subset of D
-					prove Q_subset_D: *L(L in Q -> L in D){
-						given |L|;
-						assume L_in_Q;
-						return Q_def(L)(L_in_Q);
-					}
-					Q_subset_D = #<=(Q, D)(Q_subset_D);
+					Q_subset_D = #<=(Q, D)(Q_def);
 					//Since D is well ordered, either Q is empty or Q has a smallest element
 					Q_empty = branch(excluded_middle[<: ^K(K in Q)>], K_exists, K_not_exists){
 						K_in_Q = K_exists|K|;
 						//Let E be the set of elements of C either not in D or >= K
 						E_def = specify[<L: ~L in D | related(K, L, A)>](C)|E|;
-						//E is a subset of C
-						prove E_subset_C: *L(L in E -> L in C){
-							given |L|;
-							assume L_in_E;
-							return E_def(L)(L_in_E);
-						}
-						E_subset_C = #<=(E, C)(E_subset_C);
+						E_subset_C = #<=(E, C)(E_def);
 						//X in fact belongs to E
 						X_in_B = expand(C_subset_B)(X)(X_in_C);
 						X_related_X = expand(reflexive_A)(X)(X_in_B);
