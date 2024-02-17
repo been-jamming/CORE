@@ -1,5 +1,6 @@
 include "zfc_depend.core";
 include "relations_axioms.core";
+import "logic.core";
 
 define partial_order(A, B): is_relation(A) & antisymmetric(A) & transitive(A) & reflexive(A, B);
 define chain(C, A): *X*Y(X in C & Y in C -> related(X, Y, A) | related(Y, X, A));
@@ -85,21 +86,29 @@ prove zorns_lemma: *A*B(partial_order(A, B) & *C(C <= B & chain(C, A) -> ^M(M in
 		}
 
 		//We need to modify the statement of strict bounds existing slightly
-		prove strict_bounds_exist: *C(C in V -> ^X(chain(C, A) & strict_bound(X, C))){
+		prove strict_bounds_exist: *C(C in V -> ^X(strict_bound(X, C))){
 			given |C|;
 			assume C_in_V;
 			C_subset_B, C_chain = V_def(C)(C_in_V);
-			return C_chain, strict_bounds_exist(C)(C_subset_B, C_chain)|X|;
+			return strict_bounds_exist(C)(C_subset_B, C_chain)|X|;
 		}
 
 		//Here we apply the axiom of choice to get a choice function which takes each chain to a strict upper bound
-		F_def = choice_function[<C, X: chain(C, A) & strict_bound(X, C)>](V)(strict_bounds_exist)|F|;
+		F_def = choice_function[<C, X: strict_bound(X, C)>](V)(strict_bounds_exist)|F|;
 
 		//Next we'll define chain cuts. A chain cut by x is the set of elements less than x
 		define cut(D, X, C): *Y(Y in D <-> Y in C & related(Y, X, A) & ~Y = X);
 
+		//Cuts of chains do exist
+		prove cut_chain: *C*X^D(cut(D, X, C)){
+			given |C, X|;
+			D_def = specify[<Z: related(Z, X, A) & ~Z = X>](C)|D|;
+			choose D;
+			return #cut(D, X, C)(D_def);
+		}
+
 		//We need to know that the cut of a chain is still a chain
-		prove cut_chain: *C*X*D(chain(C, A) & X in C & cut(D, X, C) -> chain(D, A)){
+		prove cut_is_chain: *C*X*D(chain(C, A) & X in C & cut(D, X, C) -> chain(D, A)){
 			given |C, X, D|;
 			assume chain_C, X_in_C, cut_D;
 			prove chain_D: *Y*Z(Y in D & Z in D -> related(Y, Z, A) | related(Z, Y, A)){
@@ -146,14 +155,54 @@ prove zorns_lemma: *A*B(partial_order(A, B) & *C(C <= B & chain(C, A) -> ^M(M in
 					//Since D is well ordered, either Q is empty or Q has a smallest element
 					Q_empty = branch(excluded_middle[<: ^K(K in Q)>], K_exists, K_not_exists){
 						K_in_Q = K_exists|K|;
-						//Let E be the set of elements of C either not in D or >= K
-						E_def = specify[<L: ~L in D | related(K, L, A)>](C)|E|;
+						//Let Y be the smallest element of Q
+						Y_in_Q, Y_minimum = expand(well_order_D)(Q, K)(Q_subset_D, K_in_Q)|Y|;
+						//Let E be the set of elements of C either not in D or >= Y
+						E_def = specify[<L: ~L in D | related(Y, L, A)>](C)|E|;
 						E_subset_C = #<=(E, C)(E_def);
-						//X in fact belongs to E
-						X_in_B = expand(C_subset_B)(X)(X_in_C);
-						X_related_X = expand(reflexive_A)(X)(X_in_B);
-						X_in_E = E_def(X)(X_in_C, X_related_X);
-						print X_in_E;
+						//X is an element of E
+						X_in_E = E_def(X)(X_in_C, X_not_in_D);
+						//Let R be the minimum of E
+						R_in_E, R_minimum = expand(well_order_C)(E, X)(E_subset_C, X_in_E)|R|;
+						//R is then less than X
+						R_related_X = R_minimum(X)(X_in_E);
+
+						//The cut of D by Y will be called J
+						J_def = cut_chain(D, Y)|J|;
+						//The cut of C by R will be called G
+						G_def = cut_chain(C, R)|G|;
+						//J and G are actually equal!
+						prove J_eq_G: *L(L in J <-> L in G){
+							given |L|;
+							//prove lemma0: L in J -> L in G{
+								
+							//}
+							prove lemma1: L in G -> L in J{
+								assume L_in_G;
+								//If L is in G, L is in C and L < R
+								L_in_C, L_related_R, L_not_R = expand(G_def)(L)(L_in_G);
+								L_in_B = expand(C_subset_B)(L)(L_in_C);
+								//If R <= X, so L < X
+								L_related_X = expand(transitive_A)(L, R, X)(L_related_R, R_related_X);
+								L_in_D = branch(excluded_middle[<: L in D>], L_in_D, L_not_in_D){
+									return L_in_D;
+								} or {
+									L_in_S = S_def(L)(L_in_C, L_not_in_D);
+									X_related_L = X_minimum(L)(L_in_S);
+									L_eq_X = expand(antisymmetric_A)(L, X)(L_related_X, X_related_L);
+									X_related_R = replace[<H: related(H, R, A)>](L, X)(L_eq_X)(L_related_R);
+									X_eq_R = expand(antisymmetric_A)(X, R)(X_related_R, R_related_X);
+									L_eq_R = equal_transitive(L, X, R)(L_eq_X, X_eq_R);
+									contradiction = L_not_R(L_eq_R);
+									return trivial(<: false -> L in D>)(contradiction);
+								};
+								L_related_Y = branch(excluded_middle[<: related(Y, L, A)>], Y_related_L, Y_not_related_L){
+									
+								} or {
+
+								};
+							}
+						}
 					} or {
 						return K_not_exists;
 					};

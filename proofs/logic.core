@@ -1,0 +1,84 @@
+axiom excluded_middle[P]: P | ~P;
+
+prove double_negate[P]: ~~P <-> P{
+	prove lemma0: ~~P -> P{
+		assume not_not;
+		return branch(excluded_middle[<: P>], P_true, P_not){
+			return P_true;
+		} or {
+			return trivial(<: false -> P>)(not_not(P_not));
+		};
+	}
+	prove lemma1: P -> ~~P{
+		assume P_true;
+		assume P_not;
+		return P_not(P_true);
+	}
+	return iff(lemma0, lemma1);
+}
+
+prove not_exists[P(1)]: ~^X(P(X)) <-> *X(~P(X)){
+	prove lemma0: ~^X(P(X)) -> *X(~P(X)){
+		assume not_exists;
+		given |X|;
+		assume P_X;
+		return not_exists(P_X);
+	}
+	prove lemma1: *X(~P(X)) -> ~^X(P(X)){
+		assume forall_not;
+		assume exists;
+		P_X = exists|X|;
+		return forall_not(X)(P_X);
+	}
+	return iff(lemma0, lemma1);
+}
+
+prove not_forall[P(1)]: ~*X(P(X)) <-> ^X(~P(X)){
+	prove lemma0: ~*X(P(X)) -> ^X(~P(X)){
+		assume not_forall;
+		return branch(excluded_middle[<: ^X(~P(X))>], exists, not_exist){
+			return exists;
+		} or {
+			forall_not_not = not_exists[<W: ~P(W)>](not_exist);
+			prove double_negate_var: *W(P(W) <-> ~~P(W)){
+				given |W|;
+				return double_negate[<: P(W)>];
+			}
+			contradiction = not_forall(substitute(<Q(1): *W(Q(W))>)[<W: P(W)>, <W: ~~P(W)>](double_negate_var)(forall_not_not));
+			return trivial(<: false -> ^X(~P(X))>)(contradiction);
+		};
+	}
+	prove lemma1: ^X(~P(X)) -> ~*X(P(X)){
+		assume exists;
+		assume forall;
+		P_not = exists|X|;
+		return P_not(forall(X));
+	}
+	return iff(lemma0, lemma1);
+}
+
+prove or_to_implies[P, Q]: P | Q <-> (~P -> Q){
+	prove lemma0: P | Q -> (~P -> Q){
+		assume either;
+		return branch(either, P_true, Q_true){
+			prove result: ~P -> Q{
+				assume P_false;
+				return P_false(P_true);
+			}
+			return result;
+		} or {
+			return trivial(<: Q -> (~P -> Q)>)(Q_true);
+		};
+	}
+	prove lemma1: (~P -> Q) -> P | Q{
+		assume implication;
+		return branch(excluded_middle[<: P>], P_true, P_false){
+			return trivial(<: P -> P | Q>)(P_true);
+		} or {
+			Q_true = implication(P_false);
+			return trivial(<: Q -> P | Q>)(Q_true);
+		};
+	}
+	return iff(lemma0, lemma1);
+}
+

@@ -111,6 +111,14 @@ static int stronger_implies(struct subsentence_stack *parent){
 	return sentence_stronger_recursive(&entry);
 }
 
+static int stronger_implies_conclusion(struct subsentence_stack *parent){
+	struct subsentence_stack entry;
+
+	entry = (struct subsentence_stack) {.s0 = parent->s0, .s1 = parent->s1->child1, .source_map = parent->source_map, .dest_map = parent->dest_map};
+
+	return sentence_stronger_recursive(&entry);
+}
+
 static int stronger_forall(struct subsentence_stack *parent){
 	int i;
 	int range_lower;
@@ -426,6 +434,8 @@ static int sentence_stronger_recursive(struct subsentence_stack *parent){
 		if(stronger_relation(parent)) return 1;
 	} else if(parent->s0->type == PROPOSITION && parent->s1->type == PROPOSITION){
 		if(stronger_proposition(parent)) return 1;
+	} else if(parent->s1->type == IMPLIES){
+		if(stronger_implies_conclusion(parent)) return 1;
 	}
 	if(parent->s0->type == AND || parent->s0->type == BICOND || parent->s1->type == OR){
 		return stronger_and_or(parent);
