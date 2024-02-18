@@ -489,7 +489,9 @@ static int seek_next(struct subsentence_stack *parent){
 	struct map_entry *leaf_source_map;
 	struct map_entry *leaf_dest_map;
 	struct map_entry *temp_map;
+	int other_reserved;
 	int i;
+	int j;
 
 	leaf_source_map = parent->source_map;
 	leaf_dest_map = parent->dest_map;
@@ -529,18 +531,48 @@ static int seek_next(struct subsentence_stack *parent){
 		//If we seek past a quantifier, we need to check all quantifiers got bound
 		//Otherwise the user could prove the existence of an object
 		} else if(parent->s0->type == FORALL && child->s0 == parent->s0->child0){
+			//If s1 is a forall statement and there is a reserved variable in those quantifiers, then we are allowed to have unmapped variables
+			other_reserved = 0;
 			for(i = parent->s0->num_bound_vars; i < child->s0->num_bound_vars; i++){
 				if(leaf_source_map[i].type == UNMAPPED){
-					return 0;
+					if(parent->s1->type == FORALL){
+						for(j = parent->s1->num_bound_vars; j < child->s1->num_bound_vars; j++){
+							if(leaf_dest_map[j].type == RESERVED){
+								other_reserved = 1;
+								break;
+							}
+						}
+						if(other_reserved){
+							break;
+						}
+						return 0;
+					} else {
+						return 0;
+					}
 				}
 				if(leaf_source_map[i].type == RESERVED){
 					custom_error(1, "Internal Error: The source and destination maps are mismatched\n", 1);
 				}
 			}
 		} else if(parent->s1->type == EXISTS && child->s1 == parent->s1->child0){
+			//If s0 is an exists statement and there is a reserved variable in those quantifiers, then we are allowed to have unmapped variables
+			other_reserved = 0;
 			for(i = parent->s1->num_bound_vars; i < child->s1->num_bound_vars; i++){
 				if(leaf_dest_map[i].type == UNMAPPED){
-					return 0;
+					if(parent->s0->type == EXISTS){
+						for(j = parent->s0->num_bound_vars; j < child->s1->num_bound_vars; j++){
+							if(leaf_source_map[j].type == RESERVED){
+								other_reserved = 1;
+								break;
+							}
+						}
+						if(other_reserved){
+							break;
+						}
+						return 0;
+					} else {
+						return 0;
+					}
 				}
 				if(leaf_dest_map[i].type == RESERVED){
 					custom_error(1, "Internal Error: The source and destination maps are mismatched\n", 1);

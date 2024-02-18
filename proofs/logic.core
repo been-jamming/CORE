@@ -82,3 +82,87 @@ prove or_to_implies[P, Q]: P | Q <-> (~P -> Q){
 	return iff(lemma0, lemma1);
 }
 
+prove not_and_to_or[P, Q]: ~(P & Q) <-> ~P | ~Q{
+	prove lemma0: ~(P & Q) -> ~P | ~Q{
+		assume not_and;
+		return branch(excluded_middle[<: P>], P_true, P_false){
+			prove Q_false: ~Q{
+				assume Q_true;
+				return not_and(P_true, Q_true);
+			}
+			return or(<: ~P>, Q_false);
+		} or {
+			return or(P_false, <: ~Q>);
+		};
+	}
+	lemma1 = trivial(<: ~P | ~Q -> ~(P & Q)>);
+	return iff(lemma0, lemma1);
+}
+
+prove not_or_to_and[P, Q]: ~(P | Q) <-> ~P & ~Q{
+	prove lemma0: ~(P | Q) -> ~P & ~Q{
+		assume neither;
+		prove not_P: ~P{
+			assume P_true;
+			return neither(P_true);
+		}
+		prove not_Q: ~Q{
+			assume Q_true;
+			return neither(Q_true);
+		}
+		return not_P, not_Q;
+	}
+	prove lemma1: ~P & ~Q -> ~(P | Q){
+		assume not_P, not_Q;
+		assume either;
+		return branch(either, P_true, Q_true){
+			return not_P(P_true);
+		} or {
+			return not_Q(Q_true);
+		};
+	}
+	return iff(lemma0, lemma1);
+}
+
+prove contrapositive_iff[P, Q]: (P <-> Q) <-> (~P <-> ~Q){
+	prove lemma0: (P <-> Q) -> (~P <-> ~Q){
+		assume P_iff_Q;
+		prove lemma0: ~P -> ~Q{
+			assume P_false;
+			assume Q_true;
+			return P_false(P_iff_Q(Q_true));
+		}
+		prove lemma1: ~Q -> ~P{
+			assume Q_false;
+			assume P_true;
+			return Q_false(P_iff_Q(P_true));
+		}
+		return iff(lemma0, lemma1);
+	}
+	prove lemma1: (~P <-> ~Q) -> (P <-> Q){
+		assume P_false_iff_Q_false;
+		prove lemma0: P -> Q{
+			assume P_true;
+			P_false_false = trivial(<: P -> ~~P>)(P_true);
+			return branch(excluded_middle[<: Q>], Q_true, Q_false){
+				return Q_true;
+			} or {
+				contradiction = P_false_false(P_false_iff_Q_false(Q_false));
+				return trivial(<: false -> Q>)(contradiction);
+			};
+		}
+		prove lemma1: Q -> P{
+			assume Q_true;
+			Q_false_false = trivial(<: Q -> ~~Q>)(Q_true);
+			return branch(excluded_middle[<: P>], P_true, P_false){
+				return P_true;
+			} or {
+				contradiction = Q_false_false(P_false_iff_Q_false(P_false));
+				return trivial(<: false -> P>)(contradiction);
+			};
+		}
+		return iff(lemma0, lemma1);
+	}
+	return iff(lemma0, lemma1);
+}
+

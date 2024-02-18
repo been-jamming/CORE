@@ -142,6 +142,7 @@ prove zorns_lemma: *A*B(partial_order(A, B) & *C(C <= B & chain(C, A) -> ^M(M in
 			choose X;
 			//By construction, X is in C and X is not in D
 			X_in_C, X_not_in_D = S_def(X)(X_in_S);
+			X_in_B = expand(C_subset_B)(X)(X_in_C);
 
 			//Now we wish to show that by definition, D is the chain C cut by X
 			prove cut_D: *W(W in D <-> W in C & related(W, X, A) & ~W = X){
@@ -157,6 +158,8 @@ prove zorns_lemma: *A*B(partial_order(A, B) & *C(C <= B & chain(C, A) -> ^M(M in
 						K_in_Q = K_exists|K|;
 						//Let Y be the smallest element of Q
 						Y_in_Q, Y_minimum = expand(well_order_D)(Q, K)(Q_subset_D, K_in_Q)|Y|;
+						Y_in_D = expand(Q_subset_D)(Y)(Y_in_Q);
+						Y_in_B = expand(D_subset_B)(Y)(Y_in_D);
 						//Let E be the set of elements of C either not in D or >= Y
 						E_def = specify[<L: ~L in D | related(Y, L, A)>](C)|E|;
 						E_subset_C = #<=(E, C)(E_def);
@@ -166,6 +169,8 @@ prove zorns_lemma: *A*B(partial_order(A, B) & *C(C <= B & chain(C, A) -> ^M(M in
 						R_in_E, R_minimum = expand(well_order_C)(E, X)(E_subset_C, X_in_E)|R|;
 						//R is then less than X
 						R_related_X = R_minimum(X)(X_in_E);
+						R_in_C = expand(E_subset_C)(R)(R_in_E);
+						R_in_B = expand(C_subset_B)(R)(R_in_C);
 
 						//The cut of D by Y will be called J
 						J_def = cut_chain(D, Y)|J|;
@@ -174,38 +179,147 @@ prove zorns_lemma: *A*B(partial_order(A, B) & *C(C <= B & chain(C, A) -> ^M(M in
 						//J and G are actually equal!
 						prove J_eq_G: *L(L in J <-> L in G){
 							given |L|;
-							//prove lemma0: L in J -> L in G{
-								
-							//}
+							prove lemma0: L in J -> L in G{
+								assume L_in_J;
+								L_in_D, L_related_Y, L_not_Y = expand(J_def)(L)(L_in_J);
+								L_in_C, X_not_related_L = branch(excluded_middle[<: L in Q>], L_in_Q, L_not_in_Q){
+									Y_related_L = Y_minimum(L)(L_in_Q);
+									L_eq_Y = expand(antisymmetric_A)(L, Y)(L_related_Y, Y_related_L);
+									contradiction = L_not_Y(L_eq_Y);
+									return trivial(<: false -> L in C & ~related(X, L, A)>)(contradiction);
+								} or {
+									not_both = contrapositive_iff[<: L in Q>, <: L in D & (~ L in C | related(X, L, A))>](Q_def(L))(L_not_in_Q);
+									L_not_in_D_or_neither = not_and_to_or[<: L in D>, <: ~L in C | related(X, L, A)>](not_both);
+									return branch(L_not_in_D_or_neither, L_not_in_D, neither){
+										contradiction = L_not_in_D(L_in_D);
+										return trivial(<: false -> L in C & ~related(X, L, A)>)(contradiction);
+									} or {
+										L_not_not_in_C, X_not_related_L = not_or_to_and[<: ~L in C>, <: related(X, L, A)>](neither);
+										L_in_C = double_negate[<: L in C>](L_not_not_in_C);
+										return L_in_C, X_not_related_L;
+									};
+								};
+								R_not_related_L = branch(excluded_middle[<: related(R, L, A)>], R_related_L, R_not_related_L){
+									R_related_Y = expand(transitive_A)(R, L, Y)(R_related_L, L_related_Y);
+									contradiction = branch(excluded_middle[<: R in D>], R_in_D, R_not_in_D){
+										R_in_C, either = E_def(R)(R_in_E);
+										return branch(either, R_not_in_D, Y_related_R){
+											return R_not_in_D(R_in_D);
+										} or {
+											R_eq_Y = expand(antisymmetric_A)(R, Y)(R_related_Y, Y_related_R);
+											Y_related_L = replace[<H: related(H, L, A)>](R, Y)(R_eq_Y)(R_related_L);
+											L_eq_Y = expand(antisymmetric_A)(L, Y)(L_related_Y, Y_related_L);
+											return L_not_Y(L_eq_Y);
+										};
+									} or {
+										R_in_S = S_def(R)(R_in_C, R_not_in_D);
+										X_related_R = X_minimum(R)(R_in_S);
+										X_related_L = expand(transitive_A)(X, R, L)(X_related_R, R_related_L);
+										return X_not_related_L(X_related_L);
+									};
+									return trivial(<: false -> ~related(R, L, A)>)(contradiction);
+								} or {
+									return R_not_related_L;
+								};
+								L_related_R, L_not_R = branch(expand(chain_C)(L, R)(L_in_C, R_in_C), L_related_R, R_related_L){
+									prove L_not_R: ~L = R{
+										assume L_eq_R;
+										R_related_R = expand(reflexive_A)(R)(R_in_B);
+										R_related_L = replace[<H: related(R, H, A)>](L, R)(L_eq_R)(R_related_R);
+										return R_not_related_L(R_related_L);
+									}
+									return L_related_R, L_not_R;
+								} or {
+									contradiction = R_not_related_L(R_related_L);
+									return trivial(<: false -> related(L, R, A) & ~L = R>)(contradiction);
+								};
+								return expand(G_def)(L)(L_in_C, L_related_R, L_not_R);
+							}
 							prove lemma1: L in G -> L in J{
 								assume L_in_G;
 								//If L is in G, L is in C and L < R
 								L_in_C, L_related_R, L_not_R = expand(G_def)(L)(L_in_G);
-								L_in_B = expand(C_subset_B)(L)(L_in_C);
-								//If R <= X, so L < X
-								L_related_X = expand(transitive_A)(L, R, X)(L_related_R, R_related_X);
-								L_in_D = branch(excluded_middle[<: L in D>], L_in_D, L_not_in_D){
-									return L_in_D;
-								} or {
-									L_in_S = S_def(L)(L_in_C, L_not_in_D);
-									X_related_L = X_minimum(L)(L_in_S);
-									L_eq_X = expand(antisymmetric_A)(L, X)(L_related_X, X_related_L);
-									X_related_R = replace[<H: related(H, R, A)>](L, X)(L_eq_X)(L_related_R);
-									X_eq_R = expand(antisymmetric_A)(X, R)(X_related_R, R_related_X);
-									L_eq_R = equal_transitive(L, X, R)(L_eq_X, X_eq_R);
+								L_in_D, Y_not_related_L = branch(excluded_middle[<: L in E>], L_in_E, L_not_in_E){
+									R_related_L = R_minimum(L)(L_in_E);
+									L_eq_R = expand(antisymmetric_A)(L, R)(L_related_R, R_related_L);
 									contradiction = L_not_R(L_eq_R);
-									return trivial(<: false -> L in D>)(contradiction);
-								};
-								L_related_Y = branch(excluded_middle[<: related(Y, L, A)>], Y_related_L, Y_not_related_L){
-									
+									return trivial(<: false -> L in D & ~related(Y, L, A)>)(contradiction);
 								} or {
-
+									not_both = contrapositive_iff[<: L in E>, <: L in C & (~L in D | related(Y, L, A))>](E_def(L))(L_not_in_E);
+									L_not_in_C_or_neither = not_and_to_or[<: L in C>, <: ~L in D | related(Y, L, A)>](not_both);
+									return branch(L_not_in_C_or_neither, L_not_in_C, neither){
+										contradiction = L_not_in_C(L_in_C);
+										return trivial(<: false -> L in D & ~related(Y, L, A)>)(contradiction);
+									} or {
+										L_not_not_in_D, Y_not_related_L = not_or_to_and[<: ~L in D>, <: related(Y, L, A)>](neither);
+										L_in_D = double_negate[<: L in D>](L_not_not_in_D);
+										return L_in_D, Y_not_related_L;
+									};
 								};
+								L_in_B = expand(D_subset_B)(L)(L_in_D);
+								L_related_Y, L_not_Y = branch(expand(chain_D)(L, Y)(L_in_D, Y_in_D), L_related_Y, Y_related_L){
+									prove L_not_Y: ~L = Y{
+										assume L_eq_Y;
+										Y_related_Y = expand(reflexive_A)(Y)(Y_in_B);
+										Y_related_L = replace[<H: related(Y, H, A)>](L, Y)(L_eq_Y)(Y_related_Y);
+										return Y_not_related_L(Y_related_L);
+									}
+									return L_related_Y, L_not_Y;
+								} or {
+									contradiction = Y_not_related_L(Y_related_L);
+									return trivial(<: false -> related(L, Y, A) & ~L = Y>)(contradiction);
+								};
+								return expand(J_def)(L)(L_in_D, L_related_Y, L_not_Y);
 							}
+							return iff(lemma0, lemma1);
 						}
+						J_eq_G = #=(J, G)(J_eq_G);
+						G_related_R_F = conforming_C(R, G)(R_in_C, G_def);
+						J_related_Y_F = conforming_D(Y, J)(Y_in_D, J_def);
+						G_related_Y_F = replace[<H: related(H, Y, F)>](J, G)(J_eq_G)(J_related_Y_F);
+						G_subset_C = #<=(G, C)(expand(G_def));
+						G_subset_B = subset_transitive(G, C, B)(G_subset_C, C_subset_B);
+						G_chain = cut_is_chain(C, R, G)(chain_C, R_in_C, G_def);
+						G_in_V = V_def(G)(G_subset_B, G_chain);
+						strict_bound_R2, unique_R2 = F_def(G)(G_in_V)|R2|;
+						R_eq_R2 = unique_R2(R)(G_related_R_F);
+						Y_eq_R2 = unique_R2(Y)(G_related_Y_F);
+						Y_eq_R = replace[<H: Y = H>](R, R2)(R_eq_R2)(Y_eq_R2);
+						Y_in_D, either = Q_def(Y)(Y_in_Q);
+						Y_in_C = replace[<H: H in C>](Y, R)(Y_eq_R)(R_in_C);
+						X_related_Y = or_to_implies[<: ~Y in C>, <: related(X, Y, A)>](either)(Y_in_C);
+						Y_related_X = replace[<H: related(H, X, A)>](Y, R)(Y_eq_R)(R_related_X);
+						X_eq_Y = expand(antisymmetric_A)(X, Y)(X_related_Y, Y_related_X);
+						X_in_D = replace[<H: H in D>](X, Y)(X_eq_Y)(Y_in_D);
+						contradiction = X_not_in_D(X_in_D);
+						return trivial(<: false -> ~^K(K in Q)>)(contradiction);
 					} or {
 						return K_not_exists;
 					};
+					prove W_not_in_Q: ~W in Q{
+						assume W_in_Q;
+						return Q_empty(W_in_Q);
+					}
+					not_both = contrapositive_iff[<: W in Q>, <: W in D & (~W in C | related(X, W, A))>](Q_def(W))(W_not_in_Q);
+					W_in_C, W_related_X = branch(not_and_to_or[<: W in D>, <: ~W in C | related(X, W, A)>](not_both), W_not_in_D, neither){
+						contradiction = W_not_in_D(W_in_D);
+						return trivial(<: false -> W in C & related(W, X, A)>)(contradiction);
+					} or {
+						W_not_not_in_C, X_not_related_W = not_or_to_and[<: ~W in C>, <: related(X, W, A)>](neither);
+						W_in_C = double_negate[<: W in C>](W_not_not_in_C);
+						return branch(expand(chain_C)(X, W)(X_in_C, W_in_C), X_related_W, W_related_X){
+							contradiction = X_not_related_W(X_related_W);
+							return trivial(<: false -> W in C & related(W, X, A)>)(contradiction);
+						} or {
+							return W_in_C, W_related_X;
+						};
+					};
+					prove W_not_X: ~W = X{
+						assume W_eq_X;
+						X_in_D = replace[<H: H in D>](W, X)(W_eq_X)(W_in_D);
+						return X_not_in_D(X_in_D);
+					}
+					return W_in_C, W_related_X, W_not_X;
 				}
 				//The other implication we must show
 				prove lemma1: W in C & related(W, X, A) & ~W = X -> W in D{
@@ -226,6 +340,147 @@ prove zorns_lemma: *A*B(partial_order(A, B) & *C(C <= B & chain(C, A) -> ^M(M in
 						contradiction = W_not_X(W_eq_X);
 						return trivial(<: false -> W in D>)(contradiction);
 					};
+				}
+				return iff(lemma0, lemma1);
+			}
+			cut_D = #cut(D, X, C)(cut_D);
+			return X_in_C, cut_D;
+		}
+
+		//Now we let U be the union of all conforming chains
+		U_def = specify[<X: ^C(C <= B & chain(C, A) & conforming(C) & X in C)>](B)|U|;
+		prove chain_bounds: *C*D*X*Y(C <= B & chain(C, A) & conforming(C) & X in C & D <= B & chain(D, A) & conforming(D) & Y in D & ~X in D -> related(Y, X, A)){
+			given |C, D, X, Y|;
+			assume C_subset_B, chain_C, conforming_C, X_in_C, D_subset_B, chain_D, conforming_D, Y_in_D, X_not_in_D;
+			Z_in_C, cut_D = initial_segments(C, D, X)(C_subset_B, D_subset_B, chain_C, chain_D, conforming_C, conforming_D, X_in_C, X_not_in_D)|Z|;
+			Y_in_C, Y_related_Z, Y_not_Z = expand(cut_D)(Y)(Y_in_D);
+			return branch(expand(chain_C)(X, Y)(X_in_C, Y_in_C), X_related_Y, Y_related_X){
+				X_related_Z = expand(transitive_A)(X, Y, Z)(X_related_Y, Y_related_Z);
+				return branch(excluded_middle[<: X = Z>], X_eq_Z, X_not_Z){
+					return replace[<H: related(Y, H, A)>](X, Z)(X_eq_Z)(Y_related_Z);
+				} or {
+					X_in_D = expand(cut_D)(X)(X_in_C, X_related_Z, X_not_Z);
+					contradiction = X_not_in_D(X_in_D);
+					return trivial(<: false -> related(Y, X, A)>)(contradiction);
+				};
+			} or {
+				return Y_related_X;
+			};
+		}
+		//U is a chain
+		prove chain_U: *X*Y(X in U & Y in U -> related(X, Y, A) | related(Y, X, A)){
+			given |X, Y|;
+			assume X_in_U, Y_in_U;
+			X_in_B, X_in_U = U_def(X)(X_in_U);
+			C_subset_B, chain_C, conforming_C, X_in_C = X_in_U|C|;
+			Y_in_B, Y_in_U = U_def(Y)(Y_in_U);
+			D_subset_B, chain_D, conforming_D, Y_in_D = Y_in_U|D|;
+			return branch(excluded_middle[<: X in D>], X_in_D, X_not_in_D){
+				return expand(chain_D)(X, Y)(X_in_D, Y_in_D);
+			} or {
+				Y_related_X = chain_bounds(C, D, X, Y)(C_subset_B, chain_C, conforming_C, X_in_C, D_subset_B, chain_D, conforming_D, Y_in_D, X_not_in_D);
+				return or(<: related(X, Y, A)>, Y_related_X);
+			};
+		}
+		chain_U = #chain(U, A)(chain_U);
+
+		//U is well ordered
+		prove well_order_U: *D*Z(D <= U & Z in D -> ^X(X in D & *Y(Y in D -> related(X, Y, A)))){
+			given |D, Z|;
+			assume D_subset_U, Z_in_D;
+			Z_in_U = expand(D_subset_U)(Z)(Z_in_D);
+			Z_in_B, Z_in_U = U_def(Z)(Z_in_U);
+			C_subset_B, chain_C, conforming_C, Z_in_C = Z_in_U|C|;
+			well_order_C, conforming_C_condition = expand(conforming_C);
+			E_def = specify[<H: H in C>](D)|E|;
+			Z_in_E = E_def(Z)(Z_in_D, Z_in_C);
+			E_subset_C = #<=(E, C)(E_def);
+			X_in_E, X_minimum = expand(well_order_C)(E, Z)(E_subset_C, Z_in_E)|X|;
+			choose X;
+			X_in_D, X_in_C = E_def(X)(X_in_E);
+			prove all_Y: *Y(Y in D -> related(X, Y, A)){
+				given |Y|;
+				assume Y_in_D;
+				Y_in_U = expand(D_subset_U)(Y)(Y_in_D);
+				Y_in_B, Y_in_U = U_def(Y)(Y_in_U);
+				F_subset_B, chain_F, conforming_F, Y_in_F = Y_in_U|F|;
+				return branch(excluded_middle[<: Y in C>], Y_in_C, Y_not_in_C){
+					Y_in_E = E_def(Y)(Y_in_D, Y_in_C);
+					return X_minimum(Y)(Y_in_E);
+				} or {
+					return chain_bounds(F, C, Y, X)(F_subset_B, chain_F, conforming_F, Y_in_F, C_subset_B, chain_C, conforming_C, X_in_C, Y_not_in_C);
+				};
+			}
+			return X_in_D, all_Y;
+		}
+		well_order_U = #well_order_chain(U)(well_order_U);
+
+		prove cut_conforming: *C*D*E*X(X in C & chain(C, A) & conforming(C) & cut(D, X, C) -> chain(D, A) & conforming(D)){
+			given |C, D, E, X|;
+			assume X_in_C, chain_C, conforming_C, cut_D;
+			well_order_C, conforming_C = expand(conforming_C);
+			chain_D = cut_is_chain(C, X, D)(chain_C, X_in_C, cut_D);
+			D_subset_C = #<=(D, C)(expand(cut_D));
+			prove well_order_D: *E*Z(E <= D & Z in E -> ^F(F in E & *Y(Y in E -> related(F, Y, A)))){
+				given |E, Z|;
+				assume E_subset_D, Z_in_E;
+				E_subset_C = subset_transitive(E, D, C)(E_subset_D, D_subset_C);
+				F_in_E, F_minimal = expand(well_order_C)(E, Z)(E_subset_C, Z_in_E)|F|;
+				choose F;
+				return F_in_E, F_minimal;
+			}
+			well_order_D = #well_order_chain(D)(well_order_D);
+			prove conforming_D: *Y*E(Y in D & cut(E, Y, D) -> related(E, Y, F)){
+				given |Y, E|;
+				assume Y_in_D, cut_E;
+				Y_in_C, Y_related_X, Y_not_X = expand(cut_D)(Y)(Y_in_D);
+				prove cut_E_C: *Z(Z in E <-> Z in C & related(Z, Y, A) & ~Z = Y){
+					given |Z|;
+					prove lemma0: Z in E -> Z in C & related(Z, Y, A) & ~Z = Y{
+						assume Z_in_E;
+						Z_in_D, Z_related_Y, Z_not_Y = expand(cut_E)(Z)(Z_in_E);
+						Z_in_C = expand(D_subset_C)(Z)(Z_in_D);
+						return Z_in_C, Z_related_Y, Z_not_Y;
+					}
+					prove lemma1: Z in C & related(Z, Y, A) & ~Z = Y -> Z in E{
+						assume Z_in_C, Z_related_Y, Z_not_Y;
+						Z_related_X = expand(transitive_A)(Z, Y, X)(Z_related_Y, Y_related_X);
+						prove Z_not_X: ~Z = X{
+							assume Z_eq_X;
+							Y_related_Z = replace[<H: related(Y, H, A)>](Z, X)(Z_eq_X)(Y_related_X);
+							Z_eq_Y = expand(antisymmetric_A)(Z, Y)(Z_related_Y, Y_related_Z);
+							return Z_not_Y(Z_eq_Y);
+						}
+						Z_in_D = expand(cut_D)(Z)(Z_in_C, Z_related_X, Z_not_X);
+						return expand(cut_E)(Z)(Z_in_D, Z_related_Y, Z_not_Y);
+					}
+					return iff(lemma0, lemma1);
+				}
+				cut_E_C = #cut(E, Y, C)(cut_E_C);
+				return conforming_C(Y, E)(Y_in_C, cut_E_C);
+			}
+			conforming_D = #conforming(D)(well_order_D, conforming_D);
+			return chain_D, conforming_D;
+		}
+
+		//U is conforming
+		prove conforming_U: *X*D(X in U & cut(D, X, U) -> related(D, X, F)){
+			given |X, D|;
+			assume X_in_U, D_cut_X_U;
+			X_in_B, X_in_U = U_def(X)(X_in_U);
+			C_subset_B, chain_C, conforming_C, X_in_C = X_in_U|C|;
+			prove X_not_in_D: ~X in D{
+				assume X_in_D;
+				X_in_C, X_related_X, X_not_X = expand(D_cut_X_U)(X)(X_in_D);
+				X_eq_X = equal_reflexive(X);
+				return X_not_X(X_eq_X);
+			}
+
+			prove D_cut_X_C: *Y(Y in D <-> Y in C & related(Y, X, A) & ~Y = X){
+				given |Y|;
+				prove lemma0: Y in D -> Y in C & related(Y, X, A) & ~Y = X{
+					assume Y_in_D;
+					print chain_bounds(C, D, X, Y)(C_subset_B, chain_C, conforming_C, X_in_C, D_subset_B
 				}
 			}
 		}
