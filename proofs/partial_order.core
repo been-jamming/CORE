@@ -415,8 +415,8 @@ prove zorns_lemma: *A*B(partial_order(A, B) & *C(C <= B & chain(C, A) -> ^M(M in
 		}
 		well_order_U = #well_order_chain(U)(well_order_U);
 
-		prove cut_conforming: *C*D*E*X(X in C & chain(C, A) & conforming(C) & cut(D, X, C) -> chain(D, A) & conforming(D)){
-			given |C, D, E, X|;
+		prove cut_conforming: *C*D*X(X in C & chain(C, A) & conforming(C) & cut(D, X, C) -> chain(D, A) & conforming(D)){
+			given |C, D, X|;
 			assume X_in_C, chain_C, conforming_C, cut_D;
 			well_order_C, conforming_C = expand(conforming_C);
 			chain_D = cut_is_chain(C, X, D)(chain_C, X_in_C, cut_D);
@@ -463,6 +463,12 @@ prove zorns_lemma: *A*B(partial_order(A, B) & *C(C <= B & chain(C, A) -> ^M(M in
 			return chain_D, conforming_D;
 		}
 
+		//Cuts of U are contained in conforming chains
+		prove cut_in_conforming: *X*D(X in U & cut(D, X, U) -> ^C(chain(C, A) & conforming(C) & D <= C)){
+			given |X, D|;
+			assume X_in_U, D_cut;
+
+		}
 		//U is conforming
 		prove conforming_U: *X*D(X in U & cut(D, X, U) -> related(D, X, F)){
 			given |X, D|;
@@ -475,12 +481,29 @@ prove zorns_lemma: *A*B(partial_order(A, B) & *C(C <= B & chain(C, A) -> ^M(M in
 				X_eq_X = equal_reflexive(X);
 				return X_not_X(X_eq_X);
 			}
+			prove D_subset_B: *Y(Y in D -> Y in B){
+				given |Y|;
+				assume Y_in_D;
+				Y_in_U, Y_related_X, Y_not_X = expand(D_cut_X_U)(Y)(Y_in_D);
+				return U_def(Y)(Y_in_U);
+			}
+			D_subset_B = #<=(D, B)(D_subset_B);
 
 			prove D_cut_X_C: *Y(Y in D <-> Y in C & related(Y, X, A) & ~Y = X){
 				given |Y|;
 				prove lemma0: Y in D -> Y in C & related(Y, X, A) & ~Y = X{
 					assume Y_in_D;
-					print chain_bounds(C, D, X, Y)(C_subset_B, chain_C, conforming_C, X_in_C, D_subset_B
+					Y_in_U, Y_related_X, Y_not_X = expand(D_cut_X_U)(Y)(Y_in_D);
+					Y_in_B, Y_in_U = U_def(Y)(Y_in_U);
+					E_subset_B, chain_E, conforming_E, Y_in_E = Y_in_U|E|;
+					F_exists = branch(excluded_middle[<: X in E>], X_in_E, X_not_in_E){
+						prove F_exists: ^F(F <= B & ~X in F & Y in F & chain(F, A) & conforming(F)){
+							cut_F = cut_chain(E, X)|F|;
+							print cut_conforming(
+						}
+					} or {
+
+					};
 				}
 			}
 		}
