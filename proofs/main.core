@@ -1,4 +1,5 @@
 include "zfc_axioms.core";
+import "logic.core";
 import "zfc.core";
 import "relations.core";
 import "partial_order.core";

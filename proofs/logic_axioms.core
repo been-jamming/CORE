@@ -1,0 +1,8 @@
+axiom double_negate[P]: ~~P <-> P;
+axiom not_exists[P(1)]: ~^X(P(X)) <-> *X(~P(X));
+axiom not_forall[P(1)]: ~*X(P(X)) <-> ^X(~P(X));
+axiom or_to_implies[P, Q]: P | Q <-> (~P -> Q);
+axiom not_and_to_or[P, Q]: ~(P & Q) <-> ~P | ~Q;
+axiom not_or_to_and[P, Q]: ~(P | Q) <-> ~P & ~Q;
+axiom contrapositive_iff[P, Q]: (P <-> Q) <-> (~P <-> ~Q);
+

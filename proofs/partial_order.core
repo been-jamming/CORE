@@ -1,6 +1,6 @@
 include "zfc_depend.core";
 include "relations_axioms.core";
-import "logic.core";
+include "logic_axioms.core";
 
 define partial_order(A, B): is_relation(A) & antisymmetric(A) & transitive(A) & reflexive(A, B);
 define chain(C, A): *X*Y(X in C & Y in C -> related(X, Y, A) | related(Y, X, A));
