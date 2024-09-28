@@ -9,6 +9,13 @@ prove negative_integer: *A*B(negative(A, B) -> A in INTEGERS & B in INTEGERS){
 	return negative(B)(A_negative_B), negative(A)(B_negative_A);
 }
 
+prove double_negative: *A*B*C(negative(B, A) & negative(C, B) -> A = C){
+	given |A, B, C|;
+	assume B_negative_A, C_negative_B;
+	B_negative_C = negative_symmetric(C, B)(C_negative_B);
+	return negative_unique(B, A, C)(B_negative_A, B_negative_C);
+}
+
 //Just changed this
 define sum(A, B, C): ^D^E^F(negative(D, A) & negative(E, B) & negative(F, C) & (naturals.sum(A, B, C) | naturals.sum(C, A, E) | naturals.sum(E, D, C) | naturals.sum(B, A, F) | naturals.sum(F, D, B) | naturals.sum(D, E, F)));
 
@@ -108,3 +115,9 @@ prove sum_commutes: *A*B*C(sum(A, B, C) <-> sum(A, C, B)){
 	return iff(lemma(A, B, C), lemma(A, C, B));
 }
 
+prove sum_compatible: *A*B*C(B in NATURALS & C in NATURALS -> (sum(A, B, C) <-> naturals.sum(A, B, C))){
+	given |A, B, C|;
+	assume B_natural, C_natural;
+	B_integer = expand(naturals_integers)(B)(B_natural);
+	C_integer = expand(naturals_integers)(C)(C_natural);
+}

@@ -1,0 +1,3 @@
+dependent define R;
+
+print trivial(<: (R) -> ^X(R)>);
